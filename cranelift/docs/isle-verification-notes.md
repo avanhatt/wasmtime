@@ -71,3 +71,34 @@ In addition, each of the existing ISA projects had their own slightly different 
 - We need to specify symbolic values not just for registers, but for constant arguments as well, which is likely in a meta-syntax that will differ for each tool. 
 - Each tool has its own memory model and helper function for read/writes to registers, and at least for SAIL, the output is a superset of SMTLIB that cannot be fed directly into a solver.
 
+## Example rule
+
+Let's start with a walkthrough of my current favorite rule.
+
+To start, we need to remember that one constraint a good instruction lowering pass cares about is register pressure. 
+That is, while intermediate representations can use an unbounded number of named variables, machine code is restricted to a relatively small set of named registers. 
+If the same instruction can be implemented with the same latency but use fewer registers, we should do that.
+
+One of the most common ways to lower register use is to use _immediate_ values, which store one or more operands to an instruction in the instruction itself, rather than in an register. Typically, this is only possible when the operand is relatively small (it can fit in some subset of the bits used for full operands).
+
+For example, an arbitrary add `r = a + b` where we don't know anything about the sizes of operands `a` and `b` must be implemented using 3 registers:
+
+    add r x y
+
+If we know `y` is actually some small constant value `C` (say, it fits in 12 bits), we could replace this with:
+
+    add r x C
+    add r x 0x01
+
+Even further, if `y` itself uses a lot of bits, but it's _negation_ is small, we can use some clever rearranging to still use a single arithmetic instruction with an immediate:
+    
+    sub r x (-C)
+    sub r x 0xfe
+
+Cranelift's ISLE rule to capture this looks like this:
+```lisp
+;; Same as the previous special cases, except we can switch the addition to a
+;; subtraction if the negated immediate fits in 12 bits.
+(rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
+      (value_reg (sub_imm ty (put_in_reg x) y)))
+```
