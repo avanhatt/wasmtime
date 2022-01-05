@@ -14,7 +14,7 @@ Documentation on the ISLE-Cranelift integration can be found
 At a high level, our goal is to show that ISLE's rules maintain semantic equivalence of program fragments before and after rule application. 
 In principal, a fully verified implementation of ISLE would include verification of the rules themselves, the Rust code generation, and the rule application implementation. 
 However, as a first step, we are interested in verifying just the first component: the rules themselves. The two reasons I (Alexa) see for starting there:
-1. Individual rules are declarative, small, mostly self-contained, and amenable to composable SMT-style verification.
+1. Individual rules are declarative, small, mostly self-contained, and amenable to composable [SMT-style verification](https://github.com/Z3Prover/z3).
 2. Prior related work, such as [Alive](https://web.ist.utl.pt/nuno.lopes/pubs/alive-pldi15.pdf), has shown that only looking at rules can still find impactful bugs.
 
 By "verifying" an individual rule, we can probably rely on simple semantic equivalence rather than something more complicated such as refinement, since Cranelift tries to avoid undefined behavior.
@@ -37,6 +37,8 @@ We would want to show something like (with made-up syntax and some additional si
 
 In a classic SMT-verification style, we would do this by asserting the negation of the property we want and checking for SAT.
 An UNSAT model implies no counterexample is found and the semantic equivalence holds.
+We'll likely want to use [SMT's theory of bitvectors](https://smtlib.cs.uiowa.edu/theories-FixedSizeBitVectors.shtml) and focus on integer operations first. 
+
 ```lisp
 (declare-const x y (_ BitVec 64))
 (declare-fun get_reg ...)
@@ -159,3 +161,7 @@ Some scattered thoughts on what we can learn from this rule:
 1. The right hand side is not always ISA-level, we'll need semantics that span our own definitions for CLIF/intermediate terms and that leverage existing ISA semantics.
 2. Most rules use a mix of internal and external constructors. At first glance, many of the external constructors should be relatively simple to manually annotate as preconditions on the SMT terms.
 3. We need a high-level model of registers, though we can probably sidestep any sort of nuanced memory models. 
+
+## Another motivating example
+
+A recent [developer-found ISLE Cranelift bug](https://bytecodealliance.zulipchat.com/#narrow/stream/217117-cranelift/topic/isle.20performance.20with.20cg_clif) in the x64 ISLE Cranelift backend might make an interesting goal to try to reproduce in an MVP version of a verification tool. 
