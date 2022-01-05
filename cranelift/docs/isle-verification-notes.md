@@ -55,12 +55,20 @@ We'll likely want to use [SMT's theory of bitvectors](https://smtlib.cs.uiowa.ed
 
 If we can show this equivalence for every rule, we raise our assurance that ISLE correctly implements instruction lowering for all possible inputs both in terms of the programs Cranelift is compiling and all possible inputs to those programs. 
 
+This basic per-rule strategy should certainly be our "minimum viable product", but there's room for more exciting directions. 
+If we run into scaling issues, we can decompose rules or use more nuanced counterexample driven verification (e.g., Counterexample-Guided Abstraction Refinement (CEGAR)).
+
 ## Why SMT?
 
 Cranelift is primarily a production engineering project, so our solution should focus on a high degree of automation.
 SMT should free engineers from having to construct proofs themselves.
 We can also build on existing projects for large-scale instruction set architecture (ISA) semantics that support SMT to handle many "right hand sides" of rules. 
 
+### More motivation
+
+Another exciting component of automated verification is that its flexibility allows engineers to iterate faster on potential new rules.
+Instead of needing to manually check or prove a new rule sound, engineers should be able to quickly get feedback from an automated tool.
+Even more forward-looking, an automated verification tool opens the door to synthesizing rules themselves in the future.
 ## Existing ISA semantics
 
 There have been several recent advances in modeling the semantics of real-world ISAs. Our goal should be to build on these as much as possible. 
