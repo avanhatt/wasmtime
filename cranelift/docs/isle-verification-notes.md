@@ -19,7 +19,7 @@ However, as a first step, we are interested in verifying just the first componen
 
 By "verifying" an individual rule, we can probably rely on simple semantic equivalence rather than something more complicated such as refinement, since Cranelift tries to avoid undefined behavior.
 
-The entire set of ISLE rules is designed to take terms from Cranelift's intermediate representation (CLIF) to a MachineInst form that closely matches a particular backend (arm, x86, etc). My (Alexa) current thinking is to first likely focus on arm, then x86. Note, however, that some rules write between intermediate terms rather than being "final" ISA instructions.
+The entire set of ISLE rules is designed to take terms from Cranelift's intermediate representation (CLIF) to a MachineInst form that closely matches a particular backend (arm, x86, etc). My current thinking is to first likely focus on arm, then x86. Note, however, that some rules write between intermediate terms rather than being "final" ISA instructions.
 
 In terms of verification, for a rule like:
 ```lisp
@@ -151,8 +151,15 @@ A vanilla named variable.
 Here, we have a bit of a roundabout extractor. `imm12_from_negated_value` itself is internal, but it calls out to an external extractor, `imm12_from_negated_u64`, which again returns conceptually `Some(-C)` if the negation of the right hand operand fits in 12 bits and otherwise aborts.
 
 And now, the right hand side:
-#### `value_reg` and `put_in_reg`
-These are external constructor that indicates that the results of this computation (or the value, respectively) will be placed in a register (CC Chris/Nick: correct?).
+#### `value_reg` 
+This is an external constructor that consumes a `Reg` and produces a `ValueRegs`, which is one or more registers that collectively represent a value. 
+For example, a 128 bit integer would be split into two high- and low-half 64 bit registers but would use the similar `value_regs`.  
+As a reminder, `ValueRegs` is the "return type" of the `lower` function on the left hand side, so our left and right hand sides type check.
+
+#### `put_in_reg`
+This is an external constructor takes a CLIF value and allocates a temporary register (of type  `Reg`) to hold the value. 
+It asserts that the CLIF value will fit in a single register (TODO: is this a rule abort or a dynamic failure?).
+There is also a similar `put_in_regs` for when the value might require multiple registers (e.g., an i128 value), which returns a `ValueRegs` instead of a single `Reg`.
 
 #### `subimm`
 This term is essentially an intermediate term (that is, this rule does not go "all the way"). 
