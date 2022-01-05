@@ -108,9 +108,15 @@ Cranelift's ISLE rule to capture this looks like this:
 
 To break down some components of this rule, starting with the left hand side: 
 #### `lower` 
-ISLE is typed, and rules must maintain the type of terms. Because CLIF and MachineInst do not share a type, Cranelift uses the `lower` term to indicate that following CLIF is being translated to a different type.
+ISLE is typed, and rules must maintain the type of terms. Because CLIF and MachineInst do not share a type, Cranelift uses the `lower` term to indicate that following CLIF is being translated to a different type:
+```lisp
+(decl lower (Inst) ValueRegs)
+```
 #### `has_type` 
 This is an _internal extractor_ (defined in ISLE itself) that can deconstruct a CLIF term into its constituent parts. Here, it breaks the term into type and instruction.
+```lisp
+(decl has_type (Type Inst) Inst)
+```
 #### `fits_in_64`
 In contrast, this is an _external extractor_ (defined in arbitrary Rust rather than ISLE) that again breaks apart a term. 
 The implementation looks like this:
@@ -131,7 +137,7 @@ That is, this piece takes the type extracted from the instruction by `has_type` 
 This is the actual CLIF add instruction.
 #### `x`
 A vanilla named variable.
-### `imm12_from_negated_value`
+#### `imm12_from_negated_value`
 Here, we have a bit of a roundabout extractor. `imm12_from_negated_value` itself is internal, but it calls out to an external extractor, `imm12_from_negated_u64`, which again returns conceptually `Some(-C)` if the negation of the right hand operand fits in 12 bits and otherwise aborts.
 
 And now, the right hand side:
@@ -147,3 +153,9 @@ Elsewhere, Cranelift lowers this term for each type:
 (rule (sub_imm $I64 x y) (sub64_imm x y))
 ```
 
+### Implications from this example
+
+Some scattered thoughts on what we can learn from this rule:
+1. The right hand side is not always ISA-level, we'll need semantics that span our own definitions for CLIF/intermediate terms and that leverage existing ISA semantics.
+2. Most rules use a mix of internal and external constructors. At first glance, many of the external constructors should be relatively simple to manually annotate as preconditions on the SMT terms.
+3. We need a high-level model of registers, though we can probably sidestep any sort of nuanced memory models. 
