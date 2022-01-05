@@ -6,7 +6,7 @@ ISLE source text is [compiled down into Rust
 code](https://github.com/bytecodealliance/wasmtime/tree/main/cranelift/isle#implementation).
 
 Documentation on the ISLE-Cranelift integration can be found
-[here](../isle-integration.md), and documentation on the language itself can be found
+[here](./isle-integration.md), and documentation on the language itself can be found
 [here](../isle/docs/language-reference.md).
 
 ## What do we mean by "verifying" ISLE rules?
@@ -17,9 +17,11 @@ However, as a first step, we are interested in verifying just the first componen
 1. Individual rules are declarative, small, mostly self-contained, and amenable to composable SMT-style verification.
 2. Prior related work, such as [Alive](https://web.ist.utl.pt/nuno.lopes/pubs/alive-pldi15.pdf), has shown that only looking at rules can still find impactful bugs.
 
-By "verifying" an individual rule, we can probably rely on simple semantic equivalence rather than something more complicated such as refinement, since Cranelift tries to avoid undefined behavior. 
+By "verifying" an individual rule, we can probably rely on simple semantic equivalence rather than something more complicated such as refinement, since Cranelift tries to avoid undefined behavior.
 
-Thus, for a rule like:
+The entire set of ISLE rules is designed to take terms from Cranelift's intermediate representation (CLIF) to a MachineInst form that closely matches a particular backend (arm, x86, etc). My (Alexa) current thinking is to first likely focus on arm, then x86. Note, however, that some rules write between intermediate terms rather than being "final" ISA instructions.
+
+In terms of verification, for a rule like:
 ```lisp
 (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
       (value_reg (add ty (put_in_reg x) (put_in_reg y))))
@@ -92,8 +94,9 @@ If we know `y` is actually some small constant value `C` (say, it fits in 12 bit
 
 Even further, if `y` itself uses a lot of bits, but it's _negation_ is small, we can use some clever rearranging to still use a single arithmetic instruction with an immediate:
     
-    sub r x (-C)
-    sub r x 0xfe
+    ; r = x + C == r = x - (-C)
+    sub r x (-C) 
+    sub r x 0xfe 
 
 Cranelift's ISLE rule to capture this looks like this:
 ```lisp
@@ -102,3 +105,45 @@ Cranelift's ISLE rule to capture this looks like this:
 (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
       (value_reg (sub_imm ty (put_in_reg x) y)))
 ```
+
+To break down some components of this rule, starting with the left hand side: 
+#### `lower` 
+ISLE is typed, and rules must maintain the type of terms. Because CLIF and MachineInst do not share a type, Cranelift uses the `lower` term to indicate that following CLIF is being translated to a different type.
+#### `has_type` 
+This is an _internal extractor_ (defined in ISLE itself) that can deconstruct a CLIF term into its constituent parts. Here, it breaks the term into type and instruction.
+#### `fits_in_64`
+In contrast, this is an _external extractor_ (defined in arbitrary Rust rather than ISLE) that again breaks apart a term. 
+The implementation looks like this:
+
+```rust
+fn fits_in_64(&mut self, ty: Type) -> Option<Type> {
+    if ty.bits() <= 64 {
+        Some(ty)
+    } else {
+        None
+    }
+}
+```
+
+Here, the function returning an `Option` indicates that the rule should only match on this left hand side if the result is `Some`. 
+That is, this piece takes the type extracted from the instruction by `has_type` and extracts the type `ty` if the condition is met and otherwise aborts the match.
+#### `iadd`
+This is the actual CLIF add instruction.
+#### `x`
+A vanilla named variable.
+### `imm12_from_negated_value`
+Here, we have a bit of a roundabout extractor. `imm12_from_negated_value` itself is internal, but it calls out to an external extractor, `imm12_from_negated_u64`, which again returns conceptually `Some(-C)` if the negation of the right hand operand fits in 12 bits and otherwise aborts.
+
+And now, the right hand side:
+#### `value_reg` and `put_in_reg`
+These are external constructor that indicates that the results of this computation (or the value, respectively) will be placed in a register (CC Chris/Nick: correct?).
+
+#### `subimm`
+This term is essentially an intermediate term (that is, this rule does not go "all the way"). 
+In this case, this allows Cranelift to avoid implementing the same logic for multiple types (`ty`). 
+Elsewhere, Cranelift lowers this term for each type:
+```lisp
+(rule (sub_imm (fits_in_32 _ty) x y) (sub32_imm x y))
+(rule (sub_imm $I64 x y) (sub64_imm x y))
+```
+
