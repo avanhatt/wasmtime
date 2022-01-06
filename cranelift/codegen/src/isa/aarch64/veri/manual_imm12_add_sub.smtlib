@@ -13,9 +13,9 @@
 
 
 (assert 
-    (let ((lhs (! (bvsub x y) :named LHS))
+    (let ((lhs (! (bvadd x y) :named LHS))
           (rhs (! (bvadd (bvadd ((_ extract 63 0) ((_ zero_extend 64) x)) 
-                                ((_ extract 63 0) ((_ zero_extend 64) (bvnot y)))) 
+                                ((_ extract 63 0) ((_ zero_extend 64) (bvnot (bvneg y)))))
                          #x0000000000000001) :named RHS)))
 
     (not 
