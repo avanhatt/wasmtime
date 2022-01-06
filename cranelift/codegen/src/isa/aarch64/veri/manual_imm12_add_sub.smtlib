@@ -1,0 +1,38 @@
+;; (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
+;;       (value_reg (sub_imm ty (put_in_reg x) y)))
+
+(set-option :produce-assignments true)
+
+(declare-const x (_ BitVec 64))
+(declare-const y (_ BitVec 64))
+
+;; The dumbest encoding, no function definitions or modeling immediate
+;; (assert (let ((lhs (bvadd x y))
+;;               (rhs (bvsub x (bvneg y))))
+;;     (not (=  lhs rhs))))
+
+
+(assert 
+    (let ((lhs (! (bvsub x y) :named LHS))
+          (rhs (! (bvadd (bvadd ((_ extract 63 0) ((_ zero_extend 64) x)) 
+                                ((_ extract 63 0) ((_ zero_extend 64) (bvnot y)))) 
+                         #x0000000000000001) :named RHS)))
+
+    (not 
+    (implies 
+        ;; Preconditions/assumptions
+        (and
+            ;; Close to (??)  "fits in 12 bits"
+            ;; (bvule (bvand y #xfffffffffffffe00) #x0000000000000000)
+            ;; Uncomment if no assumptions
+            true 
+        )
+        ;; Semantic equality of left and ride hand sides of rule
+        (=  lhs rhs)))))
+
+
+
+(check-sat)
+(get-model)
+(get-value (LHS))
+(get-value (RHS))
