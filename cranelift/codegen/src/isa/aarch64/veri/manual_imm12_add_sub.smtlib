@@ -1,3 +1,14 @@
+;; This is an exploratory, totally manual atttempy to verify a relatively simple
+;; ISLE rule for the aarch64 backend, via SMTLIB modeling. Right now, the file is 
+;; structured as 2 simple, commented-out models, then finally a model that uses
+;; `define-fun` to specify the semantics individual ISLE terms to verify something
+;; very close to the actual syntax of the rule. 
+
+;; Note: LISP syntax highlighting works well.
+
+;; This is the rule we want to model, currently (2021-01-07) found at:
+;; wasmtime/cranelift/codegen/src/isa/aarch64/lower.isle lines 42-43
+
 ;; (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
 ;;       (value_reg (sub_imm ty (put_in_reg x) y)))
 
