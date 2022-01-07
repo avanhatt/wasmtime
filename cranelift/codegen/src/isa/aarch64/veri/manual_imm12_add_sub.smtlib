@@ -63,12 +63,15 @@
 (define-fun put_in_reg ((v BV64)) BV64 v)
 
 ;; Should be "closer to" ISA
+;; This encoding is roughly taken from the SAIL ISLA result for `sub v0 v1 v2`, minus
+;; some `zero_extend` and `extract` calls
 (define-fun sub_imm ((ty Type) (a BV64) (i BV12)) BV64 
     (bvadd (bvadd x 
                   (bvnot ((_ zero_extend 52) i)))
            #x0000000000000001))
 
 (assert 
+    ;; Exciting: LHS and RHS terms are now exact string matches for the ISLE!
     (let ((lhs (! (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y)))) :named LHS))
           (rhs (! (value_reg (sub_imm ty (put_in_reg x) y)) :named RHS)))
 
