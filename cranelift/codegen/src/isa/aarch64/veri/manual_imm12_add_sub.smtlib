@@ -16,15 +16,29 @@
 
 (define-sort BV64 () (_ BitVec 64))
 (define-sort BV12 () (_ BitVec 12))
-(define-sort Type () (_ BitVec 64))
+
+;; Types: up to 2^7
+;; (extern const $B1 Type)
+;; (extern const $B8 Type)
+;; (extern const $B16 Type)
+;; (extern const $B32 Type)
+;; (extern const $B64 Type)
+;; (extern const $B128 Type)
+(define-sort Type () Int)
+
+(declare-const ty Type)
+(assert (or (= ty 1)
+            (= ty 8)
+            (= ty 16)
+            (= ty 32)
+            (= ty 64)
+            (= ty 128)))
 
 (declare-const x BV64)
 
 ;; For now, without inverting extractors, this needs to be 12
 ;; (declare-const y BV64)
 (declare-const y BV12)
-
-(declare-const ty BV64)
 
 ;; The dumbest encoding, no function definitions or modeling immediate
 ;; (assert (let ((lhs (bvadd x y))
@@ -58,16 +72,19 @@
 ;; Identity for now (eventually return type should be multiple/list of BV)
 (define-fun lower ((v BV64)) BV64 v)
 
-;; Use the same bv sort for Type for now, should probably replace 
+;; TODO: this needs to check that the value has this type and return the instruction
 (define-fun has_type ((ty Type) (i BV64)) BV64 i)
-(define-fun fits_in_64 ((v Type)) Type v)
+
+;; For now, return sentinel -1 if doesn't fit
+(define-fun fits_in_64 ((ty Type)) Type 
+    (ite (> ty 64) -1 ty))
 
 ;; CLIF function is straightforward
 (define-fun iadd ((a BV64) (b BV64)) BV64 (bvadd a b))
 
 ;; TODO: Not sure if we want to invert return and params for extractors?
 ;; Right now this function _consumes_ a BV12 and produces a BV64 - should we flip this?
-;; (define-fun imm12_from_negated_value ((v BV12)) BV64 (bvneg ((_ zero_extend 52) v)))
+(define-fun imm12_from_negated_value ((v BV12)) BV64 (bvneg ((_ zero_extend 52) v)))
 
 ;; Identity for now
 (define-fun value_reg ((v BV64)) BV64 v)
@@ -78,6 +95,8 @@
 ;; some `zero_extend` and `extract` calls
 (define-fun sub_imm ((ty Type) (a BV64) (i BV12)) BV64 
     (bvadd (bvadd x 
+                ;;           52 = 64-12
+                ;;  This should actually be expanded out for possible types: i1, i8, i16, i32, i64, i128
                   (bvnot ((_ zero_extend 52) i)))
            #x0000000000000001))
 
