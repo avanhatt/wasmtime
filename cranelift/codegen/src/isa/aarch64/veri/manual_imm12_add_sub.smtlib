@@ -12,6 +12,9 @@
 ;; (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
 ;;       (value_reg (sub_imm ty (put_in_reg x) y)))
 
+;; Run this file with:
+;;     z3 cranelift/codegen/src/isa/aarch64/veri/manual_imm12_add_sub.smtlib
+
 (set-option :produce-assignments true)
 
 (define-sort BV64 () (_ BitVec 64))
