@@ -4,6 +4,9 @@
 ;; `define-fun` to specify the semantics individual ISLE terms to verify something
 ;; very close to the actual syntax of the rule. 
 
+;; At the moment, this file treats register read/writes as no-ops (returning just
+;; the bitvector) and mostly hard-codes BV64, with some WIP for actual type logic.
+
 ;; Note: LISP syntax highlighting works well.
 
 ;; This is the rule we want to model, currently (2021-01-07) found at:
@@ -99,7 +102,7 @@
 (define-fun sub_imm ((ty Type) (a BV64) (i BV12)) BV64 
     (bvadd (bvadd x 
                 ;;           52 = 64-12
-                ;;  This should actually be expanded out for possible types: i1, i8, i16, i32, i64, i128
+                ;;  This should actually be expanded out for possible types: b1, b8, b16, b32, b64, b128
                   (bvnot ((_ zero_extend 52) i)))
            #x0000000000000001))
 
