@@ -158,7 +158,7 @@ As a reminder, `ValueRegs` is the "return type" of the `lower` function on the l
 
 #### `put_in_reg`
 This is an external constructor takes a CLIF value and allocates a temporary register (of type  `Reg`) to hold the value. 
-It asserts that the CLIF value will fit in a single register (TODO: is this a rule abort or a dynamic failure?).
+It asserts that the CLIF value will fit in a single register (or dynamically aborts with a panic). 
 There is also a similar `put_in_regs` for when the value might require multiple registers (e.g., an i128 value), which returns a `ValueRegs` instead of a single `Reg`.
 
 #### `subimm`
