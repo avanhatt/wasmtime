@@ -75,6 +75,7 @@ members = [
   "cranelift/isle/fuzz",
   "cranelift/isle/islec",
   "cranelift/serde",
+  "cranelift/veri-isle",
   "crates/bench-api",
   "crates/c-api",
   "crates/misc/run-examples",
