@@ -8,6 +8,9 @@ pub struct Var {
     pub ty: SMTType,
 }
 
-pub struct Context {
-    quantified_vars: Vec<Var>,
+pub struct Assumption {}
+
+pub struct AssumptionContext {
+    pub quantified_vars: Vec<Var>,
+    pub assumptions: Vec<Assumption>,
 }

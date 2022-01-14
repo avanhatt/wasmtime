@@ -1,10 +1,12 @@
 use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, Term, TermEnv, TypeEnv};
+use types::SMTType;
 
-use crate::assumptions::parse_lhs_to_assumptions;
+use crate::context::AssumptionContext;
 
 mod assumptions;
 mod context;
+mod external_semantics;
 mod types;
 
 // Conceptually returns: the list of definitions, plus a map symbol name -> type
@@ -22,8 +24,13 @@ fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     (termenv, typeenv)
 }
 
-fn verification_conditions_for_rule(rule: &Rule, termenv: &TermEnv, typeenv: &TypeEnv) {
-    let assumptions = parse_lhs_to_assumptions(&rule.lhs, termenv, typeenv);
+fn verification_conditions_for_rule(
+    rule: &Rule,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    ty: SMTType,
+) {
+    let assumption_ctx = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
 }
 
 // for simple iadd
@@ -110,6 +117,8 @@ fn main() {
 
     ";
 
+    let ty = SMTType::BitVector(8);
+
     let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
-    verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv);
+    verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
 }
