@@ -4,7 +4,7 @@
 use crate::context::{AssumptionContext, Var};
 use crate::types::SMTType;
 use cranelift_isle as isle;
-use isle::sema::{Pattern, Rule, Term, TermArgPattern, TermEnv, TypeEnv};
+use isle::sema::{Expr, Pattern, Rule, Term, TermArgPattern, TermEnv, TypeEnv};
 
 impl AssumptionContext {
     fn assumption_for_has_type(
@@ -18,9 +18,20 @@ impl AssumptionContext {
             Pattern::Term(tyid, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
                 let term_name = &typeenv.syms[term.name.index()];
+                dbg!(&arg_patterns);
 
+                match &arg_patterns[..] {
+                    [TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern))] => {
+                        dbg!(subpattern);
+                    },
+                    _ => (),
+                };
+
+                // For now, hard-code some cases we care about
                 match term_name.as_ref() {
-                    "fits_in_64" => (),
+                    "fits_in_64" =>  {
+
+                    },
                     _ => panic!("Unknown subterm for `has_type`"),
                 }
             }
