@@ -17,11 +17,3 @@ pub fn all_considered_bitvectors() -> Vec<SMTType> {
         SMTType::BitVector(128),
     ]
 }
-
-impl SMTType {
-    pub fn to_rsmt2_str(&self) -> String {
-        match self {
-            SMTType::BitVector(width) => format!("(_ BitVec {})", width),
-        }
-    }
-}
