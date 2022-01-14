@@ -1,39 +1,45 @@
 
 use cranelift_isle as isle;
+use isle::sema::{Pattern, TypeEnv, TermEnv, Rule, Term};
 
 // Conceptually returns: the list of definitions, plus a map symbol name -> type
-fn lex_and_parse_isle(s: &str) {
-    let lexer = isle::lexer::Lexer::from_str(s, "fuzz-input.isle");
-    let lexer = match lexer {
-        Ok(l) => l,
-        Err(_) => return,
-    };
+fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
+    let lexer = isle::lexer::Lexer::from_str(s, "fuzz-input.isle").unwrap();
 
-    let defs = isle::parser::parse(lexer);
-    dbg!(&defs);
-    let defs = match defs {
-        Ok(d) => d,
-        Err(_) => return,
-    };
+    // Parses to an AST
+    let defs = isle::parser::parse(lexer).expect("should parse");
 
-    // Note: instead of compiling, just get type env
+    // Produces maps from symbols/names to types
+    let mut typeenv = TypeEnv::from_ast(&defs).unwrap();
 
-    let code = isle::compile::compile(&defs);
-    dbg!(&code);
-    let code = match code {
-        Ok(c) => c,
-        Err(_) => return,
-    };
+    // Produces a list of terms, rules, and map from symbols to terms
+    let termenv = TermEnv::from_ast(&mut typeenv, &defs).unwrap();
+    (termenv, typeenv)
 }
 
-// trying to say from (lower (... (iadd (a) (b)))), make fresh vars a b of size TYPE
-fn extract_quantified_terms_from_lhs() {
+// takes in LHS definitions, ty map, produces SMTLIB list
+// for now, also trying to say from (lower (... (iadd (a) (b)))), make fresh vars a b of size TYPE
+fn parse_lhs_to_assumptions(pattern: &Pattern, termenv: &TermEnv, typeenv: &TypeEnv) {
+    match pattern {
+        Pattern::Term(tyid, termid, arg_patterns) => {
+            let term = &termenv.terms[termid.index()];
+            // Outermost term is lower
+            dbg!(&typeenv.syms[term.name.index()]);
+            dbg!(termenv.term_map[&term.name]);
+        }
+        Pattern::BindPattern(tyid, varid, pattern) => unimplemented!(),
+        Pattern::Var(tyid, varid) => unimplemented!(),
+        Pattern::ConstInt(tyid, i) => unimplemented!(),
+        Pattern::ConstPrim(tyid, sym) => unimplemented!(),
+        Pattern::Wildcard(tyid) => unimplemented!(),
+        Pattern::And(tyid, patterns) => unimplemented!(),
+    }
 
 }
-// maybe combined with above
-// takes in LHS definitions, ty map, produces SMTLIB list (and together)
-fn produce_assumptions_from_lhs() {
-    ()
+
+fn verification_conditions_for_rule(rule: &Rule, termenv: &TermEnv, typeenv: &TypeEnv) {
+    let assumptions = parse_lhs_to_assumptions(&rule.lhs, termenv, typeenv);
+
 }
 
 // for simple iadd
@@ -62,8 +68,7 @@ fn produce_assumptions_from_lhs() {
 // interpret term based on defs
 
 // FINAL QUERY:
-
-
+// !((let (boundvars ...) (assumptions => (= lhs rhs)))
 
 // 3 options for what to do when we see add
 // first, we could stop here and just annotate a defn for add
@@ -71,29 +76,59 @@ fn produce_assumptions_from_lhs() {
 // OR, we can _keep going_ and for now, dynamically fail if more than one rule with iadd on the LHS meets our TYPE condition
 
 // Other thoughts: 
-//  - seperate queries per-type and per top-level rule. Eventually probably want cacheing system. 
+//  - separate queries per-type and per top-level rule. Eventually probably want cacheing system. 
 //  - will we eventually position this as a symbolic executer? Something more specific? 
 
 
 fn main() {
-    let simple_iadd = "
-    (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
-        (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
+    let prelude = "
+    ;; TYPES
 
-    let iadd_to_sub = 
-    "
     (type Inst (primitive Inst))
     (type Type (primitive Type))
     (type Value (primitive Value))
+    (type Reg (primitive Reg))
     (type ValueRegs (primitive ValueRegs))
-    (decl lower (Inst) ValueRegs)
-    (decl has_type (Type Inst) Inst)
 
+    ;; EXTRACTORS
+
+    (decl lower (Inst) ValueRegs)
+
+    (decl has_type (Type Inst) Inst)
+    (extern extractor has_type has_type)
+
+    (decl fits_in_64 (Type) Type)
+    (extern extractor fits_in_64 fits_in_64)
+
+    (decl iadd (Value Value) Inst)
+    ;; TODO: replace with more rules
+    (extern extractor iadd iadd)
+
+    ;; CONSTRUCTORS
+
+    (decl value_reg (Reg) ValueRegs)
+    (extern constructor value_reg value_reg)
+
+    (decl add (Type Reg Reg) Reg)
+    ;; TODO: replace with more rules
+    (extern constructor add add)
+
+    (decl put_in_reg (Value) Reg)
+    (extern constructor put_in_reg put_in_reg)
+    ";
+
+    let simple_iadd = prelude.clone().to_owned() + "
+    (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
+        (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
+
+    let iadd_to_sub =  prelude.clone().to_owned() +
+    "
     (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
         (value_reg (sub_imm ty (put_in_reg x) y)))
 
     ";
 
 
-    lex_and_parse_isle(simple_iadd);
+    let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
+    verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv);
 }
