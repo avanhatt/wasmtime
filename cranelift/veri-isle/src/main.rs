@@ -2,6 +2,12 @@
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TypeEnv, TermEnv, Rule, Term};
 
+use crate::assumptions::{parse_lhs_to_assumptions};
+
+mod assumptions;
+mod context;
+mod types;
+
 // Conceptually returns: the list of definitions, plus a map symbol name -> type
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_str(s, "fuzz-input.isle").unwrap();
@@ -15,26 +21,6 @@ fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     // Produces a list of terms, rules, and map from symbols to terms
     let termenv = TermEnv::from_ast(&mut typeenv, &defs).unwrap();
     (termenv, typeenv)
-}
-
-// takes in LHS definitions, ty map, produces SMTLIB list
-// for now, also trying to say from (lower (... (iadd (a) (b)))), make fresh vars a b of size TYPE
-fn parse_lhs_to_assumptions(pattern: &Pattern, termenv: &TermEnv, typeenv: &TypeEnv) {
-    match pattern {
-        Pattern::Term(tyid, termid, arg_patterns) => {
-            let term = &termenv.terms[termid.index()];
-            // Outermost term is lower
-            dbg!(&typeenv.syms[term.name.index()]);
-            dbg!(termenv.term_map[&term.name]);
-        }
-        Pattern::BindPattern(tyid, varid, pattern) => unimplemented!(),
-        Pattern::Var(tyid, varid) => unimplemented!(),
-        Pattern::ConstInt(tyid, i) => unimplemented!(),
-        Pattern::ConstPrim(tyid, sym) => unimplemented!(),
-        Pattern::Wildcard(tyid) => unimplemented!(),
-        Pattern::And(tyid, patterns) => unimplemented!(),
-    }
-
 }
 
 fn verification_conditions_for_rule(rule: &Rule, termenv: &TermEnv, typeenv: &TypeEnv) {
