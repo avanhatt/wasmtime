@@ -1,8 +1,7 @@
-
 use cranelift_isle as isle;
-use isle::sema::{Pattern, TypeEnv, TermEnv, Rule, Term};
+use isle::sema::{Pattern, Rule, Term, TermEnv, TypeEnv};
 
-use crate::assumptions::{parse_lhs_to_assumptions};
+use crate::assumptions::parse_lhs_to_assumptions;
 
 mod assumptions;
 mod context;
@@ -25,7 +24,6 @@ fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
 
 fn verification_conditions_for_rule(rule: &Rule, termenv: &TermEnv, typeenv: &TypeEnv) {
     let assumptions = parse_lhs_to_assumptions(&rule.lhs, termenv, typeenv);
-
 }
 
 // for simple iadd
@@ -38,16 +36,14 @@ fn verification_conditions_for_rule(rule: &Rule, termenv: &TermEnv, typeenv: &Ty
 // assumptions we might wanna keep as SMTLIB for now, later might want our own IR
 // if Rust can easily tell you the assumption is false, bail
 
-
 // LHS TERM
 // see that iadd terminates our understanding, need to get it from somewhere
-// see that 
-// [1] 
-// (decl-fun (has_type ty i) i) 
+// see that
+// [1]
+// (decl-fun (has_type ty i) i)
 // (decl-fun (iadd i j) (bvadd i j))
-// [2] 
+// [2]
 // (has_type (fits_in_64 ty) (iadd x y))
-
 
 // RHS TERM
 // look up that in our interpreter context that we have defns for ty, x, y
@@ -61,10 +57,9 @@ fn verification_conditions_for_rule(rule: &Rule, termenv: &TermEnv, typeenv: &Ty
 // OR, we can _keep going_ and split state for every rule with iadd on LHS
 // OR, we can _keep going_ and for now, dynamically fail if more than one rule with iadd on the LHS meets our TYPE condition
 
-// Other thoughts: 
-//  - separate queries per-type and per top-level rule. Eventually probably want cacheing system. 
-//  - will we eventually position this as a symbolic executer? Something more specific? 
-
+// Other thoughts:
+//  - separate queries per-type and per top-level rule. Eventually probably want cacheing system.
+//  - will we eventually position this as a symbolic executer? Something more specific?
 
 fn main() {
     let prelude = "
@@ -103,17 +98,17 @@ fn main() {
     (extern constructor put_in_reg put_in_reg)
     ";
 
-    let simple_iadd = prelude.clone().to_owned() + "
+    let simple_iadd = prelude.clone().to_owned()
+        + "
     (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
         (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
 
-    let iadd_to_sub =  prelude.clone().to_owned() +
-    "
+    let iadd_to_sub = prelude.clone().to_owned()
+        + "
     (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
         (value_reg (sub_imm ty (put_in_reg x) y)))
 
     ";
-
 
     let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
     verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv);
