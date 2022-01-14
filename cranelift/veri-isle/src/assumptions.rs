@@ -7,6 +7,8 @@ use cranelift_isle as isle;
 use isle::sema::{Expr, Pattern, Rule, Term, TermArgPattern, TermEnv, TypeEnv};
 
 impl AssumptionContext {
+
+    // Add assumptions to the context from `has_type`
     fn assumption_for_has_type(
         &mut self,
         pattern: &Pattern,
@@ -20,17 +22,16 @@ impl AssumptionContext {
                 let term_name = &typeenv.syms[term.name.index()];
                 dbg!(&arg_patterns);
 
+                // TODO: can we pull the name "ty" from this term?
                 match &arg_patterns[..] {
-                    [TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern))] => {
-                        dbg!(subpattern);
-                    },
-                    _ => (),
+                    [TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern))] 
+                        => (),
+                    _ => unimplemented!(),
                 };
 
                 // For now, hard-code some cases we care about
                 match term_name.as_ref() {
                     "fits_in_64" =>  {
-
                     },
                     _ => panic!("Unknown subterm for `has_type`"),
                 }
