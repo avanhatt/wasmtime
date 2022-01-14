@@ -178,35 +178,12 @@ dependencies = [
 
 [[package]]
 name = "bindgen"
-version = "0.58.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f8523b410d7187a43085e7e064416ea32ded16bd0a4e6fc025e21616d01258f"
-dependencies = [
- "bitflags",
- "cexpr 0.4.0",
- "clang-sys",
- "clap",
- "env_logger 0.8.3",
- "lazy_static",
- "lazycell",
- "log",
- "peeking_take_while",
- "proc-macro2",
- "quote",
- "regex",
- "rustc-hash",
- "shlex",
- "which 3.1.1",
-]
-
-[[package]]
-name = "bindgen"
 version = "0.59.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453c49e5950bb0eb63bb3df640e31618846c89d5b7faa54040d76e98e0134375"
 dependencies = [
  "bitflags",
- "cexpr 0.5.0",
+ "cexpr",
  "clang-sys",
  "lazy_static",
  "lazycell",
@@ -407,20 +384,11 @@ dependencies = [
 
 [[package]]
 name = "cexpr"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4aedb84272dbe89af497cf81375129abda4fc0a9e7c5d317498c15cc30c0d27"
-dependencies = [
- "nom 5.1.2",
-]
-
-[[package]]
-name = "cexpr"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db507a7679252d2276ed0dd8113c6875ec56d3089f9225b2b42c30cc1f8e5c89"
 dependencies = [
- "nom 6.1.2",
+ "nom",
 ]
 
 [[package]]
@@ -1150,6 +1118,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "error-chain"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d2f06b9cac1506ece98fe3231e3cc9c4410ec3d5b1f24ae1c8946f0742cdefc"
+dependencies = [
+ "backtrace",
+ "version_check",
+]
+
+[[package]]
 name = "example-fib-debug-wasm"
 version = "0.0.0"
 
@@ -1737,16 +1715,6 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "memoffset",
-]
-
-[[package]]
-name = "nom"
-version = "5.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffb4262d26ed83a1c0a33a38fe2bb15797329c85770da05e6b828ddb782627af"
-dependencies = [
- "memchr",
- "version_check",
 ]
 
 [[package]]
@@ -2468,6 +2436,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rsmt2"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4affc8a99241732d2e214728974bd002bf3aa1d114760cf5c3ac6c1fd5650c7d"
+dependencies = [
+ "error-chain",
+]
+
+[[package]]
 name = "run-examples"
 version = "0.19.0"
 dependencies = [
@@ -3094,7 +3071,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f03138f85fb1a85b1324bd34f29491c6592fff9bcc8fb7d4176d2166185d2de"
 dependencies = [
- "bindgen 0.59.1",
+ "bindgen",
  "cc",
  "cfg-if 0.1.10",
 ]
@@ -3118,7 +3095,7 @@ dependencies = [
  "fslock",
  "lazy_static",
  "libc",
- "which 4.2.2",
+ "which",
 ]
 
 [[package]]
@@ -3132,8 +3109,7 @@ name = "veri-isle"
 version = "0.1.0"
 dependencies = [
  "cranelift-isle",
- "z3",
- "z3-sys",
+ "rsmt2",
 ]
 
 [[package]]
@@ -3742,15 +3718,6 @@ dependencies = [
 
 [[package]]
 name = "which"
-version = "3.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d011071ae14a2f6671d0b74080ae0cd8ebf3a6f8c9589a2cd45f23126fe29724"
-dependencies = [
- "libc",
-]
-
-[[package]]
-name = "which"
 version = "4.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea187a8ef279bc014ec368c27a920da2024d2a711109bfbe3440585d5cf27ad9"
@@ -3880,27 +3847,6 @@ checksum = "5c3eb43ef4c9cf03b367689d487f745639655d670f2208b1c5f544cfb506b640"
 dependencies = [
  "rawbytes",
  "zeroize",
-]
-
-[[package]]
-name = "z3"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d25754b4bf4516a65d0e596ea9c1f0082224bdf20823a37fdd9111fa08d5bf48"
-dependencies = [
- "lazy_static",
- "log",
- "z3-sys",
-]
-
-[[package]]
-name = "z3-sys"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c82dcbc58be4bf1994c520066cb2bd6c3d36aed0fdc57244f34d277421986a6"
-dependencies = [
- "bindgen 0.58.1",
- "cmake",
 ]
 
 [[package]]
