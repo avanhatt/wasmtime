@@ -668,15 +668,6 @@ impl Inst {
         }
     }
 
-    pub(crate) fn neg(size: OperandSize, src: Writable<Reg>) -> Inst {
-        debug_assert_eq!(src.to_reg().get_class(), RegClass::I64);
-        Inst::Neg {
-            size,
-            src: src.to_reg(),
-            dst: src,
-        }
-    }
-
     pub(crate) fn div(size: OperandSize, signed: bool, divisor: RegMem) -> Inst {
         divisor.assert_regclass_is(RegClass::I64);
         Inst::Div {
@@ -3053,6 +3044,12 @@ impl MachInst for Inst {
     }
 
     fn gen_move(dst_reg: Writable<Reg>, src_reg: Reg, ty: Type) -> Inst {
+        log::trace!(
+            "Inst::gen_move {:?} -> {:?} (type: {:?})",
+            src_reg,
+            dst_reg.to_reg(),
+            ty
+        );
         let rc_dst = dst_reg.to_reg().get_class();
         let rc_src = src_reg.get_class();
         // If this isn't true, we have gone way off the rails.

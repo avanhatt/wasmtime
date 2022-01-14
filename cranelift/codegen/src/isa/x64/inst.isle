@@ -4,6 +4,7 @@
 
 (type MInst extern
       (enum (Nop (len u8))
+            (Ud2 (trap_code TrapCode))
             (AluRmiR (size OperandSize)
                      (op AluRmiROpcode)
                      (src1 Reg)
@@ -54,6 +55,8 @@
             (MovsxRmR (ext_mode ExtMode)
                       (src RegMem)
                       (dst WritableReg))
+            (Mov64MR (src SyntheticAmode)
+                     (dst WritableReg))
             (Cmove (size OperandSize)
                    (cc CC)
                    (consequent RegMem)
@@ -70,7 +73,11 @@
             (Not (size OperandSize)
                  (src Reg)
                  (dst WritableReg))
-))
+            (Neg (size OperandSize)
+                 (src Reg)
+                 (dst WritableReg))
+            (LoadEffectiveAddress (addr SyntheticAmode)
+                                  (dst WritableReg))))
 
 (type OperandSize extern
       (enum Size8
@@ -318,6 +325,17 @@
 
 (type SyntheticAmode extern (enum))
 
+(decl synthetic_amode_to_reg_mem (SyntheticAmode) RegMem)
+(extern constructor synthetic_amode_to_reg_mem synthetic_amode_to_reg_mem)
+
+(type Amode extern (enum))
+
+(decl amode_imm_reg_reg_shift (u32 Reg Reg u8) Amode)
+(extern constructor amode_imm_reg_reg_shift amode_imm_reg_reg_shift)
+
+(decl amode_to_synthetic_amode (Amode) SyntheticAmode)
+(extern constructor amode_to_synthetic_amode amode_to_synthetic_amode)
+
 (type ShiftKind extern
       (enum ShiftLeft
             ShiftRightLogical
@@ -438,6 +456,11 @@
 
 ;;;; Helpers for Sign/Zero Extending ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(type ExtKind extern
+      (enum None
+            SignExtend
+            ZeroExtend))
+
 (type ExtendKind (enum Sign Zero))
 
 (type ExtMode extern (enum BL BQ WL WQ LQ))
@@ -514,9 +537,9 @@
       (let ((wr WritableReg (temp_writable_reg ty))
             (r Reg (writable_reg_to_reg wr))
             (_ Unit (emit (MInst.XmmRmR (sse_cmp_op $I32X4)
-                                         r
-                                         (RegMem.Reg r)
-                                         wr))))
+                                        r
+                                        (RegMem.Reg r)
+                                        wr))))
         r))
 
 ;; Helper for creating an SSE register holding an `i64x2` from two `i64` values.
@@ -549,6 +572,40 @@
                                  (RegMem.Reg r)
                                  (OperandSize.Size32))))
 
+;;;; Helpers for Emitting Loads ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Load a value into a register.
+(decl x64_load (Type SyntheticAmode ExtKind) Reg)
+
+(rule (x64_load (fits_in_32 ty) addr (ExtKind.SignExtend))
+      (movsx ty
+             (ext_mode (ty_bytes ty) 8)
+             (synthetic_amode_to_reg_mem addr)))
+
+(rule (x64_load $I64 addr _ext_kind)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.Mov64MR addr dst))))
+        (writable_reg_to_reg dst)))
+
+(rule (x64_load $F32 addr _ext_kind)
+      (xmm_unary_rm_r (SseOpcode.Movss)
+                      (synthetic_amode_to_reg_mem addr)))
+
+(rule (x64_load $F64 addr _ext_kind)
+      (xmm_unary_rm_r (SseOpcode.Movsd)
+                      (synthetic_amode_to_reg_mem addr)))
+
+(rule (x64_load $F32X4 addr _ext_kind)
+      (xmm_unary_rm_r (SseOpcode.Movups)
+                      (synthetic_amode_to_reg_mem addr)))
+
+(rule (x64_load $F64X2 addr _ext_kind)
+      (xmm_unary_rm_r (SseOpcode.Movupd)
+                      (synthetic_amode_to_reg_mem addr)))
+
+(rule (x64_load (multi_lane _bits _lanes) addr _ext_kind)
+      (xmm_unary_rm_r (SseOpcode.Movdqu)
+                      (synthetic_amode_to_reg_mem addr)))
 
 ;;;; Instruction Constructors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -643,8 +700,8 @@
 ;;
 ;; Use `m_` prefix (short for "mach inst") to disambiguate with the ISLE-builtin
 ;; `and` operator.
-(decl m_and (Type Reg RegMemImm) Reg)
-(rule (m_and ty src1 src2)
+(decl x64_and (Type Reg RegMemImm) Reg)
+(rule (x64_and ty src1 src2)
       (alu_rmi_r ty
                  (AluRmiROpcode.And)
                  src1
@@ -670,7 +727,7 @@
 (decl imm (Type u64) Reg)
 
 ;; Integer immediates.
-(rule (imm ty simm64)
+(rule (imm (fits_in_64 ty) simm64)
       (let ((dst WritableReg (temp_writable_reg ty))
             (size OperandSize (operand_size_of_type_32_64 ty))
             (_ Unit (emit (MInst.Imm size simm64 dst))))
@@ -695,7 +752,7 @@
         (writable_reg_to_reg dst)))
 
 ;; Special case for integer zero immediates: turn them into an `xor r, r`.
-(rule (imm ty 0)
+(rule (imm (fits_in_64 ty) 0)
       (let ((wr WritableReg (temp_writable_reg ty))
             (r Reg (writable_reg_to_reg wr))
             (size OperandSize (operand_size_of_type_32_64 ty))
@@ -712,9 +769,9 @@
       (let ((wr WritableReg (temp_writable_reg ty))
             (r Reg (writable_reg_to_reg wr))
             (_ Unit (emit (MInst.XmmRmR (sse_xor_op ty)
-                                         r
-                                         (RegMem.Reg r)
-                                         wr))))
+                                        r
+                                        (RegMem.Reg r)
+                                        wr))))
         r))
 
 ;; Special case for `f32` zero immediates to use `xorps`.
@@ -753,9 +810,15 @@
 
 ;; Helper for creating `rotl` instructions (prefixed with "m_", short for "mach
 ;; inst", to disambiguate this from clif's `rotl`).
-(decl m_rotl (Type Reg Imm8Reg) Reg)
-(rule (m_rotl ty src1 src2)
+(decl x64_rotl (Type Reg Imm8Reg) Reg)
+(rule (x64_rotl ty src1 src2)
       (shift_r ty (ShiftKind.RotateLeft) src1 src2))
+
+;; Helper for creating `rotr` instructions (prefixed with "m_", short for "mach
+;; inst", to disambiguate this from clif's `rotr`).
+(decl x64_rotr (Type Reg Imm8Reg) Reg)
+(rule (x64_rotr ty src1 src2)
+      (shift_r ty (ShiftKind.RotateRight) src1 src2))
 
 ;; Helper for creating `shl` instructions.
 (decl shl (Type Reg Imm8Reg) Reg)
@@ -1236,10 +1299,25 @@
                                            dst))))
         (writable_reg_to_reg dst)))
 
+;; Helper for creating `psllw` instructions.
+(decl psllw (Reg RegMemImm) Reg)
+(rule (psllw src1 src2)
+      (xmm_rmi_reg (SseOpcode.Psllw) src1 src2))
+
+;; Helper for creating `pslld` instructions.
+(decl pslld (Reg RegMemImm) Reg)
+(rule (pslld src1 src2)
+      (xmm_rmi_reg (SseOpcode.Pslld) src1 src2))
+
 ;; Helper for creating `psllq` instructions.
 (decl psllq (Reg RegMemImm) Reg)
 (rule (psllq src1 src2)
       (xmm_rmi_reg (SseOpcode.Psllq) src1 src2))
+
+;; Helper for creating `psrlw` instructions.
+(decl psrlw (Reg RegMemImm) Reg)
+(rule (psrlw src1 src2)
+      (xmm_rmi_reg (SseOpcode.Psrlw) src1 src2))
 
 ;; Helper for creating `psrld` instructions.
 (decl psrld (Reg RegMemImm) Reg)
@@ -1353,3 +1431,22 @@
             (size OperandSize (operand_size_of_type_32_64 ty))
             (_ Unit (emit (MInst.Not size src dst))))
         (writable_reg_to_reg dst)))
+
+;; Helper for creating `neg` instructions.
+(decl neg (Type Reg) Reg)
+(rule (neg ty src)
+      (let ((dst WritableReg (temp_writable_reg ty))
+            (size OperandSize (operand_size_of_type_32_64 ty))
+            (_ Unit (emit (MInst.Neg size src dst))))
+        (writable_reg_to_reg dst)))
+
+(decl lea (SyntheticAmode) Reg)
+(rule (lea addr)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.LoadEffectiveAddress addr dst))))
+        (writable_reg_to_reg dst)))
+
+;; Helper for creating `ud2` instructions.
+(decl ud2 (TrapCode) SideEffectNoResult)
+(rule (ud2 code)
+      (SideEffectNoResult.Inst (MInst.Ud2 code)))
