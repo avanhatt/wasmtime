@@ -9,11 +9,11 @@ mod context;
 mod external_semantics;
 mod types;
 
-// Conceptually returns: the list of definitions, plus a map symbol name -> type
+// Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_str(s, "fuzz-input.isle").unwrap();
 
-    // Parses to an AST
+    // Parses to an AST, as a list of definitions
     let defs = isle::parser::parse(lexer).expect("should parse");
 
     // Produces maps from symbols/names to types
@@ -117,6 +117,7 @@ fn main() {
 
     ";
 
+    // For now, just a small specific type
     let ty = SMTType::BitVector(8);
 
     let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
