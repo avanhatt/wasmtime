@@ -3,9 +3,11 @@ use isle::sema::{Rule, TermEnv, TypeEnv};
 use types::SMTType;
 
 use crate::assumptions::AssumptionContext;
+use crate::interp::InterpContext;
 
 mod assumptions;
 mod external_semantics;
+mod interp;
 mod smt_ast;
 mod types;
 
@@ -15,7 +17,6 @@ fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
 
     // Parses to an AST, as a list of definitions
     let defs = isle::parser::parse(lexer).expect("should parse");
-    dbg!(&defs);
 
     // Produces maps from symbols/names to types
     let mut typeenv = TypeEnv::from_ast(&defs).unwrap();
@@ -31,8 +32,14 @@ fn verification_conditions_for_rule(
     typeenv: &TypeEnv,
     ty: SMTType,
 ) {
+    let mut interp_ctx = InterpContext {};
     let assumption_ctx = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-    dbg!(assumption_ctx);
+    let lhs = interp_ctx.interp_lhs(&rule.lhs, &assumption_ctx, termenv, typeenv, ty);
+    let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
+
+    dbg!(rhs);
+
+    // dbg!(assumption_ctx);
 }
 
 // for simple iadd

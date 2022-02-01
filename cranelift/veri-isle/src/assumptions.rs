@@ -105,9 +105,7 @@ impl AssumptionContext {
             Pattern::Term(tyid, termid, arg_patterns) => {
                 // TODO: recursive call
             }
-            _ => {
-                dbg!(pattern);
-            }
+            _ => unimplemented!(),
         }
     }
 
@@ -125,8 +123,6 @@ impl AssumptionContext {
             Pattern::Term(tyid, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
                 let term_name = &typeenv.syms[term.name.index()];
-                dbg!(&term_name);
-
                 for (i, arg) in arg_patterns.iter().enumerate() {
                     // Create new bound variable
                     let var = BoundVar {
@@ -148,7 +144,7 @@ impl AssumptionContext {
 
     /// Takes in LHS definitions, ty map, produces SMTLIB list
     /// For now, also trying to say from (lower (... (iadd (a) (b)))), make fresh vars a b of size TYPE
-    fn parse_lhs_to_assumptions(
+    fn lhs_to_assumptions(
         &mut self,
         pattern: &Pattern,
         termenv: &TermEnv,
@@ -172,7 +168,7 @@ impl AssumptionContext {
             assumptions: vec![],
             var_map: HashMap::new(),
         };
-        ctx.parse_lhs_to_assumptions(lhs, termenv, typeenv, ty);
+        ctx.lhs_to_assumptions(lhs, termenv, typeenv, ty);
         ctx
     }
 }
