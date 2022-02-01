@@ -64,9 +64,10 @@ impl AssumptionContext {
                     "fits_in_64" => match ty {
                         SMTType::BitVector(s) => {
                             if s <= 64 {
+                                println!("Assume: ty == {}", s);
                                 self.assumptions.push(Assumption {
                                     assume: BoolExpr::Eq(
-                                        Box::new(BVExpr::Const(s as i128)),
+                                        Box::new(BVExpr::Const(s as i128, ty.width())),
                                         Box::new(BVExpr::Var("ty".to_string())),
                                     ),
                                 })

@@ -7,6 +7,14 @@ pub enum SMTType {
     BitVector(usize),
 }
 
+impl SMTType {
+    pub fn width(&self) -> i8 {
+        match self {
+            &Self::BitVector(s) => s as i8
+        }
+    }
+}
+
 pub fn all_considered_bitvectors() -> Vec<SMTType> {
     vec![
         SMTType::BitVector(1),

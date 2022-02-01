@@ -17,7 +17,7 @@ pub enum BoolExpr {
 
 #[derive(Clone, Debug)]
 pub enum BVExpr {
-    Const(i128),
+    Const(i128, i8),
     Var(String),
     BVNeg(Box<BVExpr>),
     BVNot(Box<BVExpr>),

@@ -4,7 +4,7 @@
 //! Right now, this uses the rsmt2 crate's datatypes.
 
 use crate::assumptions::AssumptionContext;
-use crate::smt_ast::BVExpr;
+use crate::smt_ast::{BVExpr, BoolExpr};
 use crate::types::SMTType;
 use rsmt2::Solver;
 
@@ -18,7 +18,7 @@ impl SMTType {
 
 pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
     match e {
-        BVExpr::Const(i) => i.to_string(),
+        BVExpr::Const(i, s) => format!("(_ bv{} {})", i, s),
         BVExpr::Var(s) => s,
         BVExpr::BVNeg(x) => format!("(bvneg {})", bv_expr_to_rsmt2_str(*x)),
         BVExpr::BVNot(x) => format!("(bvnot {})", bv_expr_to_rsmt2_str(*x)),
@@ -35,6 +35,34 @@ pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
     }
 }
 
+pub fn bool_expr_to_rsmt2_str(e: BoolExpr) -> String {
+    match e {
+        BoolExpr::True => "true".to_string(),
+        BoolExpr::False => "false".to_string(),
+        BoolExpr::Not(x) => format!("(not {})", bool_expr_to_rsmt2_str(*x)),
+        BoolExpr::And(x, y) => format!(
+            "(and {} {})",
+            bool_expr_to_rsmt2_str(*x),
+            bool_expr_to_rsmt2_str(*y)
+        ),
+        BoolExpr::Or(x, y) => format!(
+            "(or {} {})",
+            bool_expr_to_rsmt2_str(*x),
+            bool_expr_to_rsmt2_str(*y)
+        ),
+        BoolExpr::Imp(x, y) => format!(
+            "(=> {} {})",
+            bool_expr_to_rsmt2_str(*x),
+            bool_expr_to_rsmt2_str(*y)
+        ),
+        BoolExpr::Eq(x, y) => format!(
+            "(= {} {})",
+            bv_expr_to_rsmt2_str(*x),
+            bv_expr_to_rsmt2_str(*y)
+        ),
+    }
+}
+
 /// Overall query: (not (=> <assumptions> (= <LHS> <RHS>)))
 pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType) {
     let mut solver = Solver::default_z3(()).unwrap();
@@ -44,11 +72,23 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType
         solver.declare_const(v.name, v.ty.to_rsmt2_str());
     }
 
+    let assumptions : Vec<String> = actx.assumptions.iter().map(|a| {
+        bool_expr_to_rsmt2_str(a.assume.clone())
+    }).collect();
+    let assumption_str = format!("(and {})", assumptions.join(" "));
+
     let lhs_s = bv_expr_to_rsmt2_str(lhs);
     let rhs_s = bv_expr_to_rsmt2_str(rhs);
 
-    solver.assert(format!("(not (=> {} (= {} {})))", "true", lhs_s, rhs_s));
 
-    let is_sat = solver.check_sat();
-    dbg!(is_sat);
+    let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
+    println!("Running query: {}", query);
+    solver.assert(query);
+
+    match solver.check_sat() {
+        Ok(true) => println!("Verification failed"), 
+        Ok(false) => println!("Verification succeeded"), 
+        Err(err) => { println!("Error!"); dbg!(err); },
+    }
+
 }
