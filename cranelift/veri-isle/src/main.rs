@@ -3,6 +3,7 @@ use isle::sema::{Rule, TermEnv, TypeEnv};
 use types::SMTType;
 
 use crate::assumptions::AssumptionContext;
+use crate::external_semantics::run_solver;
 use crate::interp::InterpContext;
 
 mod assumptions;
@@ -37,9 +38,10 @@ fn verification_conditions_for_rule(
     let lhs = interp_ctx.interp_lhs(&rule.lhs, &assumption_ctx, termenv, typeenv, ty);
     let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
 
-    dbg!(rhs);
+    // dbg!(lhs);
+    // dbg!(rhs);
 
-    // dbg!(assumption_ctx);
+    run_solver(assumption_ctx, lhs, rhs, ty);
 }
 
 // for simple iadd
