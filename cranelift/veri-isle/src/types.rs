@@ -1,7 +1,7 @@
 //! Types for translation to SMT.
 //!
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SMTType {
     // logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     BitVector(usize),

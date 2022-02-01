@@ -2,10 +2,10 @@ use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, Term, TermEnv, TypeEnv};
 use types::SMTType;
 
-use crate::context::AssumptionContext;
+use crate::assumptions::AssumptionContext;
 
 mod assumptions;
-mod context;
+mod smt_ast;
 mod external_semantics;
 mod types;
 

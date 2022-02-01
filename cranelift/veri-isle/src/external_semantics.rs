@@ -16,13 +16,24 @@ impl SMTType {
 
 // let mut solver = Solver::default_z3(()).unwrap()
 
-fn get_external_semantics(solver: &mut Solver<()>, name: &str, ty: SMTType) {
+fn add_external_semantics(solver: &mut Solver<()>, name: &str, ty: SMTType) {
     let arg_ty = ty.to_rsmt2_str();
     match name {
         "fits_in_64" => {
             // Return the type, identity fn
             solver
                 .define_fun("fits_in_64", &[("t", arg_ty.clone())], arg_ty, "t")
+                .unwrap();
+        }
+        "iadd" => {
+            // Return the type, identity fn
+            solver
+                .define_fun(
+                    "iadd",
+                    &[("x", arg_ty.clone()), ("y", arg_ty.clone())],
+                    arg_ty,
+                    "(bvadd x y)",
+                )
                 .unwrap();
         }
         _ => unimplemented!(),
