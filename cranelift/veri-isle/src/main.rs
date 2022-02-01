@@ -5,8 +5,8 @@ use types::SMTType;
 use crate::assumptions::AssumptionContext;
 
 mod assumptions;
-mod smt_ast;
 mod external_semantics;
+mod smt_ast;
 mod types;
 
 // Produces the two ISLE-defined structs with type and term environments

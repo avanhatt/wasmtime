@@ -1,13 +1,14 @@
 //! Build assumptions from the left hand side of a rule.
 //!
 
+use crate::smt_ast::{BVExpr, BoolExpr};
 use crate::types::SMTType;
-use crate::smt_ast::{BoolExpr, BVExpr};
 
 use cranelift_isle as isle;
 use isle::sema::{Expr, Pattern, Rule, Term, TermArgPattern, TermEnv, TypeEnv};
 
-pub struct Var {
+#[derive(Clone, Debug)]
+pub struct BoundVar {
     pub name: String,
     pub ty: SMTType,
 }
@@ -17,10 +18,9 @@ pub struct Assumption {
 }
 
 pub struct AssumptionContext {
-    pub quantified_vars: Vec<Var>,
+    pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Assumption>,
 }
-
 
 impl AssumptionContext {
     // Add assumptions to the context from `has_type`
@@ -40,7 +40,7 @@ impl AssumptionContext {
                 match &arg_patterns[..] {
                     [TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern))] => {
                         match **subpattern {
-                            Pattern::Wildcard(..) => self.quantified_vars.push(Var {
+                            Pattern::Wildcard(..) => self.quantified_vars.push(BoundVar {
                                 name: "ty".to_string(),
                                 ty: ty.clone(),
                             }),
@@ -52,24 +52,23 @@ impl AssumptionContext {
 
                 // For now, hard-code some cases we care about
                 match term_name.as_ref() {
-                    "fits_in_64" => {
-                        match ty {
-                            SMTType::BitVector(s) => {
-                                if s <= 64 {
-                                    self.assumptions.push(Assumption {
-                                        assume: BoolExpr::Eq(Box::new(
-                                            BVExpr::Const(s as i128)), 
-                                            Box::new(BVExpr::Var("ty".to_string())))
-                                    })
-                                } else {
-                                    print!(
-                                        "Rule does not apply for bitvector type {:?}, fails {}",
-                                        ty, term_name
-                                    )
-                                }
+                    "fits_in_64" => match ty {
+                        SMTType::BitVector(s) => {
+                            if s <= 64 {
+                                self.assumptions.push(Assumption {
+                                    assume: BoolExpr::Eq(
+                                        Box::new(BVExpr::Const(s as i128)),
+                                        Box::new(BVExpr::Var("ty".to_string())),
+                                    ),
+                                })
+                            } else {
+                                print!(
+                                    "Rule does not apply for bitvector type {:?}, fails {}",
+                                    ty, term_name
+                                )
                             }
                         }
-                    }
+                    },
                     _ => panic!("Unknown subterm for `has_type`"),
                 }
             }
@@ -77,16 +76,41 @@ impl AssumptionContext {
         };
     }
 
-    // This should add bound variables and assumptions to the AssumptionContext, but now 
-    // interpret the actual instruction
-    fn assumption_for_inst(
+    fn assumption_for_pattern(
         &mut self,
         pattern: &Pattern,
+        var: &BoundVar,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
         ty: SMTType,
     ) {
         match pattern {
+            // If we hit a bound wildcard, then the bound variable has no assumptions
+            Pattern::BindPattern(tyid, varid, subpat) => match **subpat {
+                Pattern::Wildcard(..) => {
+                    println!("No assumptions for: {:?} ({:?})", var.name, var.ty);
+                }
+                _ => unimplemented!("Subpattern"),
+            },
+            Pattern::Term(tyid, termid, arg_patterns) => {
+                // TODO: recursive call
+            }
+            _ => {
+                dbg!(pattern);
+            }
+        }
+    }
+
+    // This should add bound variables and assumptions to the AssumptionContext, but now
+    // interpret the actual instruction
+    fn assumption_for_inst(
+        &mut self,
+        inst: &Pattern,
+        termenv: &TermEnv,
+        typeenv: &TypeEnv,
+        ty: SMTType,
+    ) {
+        match inst {
             // For now, assume all args have the same type, `ty: SMTType`
             Pattern::Term(tyid, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
@@ -95,13 +119,15 @@ impl AssumptionContext {
 
                 for (i, arg) in arg_patterns.iter().enumerate() {
                     // Create new bound variable
-                    let var = Var {
+                    let var = BoundVar {
                         name: format!("arg_{}", i).to_string(),
                         ty: ty.clone(),
                     };
-                    self.quantified_vars.push(var);
+                    self.quantified_vars.push(var.clone());
                     match arg {
-                        TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern)) => {},
+                        TermArgPattern::Pattern(pat) => {
+                            self.assumption_for_pattern(pat, &var, termenv, typeenv, ty)
+                        }
                         _ => unimplemented!(),
                     }
                 }

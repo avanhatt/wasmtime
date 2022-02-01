@@ -1,9 +1,6 @@
-
-
-
 pub enum Term {
     BoolExpr(BoolExpr),
-    BVExpr(BVExpr)
+    BVExpr(BVExpr),
 }
 
 pub enum BoolExpr {
