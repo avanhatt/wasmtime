@@ -4,8 +4,10 @@
 use crate::smt_ast::{BVExpr, BoolExpr};
 use crate::types::SMTType;
 
+use std::collections::HashMap;
+
 use cranelift_isle as isle;
-use isle::sema::{Expr, Pattern, Rule, Term, TermArgPattern, TermEnv, TypeEnv};
+use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
 
 #[derive(Clone, Debug)]
 pub struct BoundVar {
@@ -13,13 +15,16 @@ pub struct BoundVar {
     pub ty: SMTType,
 }
 
+#[derive(Clone, Debug)]
 pub struct Assumption {
     pub assume: BoolExpr,
 }
 
+#[derive(Clone, Debug)]
 pub struct AssumptionContext {
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Assumption>,
+    pub var_map: HashMap<VarId, BoundVar>,
 }
 
 impl AssumptionContext {
@@ -40,10 +45,14 @@ impl AssumptionContext {
                 match &arg_patterns[..] {
                     [TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern))] => {
                         match **subpattern {
-                            Pattern::Wildcard(..) => self.quantified_vars.push(BoundVar {
-                                name: "ty".to_string(),
-                                ty: ty.clone(),
-                            }),
+                            Pattern::Wildcard(..) => {
+                                let var = BoundVar {
+                                    name: "ty".to_string(),
+                                    ty,
+                                };
+                                self.quantified_vars.push(var.clone());
+                                self.var_map.insert(*varid, var);
+                            }
                             _ => unimplemented!("Subpattern for argument to has_type"),
                         }
                     }
@@ -88,6 +97,7 @@ impl AssumptionContext {
             // If we hit a bound wildcard, then the bound variable has no assumptions
             Pattern::BindPattern(tyid, varid, subpat) => match **subpat {
                 Pattern::Wildcard(..) => {
+                    self.var_map.insert(*varid, var.clone());
                     println!("No assumptions for: {:?} ({:?})", var.name, var.ty);
                 }
                 _ => unimplemented!("Subpattern"),
@@ -121,7 +131,7 @@ impl AssumptionContext {
                     // Create new bound variable
                     let var = BoundVar {
                         name: format!("arg_{}", i).to_string(),
-                        ty: ty.clone(),
+                        ty,
                     };
                     self.quantified_vars.push(var.clone());
                     match arg {
@@ -160,6 +170,7 @@ impl AssumptionContext {
         let mut ctx = AssumptionContext {
             quantified_vars: vec![],
             assumptions: vec![],
+            var_map: HashMap::new(),
         };
         ctx.parse_lhs_to_assumptions(lhs, termenv, typeenv, ty);
         ctx

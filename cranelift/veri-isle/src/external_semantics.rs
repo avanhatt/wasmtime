@@ -7,7 +7,7 @@ use crate::types::SMTType;
 use rsmt2::Solver;
 
 impl SMTType {
-    pub fn to_rsmt2_str(&self) -> String {
+    pub fn to_rsmt2_str(self) -> String {
         match self {
             SMTType::BitVector(width) => format!("(_ BitVec {})", width),
         }

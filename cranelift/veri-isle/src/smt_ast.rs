@@ -1,8 +1,10 @@
+#[derive(Clone, Debug)]
 pub enum Term {
     BoolExpr(BoolExpr),
     BVExpr(BVExpr),
 }
 
+#[derive(Clone, Debug)]
 pub enum BoolExpr {
     True,
     False,
@@ -13,6 +15,7 @@ pub enum BoolExpr {
     Eq(Box<BVExpr>, Box<BVExpr>),
 }
 
+#[derive(Clone, Debug)]
 pub enum BVExpr {
     Const(i128),
     Var(String),

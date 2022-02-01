@@ -1,5 +1,5 @@
 use cranelift_isle as isle;
-use isle::sema::{Pattern, Rule, Term, TermEnv, TypeEnv};
+use isle::sema::{Rule, TermEnv, TypeEnv};
 use types::SMTType;
 
 use crate::assumptions::AssumptionContext;
@@ -15,6 +15,7 @@ fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
 
     // Parses to an AST, as a list of definitions
     let defs = isle::parser::parse(lexer).expect("should parse");
+    dbg!(&defs);
 
     // Produces maps from symbols/names to types
     let mut typeenv = TypeEnv::from_ast(&defs).unwrap();
@@ -31,6 +32,7 @@ fn verification_conditions_for_rule(
     ty: SMTType,
 ) {
     let assumption_ctx = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
+    dbg!(assumption_ctx);
 }
 
 // for simple iadd
@@ -105,12 +107,12 @@ fn main() {
     (extern constructor put_in_reg put_in_reg)
     ";
 
-    let simple_iadd = prelude.clone().to_owned()
+    let simple_iadd = prelude.to_owned()
         + "
     (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
         (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
 
-    let iadd_to_sub = prelude.clone().to_owned()
+    let iadd_to_sub = prelude.to_owned()
         + "
     (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
         (value_reg (sub_imm ty (put_in_reg x) y)))
