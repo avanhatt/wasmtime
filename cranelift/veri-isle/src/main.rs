@@ -2,13 +2,13 @@ use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use types::SMTType;
 
-use crate::assumptions::AssumptionContext;
 use crate::external_semantics::run_solver;
-use crate::interp::InterpContext;
+use crate::interp_lhs::AssumptionContext;
+use crate::interp_rhs::InterpContext;
 
-mod assumptions;
 mod external_semantics;
-mod interp;
+mod interp_lhs;
+mod interp_rhs;
 mod smt_ast;
 mod types;
 
@@ -34,12 +34,8 @@ fn verification_conditions_for_rule(
     ty: SMTType,
 ) {
     let mut interp_ctx = InterpContext {};
-    let assumption_ctx = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-    let lhs = interp_ctx.interp_lhs(&rule.lhs, &assumption_ctx, termenv, typeenv, ty);
+    let (assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
     let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
-
-    // dbg!(lhs);
-    // dbg!(rhs);
 
     run_solver(assumption_ctx, lhs, rhs, ty);
 }
@@ -88,6 +84,7 @@ fn main() {
     (type Value (primitive Value))
     (type Reg (primitive Reg))
     (type ValueRegs (primitive ValueRegs))
+    (type Imm12 (primitive Imm12))
 
     ;; EXTRACTORS
 
@@ -99,9 +96,15 @@ fn main() {
     (decl fits_in_64 (Type) Type)
     (extern extractor fits_in_64 fits_in_64)
 
+    (decl fits_in_32 (Type) Type)
+    (extern extractor fits_in_32 fits_in_32)
+
     (decl iadd (Value Value) Inst)
     ;; TODO: replace with more rules
     (extern extractor iadd iadd)
+
+    (decl imm12_from_negated_value (Imm12) Value)
+    (extern extractor imm12_from_negated_value imm12_from_negated_value)
 
     ;; CONSTRUCTORS
 
@@ -114,6 +117,9 @@ fn main() {
 
     (decl put_in_reg (Value) Reg)
     (extern constructor put_in_reg put_in_reg)
+
+    (decl sub_imm (Type Reg Imm12) Reg)
+    (extern constructor sub_imm sub_imm)
     ";
 
     let simple_iadd = prelude.to_owned()
@@ -129,8 +135,14 @@ fn main() {
     ";
 
     // For now, just a small specific type
-    let ty = SMTType::BitVector(8);
+    let ty = SMTType::BitVector(64);
+    {
+        let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
+        verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+    }
 
-    let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
-    verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+    {
+        let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
+        verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+    }
 }

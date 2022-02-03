@@ -17,10 +17,11 @@ pub enum BoolExpr {
 
 #[derive(Clone, Debug)]
 pub enum BVExpr {
-    Const(i128, i8),
+    Const(i128),
     Var(String),
     BVNeg(Box<BVExpr>),
     BVNot(Box<BVExpr>),
     BVAdd(Box<BVExpr>, Box<BVExpr>),
     BVSub(Box<BVExpr>, Box<BVExpr>),
+    BVAnd(Box<BVExpr>, Box<BVExpr>),
 }

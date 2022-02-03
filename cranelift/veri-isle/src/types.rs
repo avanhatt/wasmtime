@@ -10,7 +10,7 @@ pub enum SMTType {
 impl SMTType {
     pub fn width(&self) -> i8 {
         match self {
-            &Self::BitVector(s) => s as i8
+            &Self::BitVector(s) => s as i8,
         }
     }
 }
