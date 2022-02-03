@@ -1,4 +1,4 @@
-//! Build assumptions from the left hand side of a rule.
+//! Interpret and build an assumption context from the left hand side of a rule.
 //!
 
 use crate::smt_ast::{BVExpr, BoolExpr, SMTType};

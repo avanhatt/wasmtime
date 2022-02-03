@@ -1,4 +1,4 @@
-//! Types for translation to SMT.
+//! Internal IR for relevant SMT types. Currently just booleans and bitvectors.
 //!
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

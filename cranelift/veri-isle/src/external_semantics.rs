@@ -1,7 +1,7 @@
-//! External definitions need to specify both their assumptions and what they
-//! produce.
+//! Convert our internal SMT AST to an external one and pass queries to that
+//! solver.
 //!
-//! Right now, this uses the rsmt2 crate's datatypes.
+//! Right now, this uses the rsmt2 crate.
 
 use crate::interp_lhs::AssumptionContext;
 use crate::smt_ast::{BVExpr, BoolExpr, SMTType};
@@ -73,7 +73,7 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType
 
     for v in actx.quantified_vars {
         println!("Declaring constant {} of type {:?}", v.name, v.ty);
-        solver.declare_const(v.name, v.ty.to_rsmt2_str());
+        solver.declare_const(v.name, v.ty.to_rsmt2_str()).unwrap();
     }
 
     let assumptions: Vec<String> = actx

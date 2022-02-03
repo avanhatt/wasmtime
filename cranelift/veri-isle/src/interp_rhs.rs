@@ -1,3 +1,6 @@
+//! Interpret the right hand side of a rule.
+//!
+//!
 use crate::interp_lhs::AssumptionContext;
 use crate::smt_ast::{BVExpr, SMTType};
 
@@ -16,7 +19,7 @@ impl InterpContext {
         ty: SMTType,
     ) -> BVExpr {
         match bvexpr {
-            Expr::Term(tyid, termid, subterms) => {
+            Expr::Term(_, termid, subterms) => {
                 let term = &termenv.terms[termid.index()];
                 let term_name = &typeenv.syms[term.name.index()];
                 // Inline for now, needs to be extracted
@@ -47,7 +50,7 @@ impl InterpContext {
                     _ => unimplemented!("{}", term_name),
                 }
             }
-            Expr::Var(tyid, varid) => {
+            Expr::Var(_, varid) => {
                 let bound_var = actx.var_map.get(varid).unwrap();
                 bound_var.ty.bv_var(bound_var.name.clone())
             },
