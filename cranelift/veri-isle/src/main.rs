@@ -121,26 +121,28 @@ fn main() {
     (extern constructor sub_imm sub_imm)
     ";
 
-    let simple_iadd = prelude.to_owned()
-        + "
-    (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
+    let simple_iadd = 
+    "(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
         (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
 
-    let iadd_to_sub = prelude.to_owned()
-        + "
-    (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
-        (value_reg (sub_imm ty (put_in_reg x) y)))
-
-    ";
+    let iadd_to_sub = 
+    "(rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
+        (value_reg (sub_imm ty (put_in_reg x) y)))";
 
     // For now, just a small specific type
     let ty = SMTType::BitVector(64);
     {
+        println!("{:-^1$}", "simple iadd", 80);
+        println!("\nRunning verification for rule:\n{}\n", simple_iadd);
+        let simple_iadd =  prelude.to_owned() + simple_iadd;
         let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
         verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
     }
 
     {
+        println!("{:-^1$}", "iadd to sub", 80);
+        println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
+        let iadd_to_sub =  prelude.to_owned() + iadd_to_sub;
         let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
         verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
     }
