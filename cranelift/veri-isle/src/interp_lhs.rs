@@ -76,7 +76,7 @@ impl AssumptionContext {
                                 )
                             }
                         }
-                        _ => unreachable!("{:?}", ty)
+                        _ => unreachable!("{:?}", ty),
                     },
                     _ => panic!("Unknown subterm for `has_type`"),
                 }
@@ -91,7 +91,6 @@ impl AssumptionContext {
         expr: BVExpr,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
     ) -> BVExpr {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
@@ -124,25 +123,24 @@ impl AssumptionContext {
                     // No op for now
                     "lower" | "fits_in_64" => {
                         assert_eq!(subpats.len(), 1);
-                        return self.interp_bv_pattern(subpats[0], expr, termenv, typeenv, ty);
+                        return self.interp_bv_pattern(subpats[0], expr, termenv, typeenv);
                     }
                     "has_type" => {
                         assert_eq!(subpats.len(), 2);
-                        return self.interp_bv_pattern(subpats[1], expr, termenv, typeenv, ty);
+                        return self.interp_bv_pattern(subpats[1], expr, termenv, typeenv);
                     }
                     "iadd" => {
                         assert_eq!(subpats.len(), 2);
                         // TODO: subterms need new bound vars
-                        return ty.bv_binary(
+                        return expr.ty().bv_binary(
                             BVExpr::BVAdd,
-                            self.interp_bv_pattern(subpats[0], expr.clone(), termenv, typeenv, ty),
-                            self.interp_bv_pattern(subpats[1], expr, termenv, typeenv, ty),
+                            self.interp_bv_pattern(subpats[0], expr.clone(), termenv, typeenv),
+                            self.interp_bv_pattern(subpats[1], expr, termenv, typeenv),
                         );
                     }
                     "imm12_from_negated_value" => {
-                        // *this* value's negated value fits in 12 bits
-                        // the subterm is the result
-                        // (define-fun imm12_from_negated_value ((v BV12)) BV64 (bvneg ((_ zero_extend 52) v)))
+                        // *This* value's negated value fits in 12 bits
+                        let ty = expr.ty();
                         let assume_fits = SMTType::bool_eq(
                             ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12))),
                             ty.bv_const(0),
@@ -151,21 +149,25 @@ impl AssumptionContext {
                             assume: assume_fits,
                         });
                         assert_eq!(subpats.len(), 1);
+
+                        // The argument must fit in a 12-bit BV
+                        let bv12 = SMTType::BitVector(12);
                         let var = BoundVar {
-                            // TODO: more stable index
+                            // TODO: actual stable itendifier index
                             name: format!("arg_{}", term_name).to_string(),
-                            ty,
+                            ty: bv12,
                         };
                         self.quantified_vars.push(var.clone());
+                        let arg = self.interp_bv_pattern(
+                            subpats[0],
+                            bv12.bv_var(var.name.clone()),
+                            termenv,
+                            typeenv,
+                        );
+                        let ext_width = std::cmp::max(ty.width() - 12, 0);
                         ty.bv_unary(
                             BVExpr::BVNeg,
-                            self.interp_bv_pattern(
-                                subpats[0],
-                                ty.bv_var(var.name.clone()),
-                                termenv,
-                                typeenv,
-                                ty,
-                            ),
+                            bv12.bv_ext(BVExpr::BVZeroExt, ext_width, arg)
                         )
                     }
                     _ => unimplemented!("{}", term_name),
@@ -203,7 +205,6 @@ impl AssumptionContext {
                             ty.bv_var(var.name.clone()),
                             termenv,
                             typeenv,
-                            ty,
                         )),
                         _ => unimplemented!(),
                     }

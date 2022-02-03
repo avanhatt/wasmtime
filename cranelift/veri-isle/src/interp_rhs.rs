@@ -41,10 +41,12 @@ impl InterpContext {
                     "sub_imm" => {
                         // Ignore the type arg for now
                         assert_eq!(subterms.len(), 3);
+                        let bv12 = SMTType::BitVector(12);
+                        let ext_width = std::cmp::max(ty.width() - 12, 0);
                         return ty.bv_binary(
                             BVExpr::BVSub,
                             self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
-                            self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty),
+                            bv12.bv_ext(BVExpr::BVZeroExt, ext_width, self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty)),
                         );
                     }
                     _ => unimplemented!("{}", term_name),
@@ -53,7 +55,7 @@ impl InterpContext {
             Expr::Var(_, varid) => {
                 let bound_var = actx.var_map.get(varid).unwrap();
                 bound_var.ty.bv_var(bound_var.name.clone())
-            },
+            }
             _ => unimplemented!(),
         }
     }

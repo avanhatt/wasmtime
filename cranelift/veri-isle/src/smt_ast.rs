@@ -27,13 +27,22 @@ pub enum BoolExpr {
 
 #[derive(Clone, Debug)]
 pub enum BVExpr {
+    // Nodes
     Const(SMTType, i128),
     Var(SMTType, String),
+
+    // Unary operators
     BVNeg(SMTType, Box<BVExpr>),
     BVNot(SMTType, Box<BVExpr>),
+
+    // Binary operators
     BVAdd(SMTType, Box<BVExpr>, Box<BVExpr>),
     BVSub(SMTType, Box<BVExpr>, Box<BVExpr>),
     BVAnd(SMTType, Box<BVExpr>, Box<BVExpr>),
+
+    // Conversion
+    BVZeroExt(SMTType, i8, Box<BVExpr>),
+    BVSignExt(SMTType, i8, Box<BVExpr>),
 }
 
 impl BVExpr {
@@ -46,6 +55,8 @@ impl BVExpr {
             BVExpr::BVAdd(t, _, _) => t,
             BVExpr::BVSub(t, _, _) => t,
             BVExpr::BVAnd(t, _, _) => t,
+            BVExpr::BVZeroExt(t, _, _) => t,
+            BVExpr::BVSignExt(t, _, _) => t,
         }
     }
 }
@@ -103,9 +114,21 @@ impl SMTType {
         assert!(self.width() == y.ty().width());
         f(*self, Box::new(x), Box::new(y))
     }
+
+    pub fn bv_ext<F: Fn(SMTType, i8, Box<BVExpr>) -> BVExpr>(
+        &self,
+        f: F,
+        i: i8,
+        x: BVExpr,
+    ) -> BVExpr {
+        assert!(self.is_bv());
+        assert!(self.width() == x.ty().width());
+        let new_width = self.width() + i;
+        f(SMTType::BitVector(new_width as usize), i, Box::new(x))
+    }
 }
 
-pub fn all_considered_bitvectors() -> Vec<SMTType> {
+pub fn all_starting_bitvectors() -> Vec<SMTType> {
     vec![
         SMTType::BitVector(1),
         SMTType::BitVector(8),

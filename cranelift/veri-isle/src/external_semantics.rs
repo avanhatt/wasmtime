@@ -11,7 +11,7 @@ impl SMTType {
     pub fn to_rsmt2_str(self) -> String {
         match self {
             SMTType::BitVector(width) => format!("(_ BitVec {})", width),
-            SMTType::Bool => unreachable!("{:?}", self)
+            SMTType::Bool => unreachable!("{:?}", self),
         }
     }
 }
@@ -26,6 +26,7 @@ pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
             bv_expr_to_rsmt2_str(*y)
         )
     };
+    let ext = |op, i, x: Box<BVExpr>| format!("((_ {} {}) {})", op, i, bv_expr_to_rsmt2_str(*x));
 
     match e {
         BVExpr::Const(ty, i) => format!("(_ bv{} {})", i, ty.width()),
@@ -35,6 +36,8 @@ pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
         BVExpr::BVAdd(_, x, y) => binary("bvadd", x, y),
         BVExpr::BVSub(_, x, y) => binary("bvsub", x, y),
         BVExpr::BVAnd(_, x, y) => binary("bvand", x, y),
+        BVExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
+        BVExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
     }
 }
 
