@@ -131,7 +131,7 @@ impl AssumptionContext {
                     }
                     "iadd" => {
                         assert_eq!(subpats.len(), 2);
-                        // TODO: subterms need new bound vars
+                        // TODO: subterms probably need new bound vars
                         return expr.ty().bv_binary(
                             BVExpr::BVAdd,
                             self.interp_bv_pattern(subpats[0], expr.clone(), termenv, typeenv),
@@ -142,7 +142,11 @@ impl AssumptionContext {
                         // *This* value's negated value fits in 12 bits
                         let ty = expr.ty();
                         let assume_fits = SMTType::bool_eq(
-                            ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12))),
+                            ty.bv_binary(
+                                BVExpr::BVAnd,
+                                ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12))),
+                                expr.clone(),
+                            ),
                             ty.bv_const(0),
                         );
                         self.assumptions.push(Assumption {
@@ -153,7 +157,7 @@ impl AssumptionContext {
                         // The argument must fit in a 12-bit BV
                         let bv12 = SMTType::BitVector(12);
                         let var = BoundVar {
-                            // TODO: actual stable itendifier index
+                            // TODO: actual stable identifier index
                             name: format!("arg_{}", term_name).to_string(),
                             ty: bv12,
                         };
@@ -165,10 +169,14 @@ impl AssumptionContext {
                             typeenv,
                         );
                         let ext_width = std::cmp::max(ty.width() - 12, 0);
-                        ty.bv_unary(
+                        let res = ty.bv_unary(
                             BVExpr::BVNeg,
-                            bv12.bv_ext(BVExpr::BVZeroExt, ext_width, arg)
-                        )
+                            bv12.bv_ext(BVExpr::BVZeroExt, ext_width, arg),
+                        );
+                        self.assumptions.push(Assumption {
+                            assume: SMTType::bool_eq(expr, res.clone()),
+                        });
+                        res
                     }
                     _ => unimplemented!("{}", term_name),
                 }

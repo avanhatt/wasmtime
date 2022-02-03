@@ -46,7 +46,11 @@ impl InterpContext {
                         return ty.bv_binary(
                             BVExpr::BVSub,
                             self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
-                            bv12.bv_ext(BVExpr::BVZeroExt, ext_width, self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty)),
+                            bv12.bv_ext(
+                                BVExpr::BVZeroExt,
+                                ext_width,
+                                self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty),
+                            ),
                         );
                     }
                     _ => unimplemented!("{}", term_name),

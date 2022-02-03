@@ -74,15 +74,21 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType
     let mut solver = Solver::default_z3(()).unwrap();
     let arg_ty = ty.to_rsmt2_str();
 
+    println!("Declaring constants:");
     for v in actx.quantified_vars {
-        println!("Declaring constant {} of type {:?}", v.name, v.ty);
+        println!("\t{} : {:?}", v.name, v.ty);
         solver.declare_const(v.name, v.ty.to_rsmt2_str()).unwrap();
     }
 
+    println!("Adding assumptions:");
     let assumptions: Vec<String> = actx
         .assumptions
         .iter()
-        .map(|a| bool_expr_to_rsmt2_str(a.assume.clone(), ty))
+        .map(|a| {
+            let p = bool_expr_to_rsmt2_str(a.assume.clone(), ty);
+            println!("\t{}", p);
+            p
+        })
         .collect();
     let assumption_str = format!("(and {})", assumptions.join(" "));
 
@@ -90,7 +96,7 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType
     let rhs_s = bv_expr_to_rsmt2_str(rhs);
 
     let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
-    println!("Running query: {}", query);
+    println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 
     match solver.check_sat() {
