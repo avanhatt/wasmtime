@@ -152,7 +152,7 @@ impl AssumptionContext {
                         // (define-fun imm12_from_negated_value ((v BV12)) BV64 (bvneg ((_ zero_extend 52) v)))
                         let assume_fits = BoolExpr::Eq(
                             Box::new(BVExpr::BVAnd(
-                                Box::new(BVExpr::Const((2 as i128).pow(12))),
+                                Box::new(BVExpr::BVNot(Box::new(BVExpr::Const((2 as i128).pow(12))))),
                                 Box::new(expr),
                             )),
                             Box::new(BVExpr::Const(0)),
