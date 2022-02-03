@@ -1,6 +1,6 @@
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
-use types::SMTType;
+use smt_ast::SMTType;
 
 use crate::external_semantics::run_solver;
 use crate::interp_lhs::AssumptionContext;
@@ -10,7 +10,6 @@ mod external_semantics;
 mod interp_lhs;
 mod interp_rhs;
 mod smt_ast;
-mod types;
 
 // Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {

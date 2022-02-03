@@ -1,9 +1,8 @@
 use crate::interp_lhs::AssumptionContext;
-use crate::smt_ast::{BVExpr, BoolExpr};
-use crate::types::SMTType;
+use crate::smt_ast::{BVExpr, SMTType};
 
 use cranelift_isle as isle;
-use isle::sema::{Expr, Pattern, Term, TermArgPattern, TermEnv, TypeEnv, VarId};
+use isle::sema::{Expr, TermEnv, TypeEnv};
 
 pub struct InterpContext {}
 
@@ -30,23 +29,28 @@ impl InterpContext {
                     "add" => {
                         // Ignore the type arg for now
                         assert_eq!(subterms.len(), 3);
-                        return BVExpr::BVAdd(
-                            Box::new(self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty)),
-                            Box::new(self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty)),
+                        return ty.bv_binary(
+                            BVExpr::BVAdd,
+                            self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
+                            self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty),
                         );
                     }
                     "sub_imm" => {
                         // Ignore the type arg for now
                         assert_eq!(subterms.len(), 3);
-                        return BVExpr::BVSub(
-                            Box::new(self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty)),
-                            Box::new(self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty)),
+                        return ty.bv_binary(
+                            BVExpr::BVSub,
+                            self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
+                            self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty),
                         );
                     }
                     _ => unimplemented!("{}", term_name),
                 }
             }
-            Expr::Var(tyid, varid) => BVExpr::Var(actx.var_map.get(varid).unwrap().name.clone()),
+            Expr::Var(tyid, varid) => {
+                let bound_var = actx.var_map.get(varid).unwrap();
+                bound_var.ty.bv_var(bound_var.name.clone())
+            },
             _ => unimplemented!(),
         }
     }

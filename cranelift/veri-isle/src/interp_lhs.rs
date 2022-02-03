@@ -1,8 +1,7 @@
 //! Build assumptions from the left hand side of a rule.
 //!
 
-use crate::smt_ast::{BVExpr, BoolExpr};
-use crate::types::SMTType;
+use crate::smt_ast::{BVExpr, BoolExpr, SMTType};
 
 use std::collections::HashMap;
 
@@ -66,8 +65,8 @@ impl AssumptionContext {
                             if s <= 64 {
                                 self.assumptions.push(Assumption {
                                     assume: BoolExpr::Eq(
-                                        Box::new(BVExpr::Const(s as i128)),
-                                        Box::new(BVExpr::Var("ty".to_string())),
+                                        Box::new(ty.bv_const(s as i128)),
+                                        Box::new(ty.bv_var("ty".to_string())),
                                     ),
                                 })
                             } else {
@@ -77,6 +76,7 @@ impl AssumptionContext {
                                 )
                             }
                         }
+                        _ => unreachable!("{:?}", ty)
                     },
                     _ => panic!("Unknown subterm for `has_type`"),
                 }
@@ -99,7 +99,7 @@ impl AssumptionContext {
                 Pattern::Wildcard(..) => {
                     let ret = expr.clone();
                     let var = match expr {
-                        BVExpr::Var(name) => BoundVar { name, ty },
+                        BVExpr::Var(var_ty, name) => BoundVar { name, ty: var_ty },
                         _ => unreachable!("unexpected term: {:?}", expr),
                     };
                     self.var_map.insert(*varid, var.clone());
@@ -133,29 +133,19 @@ impl AssumptionContext {
                     "iadd" => {
                         assert_eq!(subpats.len(), 2);
                         // TODO: subterms need new bound vars
-                        return BVExpr::BVAdd(
-                            Box::new(self.interp_bv_pattern(
-                                subpats[0],
-                                expr.clone(),
-                                termenv,
-                                typeenv,
-                                ty,
-                            )),
-                            Box::new(
-                                self.interp_bv_pattern(subpats[1], expr, termenv, typeenv, ty),
-                            ),
+                        return ty.bv_binary(
+                            BVExpr::BVAdd,
+                            self.interp_bv_pattern(subpats[0], expr.clone(), termenv, typeenv, ty),
+                            self.interp_bv_pattern(subpats[1], expr, termenv, typeenv, ty),
                         );
                     }
                     "imm12_from_negated_value" => {
                         // *this* value's negated value fits in 12 bits
                         // the subterm is the result
                         // (define-fun imm12_from_negated_value ((v BV12)) BV64 (bvneg ((_ zero_extend 52) v)))
-                        let assume_fits = BoolExpr::Eq(
-                            Box::new(BVExpr::BVAnd(
-                                Box::new(BVExpr::BVNot(Box::new(BVExpr::Const((2 as i128).pow(12))))),
-                                Box::new(expr),
-                            )),
-                            Box::new(BVExpr::Const(0)),
+                        let assume_fits = SMTType::bool_eq(
+                            ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12))),
+                            ty.bv_const(0),
                         );
                         self.assumptions.push(Assumption {
                             assume: assume_fits,
@@ -167,13 +157,16 @@ impl AssumptionContext {
                             ty,
                         };
                         self.quantified_vars.push(var.clone());
-                        BVExpr::BVNeg(Box::new(self.interp_bv_pattern(
-                            subpats[0],
-                            BVExpr::Var(var.name.clone()),
-                            termenv,
-                            typeenv,
-                            ty,
-                        )))
+                        ty.bv_unary(
+                            BVExpr::BVNeg,
+                            self.interp_bv_pattern(
+                                subpats[0],
+                                ty.bv_var(var.name.clone()),
+                                termenv,
+                                typeenv,
+                                ty,
+                            ),
+                        )
                     }
                     _ => unimplemented!("{}", term_name),
                 }
@@ -207,7 +200,7 @@ impl AssumptionContext {
                     match arg {
                         TermArgPattern::Pattern(pat) => args.push(self.interp_bv_pattern(
                             pat,
-                            BVExpr::Var(var.name.clone()),
+                            ty.bv_var(var.name.clone()),
                             termenv,
                             typeenv,
                             ty,
@@ -218,7 +211,7 @@ impl AssumptionContext {
                 match term_name.as_str() {
                     "iadd" => {
                         assert_eq!(args.len(), 2);
-                        return BVExpr::BVAdd(Box::new(args[0].clone()), Box::new(args[1].clone()));
+                        return ty.bv_binary(BVExpr::BVAdd, args[0].clone(), args[1].clone());
                     }
                     _ => unimplemented!(),
                 }

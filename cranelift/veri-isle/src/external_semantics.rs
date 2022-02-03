@@ -4,37 +4,37 @@
 //! Right now, this uses the rsmt2 crate's datatypes.
 
 use crate::interp_lhs::AssumptionContext;
-use crate::smt_ast::{BVExpr, BoolExpr};
-use crate::types::SMTType;
+use crate::smt_ast::{BVExpr, BoolExpr, SMTType};
 use rsmt2::Solver;
 
 impl SMTType {
     pub fn to_rsmt2_str(self) -> String {
         match self {
             SMTType::BitVector(width) => format!("(_ BitVec {})", width),
+            SMTType::Bool => unreachable!("{:?}", self)
         }
     }
 }
 
-pub fn bv_expr_to_rsmt2_str(e: BVExpr, ty: SMTType) -> String {
-    let unary = |op, x: Box<BVExpr>| format!("({} {})", op, bv_expr_to_rsmt2_str(*x, ty));
+pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
+    let unary = |op, x: Box<BVExpr>| format!("({} {})", op, bv_expr_to_rsmt2_str(*x));
     let binary = |op, x: Box<BVExpr>, y: Box<BVExpr>| {
         format!(
             "({} {} {})",
             op,
-            bv_expr_to_rsmt2_str(*x, ty),
-            bv_expr_to_rsmt2_str(*y, ty)
+            bv_expr_to_rsmt2_str(*x),
+            bv_expr_to_rsmt2_str(*y)
         )
     };
 
     match e {
-        BVExpr::Const(i) => format!("(_ bv{} {})", i, ty.width()),
-        BVExpr::Var(s) => s,
-        BVExpr::BVNeg(x) => unary("bvneg", x),
-        BVExpr::BVNot(x) => unary("bvnot", x),
-        BVExpr::BVAdd(x, y) => binary("bvadd", x, y),
-        BVExpr::BVSub(x, y) => binary("bvsub", x, y),
-        BVExpr::BVAnd(x, y) => binary("bvand", x, y),
+        BVExpr::Const(ty, i) => format!("(_ bv{} {})", i, ty.width()),
+        BVExpr::Var(_, s) => s,
+        BVExpr::BVNeg(_, x) => unary("bvneg", x),
+        BVExpr::BVNot(_, x) => unary("bvnot", x),
+        BVExpr::BVAdd(_, x, y) => binary("bvadd", x, y),
+        BVExpr::BVSub(_, x, y) => binary("bvsub", x, y),
+        BVExpr::BVAnd(_, x, y) => binary("bvand", x, y),
     }
 }
 
@@ -57,8 +57,8 @@ pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: SMTType) -> String {
         BoolExpr::Imp(x, y) => binary("=>", x, y),
         BoolExpr::Eq(x, y) => format!(
             "(= {} {})",
-            bv_expr_to_rsmt2_str(*x, ty),
-            bv_expr_to_rsmt2_str(*y, ty)
+            bv_expr_to_rsmt2_str(*x),
+            bv_expr_to_rsmt2_str(*y)
         ),
     }
 }
@@ -83,8 +83,8 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType
         .collect();
     let assumption_str = format!("(and {})", assumptions.join(" "));
 
-    let lhs_s = bv_expr_to_rsmt2_str(lhs, ty);
-    let rhs_s = bv_expr_to_rsmt2_str(rhs, ty);
+    let lhs_s = bv_expr_to_rsmt2_str(lhs);
+    let rhs_s = bv_expr_to_rsmt2_str(rhs);
 
     let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
     println!("Running query: {}", query);
