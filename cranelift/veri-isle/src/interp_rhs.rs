@@ -42,15 +42,19 @@ impl InterpContext {
                         // Ignore the type arg for now
                         assert_eq!(subterms.len(), 3);
                         let bv12 = SMTType::BitVector(12);
-                        let ext_width = std::cmp::max(ty.width() - 12, 0);
+                        let arg = self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty);
+                        let width_diff = (ty.width() as i128) - 12;
+                        let as_ty = if width_diff > 0 {
+                            bv12.bv_extend(BVExpr::BVZeroExt, width_diff.try_into().unwrap(), arg)
+                        } else if width_diff < 0 {
+                            bv12.bv_extract(0, ty.width() - 1, arg)
+                        } else {
+                            arg
+                        };
                         return ty.bv_binary(
                             BVExpr::BVSub,
                             self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
-                            bv12.bv_ext(
-                                BVExpr::BVZeroExt,
-                                ext_width,
-                                self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty),
-                            ),
+                            as_ty,
                         );
                     }
                     _ => unimplemented!("{}", term_name),

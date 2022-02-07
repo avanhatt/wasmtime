@@ -38,6 +38,7 @@ pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
         BVExpr::BVAnd(_, x, y) => binary("bvand", x, y),
         BVExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
         BVExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
+        BVExpr::BVExtract(_, l, h, x) => format!("((_ extract {} {}) {})", h, l, bv_expr_to_rsmt2_str(*x))
     }
 }
 

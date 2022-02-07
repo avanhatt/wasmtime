@@ -129,22 +129,13 @@ impl AssumptionContext {
                         assert_eq!(subpats.len(), 2);
                         return self.interp_bv_pattern(subpats[1], expr, termenv, typeenv);
                     }
-                    "iadd" => {
-                        assert_eq!(subpats.len(), 2);
-                        // TODO: subterms probably need new bound vars
-                        return expr.ty().bv_binary(
-                            BVExpr::BVAdd,
-                            self.interp_bv_pattern(subpats[0], expr.clone(), termenv, typeenv),
-                            self.interp_bv_pattern(subpats[1], expr, termenv, typeenv),
-                        );
-                    }
                     "imm12_from_negated_value" => {
                         // *This* value's negated value fits in 12 bits
                         let ty = expr.ty();
                         let assume_fits = SMTType::bool_eq(
                             ty.bv_binary(
                                 BVExpr::BVAnd,
-                                ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12))),
+                                ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12) - 1)),
                                 expr.clone(),
                             ),
                             ty.bv_const(0),
@@ -168,10 +159,17 @@ impl AssumptionContext {
                             termenv,
                             typeenv,
                         );
-                        let ext_width = std::cmp::max(ty.width() - 12, 0);
+                        let width_diff = (ty.width() as i128) - 12;
+                        let as_ty = if width_diff > 0 {
+                            bv12.bv_extend(BVExpr::BVZeroExt, width_diff.try_into().unwrap(), arg)
+                        } else if width_diff < 0 {
+                            bv12.bv_extract(0, ty.width() - 1, arg)
+                        } else {
+                            arg
+                        };
                         let res = ty.bv_unary(
                             BVExpr::BVNeg,
-                            bv12.bv_ext(BVExpr::BVZeroExt, ext_width, arg),
+                            as_ty,
                         );
                         self.assumptions.push(Assumption {
                             assume: SMTType::bool_eq(expr, res.clone()),

@@ -1,6 +1,6 @@
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
-use smt_ast::SMTType;
+use smt_ast::{SMTType, all_starting_bitvectors};
 
 use crate::external_semantics::run_solver;
 use crate::interp_lhs::AssumptionContext;
@@ -129,20 +129,22 @@ fn main() {
         (value_reg (sub_imm ty (put_in_reg x) y)))";
 
     // For now, just a small specific type
-    let ty = SMTType::BitVector(64);
-    {
-        println!("{:-^1$}", "simple iadd", 80);
-        println!("\nRunning verification for rule:\n{}\n", simple_iadd);
-        let simple_iadd = prelude.to_owned() + simple_iadd;
-        let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
-        verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
-    }
-
-    {
-        println!("{:-^1$}", "iadd to sub", 80);
-        println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
-        let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
-        let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
-        verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+    let ty = SMTType::BitVector(8);
+    for ty in all_starting_bitvectors() {
+        {
+            println!("{:-^1$}", format!("simple iadd bv{}", ty.width()), 80);
+            println!("\nRunning verification for rule:\n{}\n", simple_iadd);
+            let simple_iadd = prelude.to_owned() + simple_iadd;
+            let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
+            verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+        }
+    
+        {
+            println!("{:-^1$}", format!("iadd to sub bv{}", ty.width()), 80);
+            println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
+            let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
+            let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
+            verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+        }
     }
 }

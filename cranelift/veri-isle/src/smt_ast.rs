@@ -40,9 +40,10 @@ pub enum BVExpr {
     BVSub(SMTType, Box<BVExpr>, Box<BVExpr>),
     BVAnd(SMTType, Box<BVExpr>, Box<BVExpr>),
 
-    // Conversion
-    BVZeroExt(SMTType, i8, Box<BVExpr>),
-    BVSignExt(SMTType, i8, Box<BVExpr>),
+    // Conversions
+    BVZeroExt(SMTType, usize, Box<BVExpr>),
+    BVSignExt(SMTType, usize, Box<BVExpr>),
+    BVExtract(SMTType, usize, usize, Box<BVExpr>)
 }
 
 impl BVExpr {
@@ -57,6 +58,7 @@ impl BVExpr {
             BVExpr::BVAnd(t, _, _) => t,
             BVExpr::BVZeroExt(t, _, _) => t,
             BVExpr::BVSignExt(t, _, _) => t,
+            BVExpr::BVExtract(t, _, _, _) => t,
         }
     }
 }
@@ -66,9 +68,9 @@ impl SMTType {
         BoolExpr::Eq(Box::new(x), Box::new(y))
     }
 
-    pub fn width(&self) -> i8 {
+    pub fn width(&self) -> usize {
         match self {
-            &Self::BitVector(s) => s as i8,
+            &Self::BitVector(s) => s,
             _ => unreachable!("Unexpected type: {:?}", self),
         }
     }
@@ -99,7 +101,7 @@ impl SMTType {
 
     pub fn bv_unary<F: Fn(SMTType, Box<BVExpr>) -> BVExpr>(&self, f: F, x: BVExpr) -> BVExpr {
         assert!(self.is_bv());
-        assert!(self.width() == x.ty().width());
+        assert_eq!(self.width(), x.ty().width());
         f(*self, Box::new(x))
     }
 
@@ -110,21 +112,32 @@ impl SMTType {
         y: BVExpr,
     ) -> BVExpr {
         assert!(self.is_bv());
-        assert!(self.width() == x.ty().width());
-        assert!(self.width() == y.ty().width());
+        assert_eq!(self.width(), x.ty().width());
+        assert_eq!(self.width(), y.ty().width());
         f(*self, Box::new(x), Box::new(y))
     }
 
-    pub fn bv_ext<F: Fn(SMTType, i8, Box<BVExpr>) -> BVExpr>(
+    pub fn bv_extend<F: Fn(SMTType, usize, Box<BVExpr>) -> BVExpr>(
         &self,
         f: F,
-        i: i8,
+        i: usize,
         x: BVExpr,
     ) -> BVExpr {
         assert!(self.is_bv());
-        assert!(self.width() == x.ty().width());
+        assert_eq!(self.width(), x.ty().width());
+        assert!(i >= 0);
         let new_width = self.width() + i;
         f(SMTType::BitVector(new_width as usize), i, Box::new(x))
+    }
+
+    /// Extract bits from index l to index h 
+    pub fn bv_extract(&self, l: usize, h: usize, x: BVExpr) -> BVExpr {
+        assert!(self.is_bv());
+        assert_eq!(self.width(), x.ty().width());
+        assert!(h >= l);
+        assert!(l >= 0);
+        let new_width = h - l + 1;
+        BVExpr::BVExtract(SMTType::BitVector(new_width as usize), l, h, Box::new(x))
     }
 }
 
