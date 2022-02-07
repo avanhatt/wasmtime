@@ -43,7 +43,7 @@ pub enum BVExpr {
     // Conversions
     BVZeroExt(SMTType, usize, Box<BVExpr>),
     BVSignExt(SMTType, usize, Box<BVExpr>),
-    BVExtract(SMTType, usize, usize, Box<BVExpr>)
+    BVExtract(SMTType, usize, usize, Box<BVExpr>),
 }
 
 impl BVExpr {
@@ -130,7 +130,7 @@ impl SMTType {
         f(SMTType::BitVector(new_width as usize), i, Box::new(x))
     }
 
-    /// Extract bits from index l to index h 
+    /// Extract bits from index l to index h
     pub fn bv_extract(&self, l: usize, h: usize, x: BVExpr) -> BVExpr {
         assert!(self.is_bv());
         assert_eq!(self.width(), x.ty().width());

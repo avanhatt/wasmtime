@@ -34,7 +34,7 @@ impl AssumptionContext {
         termenv: &TermEnv,
         typeenv: &TypeEnv,
         ty: SMTType,
-    ) {
+    ) -> bool {
         match pattern {
             Pattern::Term(tyid, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
@@ -68,20 +68,22 @@ impl AssumptionContext {
                                         Box::new(ty.bv_const(s as i128)),
                                         Box::new(ty.bv_var("ty".to_string())),
                                     ),
-                                })
+                                });
+                                return true;
                             } else {
-                                print!(
+                                println!(
                                     "Rule does not apply for bitvector type {:?}, fails {}",
                                     ty, term_name
-                                )
+                                );
+                                return false;
                             }
                         }
                         _ => unreachable!("{:?}", ty),
                     },
-                    _ => panic!("Unknown subterm for `has_type`"),
+                    _ => unimplemented!("Unknown subterm for `has_type`"),
                 }
             }
-            _ => panic!("Expected 'lower' term"),
+            _ => unimplemented!("Expected 'lower' term"),
         };
     }
 
@@ -167,10 +169,7 @@ impl AssumptionContext {
                         } else {
                             arg
                         };
-                        let res = ty.bv_unary(
-                            BVExpr::BVNeg,
-                            as_ty,
-                        );
+                        let res = ty.bv_unary(BVExpr::BVNeg, as_ty);
                         self.assumptions.push(Assumption {
                             assume: SMTType::bool_eq(expr, res.clone()),
                         });
@@ -235,10 +234,12 @@ impl AssumptionContext {
         termenv: &TermEnv,
         typeenv: &TypeEnv,
         ty: SMTType,
-    ) -> BVExpr {
+    ) -> Option<BVExpr> {
         let (ty_pattern, inst_pattern) = unwrap_lower_has_type(pattern, termenv, typeenv);
-        self.assumption_for_has_type(&ty_pattern, termenv, typeenv, ty);
-        self.interp_lhs_inst(&inst_pattern, termenv, typeenv, ty)
+        if !self.assumption_for_has_type(&ty_pattern, termenv, typeenv, ty) {
+            return None;
+        };
+        return Some(self.interp_lhs_inst(&inst_pattern, termenv, typeenv, ty));
     }
 
     /// Construct the term environment from the AST and the type environment.
@@ -247,14 +248,18 @@ impl AssumptionContext {
         termenv: &TermEnv,
         typeenv: &TypeEnv,
         ty: SMTType,
-    ) -> (AssumptionContext, BVExpr) {
+    ) -> Option<(AssumptionContext, BVExpr)> {
         let mut ctx = AssumptionContext {
             quantified_vars: vec![],
             assumptions: vec![],
             var_map: HashMap::new(),
         };
         let expr = ctx.lhs_to_assumptions(lhs, termenv, typeenv, ty);
-        (ctx, expr)
+        if let Some(expr) = expr {
+            Some((ctx, expr))
+        } else {
+            None
+        }
     }
 }
 

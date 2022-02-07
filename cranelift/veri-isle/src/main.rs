@@ -1,6 +1,6 @@
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
-use smt_ast::{SMTType, all_starting_bitvectors};
+use smt_ast::{all_starting_bitvectors, SMTType};
 
 use crate::external_semantics::run_solver;
 use crate::interp_lhs::AssumptionContext;
@@ -33,10 +33,12 @@ fn verification_conditions_for_rule(
     ty: SMTType,
 ) {
     let mut interp_ctx = InterpContext {};
-    let (assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-    let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
-
-    run_solver(assumption_ctx, lhs, rhs, ty);
+    if let Some((assumption_ctx, lhs)) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty) {
+        let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
+        run_solver(assumption_ctx, lhs, rhs, ty);
+    } else {
+        println!("Skipping solver for inapplicable rule")
+    }
 }
 
 // for simple iadd
@@ -138,7 +140,7 @@ fn main() {
             let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
             verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
         }
-    
+
         {
             println!("{:-^1$}", format!("iadd to sub bv{}", ty.width()), 80);
             println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
