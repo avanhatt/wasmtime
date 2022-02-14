@@ -1,7 +1,7 @@
 //! Interpret and build an assumption context from the left hand side of a rule.
 //!
 
-use crate::smt_ast::{BVExpr, BoolExpr, SMTType};
+use crate::vir_ast::{BVExpr, BoolExpr, VIRType};
 
 use std::collections::HashMap;
 
@@ -11,7 +11,7 @@ use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
 #[derive(Clone, Debug)]
 pub struct BoundVar {
     pub name: String,
-    pub ty: SMTType,
+    pub ty: VIRType,
 }
 
 #[derive(Clone, Debug)]
@@ -33,7 +33,7 @@ impl AssumptionContext {
         pattern: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
+        ty: VIRType,
     ) -> bool {
         match pattern {
             Pattern::Term(tyid, termid, arg_patterns) => {
@@ -61,7 +61,7 @@ impl AssumptionContext {
                 // For now, hard-code some cases we care about
                 match term_name.as_ref() {
                     "fits_in_64" => match ty {
-                        SMTType::BitVector(s) => {
+                        VIRType::BitVector(s) => {
                             if s <= 64 {
                                 self.assumptions.push(Assumption {
                                     assume: BoolExpr::Eq(
@@ -134,7 +134,7 @@ impl AssumptionContext {
                     "imm12_from_negated_value" => {
                         // *This* value's negated value fits in 12 bits
                         let ty = expr.ty();
-                        let assume_fits = SMTType::bool_eq(
+                        let assume_fits = VIRType::bool_eq(
                             ty.bv_binary(
                                 BVExpr::BVAnd,
                                 ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12) - 1)),
@@ -148,7 +148,7 @@ impl AssumptionContext {
                         assert_eq!(subpats.len(), 1);
 
                         // The argument must fit in a 12-bit BV
-                        let bv12 = SMTType::BitVector(12);
+                        let bv12 = VIRType::BitVector(12);
                         let var = BoundVar {
                             // TODO: actual stable identifier index
                             name: format!("arg_{}", term_name).to_string(),
@@ -171,7 +171,7 @@ impl AssumptionContext {
                         };
                         let res = ty.bv_unary(BVExpr::BVNeg, as_ty);
                         self.assumptions.push(Assumption {
-                            assume: SMTType::bool_eq(expr, res.clone()),
+                            assume: VIRType::bool_eq(expr, res.clone()),
                         });
                         res
                     }
@@ -189,7 +189,7 @@ impl AssumptionContext {
         inst: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
+        ty: VIRType,
     ) -> BVExpr {
         match inst {
             // For now, assume all args have the same type, `ty: SMTType`
@@ -233,7 +233,7 @@ impl AssumptionContext {
         pattern: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
+        ty: VIRType,
     ) -> Option<BVExpr> {
         let (ty_pattern, inst_pattern) = unwrap_lower_has_type(pattern, termenv, typeenv);
         if !self.assumption_for_has_type(&ty_pattern, termenv, typeenv, ty) {
@@ -247,7 +247,7 @@ impl AssumptionContext {
         lhs: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
+        ty: VIRType,
     ) -> Option<(AssumptionContext, BVExpr)> {
         let mut ctx = AssumptionContext {
             quantified_vars: vec![],

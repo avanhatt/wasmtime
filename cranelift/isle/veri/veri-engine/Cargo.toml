@@ -1,10 +1,11 @@
 [package]
-name = "veri-isle"
+name = "veri-engine"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cranelift-isle = { path = "../isle/isle" }
+cranelift-isle = { path = "../../isle" }
+veri-ir = { path = "../veri-ir" }
 rsmt2 = "0.14.1"

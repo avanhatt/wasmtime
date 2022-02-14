@@ -4,14 +4,14 @@
 //! Right now, this uses the rsmt2 crate.
 
 use crate::interp_lhs::AssumptionContext;
-use crate::smt_ast::{BVExpr, BoolExpr, SMTType};
+use crate::vir_ast::{BVExpr, BoolExpr, VIRType};
 use rsmt2::Solver;
 
-impl SMTType {
+impl VIRType {
     pub fn to_rsmt2_str(self) -> String {
         match self {
-            SMTType::BitVector(width) => format!("(_ BitVec {})", width),
-            SMTType::Bool => unreachable!("{:?}", self),
+            VIRType::BitVector(width) => format!("(_ BitVec {})", width),
+            VIRType::Bool => unreachable!("{:?}", self),
         }
     }
 }
@@ -44,7 +44,7 @@ pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
     }
 }
 
-pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: SMTType) -> String {
+pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: VIRType) -> String {
     let unary = |op, x: Box<BoolExpr>| format!("({} {})", op, bool_expr_to_rsmt2_str(*x, ty));
     let binary = |op, x: Box<BoolExpr>, y: Box<BoolExpr>| {
         format!(
@@ -73,7 +73,7 @@ pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: SMTType) -> String {
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 ///
-pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: SMTType) {
+pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType) {
     let mut solver = Solver::default_z3(()).unwrap();
     let arg_ty = ty.to_rsmt2_str();
 

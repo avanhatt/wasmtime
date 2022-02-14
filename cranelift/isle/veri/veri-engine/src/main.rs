@@ -1,6 +1,6 @@
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
-use smt_ast::{all_starting_bitvectors, SMTType};
+use vir_ast::{all_starting_bitvectors, VIRType};
 
 use crate::external_semantics::run_solver;
 use crate::interp_lhs::AssumptionContext;
@@ -9,7 +9,7 @@ use crate::interp_rhs::InterpContext;
 mod external_semantics;
 mod interp_lhs;
 mod interp_rhs;
-mod smt_ast;
+mod vir_ast;
 
 // Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
@@ -30,7 +30,7 @@ fn verification_conditions_for_rule(
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
-    ty: SMTType,
+    ty: VIRType,
 ) {
     let mut interp_ctx = InterpContext {};
     if let Some((assumption_ctx, lhs)) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty) {
@@ -80,26 +80,38 @@ fn main() {
     let prelude = "
     ;; TYPES
 
+    ;; Inst UF
     (type Inst (primitive Inst))
+
+    ;; Type Int
     (type Type (primitive Type))
+
+    ;; Value bvX
     (type Value (primitive Value))
+
+
     (type Reg (primitive Reg))
     (type ValueRegs (primitive ValueRegs))
+
+    ;; Imm12 bv12
     (type Imm12 (primitive Imm12))
 
     ;; EXTRACTORS
-
     (decl lower (Inst) ValueRegs)
 
     (decl has_type (Type Inst) Inst)
     (extern extractor has_type has_type)
 
+    ;; (decl (a) b SMTType) (assert (= a b) (<= a 64)))
+    ;; {((a : Type) b : Type) | a = b, a.ty.width <= 64}
+    ;; (decl fits_in_64 (Type) Type)
     (decl fits_in_64 (Type) Type)
     (extern extractor fits_in_64 fits_in_64)
 
     (decl fits_in_32 (Type) Type)
     (extern extractor fits_in_32 fits_in_32)
 
+    ;; (decl (a b) c bvX) (assert (= c (+ a b)))
     (decl iadd (Value Value) Inst)
     ;; TODO: replace with more rules
     (extern extractor iadd iadd)
@@ -130,8 +142,7 @@ fn main() {
         "(rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
         (value_reg (sub_imm ty (put_in_reg x) y)))";
 
-    // For now, just a small specific type
-    let ty = SMTType::BitVector(8);
+    // Go through i1 to i128
     for ty in all_starting_bitvectors() {
         {
             println!("{:-^1$}", format!("simple iadd bv{}", ty.width()), 80);
@@ -150,3 +161,53 @@ fn main() {
         }
     }
 }
+
+// Open questions 2022-02-07
+// 1. Syntax for term semantics spec
+// 2. Avoiding `has_type` special casing/final type
+        // isle approach: separate core lang from IL prelude
+// 3. Rule depth/static inlining
+
+// Re: 1: syntax ideas
+
+// name =
+// { (arg1, arg2, res1) | ... }
+// u
+// { (arg1, arg2, res2) | ... }
+// (rule (name arg1 arg2)
+//       (res1))
+// (rule (name arg1 arg2)
+//       (res2))
+// ---
+// imm12_from_negated_value =
+// 
+// (simple idea)
+// { (a, b) | b = extract(neg(a)) && fits(neg(a), 12) } 
+// { (a, b) | a = neg(zext(b)) }
+// 
+// (in practice)
+// { (a, b) | b = conv(neg(a)) && fits(neg(a), 12) } 
+// { (a, b) | a = neg(conv(b)) }
+// 
+// where conv if defined as either extract or zext
+// conv =
+// { (x, y) | if x.ty - y.ty > 0 {...} else {...} } 
+// 
+// 
+// ---
+// (rule (...)
+//     (imm12_from_negated_value ...)
+//     (m_rotl ...))
+
+
+
+// Re: width of the register
+// (decl sub_imm (Type Reg Imm12) Reg)
+// (rule (sub_imm (fits_in_32 _ty) x y) (sub32_imm x y))
+// (rule (sub_imm $I64 x y) (sub64_imm x y))
+
+// (decl sub32_imm (Reg Imm12) Reg)
+// (rule (sub32_imm x y) (alu_rr_imm12 (ALUOp.Sub32) x y))
+
+// (decl sub64_imm (Reg Imm12) Reg)
+// (rule (sub64_imm x y) (alu_rr_imm12 (ALUOp.Sub64) x y))

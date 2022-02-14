@@ -2,7 +2,7 @@
 //!
 //!
 use crate::interp_lhs::AssumptionContext;
-use crate::smt_ast::{BVExpr, SMTType};
+use crate::vir_ast::{BVExpr, VIRType};
 
 use cranelift_isle as isle;
 use isle::sema::{Expr, TermEnv, TypeEnv};
@@ -16,7 +16,7 @@ impl InterpContext {
         actx: &AssumptionContext,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
+        ty: VIRType,
     ) -> BVExpr {
         match bvexpr {
             Expr::Term(_, termid, subterms) => {
@@ -41,7 +41,7 @@ impl InterpContext {
                     "sub_imm" => {
                         // Ignore the type arg for now
                         assert_eq!(subterms.len(), 3);
-                        let bv12 = SMTType::BitVector(12);
+                        let bv12 = VIRType::BitVector(12);
                         let arg = self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty);
                         let width_diff = (ty.width() as i128) - 12;
                         let as_ty = if width_diff > 0 {
@@ -74,7 +74,7 @@ impl InterpContext {
         actx: &AssumptionContext,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: SMTType,
+        ty: VIRType,
     ) -> BVExpr {
         self.interp_bv_expr(rhs, actx, termenv, typeenv, ty)
     }

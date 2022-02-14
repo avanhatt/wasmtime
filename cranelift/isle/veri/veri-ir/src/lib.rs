@@ -1,20 +1,32 @@
-//! Internal IR for relevant SMT types. Currently just booleans and bitvectors.
+//! Verification Intermediate Representation for relevant SMT types. Currently just booleans and bitvectors.
 //!
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VIRAnnotation {
+    func: FunctionAnnotation,
+    assertions: Vec<BoolExpr>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FunctionAnnotation {
+    args: Vec<BoundVar>,
+    result: BoundVar,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BoundVar {
+    pub name: String,
+    pub ty: VIRType,
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum SMTType {
+pub enum VIRType {
     // logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     BitVector(usize),
     Bool,
 }
 
-#[derive(Clone, Debug)]
-pub enum Term {
-    BoolExpr(BoolExpr),
-    BVExpr(BVExpr),
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BoolExpr {
     True,
     False,
@@ -25,29 +37,29 @@ pub enum BoolExpr {
     Eq(Box<BVExpr>, Box<BVExpr>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BVExpr {
     // Nodes
-    Const(SMTType, i128),
-    Var(SMTType, String),
+    Const(VIRType, i128),
+    Var(VIRType, String),
 
     // Unary operators
-    BVNeg(SMTType, Box<BVExpr>),
-    BVNot(SMTType, Box<BVExpr>),
+    BVNeg(VIRType, Box<BVExpr>),
+    BVNot(VIRType, Box<BVExpr>),
 
     // Binary operators
-    BVAdd(SMTType, Box<BVExpr>, Box<BVExpr>),
-    BVSub(SMTType, Box<BVExpr>, Box<BVExpr>),
-    BVAnd(SMTType, Box<BVExpr>, Box<BVExpr>),
+    BVAdd(VIRType, Box<BVExpr>, Box<BVExpr>),
+    BVSub(VIRType, Box<BVExpr>, Box<BVExpr>),
+    BVAnd(VIRType, Box<BVExpr>, Box<BVExpr>),
 
     // Conversions
-    BVZeroExt(SMTType, usize, Box<BVExpr>),
-    BVSignExt(SMTType, usize, Box<BVExpr>),
-    BVExtract(SMTType, usize, usize, Box<BVExpr>),
+    BVZeroExt(VIRType, usize, Box<BVExpr>),
+    BVSignExt(VIRType, usize, Box<BVExpr>),
+    BVExtract(VIRType, usize, usize, Box<BVExpr>),
 }
 
 impl BVExpr {
-    pub fn ty(&self) -> SMTType {
+    pub fn ty(&self) -> VIRType {
         match *self {
             BVExpr::Const(t, _) => t,
             BVExpr::Var(t, _) => t,
@@ -63,30 +75,24 @@ impl BVExpr {
     }
 }
 
-impl SMTType {
+impl VIRType {
     pub fn bool_eq(x: BVExpr, y: BVExpr) -> BoolExpr {
         BoolExpr::Eq(Box::new(x), Box::new(y))
     }
 
     pub fn width(&self) -> usize {
-        match self {
-            &Self::BitVector(s) => s,
+        match *self {
+            Self::BitVector(s) => s,
             _ => unreachable!("Unexpected type: {:?}", self),
         }
     }
 
     pub fn is_bv(&self) -> bool {
-        match self {
-            &Self::BitVector(_) => true,
-            _ => false,
-        }
+        matches!(*self, Self::BitVector(_))
     }
 
     pub fn is_bool(&self) -> bool {
-        match self {
-            &Self::Bool => true,
-            _ => false,
-        }
+        matches!(*self, Self::Bool)   
     }
 
     pub fn bv_const(&self, x: i128) -> BVExpr {
@@ -99,13 +105,13 @@ impl SMTType {
         BVExpr::Var(*self, s)
     }
 
-    pub fn bv_unary<F: Fn(SMTType, Box<BVExpr>) -> BVExpr>(&self, f: F, x: BVExpr) -> BVExpr {
+    pub fn bv_unary<F: Fn(VIRType, Box<BVExpr>) -> BVExpr>(&self, f: F, x: BVExpr) -> BVExpr {
         assert!(self.is_bv());
         assert_eq!(self.width(), x.ty().width());
         f(*self, Box::new(x))
     }
 
-    pub fn bv_binary<F: Fn(SMTType, Box<BVExpr>, Box<BVExpr>) -> BVExpr>(
+    pub fn bv_binary<F: Fn(VIRType, Box<BVExpr>, Box<BVExpr>) -> BVExpr>(
         &self,
         f: F,
         x: BVExpr,
@@ -117,7 +123,7 @@ impl SMTType {
         f(*self, Box::new(x), Box::new(y))
     }
 
-    pub fn bv_extend<F: Fn(SMTType, usize, Box<BVExpr>) -> BVExpr>(
+    pub fn bv_extend<F: Fn(VIRType, usize, Box<BVExpr>) -> BVExpr>(
         &self,
         f: F,
         i: usize,
@@ -125,9 +131,8 @@ impl SMTType {
     ) -> BVExpr {
         assert!(self.is_bv());
         assert_eq!(self.width(), x.ty().width());
-        assert!(i >= 0);
         let new_width = self.width() + i;
-        f(SMTType::BitVector(new_width as usize), i, Box::new(x))
+        f(VIRType::BitVector(new_width as usize), i, Box::new(x))
     }
 
     /// Extract bits from index l to index h
@@ -135,19 +140,18 @@ impl SMTType {
         assert!(self.is_bv());
         assert_eq!(self.width(), x.ty().width());
         assert!(h >= l);
-        assert!(l >= 0);
         let new_width = h - l + 1;
-        BVExpr::BVExtract(SMTType::BitVector(new_width as usize), l, h, Box::new(x))
+        BVExpr::BVExtract(VIRType::BitVector(new_width as usize), l, h, Box::new(x))
     }
 }
 
-pub fn all_starting_bitvectors() -> Vec<SMTType> {
+pub fn all_starting_bitvectors() -> Vec<VIRType> {
     vec![
-        SMTType::BitVector(1),
-        SMTType::BitVector(8),
-        SMTType::BitVector(16),
-        SMTType::BitVector(32),
-        SMTType::BitVector(64),
-        SMTType::BitVector(128),
+        VIRType::BitVector(1),
+        VIRType::BitVector(8),
+        VIRType::BitVector(16),
+        VIRType::BitVector(32),
+        VIRType::BitVector(64),
+        VIRType::BitVector(128),
     ]
 }
