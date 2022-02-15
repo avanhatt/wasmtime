@@ -2,6 +2,7 @@
 //!
 //!
 use crate::interp_lhs::AssumptionContext;
+use crate::isle_annotations::isle_annotation_for_term;
 
 use cranelift_isle as isle;
 use isle::sema::{Expr, TermEnv, TypeEnv};

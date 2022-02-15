@@ -11,6 +11,7 @@ pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
     match ty {
         VIRType::BitVector(width) => format!("(_ BitVec {})", width),
         VIRType::Bool => unreachable!("{:?}", ty),
+        VIRType::IsleType => "Int".to_string()
     }
 }
 
@@ -28,7 +29,7 @@ pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
 
     match e {
         BVExpr::Const(ty, i) => format!("(_ bv{} {})", i, ty.width()),
-        BVExpr::Var(_, s) => s,
+        BVExpr::Var(bound_var) => bound_var.name,
         BVExpr::BVNeg(_, x) => unary("bvneg", x),
         BVExpr::BVNot(_, x) => unary("bvnot", x),
         BVExpr::BVAdd(_, x, y) => binary("bvadd", x, y),

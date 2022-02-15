@@ -9,6 +9,7 @@ use crate::interp_rhs::InterpContext;
 mod external_semantics;
 mod interp_lhs;
 mod interp_rhs;
+mod isle_annotations;
 
 // Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {

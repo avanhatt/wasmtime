@@ -1,18 +1,12 @@
 //! Interpret and build an assumption context from the left hand side of a rule.
 //!
 
-use veri_ir::{BVExpr, BoolExpr, VIRType};
+use veri_ir::{BVExpr, BoolExpr, BoundVar, VIRType};
 
 use std::collections::HashMap;
 
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
-
-#[derive(Clone, Debug)]
-pub struct BoundVar {
-    pub name: String,
-    pub ty: VIRType,
-}
 
 #[derive(Clone, Debug)]
 pub struct Assumption {
@@ -100,7 +94,7 @@ impl AssumptionContext {
                 Pattern::Wildcard(..) => {
                     let ret = expr.clone();
                     let var = match expr {
-                        BVExpr::Var(var_ty, name) => BoundVar { name, ty: var_ty },
+                        BVExpr::Var(bound_var) => bound_var,
                         _ => unreachable!("unexpected term: {:?}", expr),
                     };
                     self.var_map.insert(*varid, var);

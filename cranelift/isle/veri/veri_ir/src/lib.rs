@@ -3,14 +3,14 @@
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VIRAnnotation {
-    func: FunctionAnnotation,
-    assertions: Vec<BoolExpr>,
+    pub func: FunctionAnnotation,
+    pub assertions: Vec<BoolExpr>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionAnnotation {
-    args: Vec<BoundVar>,
-    result: BoundVar,
+    pub args: Vec<BoundVar>,
+    pub result: BoundVar,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -24,8 +24,10 @@ pub enum VIRType {
     // logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     BitVector(usize),
     Bool,
+    IsleType,
 }
 
+// TODO: maybe combine bool and bv into a single enum
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BoolExpr {
     True,
@@ -40,8 +42,8 @@ pub enum BoolExpr {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BVExpr {
     // Nodes
+    Var(BoundVar),
     Const(VIRType, i128),
-    Var(VIRType, String),
 
     // Unary operators
     BVNeg(VIRType, Box<BVExpr>),
@@ -59,10 +61,10 @@ pub enum BVExpr {
 }
 
 impl BVExpr {
-    pub fn ty(&self) -> VIRType {
-        match *self {
+    pub fn ty(&self) -> &VIRType {
+        match &self {
+            BVExpr::Var(bv) => &bv.ty,
             BVExpr::Const(t, _) => t,
-            BVExpr::Var(t, _) => t,
             BVExpr::BVNeg(t, _) => t,
             BVExpr::BVNot(t, _) => t,
             BVExpr::BVAdd(t, _, _) => t,
@@ -102,7 +104,7 @@ impl VIRType {
 
     pub fn bv_var(&self, s: String) -> BVExpr {
         assert!(self.is_bv());
-        BVExpr::Var(*self, s)
+        BVExpr::Var(BoundVar{name: s, ty: *self})
     }
 
     pub fn bv_unary<F: Fn(VIRType, Box<BVExpr>) -> BVExpr>(&self, f: F, x: BVExpr) -> BVExpr {
@@ -154,4 +156,10 @@ pub fn all_starting_bitvectors() -> Vec<VIRType> {
         VIRType::BitVector(64),
         VIRType::BitVector(128),
     ]
+}
+
+impl BoundVar {
+    pub fn as_expr(&self)-> BVExpr {
+        BVExpr::Var(self.clone())
+    }
 }
