@@ -73,8 +73,6 @@ pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: VIRType) -> String {
 ///
 pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType) {
     let mut solver = Solver::default_z3(()).unwrap();
-    let arg_ty = vir_to_rsmt2_str(ty);
-
     println!("Declaring constants:");
     for v in actx.quantified_vars {
         println!("\t{} : {:?}", v.name, v.ty);

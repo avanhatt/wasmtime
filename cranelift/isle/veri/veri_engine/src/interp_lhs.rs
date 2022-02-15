@@ -36,13 +36,13 @@ impl AssumptionContext {
         ty: VIRType,
     ) -> bool {
         match pattern {
-            Pattern::Term(tyid, termid, arg_patterns) => {
+            Pattern::Term(_, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
                 let term_name = &typeenv.syms[term.name.index()];
 
                 // TODO: can we pull the name "ty" from this term?
                 match &arg_patterns[..] {
-                    [TermArgPattern::Pattern(Pattern::BindPattern(tyid, varid, subpattern))] => {
+                    [TermArgPattern::Pattern(Pattern::BindPattern(_, varid, subpattern))] => {
                         match **subpattern {
                             Pattern::Wildcard(..) => {
                                 let var = BoundVar {
@@ -69,13 +69,13 @@ impl AssumptionContext {
                                         Box::new(ty.bv_var("ty".to_string())),
                                     ),
                                 });
-                                return true;
+                                true
                             } else {
                                 println!(
                                     "Rule does not apply for bitvector type {:?}, fails {}",
                                     ty, term_name
                                 );
-                                return false;
+                                false
                             }
                         }
                         _ => unreachable!("{:?}", ty),
@@ -84,7 +84,7 @@ impl AssumptionContext {
                 }
             }
             _ => unimplemented!("Expected 'lower' term"),
-        };
+        }
     }
 
     fn interp_bv_pattern(
@@ -96,19 +96,19 @@ impl AssumptionContext {
     ) -> BVExpr {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
-            Pattern::BindPattern(tyid, varid, subpat) => match **subpat {
+            Pattern::BindPattern(_, varid, subpat) => match **subpat {
                 Pattern::Wildcard(..) => {
                     let ret = expr.clone();
                     let var = match expr {
                         BVExpr::Var(var_ty, name) => BoundVar { name, ty: var_ty },
                         _ => unreachable!("unexpected term: {:?}", expr),
                     };
-                    self.var_map.insert(*varid, var.clone());
-                    return ret;
+                    self.var_map.insert(*varid, var);
+                    ret
                 }
                 _ => unimplemented!("{:?}", subpat),
             },
-            Pattern::Term(tyid, termid, arg_patterns) => {
+            Pattern::Term(_, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
                 let term_name = &typeenv.syms[term.name.index()];
 
@@ -125,11 +125,11 @@ impl AssumptionContext {
                     // No op for now
                     "lower" | "fits_in_64" => {
                         assert_eq!(subpats.len(), 1);
-                        return self.interp_bv_pattern(subpats[0], expr, termenv, typeenv);
+                        self.interp_bv_pattern(subpats[0], expr, termenv, typeenv)
                     }
                     "has_type" => {
                         assert_eq!(subpats.len(), 2);
-                        return self.interp_bv_pattern(subpats[1], expr, termenv, typeenv);
+                        self.interp_bv_pattern(subpats[1], expr, termenv, typeenv)
                     }
                     "imm12_from_negated_value" => {
                         // *This* value's negated value fits in 12 bits
@@ -137,7 +137,7 @@ impl AssumptionContext {
                         let assume_fits = VIRType::bool_eq(
                             ty.bv_binary(
                                 BVExpr::BVAnd,
-                                ty.bv_unary(BVExpr::BVNot, ty.bv_const((2 as i128).pow(12) - 1)),
+                                ty.bv_unary(BVExpr::BVNot, ty.bv_const(2_i128.pow(12) - 1)),
                                 expr.clone(),
                             ),
                             ty.bv_const(0),
@@ -151,13 +151,13 @@ impl AssumptionContext {
                         let bv12 = VIRType::BitVector(12);
                         let var = BoundVar {
                             // TODO: actual stable identifier index
-                            name: format!("arg_{}", term_name).to_string(),
+                            name: format!("arg_{}", term_name),
                             ty: bv12,
                         };
                         self.quantified_vars.push(var.clone());
                         let arg = self.interp_bv_pattern(
                             subpats[0],
-                            bv12.bv_var(var.name.clone()),
+                            bv12.bv_var(var.name),
                             termenv,
                             typeenv,
                         );
@@ -193,7 +193,7 @@ impl AssumptionContext {
     ) -> BVExpr {
         match inst {
             // For now, assume all args have the same type, `ty: SMTType`
-            Pattern::Term(tyid, termid, arg_patterns) => {
+            Pattern::Term(_, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
                 let term_name = &typeenv.syms[term.name.index()];
                 let mut args = vec![];
@@ -217,7 +217,7 @@ impl AssumptionContext {
                 match term_name.as_str() {
                     "iadd" => {
                         assert_eq!(args.len(), 2);
-                        return ty.bv_binary(BVExpr::BVAdd, args[0].clone(), args[1].clone());
+                        ty.bv_binary(BVExpr::BVAdd, args[0].clone(), args[1].clone())
                     }
                     _ => unimplemented!(),
                 }
@@ -237,9 +237,10 @@ impl AssumptionContext {
     ) -> Option<BVExpr> {
         let (ty_pattern, inst_pattern) = unwrap_lower_has_type(pattern, termenv, typeenv);
         if !self.assumption_for_has_type(&ty_pattern, termenv, typeenv, ty) {
-            return None;
-        };
-        return Some(self.interp_lhs_inst(&inst_pattern, termenv, typeenv, ty));
+            None
+        } else {
+            Some(self.interp_lhs_inst(&inst_pattern, termenv, typeenv, ty))
+        }
     }
 
     /// Construct the term environment from the AST and the type environment.
@@ -255,11 +256,7 @@ impl AssumptionContext {
             var_map: HashMap::new(),
         };
         let expr = ctx.lhs_to_assumptions(lhs, termenv, typeenv, ty);
-        if let Some(expr) = expr {
-            Some((ctx, expr))
-        } else {
-            None
-        }
+        expr.map(|expr| (ctx, expr))
     }
 }
 
@@ -272,7 +269,7 @@ fn unwrap_lower_has_type(
     typeenv: &TypeEnv,
 ) -> (Pattern, Pattern) {
     let lower_arg = match pattern {
-        Pattern::Term(tyid, termid, arg_patterns) => {
+        Pattern::Term(_, termid, arg_patterns) => {
             let term = &termenv.terms[termid.index()];
             // Outermost term is lower
             assert!(typeenv.syms[term.name.index()] == "lower");
@@ -282,7 +279,7 @@ fn unwrap_lower_has_type(
         _ => panic!("Expected 'lower' term"),
     };
     match lower_arg {
-        TermArgPattern::Pattern(Pattern::Term(tyid, termid, arg_patterns)) => {
+        TermArgPattern::Pattern(Pattern::Term(_, termid, arg_patterns)) => {
             let term = &termenv.terms[termid.index()];
             // Outermost term is lower
             assert!(typeenv.syms[term.name.index()] == "has_type");

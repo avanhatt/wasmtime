@@ -27,16 +27,16 @@ impl InterpContext {
                     // No op for now
                     "value_reg" | "put_in_reg" => {
                         assert_eq!(subterms.len(), 1);
-                        return self.interp_bv_expr(&subterms[0], actx, termenv, typeenv, ty);
+                        self.interp_bv_expr(&subterms[0], actx, termenv, typeenv, ty)
                     }
                     "add" => {
                         // Ignore the type arg for now
                         assert_eq!(subterms.len(), 3);
-                        return ty.bv_binary(
+                        ty.bv_binary(
                             BVExpr::BVAdd,
                             self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
                             self.interp_bv_expr(&subterms[2], actx, termenv, typeenv, ty),
-                        );
+                        )
                     }
                     "sub_imm" => {
                         // Ignore the type arg for now
@@ -51,11 +51,11 @@ impl InterpContext {
                         } else {
                             arg
                         };
-                        return ty.bv_binary(
+                        ty.bv_binary(
                             BVExpr::BVSub,
                             self.interp_bv_expr(&subterms[1], actx, termenv, typeenv, ty),
                             as_ty,
-                        );
+                        )
                     }
                     _ => unimplemented!("{}", term_name),
                 }
