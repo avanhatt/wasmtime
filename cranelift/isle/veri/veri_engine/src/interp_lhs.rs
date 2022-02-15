@@ -1,7 +1,7 @@
 //! Interpret and build an assumption context from the left hand side of a rule.
 //!
 
-use crate::vir_ast::{BVExpr, BoolExpr, VIRType};
+use veri_ir::{BVExpr, BoolExpr, VIRType};
 
 use std::collections::HashMap;
 

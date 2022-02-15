@@ -1,5 +1,5 @@
 [package]
-name = "veri-engine"
+name = "veri_engine"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 cranelift-isle = { path = "../../isle" }
-veri-ir = { path = "../veri-ir" }
+veri_ir = { path = "../veri_ir" }
 rsmt2 = "0.14.1"

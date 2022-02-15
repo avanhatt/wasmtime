@@ -1,6 +1,6 @@
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
-use vir_ast::{all_starting_bitvectors, VIRType};
+use veri_ir::{all_starting_bitvectors, VIRType};
 
 use crate::external_semantics::run_solver;
 use crate::interp_lhs::AssumptionContext;
@@ -9,7 +9,6 @@ use crate::interp_rhs::InterpContext;
 mod external_semantics;
 mod interp_lhs;
 mod interp_rhs;
-mod vir_ast;
 
 // Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
@@ -33,7 +32,9 @@ fn verification_conditions_for_rule(
     ty: VIRType,
 ) {
     let mut interp_ctx = InterpContext {};
-    if let Some((assumption_ctx, lhs)) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty) {
+    if let Some((assumption_ctx, lhs)) =
+        AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty)
+    {
         let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
         run_solver(assumption_ctx, lhs, rhs, ty);
     } else {
@@ -165,7 +166,7 @@ fn main() {
 // Open questions 2022-02-07
 // 1. Syntax for term semantics spec
 // 2. Avoiding `has_type` special casing/final type
-        // isle approach: separate core lang from IL prelude
+// isle approach: separate core lang from IL prelude
 // 3. Rule depth/static inlining
 
 // Re: 1: syntax ideas
@@ -180,26 +181,24 @@ fn main() {
 //       (res2))
 // ---
 // imm12_from_negated_value =
-// 
+//
 // (simple idea)
-// { (a, b) | b = extract(neg(a)) && fits(neg(a), 12) } 
+// { (a, b) | b = extract(neg(a)) && fits(neg(a), 12) }
 // { (a, b) | a = neg(zext(b)) }
-// 
+//
 // (in practice)
-// { (a, b) | b = conv(neg(a)) && fits(neg(a), 12) } 
+// { (a, b) | b = conv(neg(a)) && fits(neg(a), 12) }
 // { (a, b) | a = neg(conv(b)) }
-// 
+//
 // where conv if defined as either extract or zext
 // conv =
-// { (x, y) | if x.ty - y.ty > 0 {...} else {...} } 
-// 
-// 
+// { (x, y) | if x.ty - y.ty > 0 {...} else {...} }
+//
+//
 // ---
 // (rule (...)
 //     (imm12_from_negated_value ...)
 //     (m_rotl ...))
-
-
 
 // Re: width of the register
 // (decl sub_imm (Type Reg Imm12) Reg)

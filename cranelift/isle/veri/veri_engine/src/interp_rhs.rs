@@ -2,10 +2,10 @@
 //!
 //!
 use crate::interp_lhs::AssumptionContext;
-use crate::vir_ast::{BVExpr, VIRType};
 
 use cranelift_isle as isle;
 use isle::sema::{Expr, TermEnv, TypeEnv};
+use veri_ir::{BVExpr, VIRType};
 
 pub struct InterpContext {}
 

@@ -4,15 +4,13 @@
 //! Right now, this uses the rsmt2 crate.
 
 use crate::interp_lhs::AssumptionContext;
-use crate::vir_ast::{BVExpr, BoolExpr, VIRType};
 use rsmt2::Solver;
+use veri_ir::{BVExpr, BoolExpr, VIRType};
 
-impl VIRType {
-    pub fn to_rsmt2_str(self) -> String {
-        match self {
-            VIRType::BitVector(width) => format!("(_ BitVec {})", width),
-            VIRType::Bool => unreachable!("{:?}", self),
-        }
+pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
+    match ty {
+        VIRType::BitVector(width) => format!("(_ BitVec {})", width),
+        VIRType::Bool => unreachable!("{:?}", ty),
     }
 }
 
@@ -75,12 +73,14 @@ pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: VIRType) -> String {
 ///
 pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType) {
     let mut solver = Solver::default_z3(()).unwrap();
-    let arg_ty = ty.to_rsmt2_str();
+    let arg_ty = vir_to_rsmt2_str(ty);
 
     println!("Declaring constants:");
     for v in actx.quantified_vars {
         println!("\t{} : {:?}", v.name, v.ty);
-        solver.declare_const(v.name, v.ty.to_rsmt2_str()).unwrap();
+        solver
+            .declare_const(v.name, vir_to_rsmt2_str(v.ty))
+            .unwrap();
     }
 
     println!("Adding assumptions:");
