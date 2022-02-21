@@ -68,6 +68,27 @@ pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: VIRType) -> String {
     }
 }
 
+// Checks whether the assumption list is always false
+fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumptions: String) -> bool {
+    solver.push(1).unwrap();
+    solver.assert(assumptions).unwrap();
+    let res = match solver.check_sat() {
+        Ok(true) => {
+            println!("Assertion list is feasible");
+            true
+        }
+        Ok(false) => {
+            println!("Assertion list is infeasible!");
+            false
+        }
+        Err(err) => {
+            unreachable!("Error! {:?}", err);
+        }
+    };
+    solver.pop(1).unwrap();
+    res
+}
+
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
@@ -97,6 +118,12 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType
     let lhs_s = bv_expr_to_rsmt2_str(lhs);
     let rhs_s = bv_expr_to_rsmt2_str(rhs);
 
+    // Check whether the assumptions are possible
+    if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
+        println!("Rule not applicable as written, skipping full query");
+        return;
+    }
+
     let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
     println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
@@ -105,8 +132,7 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType
         Ok(true) => println!("Verification failed"),
         Ok(false) => println!("Verification succeeded"),
         Err(err) => {
-            println!("Error!");
-            dbg!(err);
+            unreachable!("Error! {:?}", err);
         }
     }
 }
