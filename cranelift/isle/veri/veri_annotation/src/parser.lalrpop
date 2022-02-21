@@ -1,0 +1,19 @@
+use veri_ir as ast;
+use ast::*;
+
+// DO NOT FORGET TO CHANGE THE EXTENSION!!!
+
+//pub mod parser;
+
+grammar;
+
+pub Type: VIRType = {
+    // TODO: support bvX instead of only numbers
+    <t:r"bv[0-9]+"> => 
+        VIRType::BitVector(i32::from_str(t).unwrap()),
+    "bool" => VIRType::Bool,
+};
+
+pub BoundVar: BoundVar = {
+    <s:r"[A-Za-z0-9_]+"> ":" <t:Type> => BoundVar{ name: s, ty: t},
+};
