@@ -9,5 +9,6 @@ edition = "2018"
 cranelift-isle = { path = "../../isle" }
 veri_ir = { path = "../veri_ir" }
 rsmt2 = "0.14.1"
+clap = "3.1.2"
 
 [workspace]
