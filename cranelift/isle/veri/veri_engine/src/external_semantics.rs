@@ -11,7 +11,7 @@ pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
     match ty {
         VIRType::BitVector(width) => format!("(_ BitVec {})", width),
         VIRType::Bool => unreachable!("{:?}", ty),
-        VIRType::IsleType => "Int".to_string()
+        VIRType::IsleType => "Int".to_string(),
     }
 }
 
