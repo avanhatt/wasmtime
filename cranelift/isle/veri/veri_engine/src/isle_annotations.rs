@@ -49,9 +49,13 @@ where
     VIRAnnotation {
         func: veri_ir::FunctionAnnotation {
             args: args,
-            result: a.func.result,
+            result: result,
         },
-        assertions: a.assertions,
+        assertions: a
+            .assertions
+            .iter()
+            .map(|e| rename_bool_expr(e.clone(), rename))
+            .collect(),
     }
 }
 
@@ -157,7 +161,6 @@ pub fn isle_annotation_for_term(term: &String, ty: VIRType) -> VIRAnnotation {
                 assertions: vec![sem],
             }
         }
-        // ((imm_arg : BV12) -> (ret: BV))
         "imm12_from_negated_value" => {
             let bv12 = VIRType::BitVector(12);
             let imm_arg = BoundVar {
@@ -169,12 +172,13 @@ pub fn isle_annotation_for_term(term: &String, ty: VIRType) -> VIRAnnotation {
                 ty,
             };
 
+            // TODO: sanity check if we can remove this because of the following zext
             // *This* value's negated value fits in 12 bits
             let assume_fits = VIRType::bool_eq(
                 ty.bv_binary(
                     BVExpr::BVAnd,
                     ty.bv_unary(BVExpr::BVNot, ty.bv_const(2_i128.pow(12) - 1)),
-                    imm_arg.as_expr(),
+                    result.as_expr(),
                 ),
                 ty.bv_const(0),
             );
