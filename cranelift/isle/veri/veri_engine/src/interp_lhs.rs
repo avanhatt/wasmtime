@@ -44,7 +44,10 @@ impl AssumptionContext {
         for b in &a.func.args {
             renaming_map.insert(b.name.clone(), self.new_ident(&b.name).clone());
         }
-        renaming_map.insert(a.func.result.name.clone(), self.new_ident(&a.func.result.name).clone());
+        renaming_map.insert(
+            a.func.result.name.clone(),
+            self.new_ident(&a.func.result.name).clone(),
+        );
         renaming_map
     }
 
@@ -55,7 +58,10 @@ impl AssumptionContext {
         // Read-only renaming map closure
         let rename = |v: &BoundVar| {
             let id = read_renames.get(&v.name.clone()).unwrap();
-            BoundVar { name: id.to_string(), ty: v.ty }
+            BoundVar {
+                name: id.to_string(),
+                ty: v.ty,
+            }
         };
         rename_annotation_vars(initial_annotation, rename)
     }
