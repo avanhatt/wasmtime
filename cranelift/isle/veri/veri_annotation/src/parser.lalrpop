@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use veri_ir as ast;
 use ast::*;
 
@@ -9,11 +11,12 @@ grammar;
 
 pub Type: VIRType = {
     // TODO: support bvX instead of only numbers
-    <t:r"bv[0-9]+"> => 
-        VIRType::BitVector(i32::from_str(t).unwrap()),
+    "bv" <n:Num> => VIRType::BitVector(n),
     "bool" => VIRType::Bool,
 };
-
-pub BoundVar: BoundVar = {
-    <s:r"[A-Za-z0-9_]+"> ":" <t:Type> => BoundVar{ name: s, ty: t},
-};
+//
+//pub BoundVar: BoundVar = {
+//    <s:r"[A-Za-z0-9_]+"> ":" <t:Type> => BoundVar{ name: s, ty: t},
+//};
+//
+Num: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
