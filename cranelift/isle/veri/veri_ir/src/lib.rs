@@ -120,8 +120,8 @@ impl VIRType {
         y: BVExpr,
     ) -> BVExpr {
         assert!(self.is_bv());
-        assert_eq!(self.width(), x.ty().width());
-        assert_eq!(self.width(), y.ty().width());
+        assert_eq!(self.width(), x.ty().width(), "({:?}, {:?})", x, y);
+        assert_eq!(self.width(), y.ty().width(), "({:?}, {:?})", x, y);
         f(*self, Box::new(x), Box::new(y))
     }
 

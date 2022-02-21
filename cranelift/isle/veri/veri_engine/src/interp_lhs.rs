@@ -1,7 +1,7 @@
 //! Interpret and build an assumption context from the left hand side of a rule.
 //!
 
-use crate::isle_annotations::isle_annotation_for_term;
+use crate::isle_annotations::{isle_annotation_for_term, rename_annotation_vars};
 use veri_ir::{BVExpr, BoolExpr, BoundVar, VIRAnnotation, VIRType};
 
 use std::{collections::HashMap, hash::Hash};
@@ -39,28 +39,25 @@ impl AssumptionContext {
         var
     }
 
-    fn update_annotation_identifiers(&mut self, annotation: VIRAnnotation) -> VIRAnnotation {
-        let mut renaming: HashMap<String, String> = HashMap::new();
-        let mut rename_bound_var = move |b: &BoundVar, ctx: &mut AssumptionContext| {
-            let id = ctx.new_ident(&b.name);
-            renaming.insert(b.name.clone(), id.clone());
-            BoundVar { name: id, ty: b.ty }
-        };
-        let args = annotation
-            .func
-            .args
-            .iter()
-            .map(|x| rename_bound_var(x, self))
-            .collect();
-
-        let result = rename_bound_var(&annotation.func.result, self);
-        VIRAnnotation {
-            func: veri_ir::FunctionAnnotation {
-                args: args,
-                result: annotation.func.result,
-            },
-            assertions: annotation.assertions,
+    fn build_annotation_remapping(&mut self, a: &VIRAnnotation) -> HashMap<String, String> {
+        let mut renaming_map: HashMap<String, String> = HashMap::new();
+        for b in &a.func.args {
+            renaming_map.insert(b.name.clone(), self.new_ident(&b.name).clone());
         }
+        renaming_map.insert(a.func.result.name.clone(), self.new_ident(&a.func.result.name).clone());
+        renaming_map
+    }
+
+    fn get_annotation_for_term(&mut self, term: &String, ty: VIRType) -> VIRAnnotation {
+        let initial_annotation = isle_annotation_for_term(term, ty);
+        // Build renaming map from bound vars in the signature
+        let read_renames = self.build_annotation_remapping(&initial_annotation);
+        // Read-only renaming map closure
+        let rename = |v: &BoundVar| {
+            let id = read_renames.get(&v.name.clone()).unwrap();
+            BoundVar { name: id.to_string(), ty: v.ty }
+        };
+        rename_annotation_vars(initial_annotation, rename)
     }
 
     fn interp_pattern(
@@ -88,7 +85,7 @@ impl AssumptionContext {
                     })
                     .collect();
 
-                let annotation = isle_annotation_for_term(term_name, ty);
+                let annotation = self.get_annotation_for_term(term_name, ty);
 
                 // The annotation should have the same number of arguments as given here
                 assert_eq!(subpats.len(), annotation.func.args.len());
