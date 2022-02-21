@@ -137,6 +137,8 @@ fn main() {
     (extern constructor sub_imm sub_imm)
     ";
 
+    // TODO: annotations are first priority
+
     let simple_iadd = "(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
         (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
 
