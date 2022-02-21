@@ -33,14 +33,9 @@ fn verification_conditions_for_rule(
     ty: VIRType,
 ) {
     let mut interp_ctx = InterpContext {};
-    if let Some((assumption_ctx, lhs)) =
-        AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty)
-    {
-        let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
-        run_solver(assumption_ctx, lhs, rhs, ty);
-    } else {
-        println!("Skipping solver for inapplicable rule")
-    }
+    let (assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
+    let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
+    run_solver(assumption_ctx, lhs, rhs, ty);
 }
 
 // for simple iadd

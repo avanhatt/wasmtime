@@ -77,7 +77,7 @@ impl AssumptionContext {
             // If we hit a bound wildcard, then the bound variable has no assumptions
             Pattern::BindPattern(_, varid, subpat) => match **subpat {
                 Pattern::Wildcard(..) => BVExpr::Var(self.new_var("x", ty, varid)),
-                _ => unimplemented!("{:?}", subpat),
+                _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
             },
             Pattern::Term(_, termid, arg_patterns) => {
                 let term = &termenv.terms[termid.index()];
@@ -115,15 +115,14 @@ impl AssumptionContext {
     }
 
     /// Takes in LHS definitions, ty map, produces SMTLIB list
-    /// For now, also trying to say from (lower (... (iadd (a) (b)))), make fresh vars a b of size TYPE
     fn lhs_to_assumptions(
         &mut self,
         pattern: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
         ty: VIRType,
-    ) -> Option<BVExpr> {
-        Some(self.interp_pattern(&pattern, termenv, typeenv, ty))
+    ) -> BVExpr {
+        self.interp_pattern(&pattern, termenv, typeenv, ty)
     }
 
     /// Construct the term environment from the AST and the type environment.
@@ -132,7 +131,7 @@ impl AssumptionContext {
         termenv: &TermEnv,
         typeenv: &TypeEnv,
         ty: VIRType,
-    ) -> Option<(AssumptionContext, BVExpr)> {
+    ) -> (AssumptionContext, BVExpr) {
         let mut ctx = AssumptionContext {
             quantified_vars: vec![],
             assumptions: vec![],
@@ -140,6 +139,6 @@ impl AssumptionContext {
             ident_map: HashMap::new(),
         };
         let expr = ctx.lhs_to_assumptions(lhs, termenv, typeenv, ty);
-        expr.map(|expr| (ctx, expr))
+        (ctx, expr)
     }
 }
