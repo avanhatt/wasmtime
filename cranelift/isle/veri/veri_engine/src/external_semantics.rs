@@ -3,9 +3,9 @@
 //!
 //! Right now, this uses the rsmt2 crate.
 
-use crate::interp_lhs::AssumptionContext;
+use crate::interp::AssumptionContext;
 use rsmt2::Solver;
-use veri_ir::{BVExpr, BoolExpr, VIRType};
+use veri_ir::{VIRExpr, VIRType};
 
 pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
     match ty {
@@ -15,56 +15,43 @@ pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
     }
 }
 
-pub fn bv_expr_to_rsmt2_str(e: BVExpr) -> String {
-    let unary = |op, x: Box<BVExpr>| format!("({} {})", op, bv_expr_to_rsmt2_str(*x));
-    let binary = |op, x: Box<BVExpr>, y: Box<BVExpr>| {
+pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
+    let unary = |op, x: Box<VIRExpr>| format!("({} {})", op, vir_expr_to_rsmt2_str(*x));
+    let binary = |op, x: Box<VIRExpr>, y: Box<VIRExpr>| {
         format!(
             "({} {} {})",
             op,
-            bv_expr_to_rsmt2_str(*x),
-            bv_expr_to_rsmt2_str(*y)
+            vir_expr_to_rsmt2_str(*x),
+            vir_expr_to_rsmt2_str(*y)
         )
     };
-    let ext = |op, i, x: Box<BVExpr>| format!("((_ {} {}) {})", op, i, bv_expr_to_rsmt2_str(*x));
+    let ext = |op, i, x: Box<VIRExpr>| format!("((_ {} {}) {})", op, i, vir_expr_to_rsmt2_str(*x));
 
     match e {
-        BVExpr::Const(ty, i) => format!("(_ bv{} {})", i, ty.width()),
-        BVExpr::Var(bound_var) => bound_var.name,
-        BVExpr::BVNeg(_, x) => unary("bvneg", x),
-        BVExpr::BVNot(_, x) => unary("bvnot", x),
-        BVExpr::BVAdd(_, x, y) => binary("bvadd", x, y),
-        BVExpr::BVSub(_, x, y) => binary("bvsub", x, y),
-        BVExpr::BVAnd(_, x, y) => binary("bvand", x, y),
-        BVExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
-        BVExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
-        BVExpr::BVExtract(_, l, h, x) => {
-            format!("((_ extract {} {}) {})", h, l, bv_expr_to_rsmt2_str(*x))
+        VIRExpr::Const(ty, i) => match ty {
+            VIRType::BitVector(width) => format!("(_ bv{} {})", i, ty.width()),
+            VIRType::IsleType => format!("{}", i),
+            VIRType::Bool => format!("{}", if i == 0 { "false" } else { "true" }),
+        },
+        VIRExpr::Var(bound_var) => bound_var.name,
+        VIRExpr::True => "true".to_string(),
+        VIRExpr::False => "false".to_string(),
+        VIRExpr::Not(x) => unary("not", x),
+        VIRExpr::And(x, y) => binary("and", x, y),
+        VIRExpr::Or(x, y) => binary("or", x, y),
+        VIRExpr::Imp(x, y) => binary("=>", x, y),
+        VIRExpr::Eq(x, y) => binary("=", x, y),
+        VIRExpr::Lte(x, y) => binary("<=", x, y),
+        VIRExpr::BVNeg(_, x) => unary("bvneg", x),
+        VIRExpr::BVNot(_, x) => unary("bvnot", x),
+        VIRExpr::BVAdd(_, x, y) => binary("bvadd", x, y),
+        VIRExpr::BVSub(_, x, y) => binary("bvsub", x, y),
+        VIRExpr::BVAnd(_, x, y) => binary("bvand", x, y),
+        VIRExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
+        VIRExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
+        VIRExpr::BVExtract(_, l, h, x) => {
+            format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
-    }
-}
-
-pub fn bool_expr_to_rsmt2_str(e: BoolExpr, ty: VIRType) -> String {
-    let unary = |op, x: Box<BoolExpr>| format!("({} {})", op, bool_expr_to_rsmt2_str(*x, ty));
-    let binary = |op, x: Box<BoolExpr>, y: Box<BoolExpr>| {
-        format!(
-            "({} {} {})",
-            op,
-            bool_expr_to_rsmt2_str(*x, ty),
-            bool_expr_to_rsmt2_str(*y, ty)
-        )
-    };
-    match e {
-        BoolExpr::True => "true".to_string(),
-        BoolExpr::False => "false".to_string(),
-        BoolExpr::Not(x) => unary("not", x),
-        BoolExpr::And(x, y) => binary("and", x, y),
-        BoolExpr::Or(x, y) => binary("or", x, y),
-        BoolExpr::Imp(x, y) => binary("=>", x, y),
-        BoolExpr::Eq(x, y) => format!(
-            "(= {} {})",
-            bv_expr_to_rsmt2_str(*x),
-            bv_expr_to_rsmt2_str(*y)
-        ),
     }
 }
 
@@ -93,7 +80,7 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 ///
-pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType) {
+pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, ty: VIRType) {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
@@ -108,15 +95,15 @@ pub fn run_solver(actx: AssumptionContext, lhs: BVExpr, rhs: BVExpr, ty: VIRType
         .assumptions
         .iter()
         .map(|a| {
-            let p = bool_expr_to_rsmt2_str(a.assume.clone(), ty);
+            let p = vir_expr_to_rsmt2_str(a.assume.clone());
             println!("\t{}", p);
             p
         })
         .collect();
     let assumption_str = format!("(and {})", assumptions.join(" "));
 
-    let lhs_s = bv_expr_to_rsmt2_str(lhs);
-    let rhs_s = bv_expr_to_rsmt2_str(rhs);
+    let lhs_s = vir_expr_to_rsmt2_str(lhs);
+    let rhs_s = vir_expr_to_rsmt2_str(rhs);
 
     // Check whether the assumptions are possible
     if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
