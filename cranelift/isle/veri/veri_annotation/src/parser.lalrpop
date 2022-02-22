@@ -15,22 +15,22 @@ pub VIRType: VIRType = {
     "bool" => VIRType::Bool,
 };
 
-Ret: VIRType = "(ret:" <t:VIRType> ")" => t;
-
-//pub BoundVar: BoundVar = {
-//    <s:r"[A-Za-z0-9_]+"> ":" <t:Type> => BoundVar{name: s, ty: t},
-//};
+pub BoundVar: BoundVar = {
+    <s:r"[A-Za-z]|[A-zac-z]\w+|b[A-Za-uw-z0-9]\w*"> ":" <t:VIRType> => 
+        BoundVar{name: s.to_string(), ty: t},
+};
 
 //Arg: BoundVar = "(" <v:BoundVar> ")" => v;
 
-//ArgList: Vec<Arg> = {
-//    "(args" <vs:Arg+> ")" => vs,
-//    "(" "args" ")" => Vec::new(),
-//};
+ArgList: Vec<BoundVar> = {
+    "(args" <vs:BoundVar+> ")" => vs,
+    "(" "args" ")" => Vec::new(),
+};
 
-//pub FunctionAnnotation: FunctionAnnotation = {
-//    "(sig" <a:ArgList> <r:Ret> ")" => FuntionAnnotation {args: a, result: r},
-//};
+pub FunctionAnnotation: FunctionAnnotation = {
+    "(sig" <a:ArgList> "(" <r:BoundVar> ")" ")" => 
+        FunctionAnnotation {args: a, result: r},
+};
 
 // TODO: assertion, assertion list
 
