@@ -34,8 +34,8 @@ pub enum VIRType {
     Bool,
 
     /// The expression is an Isle type. This is separate from BitVector
-    /// because it allows us to use a different solver type for assertions
-    /// on the type (for example, Int). 
+    /// because it allows us to use a different solver type (e.h., Int) 
+    //. for assertions (e.g., fits_in_64). 
     /// This corresponds to Cranelift's Isle type: 
     /// (type Type (primitive Type))
     IsleType,
