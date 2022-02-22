@@ -3,12 +3,10 @@ use isle::sema::{Rule, TermEnv, TypeEnv};
 use veri_ir::{all_starting_bitvectors, VIRType};
 
 use crate::external_semantics::run_solver;
-use crate::interp_lhs::AssumptionContext;
-use crate::interp_rhs::InterpContext;
+use crate::interp::AssumptionContext;
 
 mod external_semantics;
-mod interp_lhs;
-mod interp_rhs;
+mod interp;
 mod isle_annotations;
 
 // Produces the two ISLE-defined structs with type and term environments
@@ -32,9 +30,8 @@ fn verification_conditions_for_rule(
     typeenv: &TypeEnv,
     ty: VIRType,
 ) {
-    let mut interp_ctx = InterpContext {};
-    let (assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-    let rhs = interp_ctx.interp_rhs(&rule.rhs, &assumption_ctx, termenv, typeenv, ty);
+    let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
+    let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, termenv, typeenv, ty);
     run_solver(assumption_ctx, lhs, rhs, ty);
 }
 
