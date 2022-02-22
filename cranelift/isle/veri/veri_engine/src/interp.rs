@@ -76,14 +76,22 @@ impl AssumptionContext {
         var
     }
 
-    fn build_annotation_remapping(&mut self, a: &VIRAnnotation, term: &String) -> HashMap<String, String> {
+    fn build_annotation_remapping(
+        &mut self,
+        a: &VIRAnnotation,
+        term: &String,
+    ) -> HashMap<String, String> {
         let mut renaming_map: HashMap<String, String> = HashMap::new();
         for b in &a.func.args {
-            renaming_map.insert(b.name.clone(), self.new_ident(&format!("{}_{}", term, &b.name)).clone());
+            renaming_map.insert(
+                b.name.clone(),
+                self.new_ident(&format!("{}_{}", term, &b.name)).clone(),
+            );
         }
         renaming_map.insert(
             a.func.result.name.clone(),
-            self.new_ident(&format!("{}_{}", term, a.func.result.name)).clone(),
+            self.new_ident(&format!("{}_{}", term, a.func.result.name))
+                .clone(),
         );
         renaming_map
     }

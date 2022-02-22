@@ -71,6 +71,9 @@ fn verification_conditions_for_rule(
 //  - will we eventually position this as a symbolic executer? Something more specific?
 
 fn main() {
+    // Thoughts on multiple rules: for now, start with `lower` rules.
+    // Think about inlining vs uninterpreted fn as an IR concern
+    // Don't bake either into impl
     let prelude = "
     ;; TYPES
 
