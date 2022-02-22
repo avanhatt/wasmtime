@@ -19,11 +19,25 @@ pub struct BoundVar {
     pub ty: VIRType,
 }
 
+/// Verification type
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum VIRType {
-    // logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
+    /// The expression is a bitvector, currently modeled in the
+    /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
+    /// This corresponds to Cranelift's Isle type: 
+    /// (type Value (primitive Value))
     BitVector(usize),
+
+    /// The expression is a boolean. This does not directly correspond 
+    /// to a specific Cranelift Isle type, rather, we use it for the
+    /// language of assertions.
     Bool,
+
+    /// The expression is an Isle type. This is separate from BitVector
+    /// because it allows us to use a different solver type for assertions
+    /// on the type (for example, Int). 
+    /// This corresponds to Cranelift's Isle type: 
+    /// (type Type (primitive Type))
     IsleType,
 }
 
@@ -91,7 +105,7 @@ impl VIRType {
     }
 
     pub fn lte(x: VIRExpr, y: VIRExpr) -> VIRExpr {
-        assert_eq!(x.ty(), y.ty(), "(= {:?}{:?})", x, y);
+        assert_eq!(x.ty(), y.ty(), "(<= {:?}{:?})", x, y);
         VIRExpr::Lte(Box::new(x), Box::new(y))
     }
 
