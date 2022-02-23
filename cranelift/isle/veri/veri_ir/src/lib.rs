@@ -6,10 +6,31 @@
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VIRAnnotation {
-    pub func: FunctionAnnotation,
-    pub assertions: Vec<VIRExpr>,
+    func: FunctionAnnotation,
+    assertions: Vec<VIRExpr>,
 }
 
+
+impl VIRAnnotation {
+
+    /// New annotation, ensuring that each assertions is a bool.
+    pub fn new(func: FunctionAnnotation, assertions: Vec<VIRExpr>) -> Self {
+        assert!(assertions.iter().all(|a| a.ty().is_bool()));
+        VIRAnnotation {
+            func,
+            assertions,
+        }
+    }
+
+    pub fn func(&self) -> &FunctionAnnotation {
+        &self.func
+    }
+
+
+    pub fn assertions(&self) -> &Vec<VIRExpr> {
+        &self.assertions
+    }
+}
 /// A function signature annotation, including the bound variable names for all
 /// arguments and the return value.
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -1,25 +1,20 @@
 /// This file handles renaming bound variables in assumption expressions,
 /// which is necessary to use annotations that might share variable names.
-
-use veri_ir::{BoundVar, VIRAnnotation, VIRExpr};
+use veri_ir::{BoundVar, FunctionAnnotation, VIRAnnotation, VIRExpr};
 
 pub fn rename_annotation_vars<F>(a: VIRAnnotation, rename: F) -> VIRAnnotation
 where
     F: Fn(&BoundVar) -> BoundVar + Copy,
 {
-    let args = a.func.args.iter().map(rename).collect();
-    let ret = rename(&a.func.ret);
-    VIRAnnotation {
-        func: veri_ir::FunctionAnnotation {
-            args,
-            ret,
-        },
-        assertions: a
-            .assertions
+    let args = a.func().args.iter().map(rename).collect();
+    let ret = rename(&a.func().ret);
+    VIRAnnotation::new(
+        FunctionAnnotation { args, ret },
+        a.assertions()
             .iter()
             .map(|e| rename_vir_expr(e.clone(), rename))
             .collect(),
-    }
+    )
 }
 
 fn rename_vir_expr<F>(expr: VIRExpr, rename: F) -> VIRExpr
