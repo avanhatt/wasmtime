@@ -69,7 +69,6 @@ fn main() {
 
     ;; (decl (a b) c bvX) (assert (= c (+ a b)))
     (decl iadd (Value Value) Inst)
-    ;; TODO: replace with more rules
     (extern extractor iadd iadd)
 
     (decl imm12_from_negated_value (Imm12) Value)
@@ -81,7 +80,6 @@ fn main() {
     (extern constructor value_reg value_reg)
 
     (decl add (Type Reg Reg) Reg)
-    ;; TODO: replace with more rules
     (extern constructor add add)
 
     (decl put_in_reg (Value) Reg)
@@ -90,8 +88,6 @@ fn main() {
     (decl sub_imm (Type Reg Imm12) Reg)
     (extern constructor sub_imm sub_imm)
     ";
-
-    // TODO: annotations are first priority
 
     let simple_iadd = "(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
         (value_reg (add ty (put_in_reg x) (put_in_reg y))))";
@@ -119,51 +115,3 @@ fn main() {
         }
     }
 }
-
-// Open questions 2022-02-07
-// 1. Syntax for term semantics spec
-// 2. Avoiding `has_type` special casing/final type
-// isle approach: separate core lang from IL prelude
-// 3. Rule depth/static inlining
-
-// Re: 1: syntax ideas
-
-// name =
-// { (arg1, arg2, res1) | ... }
-// u
-// { (arg1, arg2, res2) | ... }
-// (rule (name arg1 arg2)
-//       (res1))
-// (rule (name arg1 arg2)
-//       (res2))
-// ---
-// imm12_from_negated_value =
-//
-// (simple idea)
-// { (a, b) | b = extract(neg(a)) && fits(neg(a), 12) }
-// { (a, b) | a = neg(zext(b)) }
-//
-// (in practice)
-// { (a, b) | b = conv(neg(a)) && fits(neg(a), 12) }
-// { (a, b) | a = neg(conv(b)) }
-//
-// where conv if defined as either extract or zext
-// conv =
-// { (x, y) | if x.ty - y.ty > 0 {...} else {...} }
-//
-//
-// ---
-// (rule (...)
-//     (imm12_from_negated_value ...)
-//     (m_rotl ...))
-
-// Re: width of the register
-// (decl sub_imm (Type Reg Imm12) Reg)
-// (rule (sub_imm (fits_in_32 _ty) x y) (sub32_imm x y))
-// (rule (sub_imm $I64 x y) (sub64_imm x y))
-
-// (decl sub32_imm (Reg Imm12) Reg)
-// (rule (sub32_imm x y) (alu_rr_imm12 (ALUOp.Sub32) x y))
-
-// (decl sub64_imm (Reg Imm12) Reg)
-// (rule (sub64_imm x y) (alu_rr_imm12 (ALUOp.Sub64) x y))
