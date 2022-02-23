@@ -1,3 +1,5 @@
+//! Prototype verification tool for Cranelift's ISLE lowering rules.
+
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use veri_ir::{all_starting_bitvectors, VIRType};
@@ -8,6 +10,7 @@ use crate::interp::AssumptionContext;
 mod external_semantics;
 mod interp;
 mod isle_annotations;
+mod renaming;
 
 // Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
@@ -77,13 +80,8 @@ fn main() {
     let prelude = "
     ;; TYPES
 
-    ;; Inst UF
     (type Inst (primitive Inst))
-
-    ;; Type Int
     (type Type (primitive Type))
-
-    ;; Value bvX
     (type Value (primitive Value))
 
 

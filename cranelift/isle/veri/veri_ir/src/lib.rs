@@ -1,18 +1,24 @@
-//! Verification Intermediate Representation for relevant SMT types. Currently just booleans and bitvectors.
-//!
+//! Verification Intermediate Representation for relevant types, eventually to 
+//! be lowered to SMT. The goal is to leave some freedom to change term 
+//! encodings or the specific solver backend.
 
+/// Verification IR annotations for an ISLE term consist of the function 
+/// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VIRAnnotation {
     pub func: FunctionAnnotation,
     pub assertions: Vec<VIRExpr>,
 }
 
+/// A function signature annotation, including the bound variable names for all
+/// arguments and the return value.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionAnnotation {
     pub args: Vec<BoundVar>,
-    pub result: BoundVar,
+    pub ret: BoundVar,
 }
 
+/// A bound variable, including the VIR type
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BoundVar {
     pub name: String,
@@ -41,6 +47,7 @@ pub enum VIRType {
     IsleType,
 }
 
+/// Expressions (combined across all types).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum VIRExpr {
     // Terminal nodes

@@ -1,7 +1,7 @@
-//! Convert our internal SMT AST to an external one and pass queries to that
-//! solver.
-//!
-//! Right now, this uses the rsmt2 crate.
+/// Convert our internal Verification IR to an external SMT AST and pass 
+/// queries to that solver.
+///
+/// Right now, this uses the rsmt2 crate.
 
 use crate::interp::AssumptionContext;
 use rsmt2::Solver;
@@ -29,9 +29,9 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
 
     match e {
         VIRExpr::Const(ty, i) => match ty {
-            VIRType::BitVector(width) => format!("(_ bv{} {})", i, ty.width()),
-            VIRType::IsleType => format!("{}", i),
-            VIRType::Bool => format!("{}", if i == 0 { "false" } else { "true" }),
+            VIRType::BitVector(width) => format!("(_ bv{} {})", i, width),
+            VIRType::IsleType => i.to_string(),
+            VIRType::Bool => (if i == 0 { "false" } else { "true" }).to_string(),
         },
         VIRExpr::Var(bound_var) => bound_var.name,
         VIRExpr::True => "true".to_string(),
@@ -80,7 +80,7 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 ///
-pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, ty: VIRType) {
+pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, _ty: VIRType) {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
@@ -95,7 +95,7 @@ pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, ty: VIRTy
         .assumptions
         .iter()
         .map(|a| {
-            let p = vir_expr_to_rsmt2_str(a.assume.clone());
+            let p = vir_expr_to_rsmt2_str(a.assume().clone());
             println!("\t{}", p);
             p
         })
