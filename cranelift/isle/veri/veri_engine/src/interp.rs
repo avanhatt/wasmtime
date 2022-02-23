@@ -1,7 +1,7 @@
-//! Interpret and build an assumption context from the left hand side of a rule.
-//!
+/// Interpret and build an assumption context from the LHS and RHS of rules.
 
-use crate::isle_annotations::{isle_annotation_for_term, rename_annotation_vars};
+use crate::isle_annotations::isle_annotation_for_term;
+use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
 use std::collections::HashMap;
@@ -9,6 +9,8 @@ use std::collections::HashMap;
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
 
+/// Trait defining how to produce an verification IR expression from an 
+/// ISLE term, used to recursively interpret terms on both the LHS and RHS.
 trait ToVIRExpr {
     fn to_expr(
         &self,
@@ -19,6 +21,7 @@ trait ToVIRExpr {
     ) -> VIRExpr;
 }
 
+/// Type for term arguments for ISLE LHS terms.
 impl ToVIRExpr for TermArgPattern {
     fn to_expr(
         &self,
@@ -34,6 +37,7 @@ impl ToVIRExpr for TermArgPattern {
     }
 }
 
+/// Type for term arguments for ISLE RHS terms.
 impl ToVIRExpr for isle::sema::Expr {
     fn to_expr(
         &self,
@@ -46,11 +50,26 @@ impl ToVIRExpr for isle::sema::Expr {
     }
 }
 
+/// Assumption consist of single verification IR expressions, which must have
+/// boolean type.
 #[derive(Clone, Debug)]
 pub struct Assumption {
-    pub assume: VIRExpr,
+    assume: VIRExpr,
 }
 
+impl Assumption {
+    /// Create a new assumption, checking type.
+    pub fn new(assume: VIRExpr) -> Self {
+        assert!(assume.ty().is_bool());
+        Self {
+            assume,
+        }
+    }
+
+    pub fn assume(&self) -> VIRExpr {
+        self.assume.clone()
+    }
+}
 #[derive(Clone, Debug)]
 pub struct AssumptionContext {
     pub quantified_vars: Vec<BoundVar>,
@@ -79,7 +98,7 @@ impl AssumptionContext {
     fn build_annotation_remapping(
         &mut self,
         a: &VIRAnnotation,
-        term: &String,
+        term: &str,
     ) -> HashMap<String, String> {
         let mut renaming_map: HashMap<String, String> = HashMap::new();
         for b in &a.func.args {
@@ -89,14 +108,13 @@ impl AssumptionContext {
             );
         }
         renaming_map.insert(
-            a.func.result.name.clone(),
-            self.new_ident(&format!("{}_{}", term, a.func.result.name))
-                .clone(),
+            a.func.ret.name.clone(),
+            self.new_ident(&format!("{}_{}", term, a.func.ret.name)),
         );
         renaming_map
     }
 
-    fn get_annotation_for_term(&mut self, term: &String, ty: VIRType) -> VIRAnnotation {
+    fn get_annotation_for_term(&mut self, term: &str, ty: VIRType) -> VIRAnnotation {
         let initial_annotation = isle_annotation_for_term(term, ty);
         // Build renaming map from bound vars in the signature
         let read_renames = self.build_annotation_remapping(&initial_annotation, term);
@@ -113,7 +131,7 @@ impl AssumptionContext {
 
     fn interp_term_with_subexprs<T: ToVIRExpr>(
         &mut self,
-        term_name: &String,
+        term_name: &str,
         subterms: Vec<T>,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
@@ -126,17 +144,14 @@ impl AssumptionContext {
 
         for (arg, subterm) in annotation.func.args.iter().zip(subterms) {
             let subexpr = subterm.to_expr(self, termenv, typeenv, arg.ty);
-            self.assumptions.push(Assumption {
-                // The bound arg should be equal to the recursive result
-                assume: VIRType::eq(subexpr, VIRExpr::Var(arg.clone())),
-            });
+            self.assumptions.push(Assumption::new(VIRType::eq(subexpr, VIRExpr::Var(arg.clone()))));
             self.quantified_vars.push(arg.clone());
         }
         for a in annotation.assertions {
-            self.assumptions.push(Assumption { assume: a });
+            self.assumptions.push(Assumption::new(a));
         }
-        self.quantified_vars.push(annotation.func.result.clone());
-        annotation.func.result.as_expr()
+        self.quantified_vars.push(annotation.func.ret.clone());
+        annotation.func.ret.as_expr()
     }
 
     fn interp_pattern(
@@ -198,7 +213,7 @@ impl AssumptionContext {
         typeenv: &TypeEnv,
         ty: VIRType,
     ) -> VIRExpr {
-        self.interp_pattern(&pattern, termenv, typeenv, ty)
+        self.interp_pattern(pattern, termenv, typeenv, ty)
     }
 
     /// Construct the term environment from the AST and the type environment.
