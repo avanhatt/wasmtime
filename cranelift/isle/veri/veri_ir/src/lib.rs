@@ -10,7 +10,6 @@ pub struct VIRAnnotation {
     assertions: Vec<VIRExpr>,
 }
 
-
 impl VIRAnnotation {
 
     /// New annotation, ensuring that each assertions is a bool.
@@ -225,4 +224,18 @@ impl BoundVar {
     pub fn as_expr(&self)-> VIRExpr {
         VIRExpr::Var(self.clone())
     }
+}
+
+/// To-be-flushed-out verification counterexample for failures
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Counterexample {
+}
+
+/// To-be-flushed-out verification result
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum VerificationResult {
+    InapplicableRule,
+    Success,
+    Failure(Counterexample),
+    Unknown
 }

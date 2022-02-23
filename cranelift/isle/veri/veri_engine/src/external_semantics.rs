@@ -4,7 +4,7 @@
 /// Right now, this uses the rsmt2 crate.
 use crate::interp::AssumptionContext;
 use rsmt2::Solver;
-use veri_ir::{VIRExpr, VIRType};
+use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
 
 pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
     match ty {
@@ -79,7 +79,12 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 ///
-pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, _ty: VIRType) {
+pub fn run_solver(
+    actx: AssumptionContext,
+    lhs: VIRExpr,
+    rhs: VIRExpr,
+    _ty: VIRType,
+) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
@@ -107,7 +112,7 @@ pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, _ty: VIRT
     // Check whether the assumptions are possible
     if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
         println!("Rule not applicable as written, skipping full query");
-        return;
+        return VerificationResult::InapplicableRule;
     }
 
     let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
@@ -115,8 +120,14 @@ pub fn run_solver(actx: AssumptionContext, lhs: VIRExpr, rhs: VIRExpr, _ty: VIRT
     solver.assert(query).unwrap();
 
     match solver.check_sat() {
-        Ok(true) => println!("Verification failed"),
-        Ok(false) => println!("Verification succeeded"),
+        Ok(true) => {
+            println!("Verification failed");
+            return VerificationResult::Failure(Counterexample {});
+        }
+        Ok(false) => {
+            println!("Verification succeeded");
+            return VerificationResult::Success;
+        }
         Err(err) => {
             unreachable!("Error! {:?}", err);
         }
