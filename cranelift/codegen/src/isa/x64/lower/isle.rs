@@ -1,26 +1,28 @@
 //! ISLE integration glue code for x64 lowering.
 
 // Pull in the ISLE generated code.
-mod generated_code;
+pub(crate) mod generated_code;
+use generated_code::MInst;
+use regalloc::Writable;
 
 // Types that the generated ISLE code uses via `use super::*`.
-use super::{
-    is_mergeable_load, lower_to_amode, AluRmiROpcode, Inst as MInst, OperandSize, Reg, RegMemImm,
-};
+use super::{is_int_or_ref_ty, is_mergeable_load, lower_to_amode, Reg};
 use crate::{
-    ir::{immediates::*, types::*, Inst, InstructionData, Opcode, TrapCode, Value, ValueList},
-    isa::x64::{
-        inst::{
-            args::{
-                Amode, Avx512Opcode, CmpOpcode, ExtKind, ExtMode, FcmpImm, Imm8Reg, RegMem,
-                ShiftKind, SseOpcode, SyntheticAmode, CC,
-            },
-            regs, x64_map_regs,
-        },
-        settings::Flags as IsaFlags,
+    ir::{
+        condcodes::FloatCC, immediates::*, types::*, Inst, InstructionData, Opcode, TrapCode,
+        Value, ValueLabel, ValueList,
     },
-    machinst::{isle::*, InsnInput, InsnOutput, LowerCtx, VCodeConstantData},
-    settings::Flags,
+    isa::{
+        settings::Flags,
+        unwind::UnwindInst,
+        x64::{
+            inst::{args::*, regs, x64_map_regs},
+            settings::Flags as IsaFlags,
+        },
+    },
+    machinst::{
+        isle::*, AtomicRmwOp, InsnInput, InsnOutput, LowerCtx, VCodeConstant, VCodeConstantData,
+    },
 };
 use std::convert::TryFrom;
 
@@ -77,7 +79,7 @@ where
 
         if let Some(c) = inputs.constant {
             if let Some(imm) = to_simm32(c as i64) {
-                return imm;
+                return imm.to_reg_mem_imm();
             }
 
             // Generate constants fresh at each use to minimize long-range
@@ -118,21 +120,23 @@ where
         RegMem::reg(self.put_in_reg(val))
     }
 
-    fn put_masked_in_imm8_reg(&mut self, val: Value, ty: Type) -> Imm8Reg {
+    fn put_masked_in_imm8_gpr(&mut self, val: Value, ty: Type) -> Imm8Gpr {
         let inputs = self.lower_ctx.get_value_as_source_or_const(val);
 
         if let Some(c) = inputs.constant {
             let mask = 1_u64
                 .checked_shl(ty.bits() as u32)
                 .map_or(u64::MAX, |x| x - 1);
-            return Imm8Reg::Imm8 {
+            return Imm8Gpr::new(Imm8Reg::Imm8 {
                 imm: (c & mask) as u8,
-            };
+            })
+            .unwrap();
         }
 
-        Imm8Reg::Reg {
+        Imm8Gpr::new(Imm8Reg::Reg {
             reg: self.put_in_regs(val).regs()[0],
-        }
+        })
+        .unwrap()
     }
 
     #[inline]
@@ -176,17 +180,18 @@ where
     }
 
     #[inline]
-    fn const_to_type_masked_imm8(&mut self, c: u64, ty: Type) -> Imm8Reg {
+    fn const_to_type_masked_imm8(&mut self, c: u64, ty: Type) -> Imm8Gpr {
         let mask = 1_u64
             .checked_shl(ty.bits() as u32)
             .map_or(u64::MAX, |x| x - 1);
-        Imm8Reg::Imm8 {
+        Imm8Gpr::new(Imm8Reg::Imm8 {
             imm: (c & mask) as u8,
-        }
+        })
+        .unwrap()
     }
 
     #[inline]
-    fn simm32_from_value(&mut self, val: Value) -> Option<RegMemImm> {
+    fn simm32_from_value(&mut self, val: Value) -> Option<GprMemImm> {
         let inst = self.lower_ctx.dfg().value_def(val).inst()?;
         let constant: u64 = self.lower_ctx.get_constant(inst)?;
         let constant = constant as i64;
@@ -194,7 +199,7 @@ where
     }
 
     #[inline]
-    fn simm32_from_imm64(&mut self, imm: Imm64) -> Option<RegMemImm> {
+    fn simm32_from_imm64(&mut self, imm: Imm64) -> Option<GprMemImm> {
         to_simm32(imm.bits())
     }
 
@@ -231,8 +236,12 @@ where
         }
     }
 
-    fn emit_safepoint(&mut self, _inst: &MInst) -> Unit {
-        unimplemented!();
+    fn emit_safepoint(&mut self, inst: &MInst) -> Unit {
+        use crate::machinst::MachInst;
+        for inst in inst.clone().mov_mitosis() {
+            let is_safepoint = !inst.is_move().is_some();
+            self.emitted_insts.push((inst, is_safepoint));
+        }
     }
 
     #[inline]
@@ -252,8 +261,8 @@ where
     }
 
     #[inline]
-    fn xmm0(&mut self) -> WritableReg {
-        WritableReg::from_reg(regs::xmm0())
+    fn xmm0(&mut self) -> WritableXmm {
+        WritableXmm::from_reg(Xmm::new(regs::xmm0()).unwrap())
     }
 
     #[inline]
@@ -262,13 +271,23 @@ where
     }
 
     #[inline]
-    fn amode_imm_reg_reg_shift(&mut self, simm32: u32, base: Reg, index: Reg, shift: u8) -> Amode {
+    fn amode_imm_reg_reg_shift(&mut self, simm32: u32, base: Gpr, index: Gpr, shift: u8) -> Amode {
         Amode::imm_reg_reg_shift(simm32, base, index, shift)
     }
 
     #[inline]
     fn amode_to_synthetic_amode(&mut self, amode: &Amode) -> SyntheticAmode {
         amode.clone().into()
+    }
+
+    #[inline]
+    fn writable_gpr_to_reg(&mut self, r: WritableGpr) -> WritableReg {
+        r.to_writable_reg()
+    }
+
+    #[inline]
+    fn writable_xmm_to_reg(&mut self, r: WritableXmm) -> WritableReg {
+        r.to_writable_reg()
     }
 
     fn ishl_i8x16_mask_for_const(&mut self, amt: u32) -> SyntheticAmode {
@@ -306,6 +325,147 @@ where
             .use_constant(VCodeConstantData::WellKnown(&I8X16_USHR_MASKS));
         SyntheticAmode::ConstantOffset(mask_table)
     }
+
+    #[inline]
+    fn writable_reg_to_xmm(&mut self, r: WritableReg) -> WritableXmm {
+        Writable::from_reg(Xmm::new(r.to_reg()).unwrap())
+    }
+
+    #[inline]
+    fn writable_xmm_to_xmm(&mut self, r: WritableXmm) -> Xmm {
+        r.to_reg()
+    }
+
+    #[inline]
+    fn writable_gpr_to_gpr(&mut self, r: WritableGpr) -> Gpr {
+        r.to_reg()
+    }
+
+    #[inline]
+    fn gpr_to_reg(&mut self, r: Gpr) -> Reg {
+        r.into()
+    }
+
+    #[inline]
+    fn xmm_to_reg(&mut self, r: Xmm) -> Reg {
+        r.into()
+    }
+
+    #[inline]
+    fn xmm_to_xmm_mem_imm(&mut self, r: Xmm) -> XmmMemImm {
+        r.into()
+    }
+
+    #[inline]
+    fn temp_writable_gpr(&mut self) -> WritableGpr {
+        Writable::from_reg(Gpr::new(self.temp_writable_reg(I64).to_reg()).unwrap())
+    }
+
+    #[inline]
+    fn temp_writable_xmm(&mut self) -> WritableXmm {
+        Writable::from_reg(Xmm::new(self.temp_writable_reg(I8X16).to_reg()).unwrap())
+    }
+
+    #[inline]
+    fn reg_mem_to_xmm_mem(&mut self, rm: &RegMem) -> XmmMem {
+        XmmMem::new(rm.clone()).unwrap()
+    }
+
+    #[inline]
+    fn gpr_mem_imm_new(&mut self, rmi: &RegMemImm) -> GprMemImm {
+        GprMemImm::new(rmi.clone()).unwrap()
+    }
+
+    #[inline]
+    fn xmm_mem_imm_new(&mut self, rmi: &RegMemImm) -> XmmMemImm {
+        XmmMemImm::new(rmi.clone()).unwrap()
+    }
+
+    #[inline]
+    fn xmm_to_xmm_mem(&mut self, r: Xmm) -> XmmMem {
+        r.into()
+    }
+
+    #[inline]
+    fn xmm_mem_to_reg_mem(&mut self, xm: &XmmMem) -> RegMem {
+        xm.clone().into()
+    }
+
+    #[inline]
+    fn gpr_mem_to_reg_mem(&mut self, gm: &GprMem) -> RegMem {
+        gm.clone().into()
+    }
+
+    #[inline]
+    fn xmm_new(&mut self, r: Reg) -> Xmm {
+        Xmm::new(r).unwrap()
+    }
+
+    #[inline]
+    fn gpr_new(&mut self, r: Reg) -> Gpr {
+        Gpr::new(r).unwrap()
+    }
+
+    #[inline]
+    fn reg_mem_to_gpr_mem(&mut self, rm: &RegMem) -> GprMem {
+        GprMem::new(rm.clone()).unwrap()
+    }
+
+    #[inline]
+    fn reg_to_gpr_mem(&mut self, r: Reg) -> GprMem {
+        GprMem::new(RegMem::reg(r)).unwrap()
+    }
+
+    #[inline]
+    fn imm8_reg_to_imm8_gpr(&mut self, ir: &Imm8Reg) -> Imm8Gpr {
+        Imm8Gpr::new(ir.clone()).unwrap()
+    }
+
+    #[inline]
+    fn gpr_to_gpr_mem(&mut self, gpr: Gpr) -> GprMem {
+        GprMem::from(gpr)
+    }
+
+    #[inline]
+    fn gpr_to_gpr_mem_imm(&mut self, gpr: Gpr) -> GprMemImm {
+        GprMemImm::from(gpr)
+    }
+
+    #[inline]
+    fn gpr_to_imm8_gpr(&mut self, gpr: Gpr) -> Imm8Gpr {
+        Imm8Gpr::from(gpr)
+    }
+
+    #[inline]
+    fn imm8_to_imm8_gpr(&mut self, imm: u8) -> Imm8Gpr {
+        Imm8Gpr::new(Imm8Reg::Imm8 { imm }).unwrap()
+    }
+
+    fn is_gpr_type(&mut self, ty: Type) -> Option<Type> {
+        if is_int_or_ref_ty(ty) || ty == I128 || ty == B128 {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn is_xmm_type(&mut self, ty: Type) -> Option<Type> {
+        if ty == F32 || ty == F64 || (ty.is_vector() && ty.bits() == 128) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn is_single_register_type(&mut self, ty: Type) -> Option<Type> {
+        if ty != I128 {
+            Some(ty)
+        } else {
+            None
+        }
+    }
 }
 
 // Since x64 doesn't have 8x16 shifts and we must use a 16x8 shift instead, we
@@ -340,11 +500,14 @@ const I8X16_USHR_MASKS: [u8; 128] = [
 ];
 
 #[inline]
-fn to_simm32(constant: i64) -> Option<RegMemImm> {
+fn to_simm32(constant: i64) -> Option<GprMemImm> {
     if constant == ((constant << 32) >> 32) {
-        Some(RegMemImm::Imm {
-            simm32: constant as u32,
-        })
+        Some(
+            GprMemImm::new(RegMemImm::Imm {
+                simm32: constant as u32,
+            })
+            .unwrap(),
+        )
     } else {
         None
     }

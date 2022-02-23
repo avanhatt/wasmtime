@@ -1,10 +1,6 @@
-//! Adds support for profiling JIT-ed code using VTune.
-//!
-//! ### Build
-//!
-//! ```ignore
-//! cargo build --features=vtune
-//! ```
+//! Adds support for profiling JIT-ed code using VTune. By default, VTune
+//! support is built in to Wasmtime (configure with the `vtune` feature flag).
+//! To enable it at runtime, use the `--vtune` CLI flag.
 //!
 //! ### Profile
 //!
@@ -131,7 +127,7 @@ impl State {
 
         for (idx, func) in module.finished_functions() {
             let (addr, len) = unsafe { ((*func).as_ptr().cast::<u8>(), (*func).len()) };
-            let method_name = super::debug_name(module.module(), idx);
+            let method_name = super::debug_name(module, idx);
             let method_id = self.get_method_id();
             log::trace!(
                 "new function ({}) {:?}::{:?} @ {:?}\n",

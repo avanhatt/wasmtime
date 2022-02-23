@@ -13,14 +13,15 @@ use crate::machinst::isle::*;
 use crate::settings::Flags;
 use crate::{
     ir::{
-        condcodes::*, immediates::*, types::*, AtomicRmwOp, Endianness, ExternalName, Inst,
-        InstructionData, StackSlot, TrapCode, Value, ValueLabel, ValueList,
+        condcodes::*, immediates::*, types::*, AtomicRmwOp, Endianness, Inst, InstructionData,
+        StackSlot, TrapCode, Value, ValueLabel, ValueList,
     },
     isa::s390x::inst::s390x_map_regs,
     isa::unwind::UnwindInst,
-    machinst::{InsnOutput, LowerCtx, RelocDistance},
+    machinst::{InsnOutput, LowerCtx},
 };
 use std::boxed::Box;
+use std::cell::Cell;
 use std::convert::TryFrom;
 use std::vec::Vec;
 
@@ -28,6 +29,8 @@ type BoxCallInfo = Box<CallInfo>;
 type BoxCallIndInfo = Box<CallIndInfo>;
 type VecMachLabel = Vec<MachLabel>;
 type BoxExternalName = Box<ExternalName>;
+type VecMInst = Vec<MInst>;
+type VecMInstBuilder = Cell<Vec<MInst>>;
 
 /// The main entry point for lowering with ISLE.
 pub(crate) fn lower<C>(
@@ -122,18 +125,6 @@ where
         } else {
             None
         }
-    }
-
-    #[inline]
-    fn symbol_value_data(&mut self, inst: Inst) -> Option<(BoxExternalName, RelocDistance, i64)> {
-        let (name, dist, offset) = self.lower_ctx.symbol_value(inst)?;
-        Some((Box::new(name.clone()), dist, offset))
-    }
-
-    #[inline]
-    fn call_target_data(&mut self, inst: Inst) -> Option<(BoxExternalName, RelocDistance)> {
-        let (name, dist) = self.lower_ctx.call_target(inst)?;
-        Some((Box::new(name.clone()), dist))
     }
 
     #[inline]
@@ -402,15 +393,6 @@ where
     }
 
     #[inline]
-    fn reloc_distance_near(&mut self, dist: &RelocDistance) -> Option<()> {
-        if *dist == RelocDistance::Near {
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    #[inline]
     fn zero_offset(&mut self) -> Offset32 {
         Offset32::new(0)
     }
@@ -441,6 +423,11 @@ where
     }
 
     #[inline]
+    fn box_external_name(&mut self, name: ExternalName) -> BoxExternalName {
+        Box::new(name)
+    }
+
+    #[inline]
     fn memflags_trusted(&mut self) -> MemFlags {
         MemFlags::trusted()
     }
@@ -456,9 +443,9 @@ where
     }
 
     #[inline]
-    fn memarg_symbol(&mut self, name: BoxExternalName, offset: i32, flags: MemFlags) -> MemArg {
+    fn memarg_symbol(&mut self, name: ExternalName, offset: i32, flags: MemFlags) -> MemArg {
         MemArg::Symbol {
-            name,
+            name: Box::new(name),
             offset,
             flags,
         }
@@ -483,6 +470,41 @@ where
     ) -> MInst {
         let offset = u32::try_from(i32::from(offset)).unwrap();
         self.lower_ctx.abi().stackslot_addr(stack_slot, offset, dst)
+    }
+
+    #[inline]
+    fn inst_builder_new(&mut self) -> VecMInstBuilder {
+        Cell::new(Vec::<MInst>::new())
+    }
+
+    #[inline]
+    fn inst_builder_push(&mut self, builder: &VecMInstBuilder, inst: &MInst) -> Unit {
+        let mut vec = builder.take();
+        vec.push(inst.clone());
+        builder.set(vec);
+    }
+
+    #[inline]
+    fn inst_builder_finish(&mut self, builder: &VecMInstBuilder) -> Vec<MInst> {
+        builder.take()
+    }
+
+    #[inline]
+    fn real_reg(&mut self, reg: WritableReg) -> Option<WritableReg> {
+        if reg.to_reg().is_real() {
+            Some(reg)
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn same_reg(&mut self, src: Reg, dst: WritableReg) -> Option<()> {
+        if dst.to_reg() == src {
+            Some(())
+        } else {
+            None
+        }
     }
 
     #[inline]

@@ -262,8 +262,8 @@
 //!   jitdump runtime profiling format. The profiler can be selected with
 //!   [`Config::profiler`].
 //!
-//! * `vtune` - Not enabled by default, this feature compiles in support for
-//!   supporting VTune profiling of JIT code.
+//! * `vtune` - Enabled by default, this feature compiles in support for VTune
+//!   profiling of JIT code.
 //!
 //! * `uffd` - Not enabled by default. This feature enables `userfaultfd` support
 //!   when using the pooling instance allocator. As handling page faults in user space
@@ -274,6 +274,21 @@
 //! * `all-arch` - Not enabled by default. This feature compiles in support for
 //!   all architectures for both the JIT compiler and the `wasmtime compile` CLI
 //!   command.
+//!
+//! * `pooling-allocator` - Enabled by default, this feature adds support for
+//!   the pooling allocation strategy enabled via
+//!   [`Config::allocation_strategy`]. The pooling allocator can enable more
+//!   efficient reuse of resources for high-concurrency and
+//!   high-instantiation-count scenarios.
+//!
+//! * `memory-init-cow` - Enabled by default, this feature builds in support
+//!   for, on supported platforms, initializing wasm linear memories with
+//!   copy-on-write heap mappings. This makes instantiation much faster by
+//!   `mmap`-ing the initial memory image into place instead of copying memory
+//!   into place, allowing sharing pages that end up only getting read. Note
+//!   that this is simply compile-time support and this must also be enabled at
+//!   run-time via [`Config::memory_init_cow`] (which is also enabled by
+//!   default).
 //!
 //! ## Examples
 //!

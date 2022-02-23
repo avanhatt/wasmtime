@@ -63,9 +63,6 @@ use target_lexicon::{triple, Architecture, OperatingSystem, PointerWidth, Triple
 #[cfg(feature = "x86")]
 pub mod x64;
 
-#[cfg(feature = "arm32")]
-mod arm32;
-
 #[cfg(feature = "arm64")]
 pub(crate) mod aarch64;
 
@@ -98,7 +95,6 @@ pub fn lookup(triple: Triple) -> Result<Builder, LookupError> {
         Architecture::X86_64 => {
             isa_builder!(x64, (feature = "x86"), triple)
         }
-        Architecture::Arm { .. } => isa_builder!(arm32, (feature = "arm32"), triple),
         Architecture::Aarch64 { .. } => isa_builder!(aarch64, (feature = "arm64"), triple),
         Architecture::S390x { .. } => isa_builder!(s390x, (feature = "s390x"), triple),
         _ => Err(LookupError::Unsupported),
@@ -143,7 +139,8 @@ impl fmt::Display for LookupError {
 pub struct Builder {
     triple: Triple,
     setup: settings::Builder,
-    constructor: fn(Triple, settings::Flags, settings::Builder) -> Box<dyn TargetIsa>,
+    constructor:
+        fn(Triple, settings::Flags, settings::Builder) -> CodegenResult<Box<dyn TargetIsa>>,
 }
 
 impl Builder {
@@ -157,9 +154,13 @@ impl Builder {
         self.setup.iter()
     }
 
-    /// Combine the ISA-specific settings with the provided ISA-independent settings and allocate a
-    /// fully configured `TargetIsa` trait object.
-    pub fn finish(self, shared_flags: settings::Flags) -> Box<dyn TargetIsa> {
+    /// Combine the ISA-specific settings with the provided
+    /// ISA-independent settings and allocate a fully configured
+    /// `TargetIsa` trait object. May return an error if some of the
+    /// flags are inconsistent or incompatible: for example, some
+    /// platform-independent features, like general SIMD support, may
+    /// need certain ISA extensions to be enabled.
+    pub fn finish(self, shared_flags: settings::Flags) -> CodegenResult<Box<dyn TargetIsa>> {
         (self.constructor)(self.triple, shared_flags, self.setup)
     }
 }

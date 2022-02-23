@@ -14,7 +14,10 @@ pub mod dummy;
 
 use crate::generators;
 use anyhow::Context;
+use arbitrary::Arbitrary;
 use log::{debug, warn};
+use std::cell::Cell;
+use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
@@ -53,32 +56,35 @@ pub fn log_wasm(wasm: &[u8]) {
 
 /// The `T` in `Store<T>` for fuzzing stores, used to limit resource
 /// consumption during fuzzing.
-pub struct StoreLimits {
+#[derive(Clone)]
+pub struct StoreLimits(Rc<LimitsState>);
+
+struct LimitsState {
     /// Remaining memory, in bytes, left to allocate
-    remaining_memory: usize,
+    remaining_memory: Cell<usize>,
     /// Whether or not an allocation request has been denied
-    oom: bool,
+    oom: Cell<bool>,
 }
 
 impl StoreLimits {
     /// Creates the default set of limits for all fuzzing stores.
     pub fn new() -> StoreLimits {
-        StoreLimits {
+        StoreLimits(Rc::new(LimitsState {
             // Limits tables/memories within a store to at most 1gb for now to
             // exercise some larger address but not overflow various limits.
-            remaining_memory: 1 << 30,
-            oom: false,
-        }
+            remaining_memory: Cell::new(1 << 30),
+            oom: Cell::new(false),
+        }))
     }
 
     fn alloc(&mut self, amt: usize) -> bool {
-        match self.remaining_memory.checked_sub(amt) {
+        match self.0.remaining_memory.get().checked_sub(amt) {
             Some(mem) => {
-                self.remaining_memory = mem;
+                self.0.remaining_memory.set(mem);
                 true
             }
             None => {
-                self.oom = true;
+                self.0.oom.set(true);
                 false
             }
         }
@@ -142,14 +148,114 @@ pub fn instantiate(wasm: &[u8], known_valid: bool, config: &generators::Config, 
         Timeout::None => {}
     }
 
-    log_wasm(wasm);
-    let module = match Module::new(store.engine(), wasm) {
-        Ok(module) => module,
-        Err(_) if !known_valid => return,
-        Err(e) => panic!("failed to compile module: {:?}", e),
-    };
+    if let Some(module) = compile_module(store.engine(), wasm, known_valid, config) {
+        instantiate_with_dummy(&mut store, &module);
+    }
+}
 
-    instantiate_with_dummy(&mut store, &module);
+/// Represents supported commands to the `instantiate_many` function.
+#[derive(Arbitrary, Debug)]
+pub enum Command {
+    /// Instantiates a module.
+    ///
+    /// The value is the index of the module to instantiate.
+    ///
+    /// The module instantiated will be this value modulo the number of modules provided to `instantiate_many`.
+    Instantiate(usize),
+    /// Terminates a "running" instance.
+    ///
+    /// The value is the index of the instance to terminate.
+    ///
+    /// The instance terminated will be this value modulo the number of currently running
+    /// instances.
+    ///
+    /// If no instances are running, the command will be ignored.
+    Terminate(usize),
+}
+
+/// Instantiates many instances from the given modules.
+///
+/// The engine will be configured using the provided config.
+///
+/// The modules are expected to *not* have start functions as no timeouts are configured.
+pub fn instantiate_many(
+    modules: &[Vec<u8>],
+    known_valid: bool,
+    config: &generators::Config,
+    commands: &[Command],
+) {
+    assert!(!config.module_config.config.allow_start_export);
+
+    let engine = Engine::new(&config.to_wasmtime()).unwrap();
+
+    let modules = modules
+        .iter()
+        .filter_map(|bytes| compile_module(&engine, bytes, known_valid, config))
+        .collect::<Vec<_>>();
+
+    // If no modules were valid, we're done
+    if modules.is_empty() {
+        return;
+    }
+
+    // This stores every `Store` where a successful instantiation takes place
+    let mut stores = Vec::new();
+    let limits = StoreLimits::new();
+
+    for command in commands {
+        match command {
+            Command::Instantiate(index) => {
+                let index = *index % modules.len();
+                log::info!("instantiating {}", index);
+                let module = &modules[index];
+                let mut store = Store::new(&engine, limits.clone());
+                config.configure_store(&mut store);
+
+                if instantiate_with_dummy(&mut store, module).is_some() {
+                    stores.push(Some(store));
+                } else {
+                    log::warn!("instantiation failed");
+                }
+            }
+            Command::Terminate(index) => {
+                if stores.is_empty() {
+                    continue;
+                }
+                let index = *index % stores.len();
+
+                log::info!("dropping {}", index);
+                stores.swap_remove(index);
+            }
+        }
+    }
+}
+
+fn compile_module(
+    engine: &Engine,
+    bytes: &[u8],
+    known_valid: bool,
+    config: &generators::Config,
+) -> Option<Module> {
+    log_wasm(bytes);
+    match config.compile(engine, bytes) {
+        Ok(module) => Some(module),
+        Err(_) if !known_valid => None,
+        Err(e) => {
+            if let generators::InstanceAllocationStrategy::Pooling { .. } =
+                &config.wasmtime.strategy
+            {
+                // When using the pooling allocator, accept failures to compile when arbitrary
+                // table element limits have been exceeded as there is currently no way
+                // to constrain the generated module table types.
+                let string = e.to_string();
+                if string.contains("minimum element size") {
+                    return None;
+                }
+            }
+
+            panic!("failed to compile module: {:?}", e);
+        }
+    }
 }
 
 fn instantiate_with_dummy(store: &mut Store<StoreLimits>, module: &Module) -> Option<Instance> {
@@ -167,7 +273,7 @@ fn instantiate_with_dummy(store: &mut Store<StoreLimits>, module: &Module) -> Op
     // If the instantiation hit OOM for some reason then that's ok, it's
     // expected that fuzz-generated programs try to allocate lots of
     // stuff.
-    if store.data().oom {
+    if store.data().0.oom.get() {
         return None;
     }
 
@@ -188,19 +294,26 @@ fn instantiate_with_dummy(store: &mut Store<StoreLimits>, module: &Module) -> Op
         return None;
     }
 
+    // Also allow failures to instantiate as a result of hitting instance limits
+    if string.contains("concurrent instances has been reached") {
+        return None;
+    }
+
     // Everything else should be a bug in the fuzzer or a bug in wasmtime
-    panic!("failed to instantiate {:?}", e);
+    panic!("failed to instantiate: {:?}", e);
 }
 
 /// Instantiate the given Wasm module with each `Config` and call all of its
 /// exports. Modulo OOM, non-canonical NaNs, and usage of Wasm features that are
 /// or aren't enabled for different configs, we should get the same results when
 /// we call the exported functions for all of our different configs.
+///
+/// Returns `None` if a fuzz configuration was rejected (should happen rarely).
 pub fn differential_execution(
     wasm: &[u8],
     module_config: &generators::ModuleConfig,
     configs: &[generators::WasmtimeConfig],
-) {
+) -> Option<()> {
     use std::collections::{HashMap, HashSet};
 
     // We need at least two configs.
@@ -208,7 +321,7 @@ pub fn differential_execution(
         // And all the configs should be unique.
         || configs.iter().collect::<HashSet<_>>().len() != configs.len()
     {
-        return;
+        return None;
     }
 
     let mut export_func_results: HashMap<String, Result<Box<[Val]>, Trap>> = Default::default();
@@ -222,7 +335,7 @@ pub fn differential_execution(
         log::debug!("fuzz config: {:?}", fuzz_config);
 
         let mut store = fuzz_config.to_store();
-        let module = Module::new(store.engine(), &wasm).unwrap();
+        let module = compile_module(store.engine(), &wasm, true, &fuzz_config)?;
 
         // TODO: we should implement tracing versions of these dummy imports
         // that record a trace of the order that imported functions were called
@@ -257,6 +370,8 @@ pub fn differential_execution(
             assert_same_export_func_result(&existing_result, &this_result, &name);
         }
     }
+
+    return Some(());
 
     fn assert_same_export_func_result(
         lhs: &Result<Box<[Val]>, Trap>,
@@ -405,7 +520,8 @@ pub fn make_api_calls(api: generators::api::ApiCalls) {
 ///
 /// Ensures that spec tests pass regardless of the `Config`.
 pub fn spectest(mut fuzz_config: generators::Config, test: generators::SpecTest) {
-    fuzz_config.module_config.set_spectest_compliant();
+    crate::init_fuzzing();
+    fuzz_config.set_spectest_compliant();
     log::debug!("running {:?} with {:?}", test.file, fuzz_config);
     let mut wast_context = WastContext::new(fuzz_config.to_store());
     wast_context.register_spectest().unwrap();
@@ -431,9 +547,9 @@ pub fn table_ops(mut fuzz_config: generators::Config, ops: generators::table_ops
 
         let wasm = ops.to_wasm_binary();
         log_wasm(&wasm);
-        let module = match Module::new(store.engine(), &wasm) {
-            Ok(m) => m,
-            Err(_) => return,
+        let module = match compile_module(store.engine(), &wasm, false, &fuzz_config) {
+            Some(m) => m,
+            None => return,
         };
 
         let mut linker = Linker::new(store.engine());
@@ -577,6 +693,7 @@ pub fn differential_wasmi_execution(wasm: &[u8], config: &generators::Config) ->
 
     // If wasmi succeeded then we assert that wasmtime will also succeed.
     let (wasmtime_module, mut wasmtime_store) = differential_store(wasm, config);
+    let wasmtime_module = wasmtime_module?;
     let wasmtime_instance = Instance::new(&mut wasmtime_store, &wasmtime_module, &[])
         .expect("Wasmtime can instantiate module");
 
@@ -690,7 +807,7 @@ pub fn differential_spec_execution(wasm: &[u8], config: &generators::Config) -> 
 
     match (&spec_vals, &wasmtime_vals) {
         // Compare the returned values, failing if they do not match.
-        (Ok(spec_vals), Ok(wasmtime_vals)) => {
+        (Ok(spec_vals), Ok(Some(wasmtime_vals))) => {
             let all_match = spec_vals
                 .iter()
                 .zip(wasmtime_vals)
@@ -701,6 +818,10 @@ pub fn differential_spec_execution(wasm: &[u8], config: &generators::Config) -> 
                     spec_vals, wasmtime_vals
                 );
             }
+        }
+        (_, Ok(None)) => {
+            // `run_in_wasmtime` rejected the config
+            return None;
         }
         // If both sides fail, skip this fuzz execution.
         (Err(spec_error), Err(wasmtime_error)) => {
@@ -733,9 +854,9 @@ pub fn differential_spec_execution(wasm: &[u8], config: &generators::Config) -> 
 fn differential_store(
     wasm: &[u8],
     fuzz_config: &generators::Config,
-) -> (Module, Store<StoreLimits>) {
+) -> (Option<Module>, Store<StoreLimits>) {
     let store = fuzz_config.to_store();
-    let module = Module::new(store.engine(), &wasm).expect("Wasmtime can compile module");
+    let module = compile_module(store.engine(), wasm, true, fuzz_config);
     (module, store)
 }
 
@@ -745,9 +866,14 @@ fn run_in_wasmtime(
     wasm: &[u8],
     config: &generators::Config,
     params: &[Val],
-) -> anyhow::Result<Vec<Val>> {
+) -> anyhow::Result<Option<Vec<Val>>> {
     // Instantiate wasmtime module and instance.
     let (wasmtime_module, mut wasmtime_store) = differential_store(wasm, config);
+    let wasmtime_module = match wasmtime_module {
+        Some(m) => m,
+        None => return Ok(None),
+    };
+
     let wasmtime_instance = Instance::new(&mut wasmtime_store, &wasmtime_module, &[])
         .context("Wasmtime cannot instantiate module")?;
 
@@ -762,7 +888,7 @@ fn run_in_wasmtime(
     let mut results = vec![Val::I32(0); ty.results().len()];
     wasmtime_main
         .call(&mut wasmtime_store, params, &mut results)
-        .map(|()| results)
+        .map(|()| Some(results))
 }
 
 // Introspect wasmtime module to find the name of the first exported function.

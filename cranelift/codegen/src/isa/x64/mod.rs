@@ -11,7 +11,7 @@ use crate::isa::Builder as IsaBuilder;
 use crate::machinst::{
     compile, MachCompileResult, MachTextSectionBuilder, TextSectionBuilder, VCode,
 };
-use crate::result::CodegenResult;
+use crate::result::{CodegenError, CodegenResult};
 use crate::settings::{self as shared_settings, Flags};
 use alloc::{boxed::Box, vec::Vec};
 use core::fmt;
@@ -174,22 +174,38 @@ fn isa_constructor(
     triple: Triple,
     shared_flags: Flags,
     builder: shared_settings::Builder,
-) -> Box<dyn TargetIsa> {
+) -> CodegenResult<Box<dyn TargetIsa>> {
     let isa_flags = x64_settings::Flags::new(&shared_flags, builder);
+
+    // Check for compatibility between flags and ISA level
+    // requested. In particular, SIMD support requires SSE4.2.
+    if shared_flags.enable_simd() {
+        if !isa_flags.has_sse3()
+            || !isa_flags.has_ssse3()
+            || !isa_flags.has_sse41()
+            || !isa_flags.has_sse42()
+        {
+            return Err(CodegenError::Unsupported(
+                "SIMD support requires SSE3, SSSE3, SSE4.1, and SSE4.2 on x86_64.".into(),
+            ));
+        }
+    }
+
     let backend = X64Backend::new_with_flags(triple, shared_flags, isa_flags);
-    Box::new(backend)
+    Ok(Box::new(backend))
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::cursor::{Cursor, FuncCursor};
-    use crate::ir::types::*;
+    use crate::ir::{types::*, SourceLoc, ValueLabel, ValueLabelStart};
     use crate::ir::{AbiParam, ExternalName, Function, InstBuilder, Signature};
     use crate::isa::CallConv;
     use crate::settings;
     use crate::settings::Configurable;
     use core::str::FromStr;
+    use cranelift_entity::EntityRef;
     use target_lexicon::Triple;
 
     /// We have to test cold blocks by observing final machine code,
@@ -204,6 +220,9 @@ mod test {
         sig.params.push(AbiParam::new(I32));
         sig.returns.push(AbiParam::new(I32));
         let mut func = Function::with_name_signature(name, sig);
+        // Add debug info: this tests the debug machinery wrt cold
+        // blocks as well.
+        func.dfg.collect_debug_info();
 
         let bb0 = func.dfg.make_block();
         let arg0 = func.dfg.append_block_param(bb0, I32);
@@ -216,25 +235,72 @@ mod test {
         let mut pos = FuncCursor::new(&mut func);
 
         pos.insert_block(bb0);
+        pos.set_srcloc(SourceLoc::new(1));
         let v0 = pos.ins().iconst(I32, 0x1234);
+        pos.set_srcloc(SourceLoc::new(2));
         let v1 = pos.ins().iadd(arg0, v0);
         pos.ins().brnz(v1, bb1, &[v1]);
         pos.ins().jump(bb2, &[]);
 
         pos.insert_block(bb1);
+        pos.set_srcloc(SourceLoc::new(3));
         let v2 = pos.ins().isub(v1, v0);
+        pos.set_srcloc(SourceLoc::new(4));
         let v3 = pos.ins().iadd(v2, bb1_param);
         pos.ins().brnz(v1, bb2, &[]);
         pos.ins().jump(bb3, &[v3]);
 
         pos.func.layout.set_cold(bb2);
         pos.insert_block(bb2);
+        pos.set_srcloc(SourceLoc::new(5));
         let v4 = pos.ins().iadd(v1, v0);
         pos.ins().brnz(v4, bb2, &[]);
         pos.ins().jump(bb1, &[v4]);
 
         pos.insert_block(bb3);
+        pos.set_srcloc(SourceLoc::new(6));
         pos.ins().return_(&[bb3_param]);
+
+        // Create some debug info. Make one label that follows all the
+        // values around. Note that this is usually done via an API on
+        // the FunctionBuilder, but that's in cranelift_frontend
+        // (i.e., a higher level of the crate DAG) so we have to build
+        // it manually here.
+        pos.func.dfg.values_labels.as_mut().unwrap().insert(
+            v0,
+            crate::ir::ValueLabelAssignments::Starts(vec![ValueLabelStart {
+                from: SourceLoc::new(1),
+                label: ValueLabel::new(1),
+            }]),
+        );
+        pos.func.dfg.values_labels.as_mut().unwrap().insert(
+            v1,
+            crate::ir::ValueLabelAssignments::Starts(vec![ValueLabelStart {
+                from: SourceLoc::new(2),
+                label: ValueLabel::new(1),
+            }]),
+        );
+        pos.func.dfg.values_labels.as_mut().unwrap().insert(
+            v2,
+            crate::ir::ValueLabelAssignments::Starts(vec![ValueLabelStart {
+                from: SourceLoc::new(3),
+                label: ValueLabel::new(1),
+            }]),
+        );
+        pos.func.dfg.values_labels.as_mut().unwrap().insert(
+            v3,
+            crate::ir::ValueLabelAssignments::Starts(vec![ValueLabelStart {
+                from: SourceLoc::new(4),
+                label: ValueLabel::new(1),
+            }]),
+        );
+        pos.func.dfg.values_labels.as_mut().unwrap().insert(
+            v4,
+            crate::ir::ValueLabelAssignments::Starts(vec![ValueLabelStart {
+                from: SourceLoc::new(5),
+                label: ValueLabel::new(1),
+            }]),
+        );
 
         let mut shared_flags_builder = settings::builder();
         shared_flags_builder.set("opt_level", "none").unwrap();
@@ -280,5 +346,22 @@ mod test {
         ];
 
         assert_eq!(code, &golden[..]);
+    }
+
+    // Check that feature tests for SIMD work correctly.
+    #[test]
+    fn simd_required_features() {
+        let mut shared_flags_builder = settings::builder();
+        shared_flags_builder.set("enable_simd", "true").unwrap();
+        let shared_flags = settings::Flags::new(shared_flags_builder);
+        let mut isa_builder = crate::isa::lookup_by_name("x86_64").unwrap();
+        isa_builder.set("has_sse3", "false").unwrap();
+        isa_builder.set("has_ssse3", "false").unwrap();
+        isa_builder.set("has_sse41", "false").unwrap();
+        isa_builder.set("has_sse42", "false").unwrap();
+        assert!(matches!(
+            isa_builder.finish(shared_flags),
+            Err(CodegenError::Unsupported(_)),
+        ));
     }
 }

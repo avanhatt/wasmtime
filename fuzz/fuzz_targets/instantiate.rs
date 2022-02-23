@@ -27,10 +27,15 @@ fn run(data: &[u8]) -> Result<()> {
     // Enable module linking for this fuzz target specifically
     config.module_config.config.module_linking_enabled = u.arbitrary()?;
 
-    let mut module = config.module_config.generate(&mut u)?;
-    if let Timeout::None = timeout {
-        module.ensure_termination(1000);
-    }
+    let module = config.generate(
+        &mut u,
+        if let Timeout::None = timeout {
+            Some(1000)
+        } else {
+            None
+        },
+    )?;
+
     oracles::instantiate(&module.to_bytes(), true, &config, timeout);
     Ok(())
 }
