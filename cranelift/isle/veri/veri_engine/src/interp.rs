@@ -1,5 +1,4 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
-
 use crate::isle_annotations::isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
@@ -9,7 +8,7 @@ use std::collections::HashMap;
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
 
-/// Trait defining how to produce an verification IR expression from an 
+/// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
 trait ToVIRExpr {
     fn to_expr(
@@ -61,13 +60,11 @@ impl Assumption {
     /// Create a new assumption, checking type.
     pub fn new(assume: VIRExpr) -> Self {
         assert!(assume.ty().is_bool());
-        Self {
-            assume,
-        }
+        Self { assume }
     }
 
-    pub fn assume(&self) -> VIRExpr {
-        self.assume.clone()
+    pub fn assume(&self) -> &VIRExpr {
+        &self.assume
     }
 }
 #[derive(Clone, Debug)]
@@ -101,15 +98,15 @@ impl AssumptionContext {
         term: &str,
     ) -> HashMap<String, String> {
         let mut renaming_map: HashMap<String, String> = HashMap::new();
-        for b in &a.func.args {
+        for b in &a.func().args {
             renaming_map.insert(
                 b.name.clone(),
                 self.new_ident(&format!("{}_{}", term, &b.name)).clone(),
             );
         }
         renaming_map.insert(
-            a.func.ret.name.clone(),
-            self.new_ident(&format!("{}_{}", term, a.func.ret.name)),
+            a.func().ret.name.clone(),
+            self.new_ident(&format!("{}_{}", term, a.func().ret.name)),
         );
         renaming_map
     }
@@ -140,18 +137,21 @@ impl AssumptionContext {
         let annotation = self.get_annotation_for_term(term_name, ty);
 
         // The annotation should have the same number of arguments as given here
-        assert_eq!(subterms.len(), annotation.func.args.len());
+        assert_eq!(subterms.len(), annotation.func().args.len());
 
-        for (arg, subterm) in annotation.func.args.iter().zip(subterms) {
+        for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
             let subexpr = subterm.to_expr(self, termenv, typeenv, arg.ty);
-            self.assumptions.push(Assumption::new(VIRType::eq(subexpr, VIRExpr::Var(arg.clone()))));
+            self.assumptions.push(Assumption::new(VIRType::eq(
+                subexpr,
+                VIRExpr::Var(arg.clone()),
+            )));
             self.quantified_vars.push(arg.clone());
         }
-        for a in annotation.assertions {
-            self.assumptions.push(Assumption::new(a));
+        for a in annotation.assertions() {
+            self.assumptions.push(Assumption::new(a.clone()));
         }
-        self.quantified_vars.push(annotation.func.ret.clone());
-        annotation.func.ret.as_expr()
+        self.quantified_vars.push(annotation.func().ret.clone());
+        annotation.func().ret.as_expr()
     }
 
     fn interp_pattern(

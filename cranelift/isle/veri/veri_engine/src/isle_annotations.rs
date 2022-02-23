@@ -1,6 +1,5 @@
 /// This file will be replaced by a parser that consumes annotations and produces
 /// the same type of structure, but for now, manually construct these annotations.
-
 use std::cmp::Ordering;
 use veri_ir::{BoundVar, FunctionAnnotation, VIRAnnotation, VIRExpr, VIRType};
 
@@ -21,10 +20,10 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 args: vec![arg],
                 ret: result,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![identity],
-            }
+                vec![identity],
+            )
         }
         "has_type" => {
             // Add an assertion on the type
@@ -49,10 +48,10 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 args: vec![ty_arg, arg],
                 ret: result,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![ty_eq, identity],
-            }
+                vec![ty_eq, identity],
+            )
         }
         "fits_in_64" => {
             // Identity, but add assertion on type
@@ -66,16 +65,15 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 ty,
             };
             let identity = VIRType::eq(arg.as_expr(), result.as_expr());
-            let ty_fits =
-                VIRType::lte(arg.as_expr(), VIRType::IsleType.isle_type_const(64_i128));
+            let ty_fits = VIRType::lte(arg.as_expr(), VIRType::IsleType.isle_type_const(64_i128));
             let func = FunctionAnnotation {
                 args: vec![arg],
                 ret: result,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![identity, ty_fits],
-            }
+                vec![identity, ty_fits],
+            )
         }
         "iadd" => {
             let a = BoundVar {
@@ -98,10 +96,10 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 args: vec![a, b],
                 ret: r,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![sem],
-            }
+                vec![sem],
+            )
         }
         "add" => {
             let t = BoundVar {
@@ -128,10 +126,10 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 args: vec![t, a, b],
                 ret: r,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![sem],
-            }
+                vec![sem],
+            )
         }
         "imm12_from_negated_value" => {
             let bv12 = VIRType::BitVector(12);
@@ -170,10 +168,10 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 args: vec![imm_arg],
                 ret: result,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![assume_fits, res_assertion],
-            }
+                vec![assume_fits, res_assertion],
+            )
         }
         // TODO: wrapper for LHS vs RHS
         // TODO: helper for "convert bv type to another" with bv_extract
@@ -214,10 +212,10 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 args: vec![ty_arg, reg_arg, imm_arg],
                 ret: result,
             };
-            VIRAnnotation {
+            VIRAnnotation::new(
                 func,
-                assertions: vec![assertion],
-            }
+                vec![assertion],
+            )
         }
         _ => unimplemented!("Need annotation for term {}", term),
     }

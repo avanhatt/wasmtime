@@ -27,52 +27,13 @@ fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     (termenv, typeenv)
 }
 
-fn verification_conditions_for_rule(
-    rule: &Rule,
-    termenv: &TermEnv,
-    typeenv: &TypeEnv,
-    ty: VIRType,
-) {
+fn verify_rule_for_type(rule: &Rule, termenv: &TermEnv, typeenv: &TypeEnv, ty: VIRType) {
+    // For now, starting types must be bitvectors
+    assert!(ty.is_bv());
     let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
     let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, termenv, typeenv, ty);
     run_solver(assumption_ctx, lhs, rhs, ty);
 }
-
-// for simple iadd
-// TYPE = 32
-
-// ASSUMPTIONS
-// (fits_in_64 ty) becomes [1] (decl-const ty 32 INT) [2] TRUE (<= 32 64)
-// (iadd x y) becomes [1] (decl-const a BV32), (decl-const b BV32), [2] (= x a), (= y b)
-// probably want an IR for our own type env that maps (a -> BV32)
-// assumptions we might wanna keep as SMTLIB for now, later might want our own IR
-// if Rust can easily tell you the assumption is false, bail
-
-// LHS TERM
-// see that iadd terminates our understanding, need to get it from somewhere
-// see that
-// [1]
-// (decl-fun (has_type ty i) i)
-// (decl-fun (iadd i j) (bvadd i j))
-// [2]
-// (has_type (fits_in_64 ty) (iadd x y))
-
-// RHS TERM
-// look up that in our interpreter context that we have defns for ty, x, y
-// interpret term based on defs
-
-// FINAL QUERY:
-// !((let (boundvars ...) (assumptions => (= lhs rhs)))
-
-// 3 options for what to do when we see add
-// first, we could stop here and just annotate a defn for add
-// OR, we can _keep going_ and split state for every rule with iadd on LHS
-// OR, we can _keep going_ and for now, dynamically fail if more than one rule with iadd on the LHS meets our TYPE condition
-
-// Other thoughts:
-//  - separate queries per-type and per top-level rule. Eventually probably want cacheing system.
-//  - will we eventually position this as a symbolic executer? Something more specific?
-
 fn main() {
     // Thoughts on multiple rules: for now, start with `lower` rules.
     // Think about inlining vs uninterpreted fn as an IR concern
@@ -146,7 +107,7 @@ fn main() {
             println!("\nRunning verification for rule:\n{}\n", simple_iadd);
             let simple_iadd = prelude.to_owned() + simple_iadd;
             let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
-            verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+            verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
         }
 
         {
@@ -154,7 +115,7 @@ fn main() {
             println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
             let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
             let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
-            verification_conditions_for_rule(&termenv.rules[0], &termenv, &typeenv, ty);
+            verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
         }
     }
 }

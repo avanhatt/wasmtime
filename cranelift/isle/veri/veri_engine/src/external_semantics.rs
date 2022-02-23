@@ -1,8 +1,7 @@
-/// Convert our internal Verification IR to an external SMT AST and pass 
+/// Convert our internal Verification IR to an external SMT AST and pass
 /// queries to that solver.
 ///
 /// Right now, this uses the rsmt2 crate.
-
 use crate::interp::AssumptionContext;
 use rsmt2::Solver;
 use veri_ir::{VIRExpr, VIRType};
