@@ -27,7 +27,7 @@ impl ModuleMemoryImages {
 }
 
 /// One backing image for one memory.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct MemoryImage {
     /// The file descriptor source of this image.
     ///
@@ -72,6 +72,12 @@ impl FdSource {
             #[cfg(target_os = "linux")]
             FdSource::Memfd(memfd) => memfd.as_file(),
         }
+    }
+}
+
+impl PartialEq for FdSource {
+    fn eq(&self, other: &FdSource) -> bool {
+        self.as_file().as_raw_fd() == other.as_file().as_raw_fd()
     }
 }
 
@@ -348,14 +354,7 @@ impl MemoryImageSlot {
         // termination. The `clear_and_remain_ready()` path also
         // mprotects memory above the initial heap size back to
         // PROT_NONE, so we don't need to do that here.
-        if (self.image.is_none()
-            && maybe_image.is_none()
-            && self.initial_size == initial_size_bytes)
-            || (self.image.is_some()
-                && maybe_image.is_some()
-                && self.image.as_ref().unwrap().fd.as_file().as_raw_fd()
-                    == maybe_image.as_ref().unwrap().fd.as_file().as_raw_fd())
-        {
+        if self.image.as_ref() == maybe_image && self.initial_size == initial_size_bytes {
             self.dirty = true;
             return Ok(());
         }
@@ -566,17 +565,18 @@ impl Drop for MemoryImageSlot {
         // over by the next MemoryImageSlot later.
         //
         // Since we're in drop(), we can't sanely return an error if
-        // this mmap fails. Let's ignore the failure if so; the next
-        // MemoryImageSlot to be created for this slot will try to overwrite
-        // the existing stale mappings, and return a failure properly
-        // if we still cannot map new memory.
+        // this mmap fails. Instead though the result is unwrapped here to
+        // trigger a panic if something goes wrong. Otherwise if this
+        // reset-the-mapping fails then on reuse it might be possible, depending
+        // on precisely where errors happened, that stale memory could get
+        // leaked through.
         //
-        // The exception to all of this is if the `unmap_on_drop` flag
+        // The exception to all of this is if the `clear_on_drop` flag
         // (which is set by default) is false. If so, the owner of
         // this MemoryImageSlot has indicated that it will clean up in some
         // other way.
         if self.clear_on_drop {
-            let _ = self.reset_with_anon_memory();
+            self.reset_with_anon_memory().unwrap();
         }
     }
 }
