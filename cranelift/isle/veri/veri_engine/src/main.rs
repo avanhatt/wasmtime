@@ -190,6 +190,12 @@ mod tests {
     
         (decl sub_imm (Type Reg Imm12) Reg)
         (extern constructor sub_imm sub_imm)
+
+        (decl value_reg (Reg) ValueRegs)
+        (extern constructor value_reg value_reg)
+    
+        (decl put_in_reg (Value) Reg)
+        (extern constructor put_in_reg put_in_reg)
         ";
 
         let simple_iadd = "(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
