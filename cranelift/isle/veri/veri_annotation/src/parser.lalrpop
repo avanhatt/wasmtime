@@ -16,23 +16,35 @@ pub VIRType: VIRType = {
 };
 
 pub BoundVar: BoundVar = {
-    <s:r"[A-Za-z]|[A-zac-z]\w+|b[A-Za-uw-z0-9]\w*"> ":" <t:VIRType> => 
+    <s: r"[A-Za-z]"> ":" <t:VIRType> => 
+        BoundVar{name: s.to_string(), ty: t},
+    <s: r"[A-Zac-z]\w+"> ":" <t:VIRType> => 
+        BoundVar{name: s.to_string(), ty: t},
+    <s: r"b[\w&&[^v]]\w*"> ":" <t:VIRType> => 
         BoundVar{name: s.to_string(), ty: t},
 };
 
-//Arg: BoundVar = "(" <v:BoundVar> ")" => v;
-
-ArgList: Vec<BoundVar> = {
-    "(args" <vs:BoundVar+> ")" => vs,
-    "(" "args" ")" => Vec::new(),
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+ArgList = Comma<BoundVar>;
+Args: Vec<BoundVar> = {
+    "(args" <a: ArgList> ")" => a,
 };
 
 pub FunctionAnnotation: FunctionAnnotation = {
-    "(sig" <a:ArgList> "(" <r:BoundVar> ")" ")" => 
+    "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
         FunctionAnnotation {args: a, result: r},
 };
 
 // TODO: assertion, assertion list
+// TODO: watch out for precedence issues
 
 //pub VIRAnnotation: VIRAnnotation = {
 //    "(spec" <f:FunctionAnnotation> <a:AssertionList> ")" =>
