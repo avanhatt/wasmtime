@@ -1,7 +1,10 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
+use clap::{Arg, Command};
 use cranelift_isle as isle;
-use isle::sema::{Rule, TermEnv, TypeEnv};
+use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
+use std::env;
+use std::path::PathBuf;
 use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 
 use crate::external_semantics::run_solver;
@@ -12,10 +15,18 @@ mod interp;
 mod isle_annotations;
 mod renaming;
 
-/// Produces the two ISLE-defined structs with type and term environments
-fn parse_isle_to_terms(s: &str) -> (TermEnv, TypeEnv) {
-    let lexer = isle::lexer::Lexer::from_str(s, "fuzz-input.isle").unwrap();
+fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
+    let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
+    parse_isle_to_terms(lexer)
+}
 
+fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
+    let lexer = isle::lexer::Lexer::from_files(files).unwrap();
+    parse_isle_to_terms(lexer)
+}
+
+/// Produces the two ISLE-defined structs with type and term environments
+fn parse_isle_to_terms(lexer: isle::lexer::Lexer) -> (TermEnv, TypeEnv) {
     // Parses to an AST, as a list of definitions
     let defs = isle::parser::parse(lexer).expect("should parse");
 
@@ -39,7 +50,54 @@ fn verify_rule_for_type(
     let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, termenv, typeenv, ty);
     run_solver(assumption_ctx, lhs, rhs, ty)
 }
-fn main() {}
+
+fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
+    match pattern {
+        Pattern::Term(_, termid, arg_patterns) => {
+            let term = &termenv.terms[termid.index()];
+            typeenv.syms[term.name.index()].clone()
+        }
+        _ => unreachable!("Must be term"),
+    }
+}
+
+fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeEnv) {
+    for ty in all_starting_bitvectors() {
+        for rule in &termenv.rules {
+            if pattern_term_name(rule.lhs.clone(), termenv, typeenv) == root {
+                let _res = verify_rule_for_type(rule, termenv, typeenv, ty);
+            }
+        }
+    }
+}
+
+fn main() {
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+
+    // TODO: clean up path logic
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+
+    // Disable for now to not have to consider all rules
+    // let aarch64_isle = cur_dir.join("../../../codegen/src/isa/aarch64").join("inst.isle");
+
+    let matches = Command::new("Verification Engine for ISLE")
+        .arg(
+            Arg::new("INPUT")
+                .help("Sets the input file")
+                .required(true)
+                .index(1),
+        )
+        .get_matches();
+    let input = PathBuf::from(matches.value_of("INPUT").unwrap());
+
+    let inputs = vec![clif_isle, prelude_isle, input];
+
+    let (termenv, typeenv) = isle_files_to_terms(inputs);
+
+    // For now, verify rules rooted in `lower`
+    verify_rules_with_lhs_root("lower", &termenv, &typeenv)
+}
 
 #[cfg(test)]
 mod tests {
@@ -53,7 +111,6 @@ mod tests {
         (type Inst (primitive Inst))
         (type Type (primitive Type))
         (type Value (primitive Value))
-    
     
         (type Reg (primitive Reg))
         (type ValueRegs (primitive ValueRegs))
@@ -117,7 +174,7 @@ mod tests {
                 println!("{:-^1$}", format!("simple iadd bv{}", ty.width()), 80);
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
-                let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
+                let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
                 let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
@@ -125,7 +182,7 @@ mod tests {
                 println!("{:-^1$}", format!("iadd to sub bv{}", ty.width()), 80);
                 println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
                 let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
-                let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
+                let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
                 let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
@@ -207,7 +264,7 @@ mod tests {
                 println!("{:-^1$}", format!("simple iadd bv{}", ty.width()), 80);
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
-                let (termenv, typeenv) = parse_isle_to_terms(&simple_iadd);
+                let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
                 let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
@@ -215,7 +272,7 @@ mod tests {
                 println!("{:-^1$}", format!("iadd to sub bv{}", ty.width()), 80);
                 println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
                 let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
-                let (termenv, typeenv) = parse_isle_to_terms(&iadd_to_sub);
+                let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
                 let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }

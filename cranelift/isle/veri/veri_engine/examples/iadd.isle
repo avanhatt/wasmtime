@@ -1,0 +1,62 @@
+(decl lower (Inst) ValueRegs)
+
+;; Instruction formats.
+(type MInst
+  (enum
+    ;; A no-op of zero size.
+    (Nop0)
+
+    ;; A no-op that is one instruction large.
+    (Nop4)
+
+    ;; An ALU operation with two register sources and a register destination.
+    (AluRRR
+      (alu_op ALUOp)
+      (size OperandSize)
+      (rd WritableReg)
+      (rn Reg)
+      (rm Reg))
+
+    ;; ;; An ALU operation with a register source and an immediate-12 source, and a register
+    ;; ;; destination.
+    ;; (AluRRImm12
+    ;;   (alu_op ALUOp)
+    ;;   (size OperandSize)
+    ;;   (rd WritableReg)
+    ;;   (rn Reg)
+    ;;   (imm12 Imm12))
+))
+
+;; An ALU operation. This can be paired with several instruction formats
+;; below (see `Inst`) in any combination.
+(type ALUOp
+  (enum
+    (Add)
+    (Sub)
+    (Orr)
+    (OrrNot)
+    (And)))
+
+(type OperandSize extern
+      (enum Size32
+            Size64))
+
+;; Helper for calculating the `OperandSize` corresponding to a type
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
+      (add ty x y))
+
+(decl add (Type Reg Reg) Reg)
+(extern constructor add add)
+;; (rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
+
+(decl alu_rrr (ALUOp Type Reg Reg) Reg)
+(extern constructor alu_rrr alu_rrr)
+;; (rule (alu_rrr op ty src1 src2)
+;;       (let ((dst WritableReg (temp_writable_reg $I64))
+;;             (_ Unit (emit (MInst.AluRRR op (operand_size ty) dst src1 src2))))
+;;         dst))
+

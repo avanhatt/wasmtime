@@ -179,6 +179,9 @@ impl AssumptionContext {
                     ty,
                 )
             }
+            // Pattern::And(_, children) => {
+            //     unimplemented!()
+            // }
             _ => unimplemented!("{:?}", bvpat),
         }
     }
