@@ -12,5 +12,3 @@ rsmt2 = "0.14.1"
 
 [workspace]
 clap = "3.1.2"
-
-[workspace]

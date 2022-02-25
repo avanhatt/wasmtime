@@ -15,6 +15,11 @@ mod interp;
 mod isle_annotations;
 mod renaming;
 
+fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
+    let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
+    parse_isle_to_terms(lexer)
+}
+
 fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();
     parse_isle_to_terms(lexer)
@@ -48,7 +53,7 @@ fn verify_rule_for_type(
 
 fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
     match pattern {
-        Pattern::Term(_, termid, _) => {
+        Pattern::Term(_, termid, arg_patterns) => {
             let term = &termenv.terms[termid.index()];
             typeenv.syms[term.name.index()].clone()
         }
@@ -60,7 +65,7 @@ fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeEnv) 
     for ty in all_starting_bitvectors() {
         for rule in &termenv.rules {
             if pattern_term_name(rule.lhs.clone(), termenv, typeenv) == root {
-                let _res = verify_rule_for_type(rule, termenv, typeenv, &ty);
+                let _res = verify_rule_for_type(rule, termenv, typeenv, ty);
             }
         }
     }
@@ -175,7 +180,7 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
                 let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
             {
@@ -183,7 +188,7 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
                 let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
                 let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
         }
@@ -269,7 +274,7 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
                 let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
             {
@@ -277,7 +282,7 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
                 let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
                 let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, ty);
                 assert_eq!(res, expected_result);
             }
         }
