@@ -228,9 +228,6 @@ impl<'ctx> AssumptionContext<'ctx> {
                 }
                 first
             }
-            // Pattern::And(_, children) => {
-            //     unimplemented!()
-            // }
             _ => unimplemented!("{:?}", bvpat),
         }
     }
