@@ -26,6 +26,16 @@ fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     parse_isle_to_terms(lexer)
 }
 
+fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
+    let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
+    parse_isle_to_terms(lexer)
+}
+
+fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
+    let lexer = isle::lexer::Lexer::from_files(files).unwrap();
+    parse_isle_to_terms(lexer)
+}
+
 /// Produces the two ISLE-defined structs with type and term environments
 fn parse_isle_to_terms(lexer: isle::lexer::Lexer) -> (TermEnv, TypeEnv) {
     // Parses to an AST, as a list of definitions
