@@ -13,14 +13,15 @@ pub VIRType: VIRType = {
     // TODO: support bvX instead of only numbers
     "bv" <n:Num> => VIRType::BitVector(n),
     "bool" => VIRType::Bool,
+    "IsleType" => VIRType::IsleType,
 };
 
 pub BoundVar: BoundVar = {
-    <s: r"[A-Za-z]"> ":" <t:VIRType> => 
+    <s:r"[A-Za-z]"> ":" <t:VIRType> => 
         BoundVar{name: s.to_string(), ty: t},
-    <s: r"[A-Zac-z]\w+"> ":" <t:VIRType> => 
+    <s:r"[A-Zac-z]\w+"> ":" <t:VIRType> => 
         BoundVar{name: s.to_string(), ty: t},
-    <s: r"b[\w&&[^v]]\w*"> ":" <t:VIRType> => 
+    <s:r"b[\w&&[^v]]\w*"> ":" <t:VIRType> => 
         BoundVar{name: s.to_string(), ty: t},
 };
 
@@ -35,12 +36,30 @@ Comma<T>: Vec<T> = {
 };
 ArgList = Comma<BoundVar>;
 Args: Vec<BoundVar> = {
-    "(args" <a: ArgList> ")" => a,
+    "(args" <a:ArgList> ")" => a,
 };
 
 pub FunctionAnnotation: FunctionAnnotation = {
     "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
         FunctionAnnotation {args: a, result: r},
+};
+
+// TODO: Can this handle things like (Not(x))?
+pub BoolExpr: Box<BoolExpr> = {
+    "(" "True" ")" => Box::new(BoolExpr::True),
+    "(" "False" ")" => Box::new(BoolExpr::False),
+    "(" "!" <b:BoolExpr> ")" => Box::new(BoolExpr::Not(b)),
+    "(" "&&" <a:BoolExpr> <b:BoolExpr> ")" => Box::new(BoolExpr::And(a, b)),
+    "(" "||" <a:BoolExpr> <b:BoolExpr> ")" => Box::new(BoolExpr::Or(a, b)),
+    "(" "=>" <a:BoolExpr> <b:BoolExpr> ")" => Box::new(BoolExpr::Imp(a, b)),
+    //"(" "=" <a: BVExpr> <b: BVExpr> ")" => Box::new(BoolExpr::Eq(a, b)),
+};
+
+// TODO: Do we need to enforce that these types must be bvX?
+pub BVExpr: Box<BVExpr> = {
+    // "(" <n:Num> ":" <t:VIRType> ")" => Box::new(BVExpr::Const(t, n)),
+    // "(" <b:BoundVar> ")" => Box::new(BVExpr::Var(b.name, b.ty),
+    // "(" "~" <b:BVExpr> ")" => Box::new(BVExpr::BVNeg(
 };
 
 // TODO: assertion, assertion list
