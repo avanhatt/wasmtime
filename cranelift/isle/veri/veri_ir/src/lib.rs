@@ -54,6 +54,13 @@ pub enum VIRType {
     /// (type Value (primitive Value))
     BitVector(usize),
 
+    // The expression is a list of bitvectors (see above)
+    // BitVectorList(length, width)
+    BitVectorList(usize, usize),
+
+    /// The expression is a function definition. 
+    Function,
+
     /// The expression is a boolean. This does not directly correspond 
     /// to a specific Cranelift Isle type, rather, we use it for the
     /// language of assertions.
@@ -98,6 +105,10 @@ pub enum VIRExpr {
     BVZeroExt(VIRType, usize, Box<VIRExpr>),
     BVSignExt(VIRType, usize, Box<VIRExpr>),
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
+
+    Function(VIRType, String),
+    FunctionApplication(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    List(VIRType, Vec<VIRExpr>),
 }
 
 impl VIRExpr {
@@ -113,6 +124,9 @@ impl VIRExpr {
             VIRExpr::BVZeroExt(t, _, _) => t,
             VIRExpr::BVSignExt(t, _, _) => t,
             VIRExpr::BVExtract(t, _, _, _) => t,
+            VIRExpr::Function(t, _) => t,
+            VIRExpr::FunctionApplication(t, _, _) => t,
+            VIRExpr::List(t, _) => t,
             VIRExpr::True 
             | VIRExpr::False 
             | VIRExpr::Not(..)
@@ -136,15 +150,42 @@ impl VIRType {
         VIRExpr::Lte(Box::new(x), Box::new(y))
     }
 
+    pub fn apply(&self, func: VIRExpr, args: VIRExpr) -> VIRExpr {
+        assert!(matches!(func.ty(), Self::Function));
+        VIRExpr::FunctionApplication(*self, Box::new(func), Box::new(args))
+    }
+
+    // TODO: type check
+    pub fn list(&self, args: Vec<VIRExpr>) -> VIRExpr {
+        let length = args.len();
+        assert!(args.iter().all(|a| a.ty().width() == self.width()));
+        VIRExpr::List(VIRType::BitVectorList(length, self.width()), args)
+    }
+
+    pub fn element_ty(&self) -> VIRType {
+        assert!(self.is_bv_list());
+        Self::BitVector(self.width())
+    }
+
+    pub fn list_ty(&self, length: usize) -> VIRType {
+        assert!(self.is_bv());
+        Self::BitVectorList(length, self.width())
+    }
+
     pub fn width(&self) -> usize {
         match *self {
             Self::BitVector(s) => s,
+            Self::BitVectorList(_, s) => s,
             _ => unreachable!("Unexpected type: {:?}", self),
         }
     }
 
     pub fn is_bv(&self) -> bool {
-        matches!(*self, Self::BitVector(_))
+        matches!(*self, Self::BitVector(..))
+    }
+
+    pub fn is_bv_list(&self) -> bool {
+        matches!(*self, Self::BitVectorList(..))
     }
 
     pub fn is_bool(&self) -> bool {

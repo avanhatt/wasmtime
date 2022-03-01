@@ -6,11 +6,11 @@ use crate::interp::AssumptionContext;
 use rsmt2::Solver;
 use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
 
-pub fn vir_to_rsmt2_str(ty: VIRType) -> String {
+pub fn vir_to_rsmt2_str(ty: VIRType) -> Option<String> {
     match ty {
-        VIRType::BitVector(width) => format!("(_ BitVec {})", width),
-        VIRType::Bool => unreachable!("{:?}", ty),
-        VIRType::IsleType => "Int".to_string(),
+        VIRType::BitVector(width) => Some(format!("(_ BitVec {})", width)),
+        VIRType::IsleType => Some("Int".to_string()),
+        VIRType::Bool | VIRType::Function | VIRType::BitVectorList(..) => None,
     }
 }
 
@@ -25,12 +25,14 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         )
     };
     let ext = |op, i, x: Box<VIRExpr>| format!("((_ {} {}) {})", op, i, vir_expr_to_rsmt2_str(*x));
-
+    let ec = e.clone();
     match e {
         VIRExpr::Const(ty, i) => match ty {
             VIRType::BitVector(width) => format!("(_ bv{} {})", i, width),
             VIRType::IsleType => i.to_string(),
             VIRType::Bool => (if i == 0 { "false" } else { "true" }).to_string(),
+            VIRType::Function => unimplemented!(),
+            VIRType::BitVectorList(_length, _width) => unimplemented!(),
         },
         VIRExpr::Var(bound_var) => bound_var.name,
         VIRExpr::True => "true".to_string(),
@@ -51,6 +53,16 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVExtract(_, l, h, x) => {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
+        VIRExpr::FunctionApplication(_, func, arg_list) => match *func {
+            VIRExpr::Function(_, name) => {
+                format!("({} {:?})", name, arg_list)
+            }
+            _ => unreachable!("Unsupported function structure: {:?}", ec),
+        },
+        VIRExpr::List(_ty, _args) => {
+            unimplemented!()
+        }
+        _ => unreachable!("Unexpected expr {:?}", ec),
     }
 }
 
@@ -88,10 +100,10 @@ pub fn run_solver(
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
-        println!("\t{} : {:?}", v.name, v.ty);
-        solver
-            .declare_const(v.name, vir_to_rsmt2_str(v.ty))
-            .unwrap();
+        if let Some(var) = vir_to_rsmt2_str(v.ty) {
+            println!("\t{} : {:?}", v.name, v.ty);
+            solver.declare_const(v.name, var).unwrap();
+        }
     }
 
     println!("Adding assumptions:");
@@ -122,11 +134,11 @@ pub fn run_solver(
     match solver.check_sat() {
         Ok(true) => {
             println!("Verification failed");
-            return VerificationResult::Failure(Counterexample {});
+            VerificationResult::Failure(Counterexample {})
         }
         Ok(false) => {
             println!("Verification succeeded");
-            return VerificationResult::Success;
+            VerificationResult::Success
         }
         Err(err) => {
             unreachable!("Error! {:?}", err);

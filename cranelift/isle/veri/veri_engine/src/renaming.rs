@@ -22,8 +22,13 @@ where
     F: Fn(&BoundVar) -> BoundVar + Copy,
 {
     let f = |x: Box<VIRExpr>| Box::new(rename_vir_expr(*x, rename));
+    let map_f = |xs: Vec<VIRExpr>| {
+        xs.iter()
+            .map(|x| rename_vir_expr(x.clone(), rename))
+            .collect()
+    };
     match expr {
-        VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False => expr,
+        VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False | VIRExpr::Function(..) => expr,
         VIRExpr::Var(v) => VIRExpr::Var(rename(&v)),
         VIRExpr::Not(x) => VIRExpr::Not(f(x)),
         VIRExpr::And(x, y) => VIRExpr::And(f(x), f(y)),
@@ -39,5 +44,9 @@ where
         VIRExpr::BVZeroExt(ty, i, x) => VIRExpr::BVZeroExt(ty, i, f(x)),
         VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
         VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),
+        VIRExpr::FunctionApplication(ty, func, args) => {
+            VIRExpr::FunctionApplication(ty, f(func), f(args))
+        }
+        VIRExpr::List(ty, xs) => VIRExpr::List(ty, map_f(xs)),
     }
 }
