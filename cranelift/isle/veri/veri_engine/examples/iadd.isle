@@ -42,12 +42,13 @@
             Size64))
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
-(decl operand_size (Type) OperandSize)
-(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
-(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+;; (decl operand_size (Type) OperandSize)
+;; (rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+;; (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
 (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
       (add ty x y))
+;; (extern constructor lower lower)
 
 (decl add (Type Reg Reg) Reg)
 (extern constructor add add)

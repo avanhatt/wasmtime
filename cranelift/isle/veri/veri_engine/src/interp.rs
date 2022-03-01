@@ -179,9 +179,16 @@ impl AssumptionContext {
                     ty,
                 )
             }
-            // Pattern::And(_, children) => {
-            //     unimplemented!()
-            // }
+            Pattern::And(_, children) => {
+                // The `and` construct requires all subpatterns match. For now, encode
+                // as each subpattern producing the same equivalent expr result.
+                let subpattern_exprs: Vec<VIRExpr> = children
+                    .iter()
+                    .map(|p| self.interp_pattern(p, termenv, typeenv, ty))
+                    .collect();
+
+                subpattern_exprs[0].clone()
+            }
             _ => unimplemented!("{:?}", bvpat),
         }
     }
