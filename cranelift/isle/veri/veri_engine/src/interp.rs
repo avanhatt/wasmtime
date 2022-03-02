@@ -1,9 +1,10 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::isle_annotations::isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
-use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
+use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType, DefinedSymbol, Function};
 
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
@@ -100,8 +101,8 @@ impl AssumptionContext {
         let mut renaming_map: HashMap<String, String> = HashMap::new();
         for b in &a.func().args {
             renaming_map.insert(
-                b.name.clone(),
-                self.new_ident(&format!("{}_{}", term, &b.name)).clone(),
+                b.name().clone(),
+                self.new_ident(&format!("{}_{}", term, &b.name())).clone(),
             );
         }
         renaming_map.insert(
@@ -126,7 +127,7 @@ impl AssumptionContext {
         rename_annotation_vars(initial_annotation, rename)
     }
 
-    fn interp_term_with_subexprs<T: ToVIRExpr>(
+    fn interp_term_with_subexprs<T: ToVIRExpr + Debug>(
         &mut self,
         term_name: &str,
         subterms: Vec<T>,
@@ -140,12 +141,22 @@ impl AssumptionContext {
         assert_eq!(subterms.len(), annotation.func().args.len());
 
         for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
-            let subexpr = subterm.to_expr(self, termenv, typeenv, arg.ty);
-            self.assumptions.push(Assumption::new(VIRType::eq(
-                subexpr,
-                VIRExpr::Var(arg.clone()),
-            )));
-            self.quantified_vars.push(arg.clone());
+            match arg {
+                DefinedSymbol::Var(var) => {
+                    let subexpr = subterm.to_expr(self, termenv, typeenv, var.ty);
+                    self.assumptions.push(Assumption::new(VIRType::eq(
+                        subexpr,
+                        VIRExpr::Var(var.clone()),
+                    )));
+                    self.quantified_vars.push(var.clone());
+                }
+                DefinedSymbol::Function(_func) => {
+                    let subexpr = subterm.to_expr(self, termenv, typeenv, VIRType::Function);
+                    dbg!(subexpr);
+                    // unimplemented!()
+                    ();
+                }
+            }
         }
         for a in annotation.assertions() {
             self.assumptions.push(Assumption::new(a.clone()));
@@ -182,10 +193,9 @@ impl AssumptionContext {
             Pattern::And(_, children) => {
                 // The `and` construct requires all subpatterns match. For now, encode
                 // as each subpattern producing the same equivalent expr result.
-                let subpattern_exprs: Vec<VIRExpr> = children
-                    .iter()
-                    .map(|p| self.interp_pattern(p, termenv, typeenv, ty))
-                    .collect();
+                let subpattern_exprs : Vec<VIRExpr> = children.iter().map(|p| {
+                    self.interp_pattern(p, termenv, typeenv, ty)
+                }).collect();
 
                 subpattern_exprs[0].clone()
             }

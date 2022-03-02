@@ -1,7 +1,7 @@
 /// This file will be replaced by a parser that consumes annotations and produces
 /// the same type of structure, but for now, manually construct these annotations.
 use std::cmp::Ordering;
-use veri_ir::{BoundVar, FunctionAnnotation, VIRAnnotation, VIRExpr, VIRType};
+use veri_ir::{BoundVar, FunctionAnnotation, VIRAnnotation, VIRExpr, VIRType, DefinedSymbol, Function};
 
 pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
     match term {
@@ -17,30 +17,34 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
             };
             let identity = VIRType::eq(arg.as_expr(), result.as_expr());
             let func = FunctionAnnotation {
-                args: vec![arg],
+                args: vec![arg.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![identity])
         }
         "InstructionData.Binary" => {
-            let opcode = BoundVar {
-                name: "opcode".to_string(),
-                ty: VIRType::Function,
-            };
             // List must have length 2 since it's a Binary
+            let list_ty =  ty.list_ty(2);
             let arg_list = BoundVar {
                 name: "arg_list".to_string(),
-                ty: ty.list_ty(2),
+                ty: list_ty,
             };
             let result = BoundVar {
                 name: "ret".to_string(),
                 ty,
             };
-            let app = ty.apply(opcode.as_expr(), arg_list.as_expr());
+
+            let opcode = Function {
+                name: "InstructionData.Binary.opcode".to_string(),
+                ret: ty,
+                args: vec![list_ty]
+            };
+
+            let app = ty.apply(VIRExpr::Function(opcode.clone()), arg_list.as_expr());
             let eq = VIRType::eq(app, result.as_expr());
 
             let func = FunctionAnnotation {
-                args: vec![opcode, arg_list],
+                args: vec![DefinedSymbol::Function(opcode), arg_list.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![eq])
@@ -59,7 +63,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 VIRType::IsleType.isle_type_const(ty.width() as i128),
             );
             let func = FunctionAnnotation {
-                args: vec![arg],
+                args: vec![arg.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![ty_eq])
@@ -83,7 +87,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
             let eq = VIRType::eq(ls, result.as_expr());
 
             let func = FunctionAnnotation {
-                args: vec![arg1, arg2],
+                args: vec![arg1.as_sym(), arg2.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![eq])
@@ -108,7 +112,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
             );
             let identity = VIRType::eq(arg.as_expr(), result.as_expr());
             let func = FunctionAnnotation {
-                args: vec![ty_arg, arg],
+                args: vec![ty_arg.as_sym(), arg.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![ty_eq, identity])
@@ -126,7 +130,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
             let identity = VIRType::eq(arg.as_expr(), result.as_expr());
             let ty_fits = VIRType::lte(arg.as_expr(), VIRType::IsleType.isle_type_const(64_i128));
             let func = FunctionAnnotation {
-                args: vec![arg],
+                args: vec![arg.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![identity, ty_fits])
@@ -149,21 +153,34 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 r.as_expr(),
             );
             let func = FunctionAnnotation {
-                args: vec![a, b],
+                args: vec![a.as_sym(), b.as_sym()],
                 ret: r,
             };
             VIRAnnotation::new(func, vec![sem])
         }
         "Opcode.Iadd" => {
+            dbg!(&ty);
             let r = BoundVar {
                 name: "r".to_string(),
                 ty,
             };
+            let a = BoundVar {
+                name: "a".to_string(),
+                ty,
+            };
+            let b = BoundVar {
+                name: "b".to_string(),
+                ty,
+            };
+            let sem = VIRType::eq(
+                ty.bv_binary(VIRExpr::BVAdd, a.as_expr(), b.as_expr()),
+                r.as_expr(),
+            );
             let func = FunctionAnnotation {
-                args: vec![],
+                args: vec![a.as_sym(), b.as_sym()],
                 ret: r,
             };
-            VIRAnnotation::new(func, vec![])
+            VIRAnnotation::new(func, vec![sem])
         }
         "add" => {
             let t = BoundVar {
@@ -187,7 +204,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
                 r.as_expr(),
             );
             let func = FunctionAnnotation {
-                args: vec![t, a, b],
+                args: vec![t.as_sym(), a.as_sym(), b.as_sym()],
                 ret: r,
             };
             VIRAnnotation::new(func, vec![sem])
@@ -226,7 +243,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
             let res = ty.bv_unary(VIRExpr::BVNeg, as_ty);
             let res_assertion = VIRType::eq(res, result.as_expr());
             let func = FunctionAnnotation {
-                args: vec![imm_arg],
+                args: vec![imm_arg.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![assume_fits, res_assertion])
@@ -265,7 +282,7 @@ pub fn isle_annotation_for_term(term: &str, ty: VIRType) -> VIRAnnotation {
             let res = ty.bv_binary(VIRExpr::BVSub, reg_arg.as_expr(), as_ty);
             let assertion = VIRType::eq(res, result.as_expr());
             let func = FunctionAnnotation {
-                args: vec![ty_arg, reg_arg, imm_arg],
+                args: vec![ty_arg.as_sym(), reg_arg.as_sym(), imm_arg.as_sym()],
                 ret: result,
             };
             VIRAnnotation::new(func, vec![assertion])

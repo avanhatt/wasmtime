@@ -4,13 +4,14 @@
 /// Right now, this uses the rsmt2 crate.
 use crate::interp::AssumptionContext;
 use rsmt2::Solver;
-use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
+use veri_ir::{BoundVar, Counterexample, VIRExpr, VIRType, VerificationResult, Function};
 
-pub fn vir_to_rsmt2_str(ty: VIRType) -> Option<String> {
+pub fn vir_to_rsmt2_constant_ty(ty: VIRType) -> Option<String> {
     match ty {
         VIRType::BitVector(width) => Some(format!("(_ BitVec {})", width)),
+        VIRType::BitVectorList(len, width) => Some(format!("(_ BitVec {})", len*width)),
         VIRType::IsleType => Some("Int".to_string()),
-        VIRType::Bool | VIRType::Function | VIRType::BitVectorList(..) => None,
+        VIRType::Bool | VIRType::Function => None,
     }
 }
 
@@ -54,13 +55,23 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
         VIRExpr::FunctionApplication(_, func, arg_list) => match *func {
-            VIRExpr::Function(_, name) => {
-                format!("({} {:?})", name, arg_list)
+            VIRExpr::Function(Function{name, ret, args}) => {
+                unary(&name, arg_list)
             }
             _ => unreachable!("Unsupported function structure: {:?}", ec),
         },
-        VIRExpr::List(_ty, _args) => {
-            unimplemented!()
+        VIRExpr::List(_, args) => {
+            // Implement lists as concatenations of vectors
+            // For now, assume length 2
+            match &args[..]  {
+                [x, y] => 
+                format!(
+                    "(concat {} {})",
+                    vir_expr_to_rsmt2_str(x.clone()),
+                    vir_expr_to_rsmt2_str(y.clone())
+                ),
+                _ => unimplemented!("unimplemented arg length")
+            }
         }
         _ => unreachable!("Unexpected expr {:?}", ec),
     }
@@ -100,10 +111,10 @@ pub fn run_solver(
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
-        if let Some(var) = vir_to_rsmt2_str(v.ty) {
+        if let Some(var_ty) = vir_to_rsmt2_constant_ty(v.ty) {
             println!("\t{} : {:?}", v.name, v.ty);
-            solver.declare_const(v.name, var).unwrap();
-        }
+            solver.declare_const(v.name, var_ty).unwrap();
+        } 
     }
 
     println!("Adding assumptions:");
