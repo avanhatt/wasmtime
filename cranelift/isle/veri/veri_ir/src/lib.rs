@@ -34,8 +34,39 @@ impl VIRAnnotation {
 /// arguments and the return value.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionAnnotation {
-    pub args: Vec<BoundVar>,
+    pub args: Vec<DefinedSymbol>,
     pub ret: BoundVar,
+}
+
+/// A defined symbol can be either a bound variable or a new function
+/// definition
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum DefinedSymbol {
+    Var(BoundVar),
+    Function(Function)
+}
+
+impl DefinedSymbol {
+    pub fn name(&self) -> String {
+        match self {
+            Self::Var(bv) => bv.name.clone(),
+            Self::Function(func) => func.name.clone()
+        }
+    }
+
+    pub fn ty(&self) -> VIRType {
+        match self {
+            Self::Var(bv) => bv.ty,
+            Self::Function(func) => VIRType::Function
+        }
+    }
+}
+/// A bound function, including the VIR type signature
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Function {
+    pub name: String,
+    pub args: Vec<VIRType>,
+    pub ret: VIRType,
 }
 
 /// A bound variable, including the VIR type
@@ -106,7 +137,7 @@ pub enum VIRExpr {
     BVSignExt(VIRType, usize, Box<VIRExpr>),
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
 
-    Function(VIRType, String),
+    Function(Function),
     FunctionApplication(VIRType, Box<VIRExpr>, Box<VIRExpr>),
     List(VIRType, Vec<VIRExpr>),
 }
@@ -124,7 +155,7 @@ impl VIRExpr {
             VIRExpr::BVZeroExt(t, _, _) => t,
             VIRExpr::BVSignExt(t, _, _) => t,
             VIRExpr::BVExtract(t, _, _, _) => t,
-            VIRExpr::Function(t, _) => t,
+            VIRExpr::Function(func) => &VIRType::Function,
             VIRExpr::FunctionApplication(t, _, _) => t,
             VIRExpr::List(t, _) => t,
             VIRExpr::True 
@@ -152,7 +183,7 @@ impl VIRType {
 
     pub fn apply(&self, func: VIRExpr, args: VIRExpr) -> VIRExpr {
         assert!(matches!(func.ty(), Self::Function));
-        VIRExpr::FunctionApplication(*self, Box::new(func), Box::new(args))
+        VIRExpr::FunctionApplication(self.clone(), Box::new(func), Box::new(args))
     }
 
     // TODO: type check
@@ -192,28 +223,32 @@ impl VIRType {
         matches!(*self, Self::Bool)   
     }
 
+    pub fn is_function(&self) -> bool {
+        matches!(*self, Self::Function)   
+    }
+
     pub fn is_isle_type(&self) -> bool {
         matches!(*self, Self::IsleType)   
     }
 
     pub fn bv_const(&self, x: i128) -> VIRExpr {
         assert!(self.is_bv());
-        VIRExpr::Const(*self, x)
+        VIRExpr::Const(self.clone(), x)
     }
 
     pub fn isle_type_const(&self, x: i128) -> VIRExpr {
         assert!(self.is_isle_type());
-        VIRExpr::Const(*self, x)
+        VIRExpr::Const(self.clone(), x)
     }
 
     pub fn bv_var(&self, s: String) -> VIRExpr {
-        VIRExpr::Var(BoundVar{name: s, ty: *self})
+        VIRExpr::Var(BoundVar{name: s, ty: self.clone()})
     }
 
     pub fn bv_unary<F: Fn(VIRType, Box<VIRExpr>) -> VIRExpr>(&self, f: F, x: VIRExpr) -> VIRExpr {
         assert!(self.is_bv());
         assert_eq!(self.width(), x.ty().width());
-        f(*self, Box::new(x))
+        f(self.clone(), Box::new(x))
     }
 
     pub fn bv_binary<F: Fn(VIRType, Box<VIRExpr>, Box<VIRExpr>) -> VIRExpr>(
@@ -225,7 +260,7 @@ impl VIRType {
         assert!(self.is_bv());
         assert_eq!(self.width(), x.ty().width(), "({:?}, {:?})", x, y);
         assert_eq!(self.width(), y.ty().width(), "({:?}, {:?})", x, y);
-        f(*self, Box::new(x), Box::new(y))
+        f(self.clone(), Box::new(x), Box::new(y))
     }
 
     pub fn bv_extend<F: Fn(VIRType, usize, Box<VIRExpr>) -> VIRExpr>(
@@ -264,6 +299,10 @@ pub fn all_starting_bitvectors() -> Vec<VIRType> {
 impl BoundVar {
     pub fn as_expr(&self)-> VIRExpr {
         VIRExpr::Var(self.clone())
+    }
+
+    pub fn as_sym(&self)-> DefinedSymbol {
+        DefinedSymbol::Var(self.clone())
     }
 }
 
