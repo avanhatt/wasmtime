@@ -47,17 +47,17 @@ pub enum DefinedSymbol {
 }
 
 impl DefinedSymbol {
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> &String {
         match self {
-            Self::Var(bv) => bv.name.clone(),
-            Self::Function(func) => func.name.clone()
+            Self::Var(bv) => &bv.name,
+            Self::Function(func) => &func.name
         }
     }
 
-    pub fn ty(&self) -> VIRType {
+    pub fn ty(&self) -> &VIRType {
         match self {
-            Self::Var(bv) => bv.ty,
-            Self::Function(func) => VIRType::Function
+            Self::Var(bv) => &bv.ty,
+            Self::Function(func) => &func.ty
         }
     }
 }
@@ -65,8 +65,9 @@ impl DefinedSymbol {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
     pub name: String,
-    pub args: Vec<VIRType>,
-    pub ret: VIRType,
+    pub ty: VIRType, 
+    pub args: Vec<BoundVar>,
+    pub ret: BoundVar,
 }
 
 /// A bound variable, including the VIR type
@@ -76,8 +77,15 @@ pub struct BoundVar {
     pub ty: VIRType,
 }
 
+impl BoundVar {
+    /// Construct a new bound variable, cloning from references
+    pub fn new(name: &str, ty: &VIRType) -> Self {
+        BoundVar { name: name.to_string(), ty: ty.clone() }
+    }
+}
+
 /// Verification type
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum VIRType {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -90,7 +98,7 @@ pub enum VIRType {
     BitVectorList(usize, usize),
 
     /// The expression is a function definition. 
-    Function,
+    Function(Vec<VIRType>, Box<VIRType>),
 
     /// The expression is a boolean. This does not directly correspond 
     /// to a specific Cranelift Isle type, rather, we use it for the
@@ -155,7 +163,7 @@ impl VIRExpr {
             VIRExpr::BVZeroExt(t, _, _) => t,
             VIRExpr::BVSignExt(t, _, _) => t,
             VIRExpr::BVExtract(t, _, _, _) => t,
-            VIRExpr::Function(func) => &VIRType::Function,
+            VIRExpr::Function(func) => &func.ty,
             VIRExpr::FunctionApplication(t, _, _) => t,
             VIRExpr::List(t, _) => t,
             VIRExpr::True 
@@ -182,7 +190,7 @@ impl VIRType {
     }
 
     pub fn apply(&self, func: VIRExpr, args: VIRExpr) -> VIRExpr {
-        assert!(matches!(func.ty(), Self::Function));
+        assert!(matches!(func.ty(), Self::Function(..)));
         VIRExpr::FunctionApplication(self.clone(), Box::new(func), Box::new(args))
     }
 
@@ -224,7 +232,7 @@ impl VIRType {
     }
 
     pub fn is_function(&self) -> bool {
-        matches!(*self, Self::Function)   
+        matches!(*self, Self::Function(..))   
     }
 
     pub fn is_isle_type(&self) -> bool {
