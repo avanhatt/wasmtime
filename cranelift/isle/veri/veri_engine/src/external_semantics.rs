@@ -4,14 +4,14 @@
 /// Right now, this uses the rsmt2 crate.
 use crate::interp::AssumptionContext;
 use rsmt2::Solver;
-use veri_ir::{BoundVar, Counterexample, VIRExpr, VIRType, VerificationResult, Function};
+use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult, Function};
 
 pub fn vir_to_rsmt2_constant_ty(ty: VIRType) -> Option<String> {
     match ty {
         VIRType::BitVector(width) => Some(format!("(_ BitVec {})", width)),
         VIRType::BitVectorList(len, width) => Some(format!("(_ BitVec {})", len*width)),
         VIRType::IsleType => Some("Int".to_string()),
-        VIRType::Bool | VIRType::Function => None,
+        VIRType::Bool | VIRType::Function(..) => None,
     }
 }
 
@@ -32,7 +32,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             VIRType::BitVector(width) => format!("(_ bv{} {})", i, width),
             VIRType::IsleType => i.to_string(),
             VIRType::Bool => (if i == 0 { "false" } else { "true" }).to_string(),
-            VIRType::Function => unimplemented!(),
+            VIRType::Function(..) => unimplemented!(),
             VIRType::BitVectorList(_length, _width) => unimplemented!(),
         },
         VIRExpr::Var(bound_var) => bound_var.name,
@@ -55,7 +55,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
         VIRExpr::FunctionApplication(_, func, arg_list) => match *func {
-            VIRExpr::Function(Function{name, ret, args}) => {
+            VIRExpr::Function(Function{name, ty, ret, args}) => {
                 unary(&name, arg_list)
             }
             _ => unreachable!("Unsupported function structure: {:?}", ec),
@@ -106,12 +106,12 @@ pub fn run_solver(
     actx: AssumptionContext,
     lhs: VIRExpr,
     rhs: VIRExpr,
-    _ty: VIRType,
+    _ty: &VIRType,
 ) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
-        if let Some(var_ty) = vir_to_rsmt2_constant_ty(v.ty) {
+        if let Some(var_ty) = vir_to_rsmt2_constant_ty(v.ty.clone()) {
             println!("\t{} : {:?}", v.name, v.ty);
             solver.declare_const(v.name, var_ty).unwrap();
         } 

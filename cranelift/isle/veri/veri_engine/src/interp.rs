@@ -1,7 +1,7 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::isle_annotations::isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
-use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType, DefinedSymbol, Function};
+use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType, DefinedSymbol};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -17,7 +17,7 @@ trait ToVIRExpr {
         ctx: &mut AssumptionContext,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr;
 }
 
@@ -28,7 +28,7 @@ impl ToVIRExpr for TermArgPattern {
         ctx: &mut AssumptionContext,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr {
         match self {
             TermArgPattern::Pattern(pat) => ctx.interp_pattern(pat, termenv, typeenv, ty),
@@ -44,7 +44,7 @@ impl ToVIRExpr for isle::sema::Expr {
         ctx: &mut AssumptionContext,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr {
         ctx.interp_sema_expr(self, termenv, typeenv, ty)
     }
@@ -85,9 +85,9 @@ impl AssumptionContext {
         format!("{}{}", root, idx)
     }
 
-    fn new_var(&mut self, root: &str, ty: VIRType, varid: &VarId) -> BoundVar {
+    fn new_var(&mut self, root: &str, ty: &VIRType, varid: &VarId) -> BoundVar {
         let ident = self.new_ident(root);
-        let var = BoundVar { name: ident, ty };
+        let var = BoundVar::new(&ident, ty);
         self.var_map.insert(*varid, var.clone());
         self.quantified_vars.push(var.clone());
         var
@@ -112,7 +112,7 @@ impl AssumptionContext {
         renaming_map
     }
 
-    fn get_annotation_for_term(&mut self, term: &str, ty: VIRType) -> VIRAnnotation {
+    fn get_annotation_for_term(&mut self, term: &str, ty: &VIRType) -> VIRAnnotation {
         let initial_annotation = isle_annotation_for_term(term, ty);
         // Build renaming map from bound vars in the signature
         let read_renames = self.build_annotation_remapping(&initial_annotation, term);
@@ -121,7 +121,7 @@ impl AssumptionContext {
             let id = read_renames.get(&v.name.clone()).unwrap();
             BoundVar {
                 name: id.to_string(),
-                ty: v.ty,
+                ty: v.ty.clone(),
             }
         };
         rename_annotation_vars(initial_annotation, rename)
@@ -133,7 +133,7 @@ impl AssumptionContext {
         subterms: Vec<T>,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr {
         let annotation = self.get_annotation_for_term(term_name, ty);
 
@@ -143,15 +143,15 @@ impl AssumptionContext {
         for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
             match arg {
                 DefinedSymbol::Var(var) => {
-                    let subexpr = subterm.to_expr(self, termenv, typeenv, var.ty);
+                    let subexpr = subterm.to_expr(self, termenv, typeenv, &var.ty);
                     self.assumptions.push(Assumption::new(VIRType::eq(
                         subexpr,
                         VIRExpr::Var(var.clone()),
                     )));
                     self.quantified_vars.push(var.clone());
                 }
-                DefinedSymbol::Function(_func) => {
-                    let subexpr = subterm.to_expr(self, termenv, typeenv, VIRType::Function);
+                DefinedSymbol::Function(func) => {
+                    let subexpr = subterm.to_expr(self, termenv, typeenv, &func.ty);
                     dbg!(subexpr);
                     // unimplemented!()
                     ();
@@ -170,7 +170,7 @@ impl AssumptionContext {
         bvpat: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
@@ -208,7 +208,7 @@ impl AssumptionContext {
         expr: &isle::sema::Expr,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr {
         match expr {
             isle::sema::Expr::Term(_, termid, subterms) => {
@@ -231,7 +231,7 @@ impl AssumptionContext {
         pattern: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> VIRExpr {
         self.interp_pattern(pattern, termenv, typeenv, ty)
     }
@@ -241,7 +241,7 @@ impl AssumptionContext {
         lhs: &Pattern,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
-        ty: VIRType,
+        ty: &VIRType,
     ) -> (AssumptionContext, VIRExpr) {
         let mut ctx = AssumptionContext {
             quantified_vars: vec![],
