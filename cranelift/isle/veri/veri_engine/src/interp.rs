@@ -112,19 +112,22 @@ impl AssumptionContext {
         renaming_map
     }
 
-    fn get_annotation_for_term(&mut self, term: &str, ty: &VIRType) -> VIRAnnotation {
-        let initial_annotation = isle_annotation_for_term(term, ty);
-        // Build renaming map from bound vars in the signature
-        let read_renames = self.build_annotation_remapping(&initial_annotation, term);
-        // Read-only renaming map closure
-        let rename = |v: &BoundVar| {
-            let id = read_renames.get(&v.name.clone()).unwrap();
-            BoundVar {
-                name: id.to_string(),
-                ty: v.ty.clone(),
-            }
-        };
-        rename_annotation_vars(initial_annotation, rename)
+    fn get_annotation_for_term(&mut self, term: &str, ty: &VIRType) -> Option<VIRAnnotation> {
+        if let Some(initial_annotation) = isle_annotation_for_term(term, ty) {
+            // Build renaming map from bound vars in the signature
+            let read_renames = self.build_annotation_remapping(&initial_annotation, term);
+            // Read-only renaming map closure
+            let rename = |v: &BoundVar| {
+                let id = read_renames.get(&v.name.clone()).unwrap();
+                BoundVar {
+                    name: id.to_string(),
+                    ty: v.ty.clone(),
+                }
+            };
+            Some(rename_annotation_vars(initial_annotation, rename))
+        } else {
+            None
+        }
     }
 
     fn interp_term_with_subexprs<T: ToVIRExpr + Debug>(
@@ -135,24 +138,26 @@ impl AssumptionContext {
         typeenv: &TypeEnv,
         ty: &VIRType,
     ) -> VIRExpr {
-        let annotation = self.get_annotation_for_term(term_name, ty);
+        if let Some(annotation) = self.get_annotation_for_term(term_name, ty) {
+            // The annotation should have the same number of arguments as given here
+            assert_eq!(subterms.len(), annotation.func().args.len());
 
-        // The annotation should have the same number of arguments as given here
-        assert_eq!(subterms.len(), annotation.func().args.len());
-
-        for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
-            let subexpr = subterm.to_expr(self, termenv, typeenv, &arg.ty);
-            self.assumptions.push(Assumption::new(VIRType::eq(
-                subexpr,
-                VIRExpr::Var(arg.clone()),
-            )));
-            self.quantified_vars.push(arg.clone());
+            for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
+                let subexpr = subterm.to_expr(self, termenv, typeenv, &arg.ty);
+                self.assumptions.push(Assumption::new(VIRType::eq(
+                    subexpr,
+                    VIRExpr::Var(arg.clone()),
+                )));
+                self.quantified_vars.push(arg.clone());
+            }
+            for a in annotation.assertions() {
+                self.assumptions.push(Assumption::new(a.clone()));
+            }
+            self.quantified_vars.push(annotation.func().ret.clone());
+            annotation.func().ret.as_expr()
+        } else {
+            unimplemented!("TODO: handle unannotated terms")
         }
-        for a in annotation.assertions() {
-            self.assumptions.push(Assumption::new(a.clone()));
-        }
-        self.quantified_vars.push(annotation.func().ret.clone());
-        annotation.func().ret.as_expr()
     }
 
     fn interp_pattern(

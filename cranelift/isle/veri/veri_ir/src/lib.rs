@@ -37,14 +37,13 @@ pub struct FunctionAnnotation {
     pub args: Vec<BoundVar>,
     pub ret: BoundVar,
 }
-/// A bound function, including the VIR type signature
+/// A bound function with named arguments, including the VIR type signature
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
     pub name: String,
     pub ty: VIRType, 
     pub args: Vec<BoundVar>,
 }
-
 /// A bound variable, including the VIR type
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BoundVar {
