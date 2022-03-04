@@ -4,14 +4,14 @@
 /// Right now, this uses the rsmt2 crate.
 use crate::interp::AssumptionContext;
 use rsmt2::Solver;
-use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult, Function};
+use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
 
-pub fn vir_to_rsmt2_constant_ty(ty: VIRType) -> Option<String> {
+pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
-        VIRType::BitVector(width) => Some(format!("(_ BitVec {})", width)),
-        VIRType::BitVectorList(len, width) => Some(format!("(_ BitVec {})", len*width)),
-        VIRType::IsleType => Some("Int".to_string()),
-        VIRType::Bool | VIRType::Function(..) => None,
+        VIRType::BitVector(width) => format!("(_ BitVec {})", width),
+        VIRType::BitVectorList(len, width) => format!("(_ BitVec {})", len * width),
+        VIRType::IsleType => "Int".to_string(),
+        VIRType::Bool | VIRType::Function(..) => unreachable!(),
     }
 }
 
@@ -42,6 +42,31 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::And(x, y) => binary("and", x, y),
         VIRExpr::Or(x, y) => binary("or", x, y),
         VIRExpr::Imp(x, y) => binary("=>", x, y),
+        // If the assertion is an equality on function types, we need quantification
+        VIRExpr::Eq(x, y) if x.ty().is_function() => {
+            let x_str = vir_expr_to_rsmt2_str(*x.clone());
+            let y_str = vir_expr_to_rsmt2_str(*y);
+            let args = x
+                .ty()
+                .function_arg_types()
+                .iter()
+                .enumerate()
+                .map(|(i, t)| format!("(x{} {})", i, vir_to_rsmt2_constant_ty(t)))
+                .collect::<Vec<String>>()
+                .join(" ");
+            let arg_names = x
+                .ty()
+                .function_arg_types()
+                .iter()
+                .enumerate()
+                .map(|(i, _)| format!("x{}", i,))
+                .collect::<Vec<String>>()
+                .join(" ");
+            format!(
+                "(forall ({}) (= ({} {}) ({} {})))",
+                args, x_str, arg_names, y_str, arg_names
+            )
+        }
         VIRExpr::Eq(x, y) => binary("=", x, y),
         VIRExpr::Lte(x, y) => binary("<=", x, y),
         VIRExpr::BVNeg(_, x) => unary("bvneg", x),
@@ -54,26 +79,30 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVExtract(_, l, h, x) => {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
-        VIRExpr::FunctionApplication(_, func, arg_list) => match *func {
-            VIRExpr::Function(Function{name, ty, ret, args}) => {
-                unary(&name, arg_list)
-            }
-            _ => unreachable!("Unsupported function structure: {:?}", ec),
-        },
+        VIRExpr::FunctionApplication(_, func, arg_list) => {
+            let func_name = vir_expr_to_rsmt2_str(*func);
+            unary(&func_name, arg_list)
+        }
+        VIRExpr::Function(func, _) => func.name,
         VIRExpr::List(_, args) => {
-            // Implement lists as concatenations of vectors
+            // Implement lists as concatenations of bitvectors
             // For now, assume length 2
-            match &args[..]  {
-                [x, y] => 
-                format!(
+            match &args[..] {
+                [x, y] => format!(
                     "(concat {} {})",
                     vir_expr_to_rsmt2_str(x.clone()),
                     vir_expr_to_rsmt2_str(y.clone())
                 ),
-                _ => unimplemented!("unimplemented arg length")
+                _ => unimplemented!("unimplemented arg length"),
             }
         }
-        _ => unreachable!("Unexpected expr {:?}", ec),
+        VIRExpr::GetElement(ty, ls, i) => {
+            // List are concatenations of bitvectors, so extract to
+            // get the element
+            let start = i * ty.width();
+            let end = start + ty.width() - 1;
+            vir_expr_to_rsmt2_str(VIRExpr::BVExtract(ty, start, end, ls))
+        }
     }
 }
 
@@ -111,14 +140,27 @@ pub fn run_solver(
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in actx.quantified_vars {
-        if let Some(var_ty) = vir_to_rsmt2_constant_ty(v.ty.clone()) {
-            println!("\t{} : {:?}", v.name, v.ty);
-            solver.declare_const(v.name, var_ty).unwrap();
-        } 
+        let name = v.name.clone();
+        let ty = &v.ty;
+        match ty.clone() {
+            VIRType::Function(args, ret) => {
+                println!("\tFUNCTION {} : {:?}", name, ty);
+                let arg_tys: Vec<String> =
+                    args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
+                solver
+                    .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
+                    .unwrap();
+            }
+            _ => {
+                let var_ty = vir_to_rsmt2_constant_ty(ty);
+                println!("\t{} : {:?}", name, ty);
+                solver.declare_const(name, var_ty).unwrap();
+            }
+        }
     }
 
     println!("Adding assumptions:");
-    let assumptions: Vec<String> = actx
+    let mut assumptions: Vec<String> = actx
         .assumptions
         .iter()
         .map(|a| {
@@ -127,16 +169,64 @@ pub fn run_solver(
             p
         })
         .collect();
-    let assumption_str = format!("(and {})", assumptions.join(" "));
 
-    let lhs_s = vir_expr_to_rsmt2_str(lhs);
-    let rhs_s = vir_expr_to_rsmt2_str(rhs);
+    // Declare external functions. TODO this is SUPER messy.
+    actx.assumptions.iter().for_each(|a| match a.assume() {
+        VIRExpr::Eq(x, y) => {
+            match (*x.clone(), *y.clone()) {
+                (_, VIRExpr::Function(func, body)) | (VIRExpr::Function(func, body), _) => {
+                    let arg_tys: Vec<String> = func
+                        .args
+                        .iter()
+                        .map(|a| vir_to_rsmt2_constant_ty(&a.ty))
+                        .collect();
+                    solver
+                        .declare_fun(
+                            func.name.clone(),
+                            arg_tys,
+                            vir_to_rsmt2_constant_ty(&x.ty().function_ret_type()),
+                        )
+                        .unwrap();
+
+                    let args = func
+                        .args
+                        .iter()
+                        .map(|var| format!("({} {})", var.name, vir_to_rsmt2_constant_ty(&var.ty)))
+                        .collect::<Vec<String>>()
+                        .join(" ");
+                    let arg_names = func
+                        .args
+                        .iter()
+                        .map(|v| v.name.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ");
+                    let defn = format!(
+                        "(forall ({}) (= ({} {}) {}))",
+                        args,
+                        func.name,
+                        arg_names,
+                        vir_expr_to_rsmt2_str(*body)
+                    );
+                    println!("\t{}", defn);
+                    assumptions.push(defn);
+                }
+                _ => (),
+            };
+        }
+        _ => (),
+    });
+
+    let assumption_str = format!("(and {})", assumptions.join(" "));
 
     // Check whether the assumptions are possible
     if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
         println!("Rule not applicable as written, skipping full query");
         return VerificationResult::InapplicableRule;
     }
+
+    // Correctness query
+    let lhs_s = vir_expr_to_rsmt2_str(lhs);
+    let rhs_s = vir_expr_to_rsmt2_str(rhs);
 
     let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
     println!("Running query:\n\t{}\n", query);
@@ -145,6 +235,8 @@ pub fn run_solver(
     match solver.check_sat() {
         Ok(true) => {
             println!("Verification failed");
+            let model = solver.get_model().unwrap();
+            dbg!(model);
             VerificationResult::Failure(Counterexample {})
         }
         Ok(false) => {

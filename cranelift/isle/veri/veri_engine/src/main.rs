@@ -261,7 +261,11 @@ mod tests {
                 VerificationResult::InapplicableRule
             };
             {
-                println!("{:-^1$}", format!("simple iadd bv{}", ty.clone().width()), 80);
+                println!(
+                    "{:-^1$}",
+                    format!("simple iadd bv{}", ty.clone().width()),
+                    80
+                );
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
                 let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
