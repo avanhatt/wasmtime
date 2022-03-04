@@ -120,7 +120,7 @@ pub enum VIRExpr {
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
 
     Function(Function, Box<VIRExpr>),
-    FunctionApplication(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    FunctionApplication(VIRType, Box<VIRExpr>, Vec<VIRExpr>),
     List(VIRType, Vec<VIRExpr>),
     GetElement(VIRType, Box<VIRExpr>, usize),
 }
@@ -165,9 +165,9 @@ impl VIRType {
         VIRExpr::Lte(Box::new(x), Box::new(y))
     }
 
-    pub fn apply(&self, func: VIRExpr, args: VIRExpr) -> VIRExpr {
+    pub fn apply(&self, func: VIRExpr, args: Vec<VIRExpr>) -> VIRExpr {
         assert!(matches!(func.ty(), Self::Function(..)));
-        VIRExpr::FunctionApplication(self.clone(), Box::new(func), Box::new(args))
+        VIRExpr::FunctionApplication(self.clone(), Box::new(func), args)
     }
 
     // TODO: type check

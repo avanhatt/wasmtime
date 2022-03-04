@@ -27,7 +27,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> Option<VIRAnnotatio
                 &VIRType::Function(vec![list_ty], Box::new(ty.clone())),
             );
 
-            let app = ty.clone().apply(opcode.as_expr(), arg_list.as_expr());
+            let app = ty.clone().apply(opcode.as_expr(), vec![arg_list.as_expr()]);
             let eq = VIRType::eq(app, result.as_expr());
 
             let func = FunctionAnnotation {

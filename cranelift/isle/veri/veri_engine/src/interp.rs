@@ -3,11 +3,30 @@ use crate::isle_annotations::isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
-use std::collections::HashMap;
+use std::any::type_name;
 use std::fmt::Debug;
+use std::{collections::HashMap, ops::Bound};
 
 use cranelift_isle as isle;
-use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, VarId};
+use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, TypeId, VarId};
+
+/// Get the Clif ISLE type name
+fn clif_type_name(typeid: TypeId, typeenv: &TypeEnv) -> String {
+    match &typeenv.types[typeid.index()] {
+        &isle::sema::Type::Primitive(_, sym, _) | &isle::sema::Type::Enum { name: sym, .. } => {
+            typeenv.syms[sym.index()].clone()
+        }
+    }
+}
+
+/// An approximation for now: types from CLIF type names
+fn vir_type_for_clif_ty(base_ty: &VIRType, clif: &str) -> VIRType {
+    match clif {
+        "Type" => VIRType::IsleType,
+        "Reg" => base_ty.clone(),
+        _ => unimplemented!(),
+    }
+}
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
@@ -19,6 +38,8 @@ trait ToVIRExpr {
         typeenv: &TypeEnv,
         ty: &VIRType,
     ) -> VIRExpr;
+
+    fn type_id(&self) -> TypeId;
 }
 
 /// Type for term arguments for ISLE LHS terms.
@@ -35,6 +56,13 @@ impl ToVIRExpr for TermArgPattern {
             _ => unimplemented!("{:?}", self),
         }
     }
+
+    fn type_id(&self) -> TypeId {
+        match self {
+            TermArgPattern::Expr(e) => e.type_id(),
+            TermArgPattern::Pattern(p) => p.ty(),
+        }
+    }
 }
 
 /// Type for term arguments for ISLE RHS terms.
@@ -47,6 +75,10 @@ impl ToVIRExpr for isle::sema::Expr {
         ty: &VIRType,
     ) -> VIRExpr {
         ctx.interp_sema_expr(self, termenv, typeenv, ty)
+    }
+
+    fn type_id(&self) -> TypeId {
+        self.ty()
     }
 }
 
@@ -64,6 +96,7 @@ impl Assumption {
         Self { assume }
     }
 
+    /// Get the assumption as an expression.
     pub fn assume(&self) -> &VIRExpr {
         &self.assume
     }
@@ -79,12 +112,14 @@ pub struct AssumptionContext {
 }
 
 impl AssumptionContext {
+    /// Get a new identifier starting with a root ID (adds a unique suffix)
     fn new_ident(&mut self, root: &str) -> String {
         let idx = self.ident_map.entry(root.to_string()).or_insert(0);
         *idx += 1;
         format!("{}{}", root, idx)
     }
 
+    /// Produce a new bound variable with unique name, and add it to our quantified variables
     fn new_var(&mut self, root: &str, ty: &VIRType, varid: &VarId) -> BoundVar {
         let ident = self.new_ident(root);
         let var = BoundVar::new(&ident, ty);
@@ -138,6 +173,7 @@ impl AssumptionContext {
         typeenv: &TypeEnv,
         ty: &VIRType,
     ) -> VIRExpr {
+        dbg!(&term_name);
         if let Some(annotation) = self.get_annotation_for_term(term_name, ty) {
             // The annotation should have the same number of arguments as given here
             assert_eq!(subterms.len(), annotation.func().args.len());
@@ -156,7 +192,26 @@ impl AssumptionContext {
             self.quantified_vars.push(annotation.func().ret.clone());
             annotation.func().ret.as_expr()
         } else {
-            unimplemented!("TODO: handle unannotated terms")
+            // TODO: to actually use this logic, we need to save solver state across rules
+
+            // If we don't have an annotation for the term, treat it as an uninterpreted
+            // function
+
+            // NOTE: for now, we assume subterms have the same type: this will probably not
+            // hold in general!
+            let mut args = vec![];
+            for subterm in subterms.iter() {
+                let arg_clif_ty = clif_type_name(subterm.type_id(), typeenv);
+                let vir_ty = vir_type_for_clif_ty(&ty, &arg_clif_ty);
+                let subexpr = subterm.to_expr(self, termenv, typeenv, &vir_ty);
+                args.push(subexpr);
+            }
+            let func_ty = VIRType::Function(
+                args.iter().map(|a| a.ty().clone()).collect(),
+                Box::new(ty.clone()),
+            );
+            let func = BoundVar::new(term_name, &func_ty);
+            ty.apply(func.as_expr(), args)
         }
     }
 
