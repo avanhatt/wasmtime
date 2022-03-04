@@ -45,7 +45,7 @@ where
         VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
         VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),
         VIRExpr::FunctionApplication(ty, func, args) => {
-            VIRExpr::FunctionApplication(ty, f(func), f(args))
+            VIRExpr::FunctionApplication(ty, f(func), map_f(args))
         }
         VIRExpr::List(ty, xs) => VIRExpr::List(ty, map_f(xs)),
         VIRExpr::GetElement(ty, ls, i) => VIRExpr::GetElement(ty, f(ls), i),
