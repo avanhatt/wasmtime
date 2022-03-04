@@ -3,7 +3,7 @@
 use std::cmp::Ordering;
 use veri_ir::{BoundVar, Function, FunctionAnnotation, VIRAnnotation, VIRExpr, VIRType};
 
-pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
+pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> Option<VIRAnnotation> {
     match term {
         "lower" | "put_in_reg" | "value_reg" | "first_result" | "inst_data" => {
             // No-op for now
@@ -14,7 +14,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![arg],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![identity])
+            Some(VIRAnnotation::new(func, vec![identity]))
         }
         "InstructionData.Binary" => {
             // List must have length 2 since it's a Binary
@@ -34,7 +34,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![opcode, arg_list],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![eq])
+            Some(VIRAnnotation::new(func, vec![eq]))
         }
         "value_type" => {
             let arg = BoundVar::new("arg", &VIRType::IsleType);
@@ -47,7 +47,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![arg],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![ty_eq])
+            Some(VIRAnnotation::new(func, vec![ty_eq]))
         }
         "value_array_2" => {
             let arg1 = BoundVar::new("arg1", &ty.element_ty());
@@ -62,7 +62,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![arg1, arg2],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![eq])
+            Some(VIRAnnotation::new(func, vec![eq]))
         }
         "has_type" => {
             // Add an assertion on the type
@@ -78,7 +78,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![ty_arg, arg],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![ty_eq, identity])
+            Some(VIRAnnotation::new(func, vec![ty_eq, identity]))
         }
         "fits_in_64" => {
             // Identity, but add assertion on type
@@ -90,7 +90,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![arg],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![identity, ty_fits])
+            Some(VIRAnnotation::new(func, vec![identity, ty_fits]))
         }
         "iadd" => {
             let a = BoundVar::new("a", ty);
@@ -104,7 +104,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![a, b],
                 ret: r,
             };
-            VIRAnnotation::new(func, vec![sem])
+            Some(VIRAnnotation::new(func, vec![sem]))
         }
         "Opcode.Iadd" => {
             let value_list = BoundVar::new("xs", &ty.function_arg_types()[0]);
@@ -125,7 +125,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![],
                 ret: r,
             };
-            VIRAnnotation::new(func, vec![body_semantics])
+            Some(VIRAnnotation::new(func, vec![body_semantics]))
         }
         "add" => {
             let t = BoundVar::new("ty", &VIRType::IsleType);
@@ -140,7 +140,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![t, a, b],
                 ret: r,
             };
-            VIRAnnotation::new(func, vec![sem])
+            Some(VIRAnnotation::new(func, vec![sem]))
         }
         "imm12_from_negated_value" => {
             let bv12 = VIRType::BitVector(12);
@@ -173,7 +173,7 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![imm_arg],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![assume_fits, res_assertion])
+            Some(VIRAnnotation::new(func, vec![assume_fits, res_assertion]))
         }
         "sub_imm" => {
             let bv12 = VIRType::BitVector(12);
@@ -200,8 +200,8 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> VIRAnnotation {
                 args: vec![ty_arg, reg_arg, imm_arg],
                 ret: result,
             };
-            VIRAnnotation::new(func, vec![assertion])
+            Some(VIRAnnotation::new(func, vec![assertion]))
         }
-        _ => unimplemented!("Need annotation for term {}", term),
+        _ => None,
     }
 }

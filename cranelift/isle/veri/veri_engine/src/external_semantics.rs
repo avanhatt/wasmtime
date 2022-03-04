@@ -26,7 +26,6 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         )
     };
     let ext = |op, i, x: Box<VIRExpr>| format!("((_ {} {}) {})", op, i, vir_expr_to_rsmt2_str(*x));
-    let ec = e.clone();
     match e {
         VIRExpr::Const(ty, i) => match ty {
             VIRType::BitVector(width) => format!("(_ bv{} {})", i, width),
@@ -170,9 +169,9 @@ pub fn run_solver(
         })
         .collect();
 
-    // Declare external functions. TODO this is SUPER messy.
-    actx.assumptions.iter().for_each(|a| match a.assume() {
-        VIRExpr::Eq(x, y) => {
+    // Declare internal functions in assumption. TODO this is SUPER messy: refactor!!!
+    actx.assumptions.iter().for_each(|a| {
+        if let VIRExpr::Eq(x, y) = a.assume() {
             match (*x.clone(), *y.clone()) {
                 (_, VIRExpr::Function(func, body)) | (VIRExpr::Function(func, body), _) => {
                     let arg_tys: Vec<String> = func
@@ -213,7 +212,6 @@ pub fn run_solver(
                 _ => (),
             };
         }
-        _ => (),
     });
 
     let assumption_str = format!("(and {})", assumptions.join(" "));
