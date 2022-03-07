@@ -13,6 +13,13 @@
 (type Opcode extern
     (enum
     ;; ...
+
         ;; (spec (sig (args) (ret r)))
         ;;       (assumptions (= r (func (x : ValueArray2) (bvadd x[0] x[1]))))))
         Iadd
+
+
+;; Open questions:
+;; 1. Overall impressions, verbosity of how return value is specified.
+;; 2. Type declarations: allows inference on Isle type strings, or require explicit Verification IR types?
+;; 3. Syntax for extracting from ValueArrays? For declaring a functions-as-value, re: Iadd?

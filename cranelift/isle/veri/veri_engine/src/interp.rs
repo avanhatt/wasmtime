@@ -195,8 +195,7 @@ impl AssumptionContext {
             // If we don't have an annotation for the term, treat it as an uninterpreted
             // function
 
-            // NOTE: for now, we assume subterms have the same type: this will probably not
-            // hold in general!
+            // NOTE: for now, we get subterm types based on matching on ISLE type names.
             let mut args = vec![];
             for subterm in subterms.iter() {
                 let arg_clif_ty = clif_type_name(subterm.type_id(), typeenv);
