@@ -3,9 +3,8 @@ use crate::isle_annotations::isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
-use std::any::type_name;
 use std::fmt::Debug;
-use std::{collections::HashMap, ops::Bound};
+use std::{collections::HashMap};
 
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, TypeId, VarId};
@@ -173,7 +172,6 @@ impl AssumptionContext {
         typeenv: &TypeEnv,
         ty: &VIRType,
     ) -> VIRExpr {
-        dbg!(&term_name);
         if let Some(annotation) = self.get_annotation_for_term(term_name, ty) {
             // The annotation should have the same number of arguments as given here
             assert_eq!(subterms.len(), annotation.func().args.len());
