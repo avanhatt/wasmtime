@@ -5,6 +5,8 @@ use veri_ir::{BoundVar, Function, FunctionAnnotation, VIRAnnotation, VIRExpr, VI
 
 pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> Option<VIRAnnotation> {
     match term {
+        // (spec (sig (args (x: bvX) (ret: bvX))
+        //       (assumptions (= x ret)))
         "lower" | "put_in_reg" | "value_reg" | "first_result" | "inst_data" => {
             // No-op for now
             let arg = BoundVar::new("arg", ty);
@@ -64,9 +66,11 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> Option<VIRAnnotatio
             };
             Some(VIRAnnotation::new(func, vec![eq]))
         }
+        // (spec (sig (args x: bvX) (ret: bvX))
+        //       (assumptions (= x ret)))
         "has_type" => {
             // Add an assertion on the type
-            let ty_arg = BoundVar::new("y", &VIRType::IsleType);
+            let ty_arg = BoundVar::new("ty", &VIRType::IsleType);
             let arg = BoundVar::new("arg", ty);
             let result = BoundVar::new("ret", ty);
             let ty_eq = VIRType::eq(
