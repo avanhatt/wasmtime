@@ -15,11 +15,6 @@ mod interp;
 mod isle_annotations;
 mod renaming;
 
-fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
-    let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
-    parse_isle_to_terms(lexer)
-}
-
 fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();
     parse_isle_to_terms(lexer)
@@ -102,6 +97,11 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
+        let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
+        parse_isle_to_terms(lexer)
+    }
 
     #[test]
     fn test_iadds() {
