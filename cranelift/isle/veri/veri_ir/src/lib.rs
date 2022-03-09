@@ -1,8 +1,8 @@
-//! Verification Intermediate Representation for relevant types, eventually to 
-//! be lowered to SMT. The goal is to leave some freedom to change term 
+//! Verification Intermediate Representation for relevant types, eventually to
+//! be lowered to SMT. The goal is to leave some freedom to change term
 //! encodings or the specific solver backend.
 
-/// Verification IR annotations for an ISLE term consist of the function 
+/// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VIRAnnotation {
@@ -11,20 +11,15 @@ pub struct VIRAnnotation {
 }
 
 impl VIRAnnotation {
-
     /// New annotation, ensuring that each assertions is a bool.
     pub fn new(func: FunctionAnnotation, assertions: Vec<VIRExpr>) -> Self {
         assert!(assertions.iter().all(|a| a.ty().is_bool()));
-        VIRAnnotation {
-            func,
-            assertions,
-        }
+        VIRAnnotation { func, assertions }
     }
 
     pub fn func(&self) -> &FunctionAnnotation {
         &self.func
     }
-
 
     pub fn assertions(&self) -> &Vec<VIRExpr> {
         &self.assertions
@@ -41,7 +36,7 @@ pub struct FunctionAnnotation {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
     pub name: String,
-    pub ty: VIRType, 
+    pub ty: VIRType,
     pub args: Vec<BoundVar>,
 }
 /// A bound variable, including the VIR type
@@ -54,7 +49,10 @@ pub struct BoundVar {
 impl BoundVar {
     /// Construct a new bound variable, cloning from references
     pub fn new(name: &str, ty: &VIRType) -> Self {
-        BoundVar { name: name.to_string(), ty: ty.clone() }
+        BoundVar {
+            name: name.to_string(),
+            ty: ty.clone(),
+        }
     }
 }
 
@@ -63,7 +61,7 @@ impl BoundVar {
 pub enum VIRType {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
-    /// This corresponds to Cranelift's Isle type: 
+    /// This corresponds to Cranelift's Isle type:
     /// (type Value (primitive Value))
     BitVector(usize),
 
@@ -71,18 +69,18 @@ pub enum VIRType {
     // BitVectorList(length, width)
     BitVectorList(usize, usize),
 
-    /// The expression is a function definition. 
+    /// The expression is a function definition.
     Function(Vec<VIRType>, Box<VIRType>),
 
-    /// The expression is a boolean. This does not directly correspond 
+    /// The expression is a boolean. This does not directly correspond
     /// to a specific Cranelift Isle type, rather, we use it for the
     /// language of assertions.
     Bool,
 
     /// The expression is an Isle type. This is separate from BitVector
-    /// because it allows us to use a different solver type (e.h., Int) 
-    //. for assertions (e.g., fits_in_64). 
-    /// This corresponds to Cranelift's Isle type: 
+    /// because it allows us to use a different solver type (e.h., Int)
+    //. for assertions (e.g., fits_in_64).
+    /// This corresponds to Cranelift's Isle type:
     /// (type Type (primitive Type))
     IsleType,
 }
@@ -142,14 +140,55 @@ impl VIRExpr {
             VIRExpr::FunctionApplication(t, _, _) => t,
             VIRExpr::List(t, _) => t,
             VIRExpr::GetElement(t, _, _) => t,
-            VIRExpr::True 
-            | VIRExpr::False 
+            VIRExpr::True
+            | VIRExpr::False
             | VIRExpr::Not(..)
             | VIRExpr::And(..)
             | VIRExpr::Or(..)
             | VIRExpr::Imp(..)
             | VIRExpr::Eq(..)
             | VIRExpr::Lte(..) => &VIRType::Bool,
+        }
+    }
+
+    pub fn for_each_subexpr(&self, func: &mut dyn FnMut(&Self)) {
+        func(self);
+        match self {
+            VIRExpr::Const(..)
+            | VIRExpr::True
+            | VIRExpr::False
+            | VIRExpr::Function(..)
+            | VIRExpr::Var(..) => (),
+            VIRExpr::Not(x)
+            | VIRExpr::BVNeg(_, x)
+            | VIRExpr::BVNot(_, x)
+            | VIRExpr::BVZeroExt(_, _, x)
+            | VIRExpr::BVSignExt(_, _, x)
+            | VIRExpr::BVExtract(_, _, _, x)
+            | VIRExpr::GetElement(_, x, _) => (*x).for_each_subexpr(func),
+            VIRExpr::And(x, y)
+            | VIRExpr::Or(x, y)
+            | VIRExpr::Imp(x, y)
+            | VIRExpr::Eq(x, y)
+            | VIRExpr::Lte(x, y)
+            | VIRExpr::BVAdd(_, x, y)
+            | VIRExpr::BVSub(_, x, y)
+            | VIRExpr::BVAnd(_, x, y) => {
+                func(self);
+                (*x).for_each_subexpr(func);
+                (*y).for_each_subexpr(func)
+            }
+            VIRExpr::FunctionApplication(_, lambda, args) => {
+                func(self);
+                (*lambda).for_each_subexpr(func);
+                for arg in args {
+                    arg.for_each_subexpr(func)
+                }
+            }
+            VIRExpr::List(_, xs) => {
+                func(self);
+                xs.iter().for_each(|x| x.for_each_subexpr(func))
+            }
         }
     }
 }
@@ -216,29 +255,29 @@ impl VIRType {
     }
 
     pub fn is_bool(&self) -> bool {
-        matches!(*self, Self::Bool)   
+        matches!(*self, Self::Bool)
     }
 
     pub fn is_function(&self) -> bool {
-        matches!(*self, Self::Function(..))   
+        matches!(*self, Self::Function(..))
     }
 
     pub fn function_arg_types(&self) -> Vec<VIRType> {
         match self {
             VIRType::Function(args, _) => args.clone(),
-            _ => unreachable!()
-        }  
+            _ => unreachable!(),
+        }
     }
 
     pub fn function_ret_type(&self) -> VIRType {
         match self {
             VIRType::Function(_, ret) => *ret.clone(),
-            _ => unreachable!()
-        }  
+            _ => unreachable!(),
+        }
     }
 
     pub fn is_isle_type(&self) -> bool {
-        matches!(*self, Self::IsleType)   
+        matches!(*self, Self::IsleType)
     }
 
     pub fn bv_const(&self, x: i128) -> VIRExpr {
@@ -252,7 +291,10 @@ impl VIRType {
     }
 
     pub fn bv_var(&self, s: String) -> VIRExpr {
-        VIRExpr::Var(BoundVar{name: s, ty: self.clone()})
+        VIRExpr::Var(BoundVar {
+            name: s,
+            ty: self.clone(),
+        })
     }
 
     pub fn bv_unary<F: Fn(VIRType, Box<VIRExpr>) -> VIRExpr>(&self, f: F, x: VIRExpr) -> VIRExpr {
@@ -307,15 +349,14 @@ pub fn all_starting_bitvectors() -> Vec<VIRType> {
 }
 
 impl BoundVar {
-    pub fn as_expr(&self)-> VIRExpr {
+    pub fn as_expr(&self) -> VIRExpr {
         VIRExpr::Var(self.clone())
     }
 }
 
 /// To-be-flushed-out verification counterexample for failures
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Counterexample {
-}
+pub struct Counterexample {}
 
 /// To-be-flushed-out verification result
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -323,5 +364,5 @@ pub enum VerificationResult {
     InapplicableRule,
     Success,
     Failure(Counterexample),
-    Unknown
+    Unknown,
 }

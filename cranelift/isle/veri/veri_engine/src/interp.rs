@@ -3,8 +3,8 @@ use crate::isle_annotations::isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
+use std::collections::HashMap;
 use std::fmt::Debug;
-use std::{collections::HashMap};
 
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, TypeId, VarId};
@@ -108,6 +108,9 @@ pub struct AssumptionContext {
 
     // Add int suffix to maintain unique identifiers
     ident_map: HashMap<String, i32>,
+
+    // Yet-to-be-define uninterpreted functions
+    undefined_funcs: Vec<String>,
 }
 
 impl AssumptionContext {
@@ -190,16 +193,15 @@ impl AssumptionContext {
             self.quantified_vars.push(annotation.func().ret.clone());
             annotation.func().ret.as_expr()
         } else {
-            // TODO: to actually use this logic, we need to save solver state across rules
+            self.undefined_funcs.push(term_name.to_string());
 
             // If we don't have an annotation for the term, treat it as an uninterpreted
             // function
-
             // NOTE: for now, we get subterm types based on matching on ISLE type names.
             let mut args = vec![];
             for subterm in subterms.iter() {
                 let arg_clif_ty = clif_type_name(subterm.type_id(), typeenv);
-                let vir_ty = vir_type_for_clif_ty(&ty, &arg_clif_ty);
+                let vir_ty = vir_type_for_clif_ty(ty, &arg_clif_ty);
                 let subexpr = subterm.to_expr(self, termenv, typeenv, &vir_ty);
                 args.push(subexpr);
             }
@@ -209,6 +211,12 @@ impl AssumptionContext {
             );
             let func = BoundVar::new(term_name, &func_ty);
             ty.apply(func.as_expr(), args)
+
+            // TODO: branching vs OR for multiple matching rules?
+            // eventually: might be cool to choose based on number
+            //     specializing this could be _before_ the SMT
+            //     often will be mutually exclusive
+            //      3rd option: morally the same thing: do conceptual inlining at the IR level first
         }
     }
 
@@ -305,6 +313,7 @@ impl AssumptionContext {
             assumptions: vec![],
             var_map: HashMap::new(),
             ident_map: HashMap::new(),
+            undefined_funcs: vec![],
         };
         let expr = ctx.lhs_to_assumptions(lhs, termenv, typeenv, ty);
         (ctx, expr)

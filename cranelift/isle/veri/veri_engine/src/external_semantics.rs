@@ -130,6 +130,49 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
     res
 }
 
+fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
+    let mut f = |e: &VIRExpr| {
+        if let VIRExpr::Function(func, body) = e {
+            let arg_tys: Vec<String> = func
+                .args
+                .iter()
+                .map(|a| vir_to_rsmt2_constant_ty(&a.ty))
+                .collect();
+            solver
+                .declare_fun(
+                    func.name.clone(),
+                    arg_tys,
+                    vir_to_rsmt2_constant_ty(&func.ty.function_ret_type()),
+                )
+                .unwrap();
+
+            println!("\t{} : {:?}", func.name, func.ty);
+
+            let args = func
+                .args
+                .iter()
+                .map(|var| format!("({} {})", var.name, vir_to_rsmt2_constant_ty(&var.ty)))
+                .collect::<Vec<String>>()
+                .join(" ");
+            let arg_names = func
+                .args
+                .iter()
+                .map(|v| v.name.to_string())
+                .collect::<Vec<String>>()
+                .join(" ");
+            let defn = format!(
+                "(forall ({}) (= ({} {}) {}))",
+                args,
+                func.name,
+                arg_names,
+                vir_expr_to_rsmt2_str(*body.clone())
+            );
+            solver.assert(defn).unwrap();
+        }
+    };
+    expr.for_each_subexpr(&mut f);
+}
+
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
@@ -162,6 +205,11 @@ pub fn run_solver(
         }
     }
 
+    println!("Declaring uninterpreted functions:");
+    for a in &actx.assumptions {
+        declare_uninterp_functions(a.assume().clone(), &mut solver);
+    }
+
     println!("Adding assumptions:");
     let mut assumptions: Vec<String> = actx
         .assumptions
@@ -172,51 +220,6 @@ pub fn run_solver(
             p
         })
         .collect();
-
-    // Declare internal functions in assumption. TODO this is SUPER messy: refactor!!!
-    actx.assumptions.iter().for_each(|a| {
-        if let VIRExpr::Eq(x, y) = a.assume() {
-            match (*x.clone(), *y.clone()) {
-                (_, VIRExpr::Function(func, body)) | (VIRExpr::Function(func, body), _) => {
-                    let arg_tys: Vec<String> = func
-                        .args
-                        .iter()
-                        .map(|a| vir_to_rsmt2_constant_ty(&a.ty))
-                        .collect();
-                    solver
-                        .declare_fun(
-                            func.name.clone(),
-                            arg_tys,
-                            vir_to_rsmt2_constant_ty(&x.ty().function_ret_type()),
-                        )
-                        .unwrap();
-
-                    let args = func
-                        .args
-                        .iter()
-                        .map(|var| format!("({} {})", var.name, vir_to_rsmt2_constant_ty(&var.ty)))
-                        .collect::<Vec<String>>()
-                        .join(" ");
-                    let arg_names = func
-                        .args
-                        .iter()
-                        .map(|v| v.name.to_string())
-                        .collect::<Vec<String>>()
-                        .join(" ");
-                    let defn = format!(
-                        "(forall ({}) (= ({} {}) {}))",
-                        args,
-                        func.name,
-                        arg_names,
-                        vir_expr_to_rsmt2_str(*body)
-                    );
-                    println!("\t{}", defn);
-                    assumptions.push(defn);
-                }
-                _ => (),
-            };
-        }
-    });
 
     let assumption_str = format!("(and {})", assumptions.join(" "));
 
