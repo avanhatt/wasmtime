@@ -1,6 +1,6 @@
 /// This file handles renaming bound variables in assumption expressions,
 /// which is necessary to use annotations that might share variable names.
-use veri_ir::{BoundVar, FunctionAnnotation, VIRAnnotation, VIRExpr};
+use veri_ir::{BoundVar, Function, FunctionAnnotation, VIRAnnotation, VIRExpr};
 
 pub fn rename_annotation_vars<F>(a: VIRAnnotation, rename: F) -> VIRAnnotation
 where
@@ -28,7 +28,9 @@ where
             .collect()
     };
     match expr {
-        VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False | VIRExpr::Function(..) => expr,
+        VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False => expr,
+        // TODO: handle nested scope?
+        VIRExpr::Function(..) => expr,
         VIRExpr::Var(v) => VIRExpr::Var(rename(&v)),
         VIRExpr::Not(x) => VIRExpr::Not(f(x)),
         VIRExpr::And(x, y) => VIRExpr::And(f(x), f(y)),
