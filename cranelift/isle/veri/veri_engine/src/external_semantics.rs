@@ -211,7 +211,7 @@ pub fn run_solver(
     }
 
     println!("Adding assumptions:");
-    let mut assumptions: Vec<String> = actx
+    let assumptions: Vec<String> = actx
         .assumptions
         .iter()
         .map(|a| {
