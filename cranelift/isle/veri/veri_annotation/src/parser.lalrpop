@@ -12,6 +12,9 @@ Num: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
 pub VIRType: VIRType = {
     // TODO: support bvX instead of only numbers
     "bv" <n:Num> => VIRType::BitVector(n),
+    "bvlist" "(" <length: Num> "," <width: Num> ")" => 
+        VIRType::BitVectorList(length, width), 
+    //TODO: "func" 
     "bool" => VIRType::Bool,
     "IsleType" => VIRType::IsleType,
 };
@@ -24,6 +27,8 @@ pub BoundVar: BoundVar = {
     <s:r"b[\w&&[^v]]\w*"> ":" <t:VIRType> => 
         BoundVar{name: s.to_string(), ty: t},
 };
+
+// TODO: pub Function
 
 Comma<T>: Vec<T> = {
     <mut v:(<T> ",")*> <e:T?> => match e {
@@ -41,26 +46,30 @@ Args: Vec<BoundVar> = {
 
 pub FunctionAnnotation: FunctionAnnotation = {
     "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
-        FunctionAnnotation {args: a, result: r},
+        FunctionAnnotation {args: a, ret: r},
 };
 
-// TODO: Can this handle things like (Not(x))?
-pub BoolExpr: Box<BoolExpr> = {
-    "(" "True" ")" => Box::new(BoolExpr::True),
-    "(" "False" ")" => Box::new(BoolExpr::False),
-    "(" "!" <b:BoolExpr> ")" => Box::new(BoolExpr::Not(b)),
-    "(" "&&" <a:BoolExpr> <b:BoolExpr> ")" => Box::new(BoolExpr::And(a, b)),
-    "(" "||" <a:BoolExpr> <b:BoolExpr> ")" => Box::new(BoolExpr::Or(a, b)),
-    "(" "=>" <a:BoolExpr> <b:BoolExpr> ")" => Box::new(BoolExpr::Imp(a, b)),
-    //"(" "=" <a: BVExpr> <b: BVExpr> ")" => Box::new(BoolExpr::Eq(a, b)),
+pub VIRExpr: Box<VIRExpr> = {
+    "(" <b:BoundVar> ")" => Box::new(VIRExpr::Var(b)), 
+    // TODO: const,
+    "(" "True" ")" => Box::new(VIRExpr::True),
+    "(" "False" ")" => Box::new(VIRExpr::False),
+
+    "(" "!" <u:VIRExpr> ")" => Box::new(VIRExpr::Not(u)),
+    "(" "&&" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::And(u, v)),
+    "(" "||" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Or(u, v)),
+    "(" "=>" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Imp(u, v)),
+    "(" "=" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Eq(u, v)),
+    "(" "<=" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Lte(u, v)),
+
+    //TODO: bv exprs
 };
 
 // TODO: Do we need to enforce that these types must be bvX?
-pub BVExpr: Box<BVExpr> = {
+//pub BVExpr: Box<BVExpr> = {
     // "(" <n:Num> ":" <t:VIRType> ")" => Box::new(BVExpr::Const(t, n)),
-    // "(" <b:BoundVar> ")" => Box::new(BVExpr::Var(b.name, b.ty),
     // "(" "~" <b:BVExpr> ")" => Box::new(BVExpr::BVNeg(
-};
+//};
 
 // TODO: assertion, assertion list
 // TODO: watch out for precedence issues
