@@ -9,26 +9,27 @@ grammar;
 
 Num: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
 
+// Exclude "bv" to avoid confusion with type bv
+Ident: String = {
+    <s:r"[A-Za-z]"> => s.to_string(),
+    <s:r"[A-Zac-z]\w+"> => s.to_string(),
+    <s:r"b[\w&&[^v]]\w*"> => s.to_string(),
+};
+
 pub VIRType: VIRType = {
     // TODO: support bvX instead of only numbers
     "bv" <n:Num> => VIRType::BitVector(n),
     "bvlist" "(" <length: Num> "," <width: Num> ")" => 
         VIRType::BitVectorList(length, width), 
-    //TODO: "func" 
+    "func" "(" <t1:TypeList> ")" <t2:VIRType> =>
+        VIRType::Function(t1, Box::new(t2)),
     "bool" => VIRType::Bool,
     "IsleType" => VIRType::IsleType,
 };
 
 pub BoundVar: BoundVar = {
-    <s:r"[A-Za-z]"> ":" <t:VIRType> => 
-        BoundVar{name: s.to_string(), ty: t},
-    <s:r"[A-Zac-z]\w+"> ":" <t:VIRType> => 
-        BoundVar{name: s.to_string(), ty: t},
-    <s:r"b[\w&&[^v]]\w*"> ":" <t:VIRType> => 
-        BoundVar{name: s.to_string(), ty: t},
+    <i:Ident> ":" <t:VIRType> => BoundVar{name: i, ty: t},
 };
-
-// TODO: pub Function
 
 Comma<T>: Vec<T> = {
     <mut v:(<T> ",")*> <e:T?> => match e {
@@ -39,14 +40,22 @@ Comma<T>: Vec<T> = {
         }
     }
 };
+
 ArgList = Comma<BoundVar>;
 Args: Vec<BoundVar> = {
     "(args" <a:ArgList> ")" => a,
 };
 
+TypeList = Comma<VIRType>;
+
 pub FunctionAnnotation: FunctionAnnotation = {
     "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
         FunctionAnnotation {args: a, ret: r},
+};
+
+pub Function: Function = {
+    "(func" <n:Ident> "(" <a:ArgList> ")" "(" <t:VIRType> ")" ")" =>
+        Function{name: n, ty: t, args: a},
 };
 
 pub VIRExpr: Box<VIRExpr> = {

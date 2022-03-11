@@ -5,7 +5,7 @@ fn parser() {
     // types
     assert!(parser::VIRTypeParser::new().parse("bv8").is_ok());
     assert!(parser::VIRTypeParser::new().parse("bvlist(4, 8)").is_ok());
-    //TODO: func
+    assert!(parser::VIRTypeParser::new().parse("func(bv8, bv8) IsleType").is_ok());
     assert!(parser::VIRTypeParser::new().parse("bool").is_ok());
     assert!(parser::VIRTypeParser::new().parse("IsleType").is_ok());
 
@@ -13,7 +13,7 @@ fn parser() {
     assert!(parser::BoundVarParser::new().parse("b: bv16").is_ok());
     assert!(parser::BoundVarParser::new().parse("bv: bv32").is_err());
     assert!(parser::BoundVarParser::new().parse("ty: bvlist(1, 10)").is_ok());
-    //TODO: func
+    assert!(parser::BoundVarParser::new().parse("foo: func(bool, bool) bv8").is_ok());
     assert!(parser::BoundVarParser::new().parse("arg: bool").is_ok());
     assert!(parser::BoundVarParser::new().parse("ba: IsleType").is_ok());
 
