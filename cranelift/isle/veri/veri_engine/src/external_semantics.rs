@@ -80,7 +80,8 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         }
         VIRExpr::FunctionApplication(app) => {
             let func_name = vir_expr_to_rsmt2_str(*app.func);
-            let args: Vec<String> = app.args
+            let args: Vec<String> = app
+                .args
                 .iter()
                 .map(|a| vir_expr_to_rsmt2_str(a.clone()))
                 .collect();

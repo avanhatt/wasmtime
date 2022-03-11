@@ -117,13 +117,12 @@ pub fn isle_annotation_for_term(term: &str, ty: &VIRType) -> Option<VIRAnnotatio
             let x = list_ty.get_element(value_list.as_expr(), 0);
             let y = list_ty.get_element(value_list.as_expr(), 1);
             let body = x.clone().ty().bv_binary(VIRExpr::BVAdd, x, y);
-            let func_expr = VIRExpr::Function(
-                Function {
-                    name: "Opcode.Iadd".to_string(),
-                    args: vec![value_list.clone()],
-                    ty: ty.clone(),
-                    body: Box::new(body),
-                });
+            let func_expr = VIRExpr::Function(Function {
+                name: "Opcode.Iadd".to_string(),
+                args: vec![value_list.clone()],
+                ty: ty.clone(),
+                body: Box::new(body),
+            });
             let body_semantics = VIRType::eq(r.as_expr(), func_expr);
             // The opcode itself takes no arguments
             let func = FunctionAnnotation {

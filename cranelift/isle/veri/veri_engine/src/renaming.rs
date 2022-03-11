@@ -1,6 +1,6 @@
 /// This file handles renaming bound variables in assumption expressions,
 /// which is necessary to use annotations that might share variable names.
-use veri_ir::{BoundVar, FunctionAnnotation, VIRAnnotation, VIRExpr, FunctionApplication};
+use veri_ir::{BoundVar, FunctionAnnotation, FunctionApplication, VIRAnnotation, VIRExpr};
 
 pub fn rename_annotation_vars<F>(a: VIRAnnotation, rename: F) -> VIRAnnotation
 where
@@ -46,14 +46,11 @@ where
         VIRExpr::BVZeroExt(ty, i, x) => VIRExpr::BVZeroExt(ty, i, f(x)),
         VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
         VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),
-        VIRExpr::FunctionApplication(app) => {
-            VIRExpr::FunctionApplication(
-                FunctionApplication{
-                    ty: app.ty, 
-                    func: f(app.func), 
-                    args: map_f(app.args),
-                })
-        }
+        VIRExpr::FunctionApplication(app) => VIRExpr::FunctionApplication(FunctionApplication {
+            ty: app.ty,
+            func: f(app.func),
+            args: map_f(app.args),
+        }),
         VIRExpr::List(ty, xs) => VIRExpr::List(ty, map_f(xs)),
         VIRExpr::GetElement(ty, ls, i) => VIRExpr::GetElement(ty, f(ls), i),
     }

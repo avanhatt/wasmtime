@@ -163,10 +163,7 @@ impl VIRExpr {
     pub fn for_each_subexpr(&self, func: &mut dyn FnMut(&Self)) {
         func(self);
         match self {
-            VIRExpr::Const(..)
-            | VIRExpr::True
-            | VIRExpr::False
-            | VIRExpr::Var(..) => (),
+            VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False | VIRExpr::Var(..) => (),
             VIRExpr::Not(x)
             | VIRExpr::BVNeg(_, x)
             | VIRExpr::BVNot(_, x)
