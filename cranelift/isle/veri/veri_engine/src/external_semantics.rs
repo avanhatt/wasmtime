@@ -78,15 +78,15 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVExtract(_, l, h, x) => {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
-        VIRExpr::FunctionApplication(_, func, arg_list) => {
-            let func_name = vir_expr_to_rsmt2_str(*func);
-            let args: Vec<String> = arg_list
+        VIRExpr::FunctionApplication(app) => {
+            let func_name = vir_expr_to_rsmt2_str(*app.func);
+            let args: Vec<String> = app.args
                 .iter()
                 .map(|a| vir_expr_to_rsmt2_str(a.clone()))
                 .collect();
             format!("({} {})", func_name, args.join(" "))
         }
-        VIRExpr::Function(func, _) => func.name,
+        VIRExpr::Function(func) => func.name,
         VIRExpr::List(_, args) => {
             // Implement lists as concatenations of bitvectors
             // For now, assume length 2
@@ -132,7 +132,7 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
 
 fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
     let mut f = |e: &VIRExpr| {
-        if let VIRExpr::Function(func, body) = e {
+        if let VIRExpr::Function(func) = e {
             let arg_tys: Vec<String> = func
                 .args
                 .iter()
@@ -165,7 +165,7 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
                 args,
                 func.name,
                 arg_names,
-                vir_expr_to_rsmt2_str(*body.clone())
+                vir_expr_to_rsmt2_str(*func.body.clone())
             );
             solver.assert(defn).unwrap();
         }

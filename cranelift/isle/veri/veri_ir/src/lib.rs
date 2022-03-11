@@ -32,12 +32,21 @@ pub struct FunctionAnnotation {
     pub args: Vec<BoundVar>,
     pub ret: BoundVar,
 }
-/// A bound function with named arguments, including the VIR type signature
+/// A bound function with named arguments, the VIR type signature, and the body
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
     pub name: String,
     pub ty: VIRType,
     pub args: Vec<BoundVar>,
+    pub body: Box<VIRExpr>,
+}
+
+/// Application of a function expression to arguments
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FunctionApplication {
+    pub ty: VIRType,
+    pub func: Box<VIRExpr>,
+    pub args: Vec<VIRExpr>,
 }
 /// A bound variable, including the VIR type
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -117,8 +126,8 @@ pub enum VIRExpr {
     BVSignExt(VIRType, usize, Box<VIRExpr>),
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
 
-    Function(Function, Box<VIRExpr>),
-    FunctionApplication(VIRType, Box<VIRExpr>, Vec<VIRExpr>),
+    Function(Function),
+    FunctionApplication(FunctionApplication),
     List(VIRType, Vec<VIRExpr>),
     GetElement(VIRType, Box<VIRExpr>, usize),
 }
@@ -136,8 +145,8 @@ impl VIRExpr {
             VIRExpr::BVZeroExt(t, _, _) => t,
             VIRExpr::BVSignExt(t, _, _) => t,
             VIRExpr::BVExtract(t, _, _, _) => t,
-            VIRExpr::Function(func, _) => &func.ty,
-            VIRExpr::FunctionApplication(t, _, _) => t,
+            VIRExpr::Function(func) => &func.ty,
+            VIRExpr::FunctionApplication(app) => &app.ty,
             VIRExpr::List(t, _) => t,
             VIRExpr::GetElement(t, _, _) => t,
             VIRExpr::True
@@ -157,7 +166,6 @@ impl VIRExpr {
             VIRExpr::Const(..)
             | VIRExpr::True
             | VIRExpr::False
-            | VIRExpr::Function(..)
             | VIRExpr::Var(..) => (),
             VIRExpr::Not(x)
             | VIRExpr::BVNeg(_, x)
@@ -178,10 +186,14 @@ impl VIRExpr {
                 (*x).for_each_subexpr(func);
                 (*y).for_each_subexpr(func)
             }
-            VIRExpr::FunctionApplication(_, lambda, args) => {
+            VIRExpr::Function(f) => {
                 func(self);
-                (*lambda).for_each_subexpr(func);
-                for arg in args {
+                f.body.for_each_subexpr(func)
+            }
+            VIRExpr::FunctionApplication(app) => {
+                func(self);
+                (*app.func).for_each_subexpr(func);
+                for arg in &app.args {
                     arg.for_each_subexpr(func)
                 }
             }
@@ -206,7 +218,11 @@ impl VIRType {
 
     pub fn apply(&self, func: VIRExpr, args: Vec<VIRExpr>) -> VIRExpr {
         assert!(matches!(func.ty(), Self::Function(..)));
-        VIRExpr::FunctionApplication(self.clone(), Box::new(func), args)
+        VIRExpr::FunctionApplication(FunctionApplication {
+            ty: self.clone(),
+            func: Box::new(func),
+            args,
+        })
     }
 
     // TODO: type check
