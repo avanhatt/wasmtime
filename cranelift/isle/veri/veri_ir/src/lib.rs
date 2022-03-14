@@ -3,7 +3,7 @@
 //! encodings or the specific solver backend.
 
 
-mod annotation_ir;
+pub mod annotation_ir;
 
 /// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.

@@ -1,5 +1,5 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
-use crate::isle_annotations::isle_annotation_for_term;
+use crate::isle_annotations::typed_isle_annotation_for_term;
 use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
@@ -150,7 +150,7 @@ impl AssumptionContext {
     }
 
     fn get_annotation_for_term(&mut self, term: &str, ty: &VIRType) -> Option<VIRAnnotation> {
-        if let Some(initial_annotation) = isle_annotation_for_term(term, ty) {
+        if let Some(initial_annotation) = typed_isle_annotation_for_term(term, ty) {
             // Build renaming map from bound vars in the signature
             let read_renames = self.build_annotation_remapping(&initial_annotation, term);
             // Read-only renaming map closure
