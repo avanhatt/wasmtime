@@ -154,39 +154,23 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
         //     };
         //     Some(VIRAnnotation::new(func, vec![sem]))
         // }
-        // "imm12_from_negated_value" => {
-        //     let bv12 = VIRType::BitVector(12);
-        //     let imm_arg = BoundVar::new("imm_arg", &bv12);
-        //     let result = BoundVar::new("ret", ty);
+        "imm12_from_negated_value" => {
+            // Width: bv12
+            let imm_arg = BoundVar::new("imm_arg", &Type::BitVector);
 
-        //     // TODO: sanity check if we can remove this because of the following zext
-        //     // *This* value's negated value fits in 12 bits
-        //     let assume_fits = VIRType::eq(
-        //         ty.bv_binary(
-        //             VIRExpr::BVAnd,
-        //             ty.bv_unary(VIRExpr::BVNot, ty.bv_const(2_i128.pow(12) - 1)),
-        //             result.as_expr(),
-        //         ),
-        //         ty.bv_const(0),
-        //     );
-        //     let width_diff = (ty.width() as i128) - 12;
-        //     let as_ty = match width_diff.cmp(&0) {
-        //         Ordering::Less => bv12.bv_extract(0, ty.width() - 1, imm_arg.as_expr()),
-        //         Ordering::Greater => bv12.bv_extend(
-        //             VIRExpr::BVZeroExt,
-        //             width_diff.try_into().unwrap(),
-        //             imm_arg.as_expr(),
-        //         ),
-        //         Ordering::Equal => imm_arg.as_expr(),
-        //     };
-        //     let res = ty.bv_unary(VIRExpr::BVNeg, as_ty);
-        //     let res_assertion = VIRType::eq(res, result.as_expr());
-        //     let func = FunctionAnnotation {
-        //         args: vec![imm_arg],
-        //         ret: result,
-        //     };
-        //     Some(VIRAnnotation::new(func, vec![assume_fits, res_assertion]))
-        // }
+            // Width: bvX
+            let result = BoundVar::new("ret", &Type::BitVector);
+
+            // Negate and convert
+            let neg = Expr::unary(Expr::BVNeg, result.as_expr());
+            let as_bv12 = Expr::BVConv(12, Box::new(neg));
+            let eq = Expr::binary(Expr::Eq, imm_arg.as_expr(), as_bv12);
+            let sig = TermSignature {
+                args: vec![imm_arg],
+                ret: result,
+            };
+            Some(TermAnnotation::new(sig, vec![eq]))
+        }
         // "sub_imm" => {
         //     let bv12 = VIRType::BitVector(12);
 
