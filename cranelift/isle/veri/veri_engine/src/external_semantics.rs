@@ -3,6 +3,7 @@
 ///
 /// Right now, this uses the rsmt2 crate.
 use crate::interp::AssumptionContext;
+use std::collections::HashSet;
 use rsmt2::Solver;
 use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
 
@@ -132,8 +133,14 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
 }
 
 fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
+    let mut fns = HashSet::new();
     let mut f = |e: &VIRExpr| {
         if let VIRExpr::Function(func) = e {
+            if fns.contains(&func.name) {
+                return;
+            } else {
+                fns.insert(func.name.clone())
+            };
             let arg_tys: Vec<String> = func
                 .args
                 .iter()
