@@ -141,6 +141,8 @@ pub enum Expr {
     BVZeroExt(usize, Box<Expr>),
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
+    // A special, high level conversion to a destination width
+    BVConv(usize, Box<Expr>),
 
     Function(Function),
     FunctionApplication(FunctionApplication),
