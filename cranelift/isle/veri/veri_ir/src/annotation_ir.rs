@@ -18,6 +18,11 @@ impl BoundVar {
             ty: ty.clone(),
         }
     }
+
+    /// An expression with the bound variable's name
+    pub fn as_expr(&self) -> Expr {
+        Expr::Var(self.name.clone())
+    }
 }
 
 /// A function signature annotation, including the bound variable names for all
@@ -141,4 +146,22 @@ pub enum Expr {
     FunctionApplication(FunctionApplication),
     List(Vec<Expr>),
     GetElement(Box<Expr>, usize),
+}
+
+impl Expr {
+    pub fn var(s: &String) -> Expr {
+        Expr::Var(s.clone())
+    }
+
+    pub fn unary<F: Fn(Box<Expr>) -> Expr>(f: F, x: Expr) -> Expr {
+        f(Box::new(x))
+    }
+
+    pub fn binary<F: Fn(Box<Expr>, Box<Expr>) -> Expr>(
+        f: F,
+        x: Expr,
+        y: Expr,
+    ) -> Expr {
+        f(Box::new(x), Box::new(y))
+    }
 }
