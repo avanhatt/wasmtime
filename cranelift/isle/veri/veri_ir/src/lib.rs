@@ -4,6 +4,7 @@
 
 
 mod annotation_ir;
+
 /// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
