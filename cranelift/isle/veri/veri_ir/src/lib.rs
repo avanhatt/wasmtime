@@ -2,6 +2,8 @@
 //! be lowered to SMT. The goal is to leave some freedom to change term
 //! encodings or the specific solver backend.
 
+
+mod annotation_ir;
 /// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
