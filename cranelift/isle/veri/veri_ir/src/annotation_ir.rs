@@ -1,21 +1,28 @@
-
 /// A higher-level annotation IR that does not specify bitvector widths.
-/// This allows annotations to be generic over possible types, which 
+/// This allows annotations to be generic over possible types, which
 /// corresponds to how ISLE rewrites are written.
 
 /// A bound variable, including the VIR type
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BoundVar {
     pub name: String,
-    pub ty: Type,
+    pub ty: Option<Type>,
 }
 
 impl BoundVar {
     /// Construct a new bound variable, cloning from references
-    pub fn new(name: &str, ty: &Type) -> Self {
+    pub fn new_with_ty(name: &str, ty: &Type) -> Self {
         BoundVar {
             name: name.to_string(),
-            ty: ty.clone(),
+            ty: Some(ty.clone()),
+        }
+    }
+
+    /// Construct a new bound variable, cloning from references
+    pub fn new(name: &str) -> Self {
+        BoundVar {
+            name: name.to_string(),
+            ty: None,
         }
     }
 
@@ -42,7 +49,6 @@ pub struct TermAnnotation {
 }
 
 impl TermAnnotation {
-
     /// New annotation
     pub fn new(sig: TermSignature, assertions: Vec<Expr>) -> Self {
         TermAnnotation { sig, assertions }
@@ -76,14 +82,14 @@ pub enum Type {
     // BitVectorList(length)
     BitVectorList(usize),
 
-    /// The expression is an integer (currently used for ISLE type, 
+    /// The expression is an integer (currently used for ISLE type,
     /// representing bitwidth)
     Int,
 
     /// The expression is a function definition.
     Function(FunctionType),
 
-    /// The expression is a boolean. 
+    /// The expression is a boolean.
     Bool,
 }
 
@@ -110,7 +116,7 @@ pub struct FunctionApplication {
     pub args: Vec<Expr>,
 }
 
-/// Expressions 
+/// Expressions
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
     // Terminal nodes
@@ -118,6 +124,9 @@ pub enum Expr {
     Const(Const),
     True,
     False,
+
+    // Special terminal node: the current width
+    TyWidth,
 
     // Boolean operations
     Not(Box<Expr>),
@@ -142,7 +151,9 @@ pub enum Expr {
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
     // A special, high level conversion to a destination width
-    BVConv(usize, Box<Expr>),
+    BVConvTo(usize, Box<Expr>),
+    // A special, high level conversion from a source width
+    BVConvFrom(usize, Box<Expr>),
 
     Function(Function),
     FunctionApplication(FunctionApplication),
@@ -159,11 +170,7 @@ impl Expr {
         f(Box::new(x))
     }
 
-    pub fn binary<F: Fn(Box<Expr>, Box<Expr>) -> Expr>(
-        f: F,
-        x: Expr,
-        y: Expr,
-    ) -> Expr {
+    pub fn binary<F: Fn(Box<Expr>, Box<Expr>) -> Expr>(f: F, x: Expr, y: Expr) -> Expr {
         f(Box::new(x), Box::new(y))
     }
 }

@@ -13,6 +13,7 @@ use crate::interp::AssumptionContext;
 mod external_semantics;
 mod interp;
 mod isle_annotations;
+mod type_annotations;
 mod renaming;
 
 fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
