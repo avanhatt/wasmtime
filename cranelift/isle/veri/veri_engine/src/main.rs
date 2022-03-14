@@ -12,6 +12,7 @@ use crate::solver::run_solver;
 
 mod interp;
 mod isle_annotations;
+mod type_annotations;
 mod renaming;
 mod solver;
 mod type_check;
