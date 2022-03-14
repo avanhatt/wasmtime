@@ -1,5 +1,5 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
-use crate::isle_annotations::typed_isle_annotation_for_term;
+use crate::type_annotations::{typed_isle_annotation_for_term, vir_type_for_clif_ty, clif_type_name};
 use crate::renaming::rename_annotation_vars;
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
@@ -8,24 +8,6 @@ use std::fmt::Debug;
 
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, TypeId, VarId};
-
-/// Get the Clif ISLE type name
-fn clif_type_name(typeid: TypeId, typeenv: &TypeEnv) -> String {
-    match &typeenv.types[typeid.index()] {
-        &isle::sema::Type::Primitive(_, sym, _) | &isle::sema::Type::Enum { name: sym, .. } => {
-            typeenv.syms[sym.index()].clone()
-        }
-    }
-}
-
-/// An approximation for now: types from CLIF type names
-fn vir_type_for_clif_ty(base_ty: &VIRType, clif: &str) -> VIRType {
-    match clif {
-        "Type" => VIRType::IsleType,
-        "Reg" => base_ty.clone(),
-        _ => unimplemented!(),
-    }
-}
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
