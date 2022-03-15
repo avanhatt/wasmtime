@@ -7,14 +7,14 @@ use std::env;
 use std::path::PathBuf;
 use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 
-use crate::external_semantics::run_solver;
 use crate::interp::AssumptionContext;
+use crate::solver::run_solver;
 
-mod external_semantics;
 mod interp;
 mod isle_annotations;
 mod renaming;
-mod type_annotations;
+mod solver;
+mod type_check;
 
 fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();

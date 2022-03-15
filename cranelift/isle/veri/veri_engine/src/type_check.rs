@@ -4,9 +4,7 @@ use crate::isle_annotations::isle_annotation_for_term;
 use cranelift_isle as isle;
 use isle::sema::{TypeEnv, TypeId};
 
-struct TypeContext {
-    
-}
+struct TypeContext {}
 
 /// Get the Clif ISLE type name
 pub fn clif_type_name(typeid: TypeId, typeenv: &TypeEnv) -> String {
