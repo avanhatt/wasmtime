@@ -94,7 +94,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 Expr::Lte,
                 arg.as_expr(),
                 Expr::Const(Const {
-                    ty: Type::BitVector,
+                    ty: Type::Int,
                     value: 64_i128,
                 }),
             );

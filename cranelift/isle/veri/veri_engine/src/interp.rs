@@ -1,9 +1,7 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
-use crate::type_annotations::{
-    clif_type_name, typed_isle_annotation_for_term, vir_type_for_clif_ty,
-};
-use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
+use crate::type_check::TypeContext;
+use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRType};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -81,6 +79,9 @@ pub struct AssumptionContext<'ctx> {
 
     // Yet-to-be-define uninterpreted functions
     undefined_funcs: Vec<String>,
+
+    // For type checking
+    type_ctx: TypeContext<'ctx>,
 }
 
 impl<'ctx> AssumptionContext<'ctx> {
@@ -102,7 +103,7 @@ impl<'ctx> AssumptionContext<'ctx> {
 
     fn build_annotation_remapping(
         &mut self,
-        a: &VIRAnnotation,
+        a: &VIRTermAnnotation,
         term: &str,
     ) -> HashMap<String, String> {
         let mut renaming_map: HashMap<String, String> = HashMap::new();
@@ -119,8 +120,17 @@ impl<'ctx> AssumptionContext<'ctx> {
         renaming_map
     }
 
-    fn get_annotation_for_term(&mut self, term: &str, ty: &VIRType) -> Option<VIRAnnotation> {
-        if let Some(initial_annotation) = typed_isle_annotation_for_term(term, ty) {
+    fn get_annotation_for_term(
+        &mut self,
+        term: &str,
+        typeid: &TypeId,
+        subterm_typeids: Vec<TypeId>,
+        ty: &VIRType,
+    ) -> Option<VIRTermAnnotation> {
+        if let Some(initial_annotation) =
+            self.type_ctx
+                .typed_isle_annotation_for_term(term, typeid, subterm_typeids, ty)
+        {
             // Build renaming map from bound vars in the signature
             let read_renames = self.build_annotation_remapping(&initial_annotation, term);
             // Read-only renaming map closure
@@ -146,7 +156,10 @@ impl<'ctx> AssumptionContext<'ctx> {
     ) -> VIRExpr {
         let term = &self.termenv.terms[termid.index()];
         let term_name = &self.typeenv.syms[term.name.index()];
-        if let Some(annotation) = self.get_annotation_for_term(term_name, ty) {
+        let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
+        if let Some(annotation) =
+            self.get_annotation_for_term(term_name, typeid, subterm_typeids, ty)
+        {
             // The annotation should have the same number of arguments as given here
             assert_eq!(subterms.len(), annotation.func().args.len());
 
@@ -171,8 +184,7 @@ impl<'ctx> AssumptionContext<'ctx> {
             // NOTE: for now, we get subterm types based on matching on ISLE type names.
             let mut args = vec![];
             for subterm in subterms.iter() {
-                let arg_clif_ty = clif_type_name(subterm.type_id(), self.typeenv);
-                let vir_ty = vir_type_for_clif_ty(ty, &arg_clif_ty);
+                let vir_ty = self.type_ctx.vir_type_for_type_id(subterm.type_id(), ty);
                 let subexpr = subterm.to_expr(self, &vir_ty);
                 args.push(subexpr);
             }
@@ -257,6 +269,7 @@ impl<'ctx> AssumptionContext<'ctx> {
             var_map: HashMap::new(),
             ident_map: HashMap::new(),
             undefined_funcs: vec![],
+            type_ctx: TypeContext::new(termenv, typeenv),
         };
         let expr = ctx.lhs_to_assumptions(lhs, ty);
         (ctx, expr)

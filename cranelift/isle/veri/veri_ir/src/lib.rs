@@ -7,20 +7,20 @@ pub mod annotation_ir;
 /// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct VIRAnnotation {
-    func: FunctionAnnotation,
+pub struct VIRTermAnnotation {
+    sig: VIRTermSignature,
     assertions: Vec<VIRExpr>,
 }
 
-impl VIRAnnotation {
+impl VIRTermAnnotation {
     /// New annotation, ensuring that each assertions is a bool.
-    pub fn new(func: FunctionAnnotation, assertions: Vec<VIRExpr>) -> Self {
+    pub fn new(sig: VIRTermSignature, assertions: Vec<VIRExpr>) -> Self {
         assert!(assertions.iter().all(|a| a.ty().is_bool()));
-        VIRAnnotation { func, assertions }
+        VIRTermAnnotation { sig, assertions }
     }
 
-    pub fn func(&self) -> &FunctionAnnotation {
-        &self.func
+    pub fn func(&self) -> &VIRTermSignature {
+        &self.sig
     }
 
     pub fn assertions(&self) -> &Vec<VIRExpr> {
@@ -30,7 +30,7 @@ impl VIRAnnotation {
 /// A function signature annotation, including the bound variable names for all
 /// arguments and the return value.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FunctionAnnotation {
+pub struct VIRTermSignature {
     pub args: Vec<BoundVar>,
     pub ret: BoundVar,
 }
@@ -93,7 +93,7 @@ pub enum VIRType {
     //. for assertions (e.g., fits_in_64).
     /// This corresponds to Cranelift's Isle type:
     /// (type Type (primitive Type))
-    IsleType,
+    Int,
 }
 
 /// Expressions (combined across all types).
@@ -210,9 +210,15 @@ impl VIRType {
         VIRExpr::Eq(Box::new(x), Box::new(y))
     }
 
-    pub fn lte(x: VIRExpr, y: VIRExpr) -> VIRExpr {
-        assert_eq!(x.ty(), y.ty(), "(<= {:?}{:?})", x, y);
-        VIRExpr::Lte(Box::new(x), Box::new(y))
+    pub fn bv_const(&self, x: i128) -> VIRExpr {
+        VIRExpr::Const(self.clone(), x)
+    }
+
+    pub fn bv_var(&self, s: String) -> VIRExpr {
+        VIRExpr::Var(BoundVar {
+            name: s,
+            ty: self.clone(),
+        })
     }
 
     pub fn apply(&self, func: VIRExpr, args: Vec<VIRExpr>) -> VIRExpr {
@@ -222,13 +228,6 @@ impl VIRType {
             func: Box::new(func),
             args,
         })
-    }
-
-    // TODO: type check
-    pub fn list(&self, args: Vec<VIRExpr>) -> VIRExpr {
-        let length = args.len();
-        assert!(args.iter().all(|a| a.ty().width() == self.width()));
-        VIRExpr::List(VIRType::BitVectorList(length, self.width()), args)
     }
 
     pub fn get_element(&self, ls: VIRExpr, i: usize) -> VIRExpr {
@@ -291,64 +290,8 @@ impl VIRType {
         }
     }
 
-    pub fn is_isle_type(&self) -> bool {
-        matches!(*self, Self::IsleType)
-    }
-
-    pub fn bv_const(&self, x: i128) -> VIRExpr {
-        assert!(self.is_bv());
-        VIRExpr::Const(self.clone(), x)
-    }
-
-    pub fn isle_type_const(&self, x: i128) -> VIRExpr {
-        assert!(self.is_isle_type());
-        VIRExpr::Const(self.clone(), x)
-    }
-
-    pub fn bv_var(&self, s: String) -> VIRExpr {
-        VIRExpr::Var(BoundVar {
-            name: s,
-            ty: self.clone(),
-        })
-    }
-
-    pub fn bv_unary<F: Fn(VIRType, Box<VIRExpr>) -> VIRExpr>(&self, f: F, x: VIRExpr) -> VIRExpr {
-        assert!(self.is_bv());
-        assert_eq!(self.width(), x.ty().width());
-        f(self.clone(), Box::new(x))
-    }
-
-    pub fn bv_binary<F: Fn(VIRType, Box<VIRExpr>, Box<VIRExpr>) -> VIRExpr>(
-        &self,
-        f: F,
-        x: VIRExpr,
-        y: VIRExpr,
-    ) -> VIRExpr {
-        assert!(self.is_bv());
-        assert_eq!(self.width(), x.ty().width(), "({:?}, {:?})", x, y);
-        assert_eq!(self.width(), y.ty().width(), "({:?}, {:?})", x, y);
-        f(self.clone(), Box::new(x), Box::new(y))
-    }
-
-    pub fn bv_extend<F: Fn(VIRType, usize, Box<VIRExpr>) -> VIRExpr>(
-        &self,
-        f: F,
-        i: usize,
-        x: VIRExpr,
-    ) -> VIRExpr {
-        assert!(self.is_bv());
-        assert_eq!(self.width(), x.ty().width());
-        let new_width = self.width() + i;
-        f(VIRType::BitVector(new_width as usize), i, Box::new(x))
-    }
-
-    /// Extract bits from index l to index h
-    pub fn bv_extract(&self, l: usize, h: usize, x: VIRExpr) -> VIRExpr {
-        assert!(self.is_bv());
-        assert_eq!(self.width(), x.ty().width());
-        assert!(h >= l);
-        let new_width = h - l + 1;
-        VIRExpr::BVExtract(VIRType::BitVector(new_width as usize), l, h, Box::new(x))
+    pub fn is_int(&self) -> bool {
+        matches!(*self, Self::Int)
     }
 }
 
