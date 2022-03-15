@@ -13,8 +13,8 @@ use crate::interp::AssumptionContext;
 mod external_semantics;
 mod interp;
 mod isle_annotations;
-mod type_annotations;
 mod renaming;
+mod type_annotations;
 
 fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();
@@ -43,7 +43,7 @@ fn verify_rule_for_type(
     // For now, starting types must be bitvectors
     assert!(ty.is_bv());
     let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-    let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, termenv, typeenv, ty);
+    let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, ty);
     run_solver(assumption_ctx, lhs, rhs, ty)
 }
 
