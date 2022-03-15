@@ -1,39 +1,29 @@
-/// Interpret and build an assumption context from the LHS and RHS of rules.
-use crate::type_annotations::{typed_isle_annotation_for_term, vir_type_for_clif_ty, clif_type_name};
 use crate::renaming::rename_annotation_vars;
+/// Interpret and build an assumption context from the LHS and RHS of rules.
+use crate::type_annotations::{
+    clif_type_name, typed_isle_annotation_for_term, vir_type_for_clif_ty,
+};
 use veri_ir::{BoundVar, VIRAnnotation, VIRExpr, VIRType};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
-use isle::sema::{Pattern, TermArgPattern, TermEnv, TypeEnv, TypeId, VarId};
+use isle::sema::{Pattern, TermArgPattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
 trait ToVIRExpr {
-    fn to_expr(
-        &self,
-        ctx: &mut AssumptionContext,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> VIRExpr;
+    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr;
 
     fn type_id(&self) -> TypeId;
 }
 
 /// Type for term arguments for ISLE LHS terms.
 impl ToVIRExpr for TermArgPattern {
-    fn to_expr(
-        &self,
-        ctx: &mut AssumptionContext,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> VIRExpr {
+    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
         match self {
-            TermArgPattern::Pattern(pat) => ctx.interp_pattern(pat, termenv, typeenv, ty),
+            TermArgPattern::Pattern(pat) => ctx.interp_pattern(pat, ty),
             _ => unimplemented!("{:?}", self),
         }
     }
@@ -48,14 +38,8 @@ impl ToVIRExpr for TermArgPattern {
 
 /// Type for term arguments for ISLE RHS terms.
 impl ToVIRExpr for isle::sema::Expr {
-    fn to_expr(
-        &self,
-        ctx: &mut AssumptionContext,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> VIRExpr {
-        ctx.interp_sema_expr(self, termenv, typeenv, ty)
+    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
+        ctx.interp_sema_expr(self, ty)
     }
 
     fn type_id(&self) -> TypeId {
@@ -83,10 +67,14 @@ impl Assumption {
     }
 }
 #[derive(Clone, Debug)]
-pub struct AssumptionContext {
+pub struct AssumptionContext<'ctx> {
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Assumption>,
     pub var_map: HashMap<VarId, BoundVar>,
+
+    // Pointers to ISLE environments
+    termenv: &'ctx TermEnv,
+    typeenv: &'ctx TypeEnv,
 
     // Add int suffix to maintain unique identifiers
     ident_map: HashMap<String, i32>,
@@ -95,7 +83,7 @@ pub struct AssumptionContext {
     undefined_funcs: Vec<String>,
 }
 
-impl AssumptionContext {
+impl<'ctx> AssumptionContext<'ctx> {
     /// Get a new identifier starting with a root ID (adds a unique suffix)
     fn new_ident(&mut self, root: &str) -> String {
         let idx = self.ident_map.entry(root.to_string()).or_insert(0);
@@ -151,18 +139,19 @@ impl AssumptionContext {
 
     fn interp_term_with_subexprs<T: ToVIRExpr + Debug>(
         &mut self,
-        term_name: &str,
+        typeid: &TypeId,
+        termid: &TermId,
         subterms: Vec<T>,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
         ty: &VIRType,
     ) -> VIRExpr {
+        let term = &self.termenv.terms[termid.index()];
+        let term_name = &self.typeenv.syms[term.name.index()];
         if let Some(annotation) = self.get_annotation_for_term(term_name, ty) {
             // The annotation should have the same number of arguments as given here
             assert_eq!(subterms.len(), annotation.func().args.len());
 
             for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
-                let subexpr = subterm.to_expr(self, termenv, typeenv, &arg.ty);
+                let subexpr = subterm.to_expr(self, &arg.ty);
                 self.assumptions.push(Assumption::new(VIRType::eq(
                     subexpr,
                     VIRExpr::Var(arg.clone()),
@@ -182,9 +171,9 @@ impl AssumptionContext {
             // NOTE: for now, we get subterm types based on matching on ISLE type names.
             let mut args = vec![];
             for subterm in subterms.iter() {
-                let arg_clif_ty = clif_type_name(subterm.type_id(), typeenv);
+                let arg_clif_ty = clif_type_name(subterm.type_id(), self.typeenv);
                 let vir_ty = vir_type_for_clif_ty(ty, &arg_clif_ty);
-                let subexpr = subterm.to_expr(self, termenv, typeenv, &vir_ty);
+                let subexpr = subterm.to_expr(self, &vir_ty);
                 args.push(subexpr);
             }
             let func_ty = VIRType::Function(
@@ -202,37 +191,22 @@ impl AssumptionContext {
         }
     }
 
-    fn interp_pattern(
-        &mut self,
-        bvpat: &Pattern,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> VIRExpr {
+    fn interp_pattern(&mut self, bvpat: &Pattern, ty: &VIRType) -> VIRExpr {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
             Pattern::BindPattern(_, varid, subpat) => match **subpat {
                 Pattern::Wildcard(..) => VIRExpr::Var(self.new_var("x", ty, varid)),
                 _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
             },
-            Pattern::Term(_, termid, arg_patterns) => {
-                let term = &termenv.terms[termid.index()];
-                let term_name = &typeenv.syms[term.name.index()];
-
-                self.interp_term_with_subexprs(
-                    term_name,
-                    arg_patterns.to_vec(),
-                    termenv,
-                    typeenv,
-                    ty,
-                )
+            Pattern::Term(typeid, termid, arg_patterns) => {
+                self.interp_term_with_subexprs(typeid, termid, arg_patterns.to_vec(), ty)
             }
             Pattern::And(_, children) => {
                 // The `and` construct requires all subpatterns match. For now, encode
                 // as each subpattern producing the same equivalent expr result.
                 let subpattern_exprs: Vec<VIRExpr> = children
                     .iter()
-                    .map(|p| self.interp_pattern(p, termenv, typeenv, ty))
+                    .map(|p| self.interp_pattern(p, ty))
                     .collect();
 
                 // We assert all subexpressions are equivalent to the first subexpression,
@@ -250,19 +224,10 @@ impl AssumptionContext {
         }
     }
 
-    pub fn interp_sema_expr(
-        &mut self,
-        expr: &isle::sema::Expr,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> VIRExpr {
+    pub fn interp_sema_expr(&mut self, expr: &isle::sema::Expr, ty: &VIRType) -> VIRExpr {
         match expr {
-            isle::sema::Expr::Term(_, termid, subterms) => {
-                let term = &termenv.terms[termid.index()];
-                let term_name = &typeenv.syms[term.name.index()];
-
-                self.interp_term_with_subexprs(term_name, subterms.to_vec(), termenv, typeenv, ty)
+            isle::sema::Expr::Term(typeid, termid, subterms) => {
+                self.interp_term_with_subexprs(typeid, termid, subterms.to_vec(), ty)
             }
             isle::sema::Expr::Var(_, varid) => {
                 let bound_var = self.var_map.get(varid).unwrap();
@@ -273,31 +238,27 @@ impl AssumptionContext {
     }
 
     /// Takes in LHS definitions, ty map, produces SMTLIB list
-    fn lhs_to_assumptions(
-        &mut self,
-        pattern: &Pattern,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> VIRExpr {
-        self.interp_pattern(pattern, termenv, typeenv, ty)
+    fn lhs_to_assumptions(&mut self, pattern: &Pattern, ty: &VIRType) -> VIRExpr {
+        self.interp_pattern(pattern, ty)
     }
 
     /// Construct the term environment from the AST and the type environment.
     pub fn from_lhs(
         lhs: &Pattern,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
+        termenv: &'ctx TermEnv,
+        typeenv: &'ctx TypeEnv,
         ty: &VIRType,
-    ) -> (AssumptionContext, VIRExpr) {
+    ) -> (AssumptionContext<'ctx>, VIRExpr) {
         let mut ctx = AssumptionContext {
             quantified_vars: vec![],
             assumptions: vec![],
+            termenv,
+            typeenv,
             var_map: HashMap::new(),
             ident_map: HashMap::new(),
             undefined_funcs: vec![],
         };
-        let expr = ctx.lhs_to_assumptions(lhs, termenv, typeenv, ty);
+        let expr = ctx.lhs_to_assumptions(lhs, ty);
         (ctx, expr)
     }
 }

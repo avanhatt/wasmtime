@@ -3,8 +3,8 @@
 ///
 /// Right now, this uses the rsmt2 crate.
 use crate::interp::AssumptionContext;
-use std::collections::HashSet;
 use rsmt2::Solver;
+use std::collections::HashSet;
 use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
