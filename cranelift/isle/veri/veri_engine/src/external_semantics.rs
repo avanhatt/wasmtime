@@ -137,6 +137,8 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
     let mut f = |e: &VIRExpr| {
         if let VIRExpr::Function(func) = e {
             if fns.contains(&func.name) {
+                // Skip functions we've already seen (the solver will catch
+                // mismatched types)
                 return;
             } else {
                 fns.insert(func.name.clone())
@@ -184,7 +186,6 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-///
 pub fn run_solver(
     actx: AssumptionContext,
     lhs: VIRExpr,
