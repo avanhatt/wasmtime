@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use veri_ir::annotation_ir;
+use veri_ir::{annotation_ir, Function};
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
 use crate::isle_annotations::isle_annotation_for_term;
@@ -52,18 +52,18 @@ impl<'ctx> TypeContext<'ctx> {
         }
     }
 
-    fn type_expr(&self, term: &annotation_ir::Expr, ty: &VIRType) -> VIRExpr {
-        let expect_boxed = |e: &Box<annotation_ir::Expr>| {
-            let ve = self.type_expr(&*e, ty);
+    fn type_expr(&mut self, term: &annotation_ir::Expr, ty: &VIRType) -> VIRExpr {
+        let expect_boxed = |e: &Box<annotation_ir::Expr>, ctx: &mut Self| {
+            let ve = ctx.type_expr(&*e, ty);
             Box::new(ve)
         };
-        let expect_boxed_bool = |e: &Box<annotation_ir::Expr>| {
-            let ve = self.type_expr(&*e, ty);
+        let expect_boxed_bool = |e: &Box<annotation_ir::Expr>,  ctx: &mut Self| {
+            let ve = ctx.type_expr(&*e, ty);
             assert!(ve.ty().is_bool());
             Box::new(ve)
         };
-        let expect_boxed_bv = |e: &Box<annotation_ir::Expr>| {
-            let ve = self.type_expr(&*e, ty);
+        let expect_boxed_bv = |e: &Box<annotation_ir::Expr>,  ctx: &mut Self| {
+            let ve = ctx.type_expr(&*e, ty);
             assert!(ve.ty().is_bv());
             Box::new(ve)
         };
@@ -79,80 +79,80 @@ impl<'ctx> TypeContext<'ctx> {
             annotation_ir::Expr::True => VIRExpr::True,
             annotation_ir::Expr::False => VIRExpr::False,
             annotation_ir::Expr::TyWidth => VIRExpr::Const(VIRType::Int, ty.width() as i128),
-            annotation_ir::Expr::Not(e) => VIRExpr::Not(expect_boxed_bool(e)),
+            annotation_ir::Expr::Not(e) => VIRExpr::Not(expect_boxed_bool(e, self)),
             annotation_ir::Expr::And(x, y) => {
-                VIRExpr::And(expect_boxed_bool(x), expect_boxed_bool(y))
+                VIRExpr::And(expect_boxed_bool(x, self), expect_boxed_bool(y, self))
             }
             annotation_ir::Expr::Or(x, y) => {
-                VIRExpr::Or(expect_boxed_bool(x), expect_boxed_bool(y))
+                VIRExpr::Or(expect_boxed_bool(x, self), expect_boxed_bool(y, self))
             }
             annotation_ir::Expr::Imp(x, y) => {
-                VIRExpr::Imp(expect_boxed_bool(x), expect_boxed_bool(y))
+                VIRExpr::Imp(expect_boxed_bool(x, self), expect_boxed_bool(y, self))
             }
             annotation_ir::Expr::Eq(x, y) => {
-                let vx = expect_boxed(x);
-                let vy = expect_boxed(y);
+                let vx = expect_boxed(x, self);
+                let vy = expect_boxed(y, self);
                 assert_eq!(vx.ty(), vy.ty());
                 VIRExpr::Eq(vx, vy)
             }
             annotation_ir::Expr::Lte(x, y) => {
-                let vx = expect_boxed(x);
-                let vy = expect_boxed(y);
+                let vx = expect_boxed(x, self);
+                let vy = expect_boxed(y, self);
                 assert_eq!(vx.ty(), vy.ty());
                 VIRExpr::Lte(vx, vy)
             }
             annotation_ir::Expr::BVNeg(x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVNeg(vx.ty().clone(), vx)
             }
             annotation_ir::Expr::BVNot(x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVNot(vx.ty().clone(), vx)
             }
             annotation_ir::Expr::BVAdd(x, y) => {
-                let vx = expect_boxed_bv(x);
-                let vy = expect_boxed_bv(y);
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
                 assert_eq!(vx.ty(), vy.ty());
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVAdd(vx.ty().clone(), vx, vy)
             }
             annotation_ir::Expr::BVSub(x, y) => {
-                let vx = expect_boxed_bv(x);
-                let vy = expect_boxed_bv(y);
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
                 assert_eq!(vx.ty(), vy.ty());
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVSub(vx.ty().clone(), vx, vy)
             }
             annotation_ir::Expr::BVAnd(x, y) => {
-                let vx = expect_boxed_bv(x);
-                let vy = expect_boxed_bv(y);
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
                 assert_eq!(vx.ty(), vy.ty());
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVAnd(vx.ty().clone(), vx, vy)
             }
             annotation_ir::Expr::BVZeroExt(i, x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 let new_width = vx.ty().width() + *i;
                 VIRExpr::BVZeroExt(VIRType::BitVector(new_width), *i, vx)
             }
             annotation_ir::Expr::BVSignExt(i, x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 let new_width = vx.ty().width() + *i;
                 VIRExpr::BVSignExt(VIRType::BitVector(new_width), *i, vx)
             }
             annotation_ir::Expr::BVExtract(l, h, x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 assert!(*h >= *l);
                 let new_width = *h - *l + 1;
                 VIRExpr::BVExtract(VIRType::BitVector(new_width), *l, *h, vx)
             },
             annotation_ir::Expr::BVConvTo(dest, x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 assert!(ty.is_bv());
                 let width_diff = (*dest as i128) - (vx.ty().width() as i128);
@@ -164,7 +164,7 @@ impl<'ctx> TypeContext<'ctx> {
                 }
             },
             annotation_ir::Expr::BVConvFrom(src, x) => {
-                let vx = expect_boxed_bv(x);
+                let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
                 assert!(ty.is_bv());
                 assert_eq!(vx.ty().width(), *src);
@@ -176,7 +176,17 @@ impl<'ctx> TypeContext<'ctx> {
                     Ordering::Equal => *vx,
                 }
             },
-            annotation_ir::Expr::Function(_) => todo!(),
+            annotation_ir::Expr::Function(f) => {
+                // let body = expect_boxed(&f.body, self);
+                // let args : Vec<BoundVar> = f.args.iter().map(|a| self.type_bound_var(a, ty.clone())).collect();
+                // VIRExpr::Function(Function{
+                //     name: f.name.clone(),
+                //     ty: VIRType::Function(args.iter().map(|a| a.ty).collect::<Vec<VIRType>>(), Box::new(body.ty().clone())),
+                //     args: f.args.iter().map(|a| self.type_bound_var(a, ty.clone())).collect(),
+                //     body,
+                // })
+                todo!()
+            }
             annotation_ir::Expr::FunctionApplication(_) => todo!(),
             annotation_ir::Expr::List(_) => todo!(),
             annotation_ir::Expr::GetElement(_, _) => todo!(),
