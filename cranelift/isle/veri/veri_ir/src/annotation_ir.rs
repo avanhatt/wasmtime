@@ -10,6 +10,7 @@ pub struct BoundVar {
 }
 
 impl BoundVar {
+    // TODO: special case this for function bound vars?
     /// Construct a new bound variable, cloning from references
     pub fn new_with_ty(name: &str, ty: &Type) -> Self {
         BoundVar {
@@ -105,7 +106,7 @@ pub struct Const {
 pub struct Function {
     pub name: String,
     pub ty: Type,
-    pub args: Vec<Expr>,
+    pub args: Vec<BoundVar>,
     pub body: Box<Expr>,
 }
 

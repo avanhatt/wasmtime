@@ -127,7 +127,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let body = Expr::binary(Expr::BVAdd, x, y);
             let func_expr = Expr::Function(Function {
                 name: "Opcode.Iadd".to_string(),
-                args: vec![value_list.as_expr()],
+                args: vec![value_list],
                 ty: Type::Function(FunctionType {
                     args: vec![Type::BitVectorList(2)],
                     ret: Box::new(Type::BitVector),

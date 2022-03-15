@@ -2,7 +2,7 @@
 
 This crate is a prototype for verifying Cranelift's ISLE lowering rules using an SMT solver.
 
-Currently, term semantics are specified manually in `isle_annotations.rs`. These should be replaces by annotations on ISLE terms that are then parsed to our Verification IR.  
+Currently, term semantics are specified manually in `src/isle_annotations.rs`. These should be replaces by annotations on ISLE terms that are then parsed to our Verification IR.  
 
 ## Running on a file
 
