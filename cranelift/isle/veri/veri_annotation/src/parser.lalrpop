@@ -17,19 +17,18 @@ Ident: String = {
     <s:r"b[\w&&[^v]]\w*"> => s.to_string(),
 };
 
-pub VIRType: VIRType = {
+pub Type: Type = {
     // TODO: support bvX instead of only numbers
-    "bv" <n:UNum> => VIRType::BitVector(n),
-    "bvlist" "(" <length:UNum> "," <width:UNum> ")" => 
-        VIRType::BitVectorList(length, width), 
-    "func" "(" <t1:TypeList> ")" <t2:VIRType> =>
-        VIRType::Function(t1, Box::new(t2)),
-    "bool" => VIRType::Bool,
-    "IsleType" => VIRType::IsleType,
+    "bv" => Type::BitVector,
+    "bvlist" "(" <length:UNum> ")" => Type::BitVectorList(length),
+    "isleType" => Type::IsleType,
+    "(" <f:FunctionType> ")" => Type::Function(f),
+    "bool" => Type::Bool,
 };
 
 pub BoundVar: BoundVar = {
-    <i:Ident> ":" <t:VIRType> => BoundVar{name: i, ty: t},
+    <i: Ident> => BoundVar{name: i, ty: None},
+    <i:Ident> ":" <t:Type> => BoundVar{name: i, ty: Some(t)},
 };
 
 Comma<T>: Vec<T> = {
@@ -47,45 +46,71 @@ Args: Vec<BoundVar> = {
     "(args" <a:ArgList> ")" => a,
 };
 
-TypeList = Comma<VIRType>;
+TypeList = Comma<Type>;
 
-pub FunctionAnnotation: FunctionAnnotation = {
+pub TermSignature: TermSignature = {
     "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
-        FunctionAnnotation {args: a, ret: r},
+        TermSignature{args: a, ret: r},
+};
+
+pub FunctionType: FunctionType = {
+    "func" "(" <a:ArgList> ")" "(" <t:Type> ")" =>
+        Function{args: a, ret: Box::new(t)},
+};
+
+pub Const: Const = {
+    <v:Num> ":" <t:Type> => Const{ty: t, value: v},
 };
 
 pub Function: Function = {
-    "(func" <n:Ident> "(" <a:ArgList> ")" "(" <t:VIRType> ")" ")" =>
-        Function{name: n, ty: t, args: a},
+    <n:Ident> "(" <a:ArgList> ")" "(" <t:Type> ")" "{" <b:Expr> "}" =>
+        Function{name: n, ty: t, args: a, body: b},
 };
 
-pub VIRExpr: Box<VIRExpr> = {
-    "(" <b:BoundVar> ")" => Box::new(VIRExpr::Var(b)), 
-    <n:Num> <m:UNum> => 
-        Box::new(VIRExpr::Const(VIRType::BitVector(m), n)),
-    "(" "True" ")" => Box::new(VIRExpr::True),
-    "(" "False" ")" => Box::new(VIRExpr::False),
+// TODO
+//pub FunctionApplication: FunctionApplication = {
+//};
 
-    "(" "!" <u:VIRExpr> ")" => Box::new(VIRExpr::Not(u)),
-    "(" "&&" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::And(u, v)),
-    "(" "||" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Or(u, v)),
-    "(" "=>" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Imp(u, v)),
-    "(" "=" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Eq(u, v)),
-    "(" "<=" <u:VIRExpr> <v:VIRExpr> ")" => Box::new(VIRExpr::Lte(u, v)),
+pub Expr: Box<Expr> = {
+    "(" "var" <n:Ident> ")" => Box::new(Expr::Var(n)), 
+    "(" <c:Const> ")" => Box::new(Expr::Const(c)),
+    "(" "True" ")" => Box::new(Expr::True),
+    "(" "False" ")" => Box::new(Expr::False),
 
-    //TODO: bv exprs
+    "(" "!" <u:Expr> ")" => Box::new(Expr::Not(u)),
+    "(" "&&" <u:Expr> <v:Expr> ")" => Box::new(Expr::And(u, v)),
+    "(" "||" <u:Expr> <v:Expr> ")" => Box::new(Expr::Or(u, v)),
+    "(" "=>" <u:Expr> <v:Expr> ")" => Box::new(Expr::Imp(u, v)),
+    "(" "=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Eq(u, v)),
+    "(" "<=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lte(u, v)),
+
+    "(" "-" <u:Expr> ")" => Box::new(Expr::BVNeg(u)),
+    "(" "~" <u:Expr> ")" => Box::new(Expr::BVNot(u)),
+
+    "(" "+" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAdd(u, v)),
+    "(" "-" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSub(u, v)),
+    "(" "&" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAnd(u, v)),
+
+    "(" "zero_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVZeroExt(n, v)),
+    "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
+    "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
+        Box::new(Expr::BVExtract(s, t, v)),
+    "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
+    "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v)),
+
+    //TODO: function, application, list, element
 };
 
 // TODO: Do we need to enforce that these types must be bvX?
 //pub BVExpr: Box<BVExpr> = {
-//     "(" <n:Num> ":" <t:VIRType> ")" => Box::new(BVExpr::Const(t, n)),
+//     "(" <n:Num> ":" <t:Type> ")" => Box::new(BVExpr::Const(t, n)),
 //     "(" "~" <b:BVExpr> ")" => Box::new(BVExpr::BVNeg(
 //};
 
 // TODO: assertion, assertion list
 // TODO: watch out for precedence issues
 
-//pub VIRAnnotation: VIRAnnotation = {
-//    "(spec" <f:FunctionAnnotation> <a:AssertionList> ")" =>
-//        VIRAnnotation {func: f, assertions: a},
+//pub TermAnnotation: TermAnnotation = {
+//    "(spec" <s:TermSignature> <a:AssertionList> ")" =>
+//        TermAnnotation {sig: s, assertions: a},
 //};
