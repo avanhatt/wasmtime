@@ -54,7 +54,23 @@ impl<'ctx> TypeContext<'ctx> {
         }
     }
 
+    fn compatible_types(high_level: &Option<annotation_ir::Type>, vir: &VIRType) -> bool {
+            match (high_level, vir) {
+                (None, _) => true,
+                (Some(annotation_ir::Type::Bool), VIRType::Bool) => true,
+                (Some(annotation_ir::Type::Int), VIRType::Int) => true,
+                (Some(annotation_ir::Type::BitVector), VIRType::BitVector(..)) => true,
+                (Some(annotation_ir::Type::BitVectorList(l1)), VIRType::BitVectorList(l2, _)) => *l1 == *l2,
+                (Some(annotation_ir::Type::Function(func)), VIRType::Function(args, ret)) => {
+                    func.args.iter().zip(args).all(|(a1, a2)| Self::compatible_types(&Some(a1.clone()), a2))
+                    && Self::compatible_types(&Some(*func.ret.clone()), &*ret)
+                }
+                _ => false,
+            }
+    }
+
     fn type_bound_var(&mut self, v: &annotation_ir::BoundVar, ty: VIRType) -> BoundVar {
+        assert!(Self::compatible_types(&v.ty, &ty), "Incompatible high level and VIR types ({:?}. {:?})", v.ty, ty);
         self.var_types.insert(v.name.clone(), ty.clone());
         BoundVar {
             name: v.name.clone(),
@@ -99,7 +115,7 @@ impl<'ctx> TypeContext<'ctx> {
             }),
             annotation_ir::Expr::Const(c) => match c.ty {
                 annotation_ir::Type::Int => VIRExpr::Const(VIRType::Int, c.value),
-                _ => todo!(),
+                _ => todo!("Non-integer constants"),
             },
             annotation_ir::Expr::True => VIRExpr::True,
             annotation_ir::Expr::False => VIRExpr::False,
@@ -235,24 +251,21 @@ impl<'ctx> TypeContext<'ctx> {
             }
             annotation_ir::Expr::List(xs) => {
                 let vs: Vec<VIRExpr> = xs.iter().map(|a| self.type_expr(a)).collect();
+                // Enforce homogenous list types
+                if let Some(first) = vs.first() {
+                    for rest in &vs[1..] {
+                        assert_eq!(first.ty(), rest.ty());
+                    }
+                }
                 VIRExpr::List(
                     VIRType::BitVectorList(vs.len(), vs.first().unwrap().ty().width()),
                     vs,
                 )
             }
             annotation_ir::Expr::GetElement(x, i) => {
-                let ty = if let annotation_ir::Expr::Var(s) = *x.clone() {
-                    if let Some(ty) = self.var_types.get(&s) {
-                        assert!(matches!(ty, VIRType::BitVectorList(..)));
-                        ty.clone()
-                    } else {
-                        todo!("more complicated lists")
-                    }
-                } else {
-                    todo!("more complicated lists")
-                };
                 let v = self.type_expr(&*x);
-                VIRExpr::GetElement(ty.element_ty(), Box::new(v), *i)
+                assert!(matches!(v.ty(), VIRType::BitVectorList(..)));
+                VIRExpr::GetElement(v.ty().element_ty(), Box::new(v), *i)
             }
         }
     }
