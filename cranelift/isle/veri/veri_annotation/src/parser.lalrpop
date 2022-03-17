@@ -7,7 +7,8 @@ use ast::*;
 
 grammar;
 
-Num: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
+UNum: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
+Num: i128 = <s:r"-?[0-9]+i">  => i128::from_str(&s[..s.len() - 1]).unwrap();
 
 // Exclude "bv" to avoid confusion with type bv
 Ident: String = {
@@ -18,8 +19,8 @@ Ident: String = {
 
 pub VIRType: VIRType = {
     // TODO: support bvX instead of only numbers
-    "bv" <n:Num> => VIRType::BitVector(n),
-    "bvlist" "(" <length: Num> "," <width: Num> ")" => 
+    "bv" <n:UNum> => VIRType::BitVector(n),
+    "bvlist" "(" <length:UNum> "," <width:UNum> ")" => 
         VIRType::BitVectorList(length, width), 
     "func" "(" <t1:TypeList> ")" <t2:VIRType> =>
         VIRType::Function(t1, Box::new(t2)),
@@ -60,7 +61,8 @@ pub Function: Function = {
 
 pub VIRExpr: Box<VIRExpr> = {
     "(" <b:BoundVar> ")" => Box::new(VIRExpr::Var(b)), 
-    // TODO: const,
+    <n:Num> <m:UNum> => 
+        Box::new(VIRExpr::Const(VIRType::BitVector(m), n)),
     "(" "True" ")" => Box::new(VIRExpr::True),
     "(" "False" ")" => Box::new(VIRExpr::False),
 
@@ -76,8 +78,8 @@ pub VIRExpr: Box<VIRExpr> = {
 
 // TODO: Do we need to enforce that these types must be bvX?
 //pub BVExpr: Box<BVExpr> = {
-    // "(" <n:Num> ":" <t:VIRType> ")" => Box::new(BVExpr::Const(t, n)),
-    // "(" "~" <b:BVExpr> ")" => Box::new(BVExpr::BVNeg(
+//     "(" <n:Num> ":" <t:VIRType> ")" => Box::new(BVExpr::Const(t, n)),
+//     "(" "~" <b:BVExpr> ")" => Box::new(BVExpr::BVNeg(
 //};
 
 // TODO: assertion, assertion list

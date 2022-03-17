@@ -26,6 +26,9 @@ fn parser() {
         .parse("(sig (args a: bool, b: bv16) (ret: bool))").is_ok());
 
     // vir expr
+    assert!(parser::VIRExprParser::new().parse("10i16").is_ok());
+    assert!(parser::VIRExprParser::new().parse("-10i8").is_ok());
+    assert!(parser::VIRExprParser::new().parse("(b: bv16)").is_ok());
     assert!(parser::VIRExprParser::new().parse("(True)").is_ok());
     assert!(parser::VIRExprParser::new().parse("(False)").is_ok());
     //TODO: test things like !a, a && b, ~b, etc.
