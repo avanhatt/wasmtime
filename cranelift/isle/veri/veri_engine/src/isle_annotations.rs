@@ -104,21 +104,21 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             };
             Some(TermAnnotation::new(func, vec![identity, ty_fits]))
         }
-        // "iadd" => {
-        //     let a = BoundVar::new("a");
-        //     let b = BoundVar::new("b");
-        //     let r = BoundVar::new("r");
-        //     let sem = Expr::binary(
-        //         Expr::Eq,
-        //         Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr()),
-        //         r.as_expr(),
-        //     );
-        //     let func = TermSignature {
-        //         args: vec![a, b],
-        //         ret: r,
-        //     };
-        //     Some(TermAnnotation::new(func, vec![sem]))
-        // }
+        "iadd" => {
+            let a = BoundVar::new("a");
+            let b = BoundVar::new("b");
+            let r = BoundVar::new("r");
+            let sem = Expr::binary(
+                Expr::Eq,
+                Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr()),
+                r.as_expr(),
+            );
+            let func = TermSignature {
+                args: vec![a, b],
+                ret: r,
+            };
+            Some(TermAnnotation::new(func, vec![sem]))
+        }
         "Opcode.Iadd" => {
             let value_list = BoundVar::new("xs");
             let r = BoundVar::new("r");
