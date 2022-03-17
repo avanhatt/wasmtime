@@ -283,4 +283,20 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_iadd_from_file() {
+        let cur_dir = env::current_dir().expect("Can't access current working directory");
+        // TODO: clean up path logic
+        let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+        let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+        let input = PathBuf::from("./examples/iadd.isle");
+    
+        let inputs = vec![clif_isle, prelude_isle, input];
+    
+        let (termenv, typeenv) = isle_files_to_terms(inputs);
+    
+        // For now, verify rules rooted in `lower`
+        verify_rules_with_lhs_root("lower", &termenv, &typeenv)
+    }
 }
