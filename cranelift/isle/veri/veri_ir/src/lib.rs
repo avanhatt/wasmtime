@@ -1,7 +1,8 @@
 //! Verification Intermediate Representation for relevant types, eventually to
 //! be lowered to SMT. The goal is to leave some freedom to change term
 //! encodings or the specific solver backend.
-
+//! 
+//! Note: annotations use the higher-level IR in annotation_ir.rs.
 pub mod annotation_ir;
 
 /// Verification IR annotations for an ISLE term consist of the function

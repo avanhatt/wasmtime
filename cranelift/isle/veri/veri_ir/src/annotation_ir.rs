@@ -64,13 +64,14 @@ impl TermAnnotation {
     }
 }
 
+/// Function type with argument and return types.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionType {
     pub args: Vec<Type>,
     pub ret: Box<Type>,
 }
 
-/// H
+/// Higher-level type, not including bitwidths.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Type {
     /// The expression is a bitvector, currently modeled in the
@@ -94,7 +95,7 @@ pub enum Type {
     Bool,
 }
 
-/// Width-specified constants
+/// Type-specified constants
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Const {
     pub ty: Type,
@@ -138,6 +139,8 @@ pub enum Expr {
     Lte(Box<Expr>, Box<Expr>),
 
     // Bitvector operations
+    //      Note: these follow the naming conventions of the SMT theory of bitvectors:
+    //      https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     // Unary operators
     BVNeg(Box<Expr>),
     BVNot(Box<Expr>),
@@ -151,9 +154,12 @@ pub enum Expr {
     BVZeroExt(usize, Box<Expr>),
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
-    // A special, high level conversion to a destination width
+
+    // A special, high level conversion to a destination width. This currently
+    // assumes that the source width is the LHS values BV width.
     BVConvTo(usize, Box<Expr>),
-    // A special, high level conversion from a source width
+    // A special, high level conversion from a source width. This currently
+    // assumes that the destination width is the LHS values BV width.
     BVConvFrom(usize, Box<Expr>),
 
     Function(Function),
