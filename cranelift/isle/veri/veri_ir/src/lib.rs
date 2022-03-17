@@ -279,14 +279,14 @@ impl VIRType {
     pub fn function_arg_types(&self) -> Vec<VIRType> {
         match self {
             VIRType::Function(args, _) => args.clone(),
-            _ => unreachable!(),
+            _ => unreachable!("Expected function type, got {:?}", self),
         }
     }
 
     pub fn function_ret_type(&self) -> VIRType {
         match self {
             VIRType::Function(_, ret) => *ret.clone(),
-            _ => unreachable!(),
+            _ => unreachable!("Expected function type, got {:?}", self),
         }
     }
 
