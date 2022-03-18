@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use veri_ir as ast;
-use ast::*;
+use ast::annotation_ir::*;
 
 // DO NOT FORGET TO CHANGE THE EXTENSION!!!
 
@@ -18,10 +18,9 @@ Ident: String = {
 };
 
 pub Type: Type = {
-    // TODO: support bvX instead of only numbers
     "bv" => Type::BitVector,
     "bvlist" "(" <length:UNum> ")" => Type::BitVectorList(length),
-    "isleType" => Type::IsleType,
+    "isleType" => Type::Int,
     "(" <f:FunctionType> ")" => Type::Function(f),
     "bool" => Type::Bool,
 };
@@ -48,14 +47,16 @@ Args: Vec<BoundVar> = {
 
 TypeList = Comma<Type>;
 
+ExprList = Comma<Expr>;
+
 pub TermSignature: TermSignature = {
     "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
         TermSignature{args: a, ret: r},
 };
 
 pub FunctionType: FunctionType = {
-    "func" "(" <a:ArgList> ")" "(" <t:Type> ")" =>
-        Function{args: a, ret: Box::new(t)},
+    "func" "(" <a:TypeList> ")" "(" <r:Type> ")" =>
+        FunctionType{args: a, ret: Box::new(r)},
 };
 
 pub Const: Const = {
@@ -67,15 +68,16 @@ pub Function: Function = {
         Function{name: n, ty: t, args: a, body: b},
 };
 
-// TODO
-//pub FunctionApplication: FunctionApplication = {
-//};
+pub FunctionApplication: FunctionApplication = {
+    <f:Expr> "(" <x:ExprList> ")" => FunctionApplication{func: f, args: x},
+};
 
 pub Expr: Box<Expr> = {
     "(" "var" <n:Ident> ")" => Box::new(Expr::Var(n)), 
     "(" <c:Const> ")" => Box::new(Expr::Const(c)),
-    "(" "True" ")" => Box::new(Expr::True),
-    "(" "False" ")" => Box::new(Expr::False),
+    "(" "true" ")" => Box::new(Expr::True),
+    "(" "false" ")" => Box::new(Expr::False),
+    "(" "tywidth" ")" => Box::new(Expr::TyWidth),
 
     "(" "!" <u:Expr> ")" => Box::new(Expr::Not(u)),
     "(" "&&" <u:Expr> <v:Expr> ")" => Box::new(Expr::And(u, v)),
@@ -92,25 +94,19 @@ pub Expr: Box<Expr> = {
     "(" "&" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAnd(u, v)),
 
     "(" "zero_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVZeroExt(n, v)),
-    "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
+    "(" "siin_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v)),
     "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
     "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v)),
 
-    //TODO: function, application, list, element
+    "(" <f:Function> ")" => Box::new(Expr::Function(f)),
+    "(" <a:FunctionApplication> ")" => Box::new(Expr::FunctionApplication(a)),
+    "(" <e:ExprList> ")" => Box::new(Expr::List(e)),
+    "(" "get" <u:Expr> <n:UNum> ")" => Box::new(Expr::GetElement(u, n)),
 };
 
-// TODO: Do we need to enforce that these types must be bvX?
-//pub BVExpr: Box<BVExpr> = {
-//     "(" <n:Num> ":" <t:Type> ")" => Box::new(BVExpr::Const(t, n)),
-//     "(" "~" <b:BVExpr> ")" => Box::new(BVExpr::BVNeg(
-//};
-
-// TODO: assertion, assertion list
-// TODO: watch out for precedence issues
-
-//pub TermAnnotation: TermAnnotation = {
-//    "(spec" <s:TermSignature> <a:AssertionList> ")" =>
-//        TermAnnotation {sig: s, assertions: a},
-//};
+pub TermAnnotation: TermAnnotation = {
+    "(" "spec" <s:TermSignature> "(" "assertions" <a:ExprList> ")" ")" =>
+        TermAnnotation {sig: s, assertions: a},
+};

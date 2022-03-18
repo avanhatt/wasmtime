@@ -45,13 +45,13 @@ pub struct TermSignature {
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TermAnnotation {
-    sig: TermSignature,
-    assertions: Vec<Expr>,
+    pub sig: TermSignature,
+    pub assertions: Vec<Box<Expr>>,
 }
 
 impl TermAnnotation {
     /// New annotation
-    pub fn new(sig: TermSignature, assertions: Vec<Expr>) -> Self {
+    pub fn new(sig: TermSignature, assertions: Vec<Box<Expr>>) -> Self {
         TermAnnotation { sig, assertions }
     }
 
@@ -59,7 +59,7 @@ impl TermAnnotation {
         &self.sig
     }
 
-    pub fn assertions(&self) -> &Vec<Expr> {
+    pub fn assertions(&self) -> &Vec<Box<Expr>> {
         &self.assertions
     }
 }
@@ -114,7 +114,7 @@ pub struct Function {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionApplication {
     pub func: Box<Expr>,
-    pub args: Vec<Expr>,
+    pub args: Vec<Box<Expr>>,
 }
 
 /// Expressions
@@ -158,7 +158,7 @@ pub enum Expr {
 
     Function(Function),
     FunctionApplication(FunctionApplication),
-    List(Vec<Expr>),
+    List(Vec<Box<Expr>>),
     GetElement(Box<Expr>, usize),
 }
 

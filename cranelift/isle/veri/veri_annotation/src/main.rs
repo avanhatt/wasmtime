@@ -2,46 +2,95 @@ pub mod parser;
 
 #[test]
 fn parser() {
-    // types
-    assert!(parser::VIRTypeParser::new().parse("bv8").is_ok());
-    assert!(parser::VIRTypeParser::new().parse("bvlist(4, 8)").is_ok());
-    assert!(parser::VIRTypeParser::new().parse("func(bv8, bv8) IsleType").is_ok());
-    assert!(parser::VIRTypeParser::new().parse("bool").is_ok());
-    assert!(parser::VIRTypeParser::new().parse("IsleType").is_ok());
-
+    // type
+    assert!(parser::TypeParser::new().parse("bv").is_ok());
+    assert!(parser::TypeParser::new().parse("bvlist(16)").is_ok());
+    assert!(parser::TypeParser::new().parse("(func(bv) (isleType))").is_ok());
+    assert!(parser::TypeParser::new().parse("bool").is_ok());
+    assert!(parser::TypeParser::new().parse("isleType").is_ok());
+    
     // bound var
-    assert!(parser::BoundVarParser::new().parse("b: bv16").is_ok());
-    assert!(parser::BoundVarParser::new().parse("bv: bv32").is_err());
-    assert!(parser::BoundVarParser::new().parse("ty: bvlist(1, 10)").is_ok());
-    assert!(parser::BoundVarParser::new().parse("foo: func(bool, bool) bv8").is_ok());
-    assert!(parser::BoundVarParser::new().parse("arg: bool").is_ok());
-    assert!(parser::BoundVarParser::new().parse("ba: IsleType").is_ok());
-
-    // function annotation
-    assert!(parser::FunctionAnnotationParser::new()
+    assert!(parser::BoundVarParser::new().parse("b").is_ok());
+    assert!(parser::BoundVarParser::new().parse("bv").is_err());
+    assert!(parser::BoundVarParser::new().parse("ty: bvlist(1)").is_ok());
+    assert!(parser::BoundVarParser::new().parse("foo: (func(bool, bool) (bv))").is_ok());
+    assert!(parser::BoundVarParser::new().parse("arg").is_ok());
+    assert!(parser::BoundVarParser::new().parse("ba").is_ok());
+    
+    // term signature
+    assert!(parser::TermSignatureParser::new()
         .parse("(sig (args) (ret: bool))").is_ok());
-    assert!(parser::FunctionAnnotationParser::new()
+    assert!(parser::TermSignatureParser::new()
         .parse("(sig (args a: bool) (ret: bool))").is_ok());
-    assert!(parser::FunctionAnnotationParser::new()
-        .parse("(sig (args a: bool, b: bv16) (ret: bool))").is_ok());
+    assert!(parser::TermSignatureParser::new()
+        .parse("(sig (args a: bool, b: bv) (ret: bool))").is_ok());
 
-    // vir expr
-    assert!(parser::VIRExprParser::new().parse("10i16").is_ok());
-    assert!(parser::VIRExprParser::new().parse("-10i8").is_ok());
-    assert!(parser::VIRExprParser::new().parse("(b: bv16)").is_ok());
-    assert!(parser::VIRExprParser::new().parse("(True)").is_ok());
-    assert!(parser::VIRExprParser::new().parse("(False)").is_ok());
-    //TODO: test things like !a, a && b, ~b, etc.
+    // function type
+    assert!(parser::FunctionTypeParser::new()
+        .parse("func(bool, bv) (isleType)").is_ok());
+    assert!(parser::FunctionTypeParser::new().parse("func() (bv)").is_ok());
+    assert!(parser::FunctionTypeParser::new()
+        .parse("func((func(isleType, bv) (bool))) (isleType)").is_ok());
+    assert!(parser::FunctionTypeParser::new().parse("func() ()").is_err());
 
-    /*
-    let r = parser::BoundVarParser::new().parse("ty: bvlist(1, 10)");
-    match r {
-        Ok(_) => println!("woohoo!"),
-        Err(err) => panic!("{:?}", err),
-    };
-    */
+    // function
+    assert!(parser::FunctionParser::new().parse(
+        "foo(a, b) (bv) {(+ (var a) (var b))}").is_ok());
+    assert!(parser::FunctionParser::new().parse(
+        "xor(a, b) (bool) {
+            (|| (&& (!(var a)) (var b)) (&& (var a) (!(var b))))
+        }").is_ok());
 
-    // TODO: add assertions, compare fields in real annotations
+    // function application
+    assert!(parser::FunctionApplicationParser::new()
+        .parse("(foo(a, b) (bool) {(true)})((var a),(var b))").is_ok());
+
+    // const
+    assert!(parser::ConstParser::new().parse("10i: bv").is_ok());
+    assert!(parser::ConstParser::new().parse("true: bool").is_err());
+    
+    // vir expr: consts
+    assert!(parser::ExprParser::new().parse("(var a)").is_ok());
+    assert!(parser::ExprParser::new().parse("(-1i: bv)").is_ok());
+    assert!(parser::ExprParser::new().parse("(true)").is_ok());
+    assert!(parser::ExprParser::new().parse("(false)").is_ok());
+    assert!(parser::ExprParser::new().parse("(tywidth)").is_ok());
+    // vir expr: boolean operations
+    assert!(parser::ExprParser::new().parse("(!(var a))").is_ok());
+    assert!(parser::ExprParser::new().parse("(&& (var a) (var b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(|| (var a) (false))").is_ok());
+    assert!(parser::ExprParser::new().parse("(=> (true) (var b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(= (var a) (false))").is_ok());
+    assert!(parser::ExprParser::new().parse("(<= (var a) (10i: bv))").is_ok());
+    assert!(parser::ExprParser::new()
+        .parse("(&& (|| (var a) (var b)) (var c))").is_ok());
+    assert!(parser::ExprParser::new().parse("(&& (!(var a)) (var b))").is_ok());
+    // vir expr: bv operations
+    assert!(parser::ExprParser::new().parse("(-(var a))").is_ok());
+    assert!(parser::ExprParser::new().parse("(~(var a))").is_ok());
+    assert!(parser::ExprParser::new().parse("(+ (-(var a)) (var b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(- (var a) (~(var b)))").is_ok());
+    assert!(parser::ExprParser::new().parse("(& (var a) (var b))").is_ok());
+    // vir expr: conversions
+    assert!(parser::ExprParser::new().parse("(zero_ext 4 (var a))").is_ok());
+    assert!(parser::ExprParser::new().parse("(siin_ext 2 (-12i: bv))").is_ok());
+    assert!(parser::ExprParser::new().parse("(extract 0 8 (var a))").is_ok());
+    assert!(parser::ExprParser::new().parse("(conv_to 6 (var b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(conv_from 16 (8i: bv))").is_ok());
+    // vir expr: functions
+    assert!(parser::ExprParser::new()
+        .parse("(f(x) (bv) {(+ (var x) (1i:bv))})").is_ok());
+    assert!(parser::ExprParser::new()
+        .parse("((f(x) (bv) {(var x)}) ((2i:bv)))").is_ok());
+    assert!(parser::ExprParser::new()
+        .parse("((var a),(true),(3i: bv))").is_ok());
+    assert!(parser::ExprParser::new()
+        .parse("(get (var x) 0)").is_ok());
+
+    // term annotation
+    assert!(parser::TermAnnotationParser::new()
+        .parse("(spec (sig (args x, y) (ret))
+            (assertions (= (+ (var x) (var y)) (var ret))))").is_ok());
 }
 
 fn main() {
