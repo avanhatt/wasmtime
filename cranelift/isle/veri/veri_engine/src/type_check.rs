@@ -1,10 +1,10 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::convert::TryInto;
 
 use veri_ir::{annotation_ir, Function, FunctionApplication};
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
-use crate::isle_annotations::isle_annotation_for_term;
 use cranelift_isle as isle;
 use isle::sema::{TermEnv, TypeEnv, TypeId};
 
@@ -276,7 +276,7 @@ impl<'ctx> TypeContext<'ctx> {
         subterm_typeids: Vec<TypeId>,
         ty: &VIRType,
     ) -> Option<VIRTermAnnotation> {
-        let initial_term = isle_annotation_for_term(term);
+        let initial_term = annotation_ir::isle_annotation_for_term(term);
         let subterm_types: Vec<VIRType> = subterm_typeids
             .iter()
             .map(|tid| self.vir_type_for_type_id(*tid))
