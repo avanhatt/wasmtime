@@ -5,9 +5,13 @@
 //! Note: annotations use the higher-level IR in annotation_ir.rs.
 pub mod annotation_ir;
 
+use std::collections::HashMap;
+
 /// Packaged semantics for a single rule, included metadata on which terms
 /// are not yet defined.
 pub struct RuleSemantics {
+    // Maybe need?
+    // pub lhs_term: BoundVar,
     pub lhs: VIRExpr,
     pub rhs: VIRExpr,
 
@@ -16,6 +20,15 @@ pub struct RuleSemantics {
 
     pub lhs_undefined_terms: Vec<BoundVar>,
     pub rhs_undefined_terms: Vec<BoundVar>,
+}
+
+// invariants: exists some RuleSemantics s.t. LHS_UT is empty
+    // RuleTree has a child for every RHS_UT
+    // Leaves of the tree have empty RHS_UT
+pub struct RuleTree {
+    value: RuleSemantics,
+    // maybe want an RC cell instead of a Box
+    children: HashMap<BoundVar, Box<RuleTree>>
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
