@@ -10,8 +10,6 @@ lalrpop = "0.19.7"
 lalrpop-util = "0.19.7"
 regex = "1"
 veri_ir = {path = "../veri_ir"}
-
-[profile.dev.package."*"]
-opt-level = 3
+veri_engine = {path = "../veri_engine"}
 
 [workspace]

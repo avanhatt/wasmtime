@@ -1,3 +1,6 @@
+use veri_ir::annotation_ir::*;
+use veri_engine::isle_annotations::{isle_annotation_for_term};
+
 pub mod parser;
 
 #[test]
@@ -43,7 +46,7 @@ fn parser() {
 
     // function application
     assert!(parser::FunctionApplicationParser::new()
-        .parse("(foo(a, b) (bool) {(true)})((var a),(var b))").is_ok());
+        .parse("(var foo)((var a), (var b))").is_ok());
 
     // const
     assert!(parser::ConstParser::new().parse("10i: bv").is_ok());
@@ -81,7 +84,7 @@ fn parser() {
     assert!(parser::ExprParser::new()
         .parse("(f(x) (bv) {(+ (var x) (1i:bv))})").is_ok());
     assert!(parser::ExprParser::new()
-        .parse("((f(x) (bv) {(var x)}) ((2i:bv)))").is_ok());
+        .parse("((var f)((2i:bv)))").is_ok());
     assert!(parser::ExprParser::new()
         .parse("((var a),(true),(3i: bv))").is_ok());
     assert!(parser::ExprParser::new()
@@ -91,6 +94,31 @@ fn parser() {
     assert!(parser::TermAnnotationParser::new()
         .parse("(spec (sig (args x, y) (ret))
             (assertions (= (+ (var x) (var y)) (var ret))))").is_ok());
+
+    // "lower" | "put_in_reg" | "value_reg" | "first_result" | "inst_data"
+    let parsed = parser::TermAnnotationParser::new().parse(
+        "(spec (sig (args arg) (ret))
+            (assertions (= (var arg) (var ret))))"
+    ).unwrap();
+
+    let expected = isle_annotation_for_term("lower").unwrap();
+    assert!(expected, parsed);
+
+    /*let arg = BoundVar{name: "arg".to_string(), ty: None};
+    let ret = BoundVar{name: "ret".to_string(), ty: None};
+    let v1 = Box::new(Expr::Var(arg.name.clone()));
+    let v2 = Box::new(Expr::Var(ret.name.clone()));
+    let a1 = Box::new(Expr::Eq(v1, v2));
+
+    assert!(r.sig.args == vec![arg]);
+    assert!(r.sig.ret == ret);
+    assert!(r.assertions == vec![a1]);
+    */
+    // "InstructionData.Binary"
+    let r = parser::TermAnnotationParser::new().parse(
+        "(spec (sig (args opcode: (func(bvlist(2)) (bv)), arg_list) (ret))
+            (assertions (= (((var opcode)((var arg_list)))) (var ret))))"
+    ).unwrap();
 }
 
 fn main() {
