@@ -5,6 +5,19 @@
 //! Note: annotations use the higher-level IR in annotation_ir.rs.
 pub mod annotation_ir;
 
+/// Packaged semantics for a single rule, included metadata on which terms
+/// are not yet defined.
+pub struct RuleSemantics {
+    pub lhs: VIRExpr,
+    pub rhs: VIRExpr,
+
+    pub quantified_vars: Vec<BoundVar>,
+    pub assumptions: Vec<VIRExpr>,
+
+    pub lhs_undefined_terms: Vec<BoundVar>,
+    pub rhs_undefined_terms: Vec<BoundVar>,
+}
+
 /// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]

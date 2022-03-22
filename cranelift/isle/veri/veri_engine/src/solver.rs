@@ -2,10 +2,9 @@
 /// queries to that solver.
 ///
 /// Right now, this uses the rsmt2 crate.
-use crate::interp::AssumptionContext;
 use rsmt2::Solver;
 use std::collections::HashSet;
-use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult};
+use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult, RuleSemantics};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
@@ -187,14 +186,12 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 pub fn run_solver(
-    actx: AssumptionContext,
-    lhs: VIRExpr,
-    rhs: VIRExpr,
+    rule_sem: RuleSemantics,
     _ty: &VIRType,
 ) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
-    for v in actx.quantified_vars {
+    for v in rule_sem.quantified_vars {
         let name = v.name.clone();
         let ty = &v.ty;
         match ty.clone() {
@@ -215,16 +212,16 @@ pub fn run_solver(
     }
 
     println!("Declaring uninterpreted functions:");
-    for a in &actx.assumptions {
-        declare_uninterp_functions(a.assume().clone(), &mut solver);
+    for a in &rule_sem.assumptions {
+        declare_uninterp_functions(a.clone(), &mut solver);
     }
 
     println!("Adding assumptions:");
-    let assumptions: Vec<String> = actx
+    let assumptions: Vec<String> = rule_sem
         .assumptions
         .iter()
         .map(|a| {
-            let p = vir_expr_to_rsmt2_str(a.assume().clone());
+            let p = vir_expr_to_rsmt2_str(a.clone());
             println!("\t{}", p);
             p
         })
@@ -239,8 +236,8 @@ pub fn run_solver(
     }
 
     // Correctness query
-    let lhs_s = vir_expr_to_rsmt2_str(lhs);
-    let rhs_s = vir_expr_to_rsmt2_str(rhs);
+    let lhs_s = vir_expr_to_rsmt2_str(rule_sem.lhs);
+    let rhs_s = vir_expr_to_rsmt2_str(rule_sem.rhs);
 
     let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
     println!("Running query:\n\t{}\n", query);

@@ -42,9 +42,8 @@ fn verify_rule_for_type(
 ) -> VerificationResult {
     // For now, starting types must be bitvectors
     assert!(ty.is_bv());
-    let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-    let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, ty);
-    run_solver(assumption_ctx, lhs, rhs, ty)
+    let rule_semantics = AssumptionContext::interp_rule(rule, termenv, typeenv, ty);
+    run_solver(rule_semantics, ty)
 }
 
 fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {

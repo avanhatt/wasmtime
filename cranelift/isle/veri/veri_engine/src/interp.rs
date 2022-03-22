@@ -1,9 +1,9 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
-use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRType};
+use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRType, RuleSemantics};
 
-use std::collections::HashMap;
+use std::{collections::HashMap};
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
@@ -15,6 +15,8 @@ trait ToVIRExpr {
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr;
 
     fn type_id(&self) -> TypeId;
+
+    fn add_undefined_term(term: &BoundVar, ctx: &mut AssumptionContext);
 }
 
 /// Type for term arguments for ISLE LHS terms.
@@ -32,6 +34,10 @@ impl ToVIRExpr for TermArgPattern {
             TermArgPattern::Pattern(p) => p.ty(),
         }
     }
+
+    fn add_undefined_term(term: &BoundVar, ctx: &mut AssumptionContext) {
+        ctx.lhs_undefined_terms.push(term.clone())
+    }
 }
 
 /// Type for term arguments for ISLE RHS terms.
@@ -42,6 +48,10 @@ impl ToVIRExpr for isle::sema::Expr {
 
     fn type_id(&self) -> TypeId {
         self.ty()
+    }
+
+    fn add_undefined_term(term: &BoundVar, ctx: &mut AssumptionContext) {
+        ctx.rhs_undefined_terms.push(term.clone())
     }
 }
 
@@ -78,7 +88,8 @@ pub struct AssumptionContext<'ctx> {
     ident_map: HashMap<String, i32>,
 
     // Yet-to-be-define uninterpreted functions
-    undefined_funcs: Vec<String>,
+    lhs_undefined_terms: Vec<BoundVar>,
+    rhs_undefined_terms: Vec<BoundVar>,
 
     // For type checking
     type_ctx: TypeContext<'ctx>,
@@ -173,8 +184,6 @@ impl<'ctx> AssumptionContext<'ctx> {
             self.quantified_vars.push(annotation.func().ret.clone());
             annotation.func().ret.as_expr()
         } else {
-            self.undefined_funcs.push(term_name.to_string());
-
             // If we don't have an annotation for the term, treat it as an uninterpreted
             // function
             // NOTE: for now, we get subterm types based on matching on ISLE type names.
@@ -189,13 +198,11 @@ impl<'ctx> AssumptionContext<'ctx> {
                 Box::new(ty.clone()),
             );
             let func = BoundVar::new(term_name, &func_ty);
-            ty.apply(func.as_expr(), args)
+            
+            // Add to our list of undefined terms for this side
+            T::add_undefined_term(&func, self);
 
-            // TODO: branching vs OR for multiple matching rules?
-            // eventually: might be cool to choose based on number
-            //     specializing this could be _before_ the SMT
-            //     often will be mutually exclusive
-            //      3rd option: morally the same thing: do conceptual inlining at the IR level first
+            ty.apply(func.as_expr(), args)
         }
     }
 
@@ -264,10 +271,29 @@ impl<'ctx> AssumptionContext<'ctx> {
             typeenv,
             var_map: HashMap::new(),
             ident_map: HashMap::new(),
-            undefined_funcs: vec![],
+            lhs_undefined_terms: vec![],
+            rhs_undefined_terms: vec![],
             type_ctx: TypeContext::new(termenv, typeenv, ty.clone()),
         };
         let expr = ctx.lhs_to_assumptions(lhs, ty);
         (ctx, expr)
+    }
+
+    pub fn interp_rule(
+        rule: &isle::sema::Rule,
+        termenv: &TermEnv,
+        typeenv: &TypeEnv,
+        ty: &VIRType,
+    ) -> RuleSemantics {
+        let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
+        let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, ty);
+        RuleSemantics {
+            lhs, 
+            rhs,
+            assumptions: assumption_ctx.assumptions.iter().map(|a| a.assume().clone()).collect(), 
+            quantified_vars: assumption_ctx.quantified_vars.clone(),
+            lhs_undefined_terms: assumption_ctx.lhs_undefined_terms, 
+            rhs_undefined_terms: assumption_ctx.rhs_undefined_terms,
+        }
     }
 }

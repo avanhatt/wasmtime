@@ -169,8 +169,8 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn var(s: &String) -> Expr {
-        Expr::Var(s.clone())
+    pub fn var(s: &str) -> Expr {
+        Expr::Var(s.to_string())
     }
 
     pub fn unary<F: Fn(Box<Expr>) -> Expr>(f: F, x: Expr) -> Expr {
