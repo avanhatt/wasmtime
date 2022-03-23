@@ -46,6 +46,8 @@ pub struct TermSignature {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TermAnnotation {
     pub sig: TermSignature,
+    // Note: extra Box for now for ease of parsing
+    #[allow(clippy::vec_box)]
     pub assertions: Vec<Box<Expr>>,
 }
 
@@ -115,6 +117,8 @@ pub struct Function {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionApplication {
     pub func: Box<Expr>,
+    // Note: extra Box for now for ease of parsing
+    #[allow(clippy::vec_box)]
     pub args: Vec<Box<Expr>>,
 }
 
@@ -164,6 +168,8 @@ pub enum Expr {
 
     Function(Function),
     FunctionApplication(FunctionApplication),
+    // Note: extra Box for now for ease of parsing
+    #[allow(clippy::vec_box)]
     List(Vec<Box<Expr>>),
     GetElement(Box<Expr>, usize),
 }
