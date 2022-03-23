@@ -10,18 +10,15 @@ grammar;
 UNum: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
 Num: i128 = <s:r"-?[0-9]+i">  => i128::from_str(&s[..s.len() - 1]).unwrap();
 
-// Exclude "bv" to avoid confusion with type bv
 Ident: String = {
-    <s:r"[A-Za-z]"> => s.to_string(),
-    <s:r"[A-Zac-z][\.\w]+"> => s.to_string(),
-    <s:r"b[\w&&[^v]][\.\w]*"> => s.to_string(),
+      <s:r"[A-Za-z][\.\w]*"> => s.to_string(),
 };
 
 pub Type: Type = {
     "bv" => Type::BitVector,
     "bvlist" "(" <length:UNum> ")" => Type::BitVectorList(length),
     "isleType" => Type::Int,
-    "(" <f:FunctionType> ")" => Type::Function(f),
+    <f:FunctionType> => Type::Function(f),
     "bool" => Type::Bool,
 };
 
@@ -50,7 +47,7 @@ TypeList = Comma<Type>;
 ExprList = Comma<Expr>;
 
 pub TermSignature: TermSignature = {
-    "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
+    "(" "sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
         TermSignature{args: a, ret: r},
 };
 
@@ -60,7 +57,7 @@ pub FunctionType: FunctionType = {
 };
 
 pub Const: Const = {
-    <v:Num> ":" <t:Type> => Const{ty: t, value: v},
+    <v:Num> <n:UNum> ":" <t:Type> => Const{ty: t, value: v},
 };
 
 pub Function: Function = {
@@ -73,7 +70,7 @@ pub FunctionApplication: FunctionApplication = {
 };
 
 pub Expr: Box<Expr> = {
-    "(" "var" <n:Ident> ")" => Box::new(Expr::Var(n)), 
+    "(" <n:Ident> ")" => Box::new(Expr::Var(n)), 
     "(" <c:Const> ")" => Box::new(Expr::Const(c)),
     "(" "true" ")" => Box::new(Expr::True),
     "(" "false" ")" => Box::new(Expr::False),
@@ -94,7 +91,7 @@ pub Expr: Box<Expr> = {
     "(" "&" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAnd(u, v)),
 
     "(" "zero_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVZeroExt(n, v)),
-    "(" "siin_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
+    "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v)),
     "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
