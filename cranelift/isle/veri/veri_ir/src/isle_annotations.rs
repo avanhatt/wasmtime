@@ -1,6 +1,6 @@
 /// This file will be replaced by a parser that consumes annotations and produces
 /// the same type of structure, but for now, manually construct these annotations.
-use veri_ir::annotation_ir::{
+use crate::annotation_ir::{
     BoundVar, Const, Expr, Function, FunctionApplication, FunctionType, TermAnnotation,
     TermSignature, Type,
 };
@@ -36,7 +36,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
 
             let app = Expr::FunctionApplication(FunctionApplication {
                 func: Box::new(opcode.as_expr()),
-                args: vec![arg_list.as_expr()],
+                args: vec![Box::new(arg_list.as_expr())],
             });
             let eq = Expr::binary(Expr::Eq, app, result.as_expr());
 
@@ -61,7 +61,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let arg2 = BoundVar::new("arg2");
             let result = BoundVar::new("ret");
 
-            let ls = Expr::List(vec![arg1.as_expr(), arg2.as_expr()]);
+            let ls = Expr::List(vec![Box::new(arg1.as_expr()), Box::new(arg2.as_expr())]);
             let eq = Expr::binary(Expr::Eq, ls, result.as_expr());
 
             let func = TermSignature {

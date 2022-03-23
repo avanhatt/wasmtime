@@ -4,6 +4,7 @@
 //! 
 //! Note: annotations use the higher-level IR in annotation_ir.rs.
 pub mod annotation_ir;
+pub mod isle_annotations;
 
 use std::collections::HashMap;
 
@@ -26,17 +27,17 @@ pub struct RuleSemantics {
     // RuleTree has a child for every RHS_UT
     // Leaves of the tree have empty RHS_UT
 pub struct RuleTree {
-    value: RuleSemantics,
+    _value: RuleSemantics,
     // maybe want an RC cell instead of a Box
-    children: HashMap<BoundVar, Box<RuleTree>>
+    _children: HashMap<BoundVar, Box<RuleTree>>
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
 /// signature and a list of assertions.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VIRTermAnnotation {
-    sig: VIRTermSignature,
-    assertions: Vec<VIRExpr>,
+    pub sig: VIRTermSignature,
+    pub assertions: Vec<VIRExpr>,
 }
 
 impl VIRTermAnnotation {

@@ -1,0 +1,112 @@
+use std::str::FromStr;
+
+use veri_ir as ast;
+use ast::annotation_ir::*;
+
+// DO NOT FORGET TO CHANGE THE EXTENSION!!!
+
+grammar;
+
+UNum: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
+Num: i128 = <s:r"-?[0-9]+i">  => i128::from_str(&s[..s.len() - 1]).unwrap();
+
+// Exclude "bv" to avoid confusion with type bv
+Ident: String = {
+    <s:r"[A-Za-z]"> => s.to_string(),
+    <s:r"[A-Zac-z][\.\w]+"> => s.to_string(),
+    <s:r"b[\w&&[^v]][\.\w]*"> => s.to_string(),
+};
+
+pub Type: Type = {
+    "bv" => Type::BitVector,
+    "bvlist" "(" <length:UNum> ")" => Type::BitVectorList(length),
+    "isleType" => Type::Int,
+    "(" <f:FunctionType> ")" => Type::Function(f),
+    "bool" => Type::Bool,
+};
+
+pub BoundVar: BoundVar = {
+    <i: Ident> => BoundVar{name: i, ty: None},
+    <i:Ident> ":" <t:Type> => BoundVar{name: i, ty: Some(t)},
+};
+
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+ArgList = Comma<BoundVar>;
+Args: Vec<BoundVar> = {
+    "(args" <a:ArgList> ")" => a,
+};
+
+TypeList = Comma<Type>;
+
+ExprList = Comma<Expr>;
+
+pub TermSignature: TermSignature = {
+    "(sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
+        TermSignature{args: a, ret: r},
+};
+
+pub FunctionType: FunctionType = {
+    "func" "(" <a:TypeList> ")" "(" <r:Type> ")" =>
+        FunctionType{args: a, ret: Box::new(r)},
+};
+
+pub Const: Const = {
+    <v:Num> ":" <t:Type> => Const{ty: t, value: v},
+};
+
+pub Function: Function = {
+    <n:Ident> "(" <a:ArgList> ")" "(" <t:Type> ")" "{" <b:Expr> "}" =>
+        Function{name: n, ty: t, args: a, body: b},
+};
+
+pub FunctionApplication: FunctionApplication = {
+    <f:Expr> "(" <x:ExprList> ")" => FunctionApplication{func: f, args: x},
+};
+
+pub Expr: Box<Expr> = {
+    "(" "var" <n:Ident> ")" => Box::new(Expr::Var(n)), 
+    "(" <c:Const> ")" => Box::new(Expr::Const(c)),
+    "(" "true" ")" => Box::new(Expr::True),
+    "(" "false" ")" => Box::new(Expr::False),
+    "(" "tywidth" ")" => Box::new(Expr::TyWidth),
+
+    "(" "!" <u:Expr> ")" => Box::new(Expr::Not(u)),
+    "(" "&&" <u:Expr> <v:Expr> ")" => Box::new(Expr::And(u, v)),
+    "(" "||" <u:Expr> <v:Expr> ")" => Box::new(Expr::Or(u, v)),
+    "(" "=>" <u:Expr> <v:Expr> ")" => Box::new(Expr::Imp(u, v)),
+    "(" "=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Eq(u, v)),
+    "(" "<=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lte(u, v)),
+
+    "(" "-" <u:Expr> ")" => Box::new(Expr::BVNeg(u)),
+    "(" "~" <u:Expr> ")" => Box::new(Expr::BVNot(u)),
+
+    "(" "+" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAdd(u, v)),
+    "(" "-" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSub(u, v)),
+    "(" "&" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAnd(u, v)),
+
+    "(" "zero_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVZeroExt(n, v)),
+    "(" "siin_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
+    "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
+        Box::new(Expr::BVExtract(s, t, v)),
+    "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
+    "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v)),
+
+    "(" <f:Function> ")" => Box::new(Expr::Function(f)),
+    "(" <a:FunctionApplication> ")" => Box::new(Expr::FunctionApplication(a)),
+    "(" <e:ExprList> ")" => Box::new(Expr::List(e)),
+    "(" "get" <u:Expr> <n:UNum> ")" => Box::new(Expr::GetElement(u, n)),
+};
+
+pub TermAnnotation: TermAnnotation = {
+    "(" "spec" <s:TermSignature> "(" "assertions" <a:ExprList> ")" ")" =>
+        TermAnnotation {sig: s, assertions: a},
+};

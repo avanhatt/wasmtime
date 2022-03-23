@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use veri_ir::{annotation_ir, Function, FunctionApplication};
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
-use crate::isle_annotations::isle_annotation_for_term;
+use veri_ir::isle_annotations::isle_annotation_for_term;
 use cranelift_isle as isle;
 use isle::sema::{TermEnv, TypeEnv, TypeId};
 
