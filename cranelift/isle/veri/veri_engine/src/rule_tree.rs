@@ -3,12 +3,11 @@ use std::collections::HashMap;
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use itertools::Itertools;
-use veri_ir::{all_starting_bitvectors, RuleSemantics, VIRType};
-use veri_ir::{BoundVar, RuleTree};
+use veri_ir::{all_starting_bitvectors, VIRType, VIRExpr, RuleSemantics, BoundVar, RuleTree};
 
 use crate::interp::AssumptionContext;
 use crate::pattern_term_name;
-use crate::verify_rule_for_type;
+use crate::solver::run_solver_rule_path;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
 /// terms on the left hand sides (LHS) and right hand sides (RHS). 
@@ -70,6 +69,28 @@ pub fn build_rule_tree_rec(
     }
 }
 
+/// Enumerate all paths from root to leaves. Note: this is not optimized for
+/// efficiency, values are cloned for each path.
+pub fn enumerate_paths_to_leaves(tree: &RuleTree) -> Vec<Vec<RuleSemantics>> {
+    // Leaf base case
+    if tree.children.is_empty() {
+        return vec![vec![tree.value.clone()]]
+    }
+
+    let child_paths= tree.children.iter().map(|(_, child)| 
+        enumerate_paths_to_leaves(child)
+    );
+
+    // Add this node
+    child_paths.map(|paths| {
+        paths.iter().map(|path| {
+            let mut p = path.clone();
+            p.insert(0, tree.value.clone());
+            p
+        }).collect::<Vec<Vec<RuleSemantics>>>()
+    }).flatten().collect()
+}
+
 pub fn build_rule_tree_from_root(
     rule: &Rule,
     termenv: &TermEnv,
@@ -98,6 +119,12 @@ pub fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeE
     for ty in all_starting_bitvectors() {
         for rule in rules_with_lhs_root(root, termenv, typeenv) {
             let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, &ty);
+            let paths = enumerate_paths_to_leaves(&rule_tree);
+            for rule_path in paths {
+                let result = run_solver_rule_path(rule_path);
+
+            }
+            // dbg!(paths.iter().map(|sem| sem.lhs.clone()).collect::<Vec<VIRExpr>>());
             // dbg!(rule_tree);
             // let _res = verify_rule_for_type(&rule, termenv, typeenv, &ty);
         }

@@ -185,7 +185,7 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-pub fn run_solver(rule_sem: RuleSemantics, _ty: &VIRType) -> VerificationResult {
+pub fn run_solver_single_rule(rule_sem: RuleSemantics, _ty: &VIRType) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in rule_sem.quantified_vars {
@@ -256,3 +256,90 @@ pub fn run_solver(rule_sem: RuleSemantics, _ty: &VIRType) -> VerificationResult 
         }
     }
 }
+
+pub fn run_solver_rule_path(mut rule_path: Vec<RuleSemantics>) -> VerificationResult {
+    let mut solver = Solver::default_z3(()).unwrap();
+
+    let mut assumptions: Vec<String> = vec![];
+    for rule_sem in &rule_path {
+        println!("Declaring constants:");
+        for v in &rule_sem.quantified_vars {
+            let name = v.name.clone();
+            let ty = &v.ty;
+            match ty.clone() {
+                VIRType::Function(args, ret) => {
+                    println!("\tFUNCTION {} : {:?}", name, ty);
+                    let arg_tys: Vec<String> =
+                        args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
+                    solver
+                        .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
+                        .unwrap();
+                }
+                _ => {
+                    let var_ty = vir_to_rsmt2_constant_ty(ty);
+                    println!("\t{} : {:?}", name, ty);
+                    solver.declare_const(name, var_ty).unwrap();
+                }
+            }
+        }
+        println!("Declaring uninterpreted functions:");
+        for a in &rule_sem.assumptions {
+            declare_uninterp_functions(a.clone(), &mut solver);
+        }
+
+        println!("Adding assumptions:");
+        for a in &rule_sem.assumptions {
+            let p = vir_expr_to_rsmt2_str(a.clone());
+            println!("\t{}", p);
+            assumptions.push(p)
+        }
+    
+        let assumption_str = format!("(and {})", assumptions.join(" "));
+    
+        // Check whether the assumptions are possible
+        if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
+            println!("Rule not applicable as written for rule assumptions, skipping full query");
+            return VerificationResult::InapplicableRule;
+        }
+    }
+
+    // Try query structure: move all equalities but the first to assumptions
+    let root_rule= rule_path.remove(0);
+
+    for next_rule in rule_path {
+        let lhs_s = vir_expr_to_rsmt2_str(next_rule.lhs);
+        let rhs_s = vir_expr_to_rsmt2_str(next_rule.rhs);
+        let equality = format!("(= {} {})", lhs_s, rhs_s);
+        assumptions.push(equality)
+    }
+    let assumption_str = format!("(and {})", assumptions.join(" "));
+    if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
+        println!("Rule not applicable as written for PATH assumptions, skipping full query");
+        return VerificationResult::InapplicableRule;
+    }
+
+    // Correctness query
+    let lhs_s = vir_expr_to_rsmt2_str(root_rule.lhs);
+    let rhs_s = vir_expr_to_rsmt2_str(root_rule.rhs);
+
+    let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
+    println!("Running query:\n\t{}\n", query);
+    solver.assert(query).unwrap();
+
+    match solver.check_sat() {
+        Ok(true) => {
+            println!("Verification failed");
+            let model = solver.get_model().unwrap();
+            dbg!(model);
+            VerificationResult::Failure(Counterexample {})
+        }
+        Ok(false) => {
+            println!("Verification succeeded");
+            VerificationResult::Success
+        }
+        Err(err) => {
+            unreachable!("Error! {:?}", err);
+        }
+    }
+}
+

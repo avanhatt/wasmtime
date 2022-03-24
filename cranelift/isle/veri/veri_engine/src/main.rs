@@ -9,7 +9,7 @@ use veri_ir::{VIRType, VerificationResult};
 
 use crate::interp::AssumptionContext;
 use crate::rule_tree::verify_rules_with_lhs_root;
-use crate::solver::run_solver;
+use crate::solver::run_solver_single_rule;
 
 mod interp;
 mod renaming;
@@ -45,7 +45,7 @@ fn verify_rule_for_type(
     assert!(ty.is_bv());
     let mut ctx = AssumptionContext::new(termenv, typeenv, ty);
     let rule_semantics = ctx.interp_rule(rule);
-    run_solver(rule_semantics, ty)
+    run_solver_single_rule(rule_semantics, ty)
 }
 
 fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
@@ -89,6 +89,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use veri_ir::all_starting_bitvectors;
 
     fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
         let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
