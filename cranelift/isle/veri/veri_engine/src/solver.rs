@@ -4,7 +4,7 @@
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
 use std::collections::HashSet;
-use veri_ir::{Counterexample, VIRExpr, VIRType, VerificationResult, RuleSemantics};
+use veri_ir::{Counterexample, RuleSemantics, VIRExpr, VIRType, VerificationResult};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
@@ -185,10 +185,7 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-pub fn run_solver(
-    rule_sem: RuleSemantics,
-    _ty: &VIRType,
-) -> VerificationResult {
+pub fn run_solver(rule_sem: RuleSemantics, _ty: &VIRType) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in rule_sem.quantified_vars {

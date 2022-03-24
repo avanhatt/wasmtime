@@ -1,9 +1,9 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
-use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRType, RuleSemantics};
+use veri_ir::{BoundVar, RuleSemantics, VIRExpr, VIRTermAnnotation, VIRType};
 
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
@@ -198,7 +198,7 @@ impl<'ctx> AssumptionContext<'ctx> {
                 Box::new(ty.clone()),
             );
             let func = BoundVar::new(term_name, &func_ty);
-            
+
             // Add to our list of undefined terms for this side
             T::add_undefined_term(&func, self);
 
@@ -248,7 +248,7 @@ impl<'ctx> AssumptionContext<'ctx> {
                 let bound_var = self.var_map.get(varid).unwrap();
                 bound_var.ty.bv_var(bound_var.name.clone())
             }
-            _ => unimplemented!(),
+            _ => unimplemented!("{:?}", expr),
         }
     }
 
@@ -257,14 +257,12 @@ impl<'ctx> AssumptionContext<'ctx> {
         self.interp_pattern(pattern, ty)
     }
 
-    /// Construct the term environment from the AST and the type environment.
-    pub fn from_lhs(
-        lhs: &Pattern,
+    pub fn new(
         termenv: &'ctx TermEnv,
         typeenv: &'ctx TypeEnv,
         ty: &VIRType,
-    ) -> (AssumptionContext<'ctx>, VIRExpr) {
-        let mut ctx = AssumptionContext {
+    ) -> AssumptionContext<'ctx> {
+        AssumptionContext {
             quantified_vars: vec![],
             assumptions: vec![],
             termenv,
@@ -274,26 +272,31 @@ impl<'ctx> AssumptionContext<'ctx> {
             lhs_undefined_terms: vec![],
             rhs_undefined_terms: vec![],
             type_ctx: TypeContext::new(termenv, typeenv, ty.clone()),
-        };
-        let expr = ctx.lhs_to_assumptions(lhs, ty);
-        (ctx, expr)
+        }
     }
 
-    pub fn interp_rule(
-        rule: &isle::sema::Rule,
-        termenv: &TermEnv,
-        typeenv: &TypeEnv,
-        ty: &VIRType,
-    ) -> RuleSemantics {
-        let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
-        let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, ty);
+    pub fn interp_rule(&mut self, rule: &isle::sema::Rule) -> RuleSemantics {
+        let ty = self.type_ctx.ty.clone();
+        let lhs = self.lhs_to_assumptions(&rule.lhs, &ty);
+        let rhs = self.interp_sema_expr(&rule.rhs, &ty);
+
+        // Drain rule-specific fields (TODO: make this cleaner)
+        let assumptions = self
+            .assumptions
+            .drain(..)
+            .map(|a| a.assume().clone())
+            .collect();
+        let quantified_vars = self.quantified_vars.drain(..).collect();
+        let lhs_undefined_terms = self.lhs_undefined_terms.drain(..).collect();
+        let rhs_undefined_terms = self.rhs_undefined_terms.drain(..).collect();
+
         RuleSemantics {
-            lhs, 
+            lhs,
             rhs,
-            assumptions: assumption_ctx.assumptions.iter().map(|a| a.assume().clone()).collect(), 
-            quantified_vars: assumption_ctx.quantified_vars.clone(),
-            lhs_undefined_terms: assumption_ctx.lhs_undefined_terms, 
-            rhs_undefined_terms: assumption_ctx.rhs_undefined_terms,
+            assumptions,
+            quantified_vars,
+            lhs_undefined_terms,
+            rhs_undefined_terms,
         }
     }
 }

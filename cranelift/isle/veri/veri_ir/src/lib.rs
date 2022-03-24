@@ -10,9 +10,8 @@ use std::collections::HashMap;
 
 /// Packaged semantics for a single rule, included metadata on which terms
 /// are not yet defined.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RuleSemantics {
-    // Maybe need?
-    // pub lhs_term: BoundVar,
     pub lhs: VIRExpr,
     pub rhs: VIRExpr,
 
@@ -23,13 +22,14 @@ pub struct RuleSemantics {
     pub rhs_undefined_terms: Vec<BoundVar>,
 }
 
-// invariants: exists some RuleSemantics s.t. LHS_UT is empty
-    // RuleTree has a child for every RHS_UT
-    // Leaves of the tree have empty RHS_UT
+/// A structure linking rules that share intermediate terms. A path from a root
+/// RuleSemantics to a leaf of the tree represents a valid rewriting if all
+/// assumptions along the path are feasible.
+#[derive(Clone, Debug)]
 pub struct RuleTree {
-    _value: RuleSemantics,
+    pub value: RuleSemantics,
     // maybe want an RC cell instead of a Box
-    _children: HashMap<BoundVar, Box<RuleTree>>
+    pub children: HashMap<BoundVar, RuleTree>
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
@@ -79,7 +79,7 @@ pub struct FunctionApplication {
     pub args: Vec<VIRExpr>,
 }
 /// A bound variable, including the VIR type
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct BoundVar {
     pub name: String,
     pub ty: VIRType,
@@ -96,7 +96,7 @@ impl BoundVar {
 }
 
 /// Verification type
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum VIRType {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -326,11 +326,11 @@ impl VIRType {
 pub fn all_starting_bitvectors() -> Vec<VIRType> {
     vec![
         VIRType::BitVector(1),
-        VIRType::BitVector(8),
-        VIRType::BitVector(16),
-        VIRType::BitVector(32),
-        VIRType::BitVector(64),
-        VIRType::BitVector(128),
+        // VIRType::BitVector(8),
+        // VIRType::BitVector(16),
+        // VIRType::BitVector(32),
+        // VIRType::BitVector(64),
+        // VIRType::BitVector(128),
     ]
 }
 

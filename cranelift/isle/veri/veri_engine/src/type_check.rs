@@ -4,18 +4,18 @@ use std::collections::HashMap;
 use veri_ir::{annotation_ir, Function, FunctionApplication};
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
-use veri_ir::isle_annotations::isle_annotation_for_term;
 use cranelift_isle as isle;
 use isle::sema::{TermEnv, TypeEnv, TypeId};
+use veri_ir::isle_annotations::isle_annotation_for_term;
 
 #[derive(Clone, Debug)]
 pub struct TypeContext<'ctx> {
+    // Default bitvector type
+    pub ty: VIRType,
+
     // Pointers to ISLE environments
     termenv: &'ctx TermEnv,
     typeenv: &'ctx TypeEnv,
-
-    // Default bitvector type
-    ty: VIRType,
 
     // Map of bound variables to types
     var_types: HashMap<String, VIRType>,
@@ -48,6 +48,11 @@ impl<'ctx> TypeContext<'ctx> {
                 vec![VIRType::BitVectorList(2, self.ty.width())],
                 Box::new(self.ty.clone()),
             ),
+            // (decl alu_rrr (ALUOp Type Reg Reg) Reg)
+            "ALUOp" => VIRType::Function(
+                vec![VIRType::Int, self.ty.clone(), self.ty.clone()],
+                Box::new(self.ty.clone()),
+            ),
             "ValueArray2" => VIRType::BitVectorList(2, self.ty.width()),
             "Reg" | "Inst" | "Value" | "InstructionData" => self.ty.clone(),
             _ => unimplemented!("ty: {}", clif_name),
@@ -55,22 +60,32 @@ impl<'ctx> TypeContext<'ctx> {
     }
 
     fn compatible_types(high_level: &Option<annotation_ir::Type>, vir: &VIRType) -> bool {
-            match (high_level, vir) {
-                (None, _) => true,
-                (Some(annotation_ir::Type::Bool), VIRType::Bool) => true,
-                (Some(annotation_ir::Type::Int), VIRType::Int) => true,
-                (Some(annotation_ir::Type::BitVector), VIRType::BitVector(..)) => true,
-                (Some(annotation_ir::Type::BitVectorList(l1)), VIRType::BitVectorList(l2, _)) => *l1 == *l2,
-                (Some(annotation_ir::Type::Function(func)), VIRType::Function(args, ret)) => {
-                    func.args.iter().zip(args).all(|(a1, a2)| Self::compatible_types(&Some(a1.clone()), a2))
-                    && Self::compatible_types(&Some(*func.ret.clone()), &*ret)
-                }
-                _ => false,
+        match (high_level, vir) {
+            (None, _) => true,
+            (Some(annotation_ir::Type::Bool), VIRType::Bool) => true,
+            (Some(annotation_ir::Type::Int), VIRType::Int) => true,
+            (Some(annotation_ir::Type::BitVector), VIRType::BitVector(..)) => true,
+            (Some(annotation_ir::Type::BitVectorList(l1)), VIRType::BitVectorList(l2, _)) => {
+                *l1 == *l2
             }
+            (Some(annotation_ir::Type::Function(func)), VIRType::Function(args, ret)) => {
+                func.args
+                    .iter()
+                    .zip(args)
+                    .all(|(a1, a2)| Self::compatible_types(&Some(a1.clone()), a2))
+                    && Self::compatible_types(&Some(*func.ret.clone()), &*ret)
+            }
+            _ => false,
+        }
     }
 
     fn type_bound_var(&mut self, v: &annotation_ir::BoundVar, ty: VIRType) -> BoundVar {
-        assert!(Self::compatible_types(&v.ty, &ty), "Incompatible high level and VIR types ({:?}. {:?})", v.ty, ty);
+        assert!(
+            Self::compatible_types(&v.ty, &ty),
+            "Incompatible high level and VIR types ({:?}. {:?})",
+            v.ty,
+            ty
+        );
         self.var_types.insert(v.name.clone(), ty.clone());
         BoundVar {
             name: v.name.clone(),

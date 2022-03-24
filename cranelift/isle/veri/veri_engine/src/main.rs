@@ -5,13 +5,15 @@ use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
-use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
+use veri_ir::{VIRType, VerificationResult};
 
 use crate::interp::AssumptionContext;
+use crate::rule_tree::verify_rules_with_lhs_root;
 use crate::solver::run_solver;
 
 mod interp;
 mod renaming;
+mod rule_tree;
 mod solver;
 mod type_check;
 
@@ -41,7 +43,8 @@ fn verify_rule_for_type(
 ) -> VerificationResult {
     // For now, starting types must be bitvectors
     assert!(ty.is_bv());
-    let rule_semantics = AssumptionContext::interp_rule(rule, termenv, typeenv, ty);
+    let mut ctx = AssumptionContext::new(termenv, typeenv, ty);
+    let rule_semantics = ctx.interp_rule(rule);
     run_solver(rule_semantics, ty)
 }
 
@@ -52,16 +55,6 @@ fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> 
             typeenv.syms[term.name.index()].clone()
         }
         _ => unreachable!("Must be term"),
-    }
-}
-
-fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeEnv) {
-    for ty in all_starting_bitvectors() {
-        for rule in &termenv.rules {
-            if pattern_term_name(rule.lhs.clone(), termenv, typeenv) == root {
-                let _res = verify_rule_for_type(rule, termenv, typeenv, &ty);
-            }
-        }
     }
 }
 
@@ -289,11 +282,11 @@ mod tests {
         let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
         let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
         let input = PathBuf::from("./examples/iadd.isle");
-    
+
         let inputs = vec![clif_isle, prelude_isle, input];
-    
+
         let (termenv, typeenv) = isle_files_to_terms(inputs);
-    
+
         // For now, verify rules rooted in `lower`
         verify_rules_with_lhs_root("lower", &termenv, &typeenv)
     }
