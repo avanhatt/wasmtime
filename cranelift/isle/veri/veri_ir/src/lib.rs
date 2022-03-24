@@ -29,7 +29,8 @@ pub struct RuleSemantics {
 pub struct RuleTree {
     pub value: RuleSemantics,
     // maybe want an RC cell instead of a Box
-    pub children: HashMap<BoundVar, RuleTree>
+    pub children: HashMap<BoundVar, RuleTree>,
+    pub height: usize,
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
