@@ -33,6 +33,12 @@ pub fn build_rule_tree_rec(
 
     let mut children: HashMap<BoundVar, RuleTree> = HashMap::new();
     for t in rule_sem.rhs_undefined_terms.clone().into_iter().unique() {
+        let next_rules = rules_with_lhs_root(&t.name, termenv, typeenv);
+        assert!(
+            !next_rules.is_empty(),
+            "Missing annotation or next rules for unknown term  {:?}",
+            t.name
+        );
         for next_rule in rules_with_lhs_root(&t.name, termenv, typeenv) {
             let child =
                 build_rule_tree_rec(ctx, &next_rule, termenv, typeenv, ty, depth + 1, max_depth);
@@ -74,7 +80,7 @@ pub fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeE
     for ty in all_starting_bitvectors() {
         for rule in rules_with_lhs_root(root, termenv, typeenv) {
             let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, &ty);
-            dbg!(rule_tree);
+            // dbg!(rule_tree);
             // let _res = verify_rule_for_type(&rule, termenv, typeenv, &ty);
         }
     }

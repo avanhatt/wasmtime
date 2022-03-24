@@ -46,6 +46,31 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             };
             Some(TermAnnotation::new(func, vec![eq]))
         }
+        "alu_rrr" => {
+            let t = BoundVar::new("ty");
+            let a = BoundVar::new("a");
+            let b = BoundVar::new("b");
+            let r = BoundVar::new("r");
+            let opcode = BoundVar::new_with_ty(
+                "opcode",
+                &Type::Function(FunctionType {
+                    args: vec![Type::Int, Type::BitVector, Type::BitVector],
+                    ret: Box::new(Type::BitVector),
+                }),
+            );
+
+            let app = Expr::FunctionApplication(FunctionApplication {
+                func: Box::new(opcode.as_expr()),
+                args: vec![Box::new(t.as_expr()), Box::new(a.as_expr()), Box::new(b.as_expr())],
+            });
+            let eq = Expr::binary(Expr::Eq, app, r.as_expr());
+
+            let func = TermSignature {
+                args: vec![opcode, t, a, b],
+                ret: r,
+            };
+            Some(TermAnnotation::new(func, vec![eq]))
+        }
         "value_type" => {
             let arg = BoundVar::new("arg");
             let result = BoundVar::new("ret");
@@ -130,6 +155,29 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 args: vec![value_list],
                 ty: Type::Function(FunctionType {
                     args: vec![Type::BitVectorList(2)],
+                    ret: Box::new(Type::BitVector),
+                }),
+                body: Box::new(body),
+            });
+            let body_semantics = Expr::binary(Expr::Eq, r.as_expr(), func_expr);
+            // The opcode itself takes no arguments
+            let func = TermSignature {
+                args: vec![],
+                ret: r,
+            };
+            Some(TermAnnotation::new(func, vec![body_semantics]))
+        }
+        "ALUOp.Add" => {
+            let t = BoundVar::new("ty");
+            let a = BoundVar::new("a");
+            let b = BoundVar::new("b");
+            let r = BoundVar::new("r");
+            let body = Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr());
+            let func_expr = Expr::Function(Function {
+                name: "ALUOp.Add".to_string(),
+                args: vec![t, a, b],
+                ty: Type::Function(FunctionType {
+                    args: vec![Type::Int, Type::BitVector, Type::BitVector],
                     ret: Box::new(Type::BitVector),
                 }),
                 body: Box::new(body),
