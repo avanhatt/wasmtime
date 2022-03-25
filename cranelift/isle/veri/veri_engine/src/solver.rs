@@ -4,7 +4,7 @@
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
 use std::collections::HashSet;
-use veri_ir::{Counterexample, RuleSemantics, VIRExpr, VIRType, VerificationResult};
+use veri_ir::{Counterexample, RuleSemantics, VIRExpr, VIRType, VerificationResult, RulePath};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
@@ -155,8 +155,6 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
                 )
                 .unwrap();
 
-            println!("\t{} : {:?}", func.name, func.ty);
-
             let args = func
                 .args
                 .iter()
@@ -176,6 +174,8 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
                 arg_names,
                 vir_expr_to_rsmt2_str(*func.body.clone())
             );
+
+            println!("\t{} : {:?}\n\t\t{}", func.name, func.ty, defn);
             solver.assert(defn).unwrap();
         }
     };
@@ -257,11 +257,31 @@ pub fn run_solver_single_rule(rule_sem: RuleSemantics, _ty: &VIRType) -> Verific
     }
 }
 
-pub fn run_solver_rule_path(mut rule_path: Vec<RuleSemantics>) -> VerificationResult {
+pub fn run_solver_rule_path(mut rule_path: RulePath) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
 
     let mut assumptions: Vec<String> = vec![];
-    for rule_sem in &rule_path {
+
+    for v in rule_path.undefined_terms {
+        let name = v.name.clone();
+        let ty = &v.ty;
+        match ty.clone() {
+            VIRType::Function(args, ret) => {
+                println!("\tFUNCTION {} : {:?}", name, ty);
+                let arg_tys: Vec<String> =
+                    args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
+                solver
+                    .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
+                    .unwrap();
+            }
+            _ => {
+                let var_ty = vir_to_rsmt2_constant_ty(ty);
+                println!("\t{} : {:?}", name, ty);
+                solver.declare_const(name, var_ty).unwrap();
+            }
+        }
+    }
+    for rule_sem in &rule_path.rules {
         println!("Declaring constants:");
         for v in &rule_sem.quantified_vars {
             let name = v.name.clone();
@@ -304,12 +324,13 @@ pub fn run_solver_rule_path(mut rule_path: Vec<RuleSemantics>) -> VerificationRe
     }
 
     // Try query structure: move all equalities but the first to assumptions
-    let root_rule= rule_path.remove(0);
+    let root_rule= rule_path.rules.remove(0);
 
-    for next_rule in rule_path {
+    for next_rule in rule_path.rules {
         let lhs_s = vir_expr_to_rsmt2_str(next_rule.lhs);
         let rhs_s = vir_expr_to_rsmt2_str(next_rule.rhs);
         let equality = format!("(= {} {})", lhs_s, rhs_s);
+        dbg!(&equality);
         assumptions.push(equality)
     }
     let assumption_str = format!("(and {})", assumptions.join(" "));

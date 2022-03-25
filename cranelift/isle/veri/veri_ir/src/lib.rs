@@ -22,6 +22,13 @@ pub struct RuleSemantics {
     pub rhs_undefined_terms: Vec<BoundVar>,
 }
 
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RulePath {
+    pub rules: Vec<RuleSemantics>,
+    pub undefined_terms: Vec<BoundVar>
+}
+
 /// A structure linking rules that share intermediate terms. A path from a root
 /// RuleSemantics to a leaf of the tree represents a valid rewriting if all
 /// assumptions along the path are feasible.

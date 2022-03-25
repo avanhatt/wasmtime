@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use itertools::Itertools;
-use veri_ir::{all_starting_bitvectors, VIRType, VIRExpr, RuleSemantics, BoundVar, RuleTree};
+use veri_ir::{all_starting_bitvectors, VIRType, VIRExpr, RuleSemantics, BoundVar, RuleTree, RulePath};
 
 use crate::interp::AssumptionContext;
 use crate::pattern_term_name;
@@ -71,24 +71,27 @@ pub fn build_rule_tree_rec(
 
 /// Enumerate all paths from root to leaves. Note: this is not optimized for
 /// efficiency, values are cloned for each path.
-pub fn enumerate_paths_to_leaves(tree: &RuleTree) -> Vec<Vec<RuleSemantics>> {
+pub fn enumerate_paths_to_leaves(tree: &RuleTree) -> Vec<RulePath> {
     // Leaf base case
     if tree.children.is_empty() {
-        return vec![vec![tree.value.clone()]]
+        return vec![RulePath {
+            rules: vec![tree.value.clone()],
+            undefined_terms: vec![],
+        }]
     }
 
-    let child_paths= tree.children.iter().map(|(_, child)| 
-        enumerate_paths_to_leaves(child)
-    );
-
-    // Add this node
-    child_paths.map(|paths| {
-        paths.iter().map(|path| {
-            let mut p = path.clone();
-            p.insert(0, tree.value.clone());
-            p
-        }).collect::<Vec<Vec<RuleSemantics>>>()
-    }).flatten().collect()
+    let mut all_paths = vec![];
+    for (term, child) in &tree.children {
+        let paths = enumerate_paths_to_leaves(&child);
+        for path in paths {
+            let mut rules = path.rules.clone();
+            rules.insert(0, tree.value.clone());
+            let mut undefined_terms = path.undefined_terms.clone();
+            undefined_terms.insert(0, term.clone());
+            all_paths.push(RulePath {rules, undefined_terms})
+        }
+    }
+    all_paths
 }
 
 pub fn build_rule_tree_from_root(
