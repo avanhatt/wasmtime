@@ -18,15 +18,16 @@ pub struct RuleSemantics {
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<VIRExpr>,
 
-    pub lhs_undefined_terms: Vec<BoundVar>,
-    pub rhs_undefined_terms: Vec<BoundVar>,
+    pub lhs_undefined_terms: Vec<UndefinedTerm>,
+    pub rhs_undefined_terms: Vec<UndefinedTerm>,
 }
 
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RulePath {
     pub rules: Vec<RuleSemantics>,
-    pub undefined_terms: Vec<BoundVar>
+    pub lhs_undefined_terms: Vec<UndefinedTerm>,
+    pub rhs_undefined_terms: Vec<UndefinedTerm>,
 }
 
 /// A structure linking rules that share intermediate terms. A path from a root
@@ -101,6 +102,14 @@ impl BoundVar {
             ty: ty.clone(),
         }
     }
+}
+
+/// An ISLE term that does not yet have a defined semantics (that is, a
+/// term that has no annotation). 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UndefinedTerm {
+    pub term: BoundVar,
+    pub args: Vec<VIRExpr>,
 }
 
 /// Verification type

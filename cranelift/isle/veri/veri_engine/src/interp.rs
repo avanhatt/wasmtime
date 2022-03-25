@@ -1,7 +1,7 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
-use veri_ir::{BoundVar, RuleSemantics, VIRExpr, VIRTermAnnotation, VIRType};
+use veri_ir::{BoundVar, RuleSemantics, VIRExpr, VIRTermAnnotation, VIRType, UndefinedTerm};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -16,7 +16,7 @@ trait ToVIRExpr {
 
     fn type_id(&self) -> TypeId;
 
-    fn add_undefined_term(term: &BoundVar, ctx: &mut AssumptionContext);
+    fn add_undefined_term(term: &BoundVar, args: Vec<VIRExpr>, ctx: &mut AssumptionContext);
 }
 
 /// Type for term arguments for ISLE LHS terms.
@@ -35,8 +35,11 @@ impl ToVIRExpr for TermArgPattern {
         }
     }
 
-    fn add_undefined_term(term: &BoundVar, ctx: &mut AssumptionContext) {
-        ctx.lhs_undefined_terms.push(term.clone())
+    fn add_undefined_term(term: &BoundVar, args: Vec<VIRExpr>, ctx: &mut AssumptionContext) {
+        ctx.lhs_undefined_terms.push(UndefinedTerm{
+            term: term.clone(),
+            args,
+        })
     }
 }
 
@@ -50,8 +53,11 @@ impl ToVIRExpr for isle::sema::Expr {
         self.ty()
     }
 
-    fn add_undefined_term(term: &BoundVar, ctx: &mut AssumptionContext) {
-        ctx.rhs_undefined_terms.push(term.clone())
+    fn add_undefined_term(term: &BoundVar, args: Vec<VIRExpr>, ctx: &mut AssumptionContext) {
+        ctx.rhs_undefined_terms.push(UndefinedTerm{
+            term: term.clone(),
+            args,
+        })
     }
 }
 
@@ -88,8 +94,8 @@ pub struct AssumptionContext<'ctx> {
     ident_map: HashMap<String, i32>,
 
     // Yet-to-be-define uninterpreted functions
-    lhs_undefined_terms: Vec<BoundVar>,
-    rhs_undefined_terms: Vec<BoundVar>,
+    lhs_undefined_terms: Vec<UndefinedTerm>,
+    rhs_undefined_terms: Vec<UndefinedTerm>,
 
     // For type checking
     type_ctx: TypeContext<'ctx>,
@@ -200,7 +206,7 @@ impl<'ctx> AssumptionContext<'ctx> {
             let func = BoundVar::new(term_name, &func_ty);
 
             // Add to our list of undefined terms for this side
-            T::add_undefined_term(&func, self);
+            T::add_undefined_term(&func, args.clone(), self);
 
             ty.apply(func.as_expr(), args)
         }

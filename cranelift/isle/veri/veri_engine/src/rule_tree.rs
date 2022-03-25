@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use itertools::Itertools;
-use veri_ir::{all_starting_bitvectors, VIRType, VIRExpr, RuleSemantics, BoundVar, RuleTree, RulePath};
+use veri_ir::{all_starting_bitvectors, VIRType, BoundVar, RuleTree, RulePath, UndefinedTerm};
 
 use crate::interp::AssumptionContext;
 use crate::pattern_term_name;
@@ -41,8 +41,12 @@ pub fn build_rule_tree_rec(
     // rule. Also track the height of the tree.
     let mut children: HashMap<BoundVar, RuleTree> = HashMap::new();
     let mut max_height = 0;
-    for t in rule_sem.rhs_undefined_terms.clone().into_iter().unique() {
-        let next_rules = rules_with_lhs_root(&t.name, termenv, typeenv);
+
+    // TODO: need more complicated logic for multiple undefined terms
+    assert!(rule_sem.rhs_undefined_terms.len() <= 1);
+
+    for t in rule_sem.rhs_undefined_terms.clone().into_iter().unique_by(|x| x.term.clone()) {
+        let next_rules = rules_with_lhs_root(&t.term.name, termenv, typeenv);
 
         // Since we are not at a leaf node (because there are undefined terms
         // on the RHS), we need next rules for any of the terms currently 
@@ -50,15 +54,15 @@ pub fn build_rule_tree_rec(
         assert!(
             !next_rules.is_empty(),
             "Missing annotation or next rules for unknown term  {:?}",
-            t.name
+            t.term.name
         );
-        for next_rule in rules_with_lhs_root(&t.name, termenv, typeenv) {
+        for next_rule in rules_with_lhs_root(&t.term.name, termenv, typeenv) {
             let child =
                 build_rule_tree_rec(ctx, &next_rule, termenv, typeenv, ty, depth + 1, max_depth);
             if child.height > max_height {
                 max_height = child.height;
             }
-            children.insert(t.clone(), child);
+            children.insert(t.term.clone(), child);
         }
     }
 
@@ -74,11 +78,15 @@ pub fn build_rule_tree_rec(
 pub fn enumerate_paths_to_leaves(tree: &RuleTree) -> Vec<RulePath> {
     // Leaf base case
     if tree.children.is_empty() {
+        assert_eq!(tree.value.lhs_undefined_terms.len(), 1);
         return vec![RulePath {
             rules: vec![tree.value.clone()],
-            undefined_terms: vec![],
+            lhs_undefined_terms: tree.value.lhs_undefined_terms.clone(),
+            rhs_undefined_terms: vec![],
         }]
     }
+
+    let lhs: Option<&UndefinedTerm> = tree.value.lhs_undefined_terms.first();
 
     let mut all_paths = vec![];
     for (term, child) in &tree.children {
@@ -86,9 +94,13 @@ pub fn enumerate_paths_to_leaves(tree: &RuleTree) -> Vec<RulePath> {
         for path in paths {
             let mut rules = path.rules.clone();
             rules.insert(0, tree.value.clone());
-            let mut undefined_terms = path.undefined_terms.clone();
+            let mut lhs_undefined_terms = path.lhs_undefined_terms.clone();
+            let mut rhs_undefined_terms = path.rhs_undefined_terms.clone();
             undefined_terms.insert(0, term.clone());
-            all_paths.push(RulePath {rules, undefined_terms})
+            all_paths.push(
+                RulePath {
+                    rules, 
+                    undefined_terms})
         }
     }
     all_paths
