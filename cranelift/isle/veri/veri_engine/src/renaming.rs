@@ -1,6 +1,8 @@
 /// This file handles renaming bound variables in assumption expressions,
 /// which is necessary to use annotations that might share variable names.
-use veri_ir::{BoundVar, FunctionApplication, VIRExpr, VIRTermAnnotation, VIRTermSignature};
+use veri_ir::{
+    BoundVar, FunctionApplication, UndefinedTerm, VIRExpr, VIRTermAnnotation, VIRTermSignature,
+};
 
 pub fn rename_annotation_vars<F>(a: VIRTermAnnotation, rename: F) -> VIRTermAnnotation
 where
@@ -50,6 +52,11 @@ where
             ty: app.ty,
             func: f(app.func),
             args: map_f(app.args),
+        }),
+        VIRExpr::UndefinedTerm(term) => VIRExpr::UndefinedTerm(UndefinedTerm {
+            name: term.name,
+            ret: term.ret,
+            args: map_f(term.args),
         }),
         VIRExpr::List(ty, xs) => VIRExpr::List(ty, map_f(xs)),
         VIRExpr::GetElement(ty, ls, i) => VIRExpr::GetElement(ty, f(ls), i),

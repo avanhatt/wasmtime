@@ -1,7 +1,7 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
-use veri_ir::{BoundVar, RuleSemantics, VIRExpr, VIRTermAnnotation, VIRType, UndefinedTerm};
+use veri_ir::{BoundVar, RuleSemantics, UndefinedTerm, VIRExpr, VIRTermAnnotation, VIRType};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -16,7 +16,7 @@ trait ToVIRExpr {
 
     fn type_id(&self) -> TypeId;
 
-    fn add_undefined_term(term: &BoundVar, args: Vec<VIRExpr>, ctx: &mut AssumptionContext);
+    fn add_undefined_term(term: UndefinedTerm, ctx: &mut AssumptionContext);
 }
 
 /// Type for term arguments for ISLE LHS terms.
@@ -35,11 +35,13 @@ impl ToVIRExpr for TermArgPattern {
         }
     }
 
-    fn add_undefined_term(term: &BoundVar, args: Vec<VIRExpr>, ctx: &mut AssumptionContext) {
-        ctx.lhs_undefined_terms.push(UndefinedTerm{
-            term: term.clone(),
-            args,
-        })
+    fn add_undefined_term(term: UndefinedTerm, ctx: &mut AssumptionContext) {
+        assert!(
+            !ctx.lhs_undefined_terms.contains_key(&term.name),
+            "Duplicate undefined terms on LHS currently unsupported: {}",
+            term.name
+        );
+        ctx.lhs_undefined_terms.insert(term.name.clone(), term);
     }
 }
 
@@ -53,11 +55,13 @@ impl ToVIRExpr for isle::sema::Expr {
         self.ty()
     }
 
-    fn add_undefined_term(term: &BoundVar, args: Vec<VIRExpr>, ctx: &mut AssumptionContext) {
-        ctx.rhs_undefined_terms.push(UndefinedTerm{
-            term: term.clone(),
-            args,
-        })
+    fn add_undefined_term(term: UndefinedTerm, ctx: &mut AssumptionContext) {
+        assert!(
+            !ctx.rhs_undefined_terms.contains_key(&term.name),
+            "Duplicate undefined terms on RHS currently unsupported: {}",
+            term.name
+        );
+        ctx.rhs_undefined_terms.insert(term.name.clone(), term);
     }
 }
 
@@ -94,8 +98,8 @@ pub struct AssumptionContext<'ctx> {
     ident_map: HashMap<String, i32>,
 
     // Yet-to-be-define uninterpreted functions
-    lhs_undefined_terms: Vec<UndefinedTerm>,
-    rhs_undefined_terms: Vec<UndefinedTerm>,
+    lhs_undefined_terms: HashMap<String, UndefinedTerm>,
+    rhs_undefined_terms: HashMap<String, UndefinedTerm>,
 
     // For type checking
     type_ctx: TypeContext<'ctx>,
@@ -110,10 +114,10 @@ impl<'ctx> AssumptionContext<'ctx> {
     }
 
     /// Produce a new bound variable with unique name, and add it to our quantified variables
-    fn new_var(&mut self, root: &str, ty: &VIRType, varid: &VarId) -> BoundVar {
+    fn new_var(&mut self, root: &str, ty: &VIRType) -> BoundVar {
         let ident = self.new_ident(root);
         let var = BoundVar::new(&ident, ty);
-        self.var_map.insert(*varid, var.clone());
+        // self.var_map.insert(*varid, var.clone());
         self.quantified_vars.push(var.clone());
         var
     }
@@ -199,16 +203,16 @@ impl<'ctx> AssumptionContext<'ctx> {
                 let subexpr = subterm.to_expr(self, &vir_ty);
                 args.push(subexpr);
             }
-            let func_ty = VIRType::Function(
-                args.iter().map(|a| a.ty().clone()).collect(),
-                Box::new(ty.clone()),
-            );
-            let func = BoundVar::new(term_name, &func_ty);
 
+            let ret = self.new_var(&term_name, &ty);
+            let undef = UndefinedTerm {
+                name: term_name.to_string(),
+                ret,
+                args,
+            };
             // Add to our list of undefined terms for this side
-            T::add_undefined_term(&func, args.clone(), self);
-
-            ty.apply(func.as_expr(), args)
+            T::add_undefined_term(undef.clone(), self);
+            VIRExpr::UndefinedTerm(undef)
         }
     }
 
@@ -216,7 +220,11 @@ impl<'ctx> AssumptionContext<'ctx> {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
             Pattern::BindPattern(_, varid, subpat) => match **subpat {
-                Pattern::Wildcard(..) => VIRExpr::Var(self.new_var("x", ty, varid)),
+                Pattern::Wildcard(..) => {
+                    let var = self.new_var("x", ty);
+                    self.var_map.insert(*varid, var.clone());
+                    VIRExpr::Var(var)
+                }
                 _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
             },
             Pattern::Term(_, termid, arg_patterns) => {
@@ -275,8 +283,8 @@ impl<'ctx> AssumptionContext<'ctx> {
             typeenv,
             var_map: HashMap::new(),
             ident_map: HashMap::new(),
-            lhs_undefined_terms: vec![],
-            rhs_undefined_terms: vec![],
+            lhs_undefined_terms: HashMap::new(),
+            rhs_undefined_terms: HashMap::new(),
             type_ctx: TypeContext::new(termenv, typeenv, ty.clone()),
         }
     }
@@ -293,8 +301,8 @@ impl<'ctx> AssumptionContext<'ctx> {
             .map(|a| a.assume().clone())
             .collect();
         let quantified_vars = self.quantified_vars.drain(..).collect();
-        let lhs_undefined_terms = self.lhs_undefined_terms.drain(..).collect();
-        let rhs_undefined_terms = self.rhs_undefined_terms.drain(..).collect();
+        let lhs_undefined_terms = self.lhs_undefined_terms.drain().map(|(_, t)| t).collect();
+        let rhs_undefined_terms = self.rhs_undefined_terms.drain().map(|(_, t)| t).collect();
 
         RuleSemantics {
             lhs,

@@ -88,6 +88,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             format!("({} {})", func_name, args.join(" "))
         }
         VIRExpr::Function(func) => func.name,
+        VIRExpr::UndefinedTerm(term) => term.ret.name,
         VIRExpr::List(_, args) => {
             // Implement lists as concatenations of bitvectors
             // For now, assume length 2
@@ -257,28 +258,21 @@ pub fn run_solver_single_rule(rule_sem: RuleSemantics, _ty: &VIRType) -> Verific
     }
 }
 
-pub fn run_solver_rule_path(mut rule_path: RulePath) -> VerificationResult {
+pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
 
     let mut assumptions: Vec<String> = vec![];
+    let mut between_rule_assumptions: Vec<String> = vec![];
 
-    for v in rule_path.undefined_terms {
-        let name = v.name.clone();
-        let ty = &v.ty;
-        match ty.clone() {
-            VIRType::Function(args, ret) => {
-                println!("\tFUNCTION {} : {:?}", name, ty);
-                let arg_tys: Vec<String> =
-                    args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
-                solver
-                    .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
-                    .unwrap();
-            }
-            _ => {
-                let var_ty = vir_to_rsmt2_constant_ty(ty);
-                println!("\t{} : {:?}", name, ty);
-                solver.declare_const(name, var_ty).unwrap();
-            }
+    for (v1, v2) in rule_path.undefined_term_pairs {
+        let equality = format!("(= {} {})", v1.ret.name, v2.ret.name);
+        between_rule_assumptions.push(equality);
+        assert_eq!(v1.args.len(), v2.args.len());
+        for (a1, a2) in v1.args.iter().zip(&v2.args) {
+            let a1_s = vir_expr_to_rsmt2_str(a1.clone());
+            let a2_s = vir_expr_to_rsmt2_str(a2.clone());
+            let equality = format!("(= {} {})", a1_s, a2_s);
+            between_rule_assumptions.push(equality)
         }
     }
     for rule_sem in &rule_path.rules {
@@ -323,16 +317,9 @@ pub fn run_solver_rule_path(mut rule_path: RulePath) -> VerificationResult {
         }
     }
 
-    // Try query structure: move all equalities but the first to assumptions
-    let root_rule= rule_path.rules.remove(0);
-
-    for next_rule in rule_path.rules {
-        let lhs_s = vir_expr_to_rsmt2_str(next_rule.lhs);
-        let rhs_s = vir_expr_to_rsmt2_str(next_rule.rhs);
-        let equality = format!("(= {} {})", lhs_s, rhs_s);
-        dbg!(&equality);
-        assumptions.push(equality)
-    }
+    println!("Adding assumptions on relationship between rules");
+    assumptions.append(&mut between_rule_assumptions);
+    
     let assumption_str = format!("(and {})", assumptions.join(" "));
     if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
         println!("Rule not applicable as written for PATH assumptions, skipping full query");
@@ -340,10 +327,11 @@ pub fn run_solver_rule_path(mut rule_path: RulePath) -> VerificationResult {
     }
 
     // Correctness query
-    let lhs_s = vir_expr_to_rsmt2_str(root_rule.lhs);
-    let rhs_s = vir_expr_to_rsmt2_str(root_rule.rhs);
+    // Verification condition: first rule's LHS and final rule's RHS are equal
+    let first_lhs = vir_expr_to_rsmt2_str(rule_path.rules.first().unwrap().lhs.clone());
+    let last_rhs = vir_expr_to_rsmt2_str(rule_path.rules.last().unwrap().rhs.clone());
 
-    let query = format!("(not (=> {} (= {} {})))", assumption_str, lhs_s, rhs_s);
+    let query = format!("(not (=> {} (= {} {})))", assumption_str, first_lhs, last_rhs);
     println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 

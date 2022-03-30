@@ -17,7 +17,7 @@ pub struct RuleSemantics {
 
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<VIRExpr>,
-
+    //  TODO: sanity check uniqueness
     pub lhs_undefined_terms: Vec<UndefinedTerm>,
     pub rhs_undefined_terms: Vec<UndefinedTerm>,
 }
@@ -26,8 +26,7 @@ pub struct RuleSemantics {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RulePath {
     pub rules: Vec<RuleSemantics>,
-    pub lhs_undefined_terms: Vec<UndefinedTerm>,
-    pub rhs_undefined_terms: Vec<UndefinedTerm>,
+    pub undefined_term_pairs: Vec<(UndefinedTerm, UndefinedTerm)>,
 }
 
 /// A structure linking rules that share intermediate terms. A path from a root
@@ -37,7 +36,7 @@ pub struct RulePath {
 pub struct RuleTree {
     pub value: RuleSemantics,
     // maybe want an RC cell instead of a Box
-    pub children: HashMap<BoundVar, RuleTree>,
+    pub children: HashMap<BoundVar, Vec<RuleTree>>,
     pub height: usize,
 }
 
@@ -108,7 +107,8 @@ impl BoundVar {
 /// term that has no annotation). 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UndefinedTerm {
-    pub term: BoundVar,
+    pub name: String,
+    pub ret: BoundVar,
     pub args: Vec<VIRExpr>,
 }
 
@@ -173,10 +173,16 @@ pub enum VIRExpr {
     BVSignExt(VIRType, usize, Box<VIRExpr>),
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
 
+    // Functions
     Function(Function),
     FunctionApplication(FunctionApplication),
+
+    // Lists
     List(VIRType, Vec<VIRExpr>),
     GetElement(VIRType, Box<VIRExpr>, usize),
+
+    // Undefined terms
+    UndefinedTerm(UndefinedTerm)
 }
 
 impl VIRExpr {
@@ -193,6 +199,7 @@ impl VIRExpr {
             VIRExpr::BVSignExt(t, _, _) => t,
             VIRExpr::BVExtract(t, _, _, _) => t,
             VIRExpr::Function(func) => &func.ty,
+            VIRExpr::UndefinedTerm(term) => &term.ret.ty,
             VIRExpr::FunctionApplication(app) => &app.ty,
             VIRExpr::List(t, _) => t,
             VIRExpr::GetElement(t, _, _) => t,
@@ -226,23 +233,24 @@ impl VIRExpr {
             | VIRExpr::BVAdd(_, x, y)
             | VIRExpr::BVSub(_, x, y)
             | VIRExpr::BVAnd(_, x, y) => {
-                func(self);
                 (*x).for_each_subexpr(func);
                 (*y).for_each_subexpr(func)
             }
             VIRExpr::Function(f) => {
-                func(self);
                 f.body.for_each_subexpr(func)
             }
+            VIRExpr::UndefinedTerm(t) => {
+                for arg in &t.args {
+                    arg.for_each_subexpr(func)
+                }
+            }
             VIRExpr::FunctionApplication(app) => {
-                func(self);
                 (*app.func).for_each_subexpr(func);
                 for arg in &app.args {
                     arg.for_each_subexpr(func)
                 }
             }
             VIRExpr::List(_, xs) => {
-                func(self);
                 xs.iter().for_each(|x| x.for_each_subexpr(func))
             }
         }
@@ -328,9 +336,9 @@ impl VIRType {
         }
     }
 
-    pub fn function_ret_type(&self) -> VIRType {
+    pub fn function_ret_type(&self) -> &VIRType {
         match self {
-            VIRType::Function(_, ret) => *ret.clone(),
+            VIRType::Function(_, ret) => &*ret,
             _ => unreachable!("Expected function type, got {:?}", self),
         }
     }
@@ -343,11 +351,11 @@ impl VIRType {
 pub fn all_starting_bitvectors() -> Vec<VIRType> {
     vec![
         VIRType::BitVector(1),
-        // VIRType::BitVector(8),
-        // VIRType::BitVector(16),
-        // VIRType::BitVector(32),
-        // VIRType::BitVector(64),
-        // VIRType::BitVector(128),
+        VIRType::BitVector(8),
+        VIRType::BitVector(16),
+        VIRType::BitVector(32),
+        VIRType::BitVector(64),
+        VIRType::BitVector(128),
     ]
 }
 

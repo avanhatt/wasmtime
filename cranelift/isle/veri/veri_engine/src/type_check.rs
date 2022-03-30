@@ -259,7 +259,7 @@ impl<'ctx> TypeContext<'ctx> {
                     assert_eq!(*a.ty(), func.ty().function_arg_types()[i]);
                 }
                 VIRExpr::FunctionApplication(FunctionApplication {
-                    ty: func.ty().function_ret_type(),
+                    ty: func.ty().function_ret_type().clone(),
                     func,
                     args,
                 })
