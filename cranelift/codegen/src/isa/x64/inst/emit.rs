@@ -1104,33 +1104,6 @@ pub(crate) fn emit(
             }
         }
 
-        Inst::CmoveOr {
-            size,
-            cc1,
-            cc2,
-            consequent,
-            alternative,
-            dst,
-        } => {
-            let first_cmove = Inst::Cmove {
-                cc: *cc1,
-                size: *size,
-                consequent: consequent.clone(),
-                alternative: alternative.clone(),
-                dst: dst.clone(),
-            };
-            first_cmove.emit(sink, info, state);
-
-            let second_cmove = Inst::Cmove {
-                cc: *cc2,
-                size: *size,
-                consequent: consequent.clone(),
-                alternative: alternative.clone(),
-                dst: dst.clone(),
-            };
-            second_cmove.emit(sink, info, state);
-        }
-
         Inst::XmmCmove {
             size,
             cc,
@@ -1157,39 +1130,6 @@ pub(crate) fn emit(
             inst.emit(sink, info, state);
 
             sink.bind_label(next);
-        }
-
-        Inst::XmmCmoveOr {
-            size,
-            cc1,
-            cc2,
-            consequent,
-            alternative,
-            dst,
-        } => {
-            debug_assert_eq!(*alternative, dst.to_reg());
-
-            let op = if *size == OperandSize::Size64 {
-                SseOpcode::Movsd
-            } else {
-                SseOpcode::Movss
-            };
-            let second_test = sink.get_label();
-            let next_instruction = sink.get_label();
-
-            // Jump to second test if `cc1` is *not* set.
-            one_way_jmp(sink, cc1.invert(), next_instruction);
-            let inst =
-                Inst::xmm_unary_rm_r(op, consequent.clone().to_reg_mem(), dst.to_writable_reg());
-            inst.emit(sink, info, state);
-            sink.bind_label(second_test);
-
-            // Jump to next instruction if `cc2` is *not* set.
-            one_way_jmp(sink, cc2.invert(), next_instruction);
-            let inst =
-                Inst::xmm_unary_rm_r(op, consequent.clone().to_reg_mem(), dst.to_writable_reg());
-            inst.emit(sink, info, state);
-            sink.bind_label(next_instruction);
         }
 
         Inst::Push64 { src } => {
@@ -1756,8 +1696,11 @@ pub(crate) fn emit(
             size,
             is_min,
             lhs,
-            rhs_dst,
+            rhs,
+            dst,
         } => {
+            debug_assert_eq!(*rhs, dst.to_reg());
+
             // Generates the following sequence:
             // cmpss/cmpsd %lhs, %rhs_dst
             // jnz do_min_max
@@ -1807,8 +1750,7 @@ pub(crate) fn emit(
                 _ => unreachable!(),
             };
 
-            let inst =
-                Inst::xmm_cmp_rm_r(cmp_op, RegMem::reg(lhs.to_reg()), rhs_dst.to_reg().to_reg());
+            let inst = Inst::xmm_cmp_rm_r(cmp_op, RegMem::reg(lhs.to_reg()), dst.to_reg().to_reg());
             inst.emit(sink, info, state);
 
             one_way_jmp(sink, CC::NZ, do_min_max);
@@ -1818,7 +1760,7 @@ pub(crate) fn emit(
             // and negative zero. These instructions merge the sign bits in that
             // case, and are no-ops otherwise.
             let op = if *is_min { or_op } else { and_op };
-            let inst = Inst::xmm_rm_r(op, RegMem::reg(lhs.to_reg()), rhs_dst.to_writable_reg());
+            let inst = Inst::xmm_rm_r(op, RegMem::reg(lhs.to_reg()), dst.to_writable_reg());
             inst.emit(sink, info, state);
 
             let inst = Inst::jmp_known(done);
@@ -1828,17 +1770,13 @@ pub(crate) fn emit(
             // read-only operand: perform an addition between the two operands, which has the
             // desired NaN propagation effects.
             sink.bind_label(propagate_nan);
-            let inst = Inst::xmm_rm_r(add_op, RegMem::reg(lhs.to_reg()), rhs_dst.to_writable_reg());
+            let inst = Inst::xmm_rm_r(add_op, RegMem::reg(lhs.to_reg()), dst.to_writable_reg());
             inst.emit(sink, info, state);
 
             one_way_jmp(sink, CC::P, done);
 
             sink.bind_label(do_min_max);
-            let inst = Inst::xmm_rm_r(
-                min_max_op,
-                RegMem::reg(lhs.to_reg()),
-                rhs_dst.to_writable_reg(),
-            );
+            let inst = Inst::xmm_rm_r(min_max_op, RegMem::reg(lhs.to_reg()), dst.to_writable_reg());
             inst.emit(sink, info, state);
 
             sink.bind_label(done);

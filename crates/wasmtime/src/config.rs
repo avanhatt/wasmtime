@@ -15,10 +15,7 @@ use wasmtime_jit::{JitDumpAgent, NullProfilerAgent, ProfilingAgent, VTuneAgent};
 use wasmtime_runtime::{InstanceAllocator, OnDemandInstanceAllocator, RuntimeMemoryCreator};
 
 #[cfg(feature = "pooling-allocator")]
-mod pooling;
-
-#[cfg(feature = "pooling-allocator")]
-pub use self::pooling::*;
+pub use wasmtime_runtime::{InstanceLimits, PoolingAllocationStrategy};
 
 /// Represents the module instance allocation strategy to use.
 #[derive(Clone)]
@@ -39,8 +36,6 @@ pub enum InstanceAllocationStrategy {
     Pooling {
         /// The allocation strategy to use.
         strategy: PoolingAllocationStrategy,
-        /// The module limits to use.
-        module_limits: ModuleLimits,
         /// The instance limits to use.
         instance_limits: InstanceLimits,
     },
@@ -52,7 +47,6 @@ impl InstanceAllocationStrategy {
     pub fn pooling() -> Self {
         Self::Pooling {
             strategy: PoolingAllocationStrategy::default(),
-            module_limits: ModuleLimits::default(),
             instance_limits: InstanceLimits::default(),
         }
     }
@@ -106,6 +100,7 @@ pub struct Config {
     pub(crate) paged_memory_initialization: bool,
     pub(crate) memory_init_cow: bool,
     pub(crate) memory_guaranteed_dense_image_size: u64,
+    pub(crate) force_memory_init_memfd: bool,
 }
 
 impl Config {
@@ -121,7 +116,15 @@ impl Config {
             profiler: Arc::new(NullProfilerAgent),
             mem_creator: None,
             allocation_strategy: InstanceAllocationStrategy::OnDemand,
-            max_wasm_stack: 1 << 20,
+            // 512k of stack -- note that this is chosen currently to not be too
+            // big, not be too small, and be a good default for most platforms.
+            // One platform of particular note is Windows where the stack size
+            // of the main thread seems to, by default, be smaller than that of
+            // Linux and macOS. This 512k value at least lets our current test
+            // suite pass on the main thread of Windows (using `--test-threads
+            // 1` forces this), or at least it passed when this change was
+            // committed.
+            max_wasm_stack: 512 * 1024,
             wasm_backtrace_details_env_used: false,
             features: WasmFeatures::default(),
             #[cfg(feature = "async")]
@@ -133,13 +136,16 @@ impl Config {
             paged_memory_initialization: cfg!(all(target_os = "linux", feature = "uffd")),
             memory_init_cow: true,
             memory_guaranteed_dense_image_size: 16 << 20,
+            force_memory_init_memfd: false,
         };
         #[cfg(compiler)]
         {
             ret.cranelift_debug_verifier(false);
             ret.cranelift_opt_level(OptLevel::Speed);
         }
+        #[cfg(feature = "wasm-backtrace")]
         ret.wasm_reference_types(true);
+        ret.features.reference_types = cfg!(feature = "wasm-backtrace");
         ret.wasm_multi_value(true);
         ret.wasm_bulk_memory(true);
         ret.wasm_simd(true);
@@ -255,16 +261,6 @@ impl Config {
     ///   and the periodic yields with epochs should ensure that when the
     ///   timeout is reached it's appropriately recognized.
     ///
-    /// * Finally you can spawn futures into a thread pool. By doing this in a
-    ///   thread pool you are relaxing the requirement that `Future::poll` must
-    ///   be fast because your future is executing on a separate thread. This
-    ///   strategy, however, would likely still require some form of
-    ///   cancellation via [`Config::epoch_interruption`] or
-    ///   [`crate::Store::interrupt_handle`] to ensure wasm doesn't take *too*
-    ///   long to execute. This solution is generally not recommended for its
-    ///   complexity and instead one of the previous solutions should likely be
-    ///   used.
-    ///
     /// In all cases special care needs to be taken when integrating
     /// asynchronous wasm into your application. You should carefully plan where
     /// WebAssembly will execute and what compute resources will be allotted to
@@ -312,27 +308,13 @@ impl Config {
         self
     }
 
-    /// Configures whether functions and loops will be interruptable via the
-    /// [`Store::interrupt_handle`](crate::Store::interrupt_handle) method.
-    ///
-    /// For more information see the documentation on
-    /// [`Store::interrupt_handle`](crate::Store::interrupt_handle).
-    ///
-    /// By default this option is `false`.
-    pub fn interruptable(&mut self, enable: bool) -> &mut Self {
-        self.tunables.interruptable = enable;
-        self
-    }
-
     /// Configures whether execution of WebAssembly will "consume fuel" to
     /// either halt or yield execution as desired.
     ///
-    /// This option is similar in purpose to [`Config::interruptable`] where
-    /// you can prevent infinitely-executing WebAssembly code. The difference
-    /// is that this option allows deterministic execution of WebAssembly code
-    /// by instrumenting generated code consume fuel as it executes. When fuel
-    /// runs out the behavior is defined by configuration within a [`Store`],
-    /// and by default a trap is raised.
+    /// This can be used to deterministically prevent infinitely-executing
+    /// WebAssembly code by instrumenting generated code to consume fuel as it
+    /// executes. When fuel runs out the behavior is defined by configuration
+    /// within a [`Store`], and by default a trap is raised.
     ///
     /// Note that a [`Store`] starts with no fuel, so if you enable this option
     /// you'll have to be sure to pour some fuel into [`Store`] before
@@ -450,7 +432,7 @@ impl Config {
     /// on stack overflow, a host function that overflows the stack will
     /// abort the process.
     ///
-    /// By default this option is 1 MiB.
+    /// By default this option is 512 KiB.
     pub fn max_wasm_stack(&mut self, size: usize) -> Result<&mut Self> {
         #[cfg(feature = "async")]
         if size > self.async_stack_size {
@@ -524,10 +506,14 @@ impl Config {
     /// Note that enabling the reference types feature will also enable the bulk
     /// memory feature.
     ///
-    /// This is `true` by default on x86-64, and `false` by default on other
-    /// architectures.
+    /// This feature is `true` by default. If the `wasm-backtrace` feature is
+    /// disabled at compile time, however, then this is `false` by default and
+    /// it cannot be turned on since GC currently requires backtraces to work.
+    /// Note that the `wasm-backtrace` feature is on by default, however.
     ///
     /// [proposal]: https://github.com/webassembly/reference-types
+    #[cfg(feature = "wasm-backtrace")]
+    #[cfg_attr(nightlydoc, doc(cfg(feature = "wasm-backtrace")))]
     pub fn wasm_reference_types(&mut self, enable: bool) -> &mut Self {
         self.features.reference_types = enable;
 
@@ -613,20 +599,6 @@ impl Config {
     /// [proposal]: https://github.com/webassembly/multi-memory
     pub fn wasm_multi_memory(&mut self, enable: bool) -> &mut Self {
         self.features.multi_memory = enable;
-        self
-    }
-
-    /// Configures whether the WebAssembly module linking [proposal] will
-    /// be enabled for compilation.
-    ///
-    /// Note that development of this feature is still underway, so enabling
-    /// this is likely to be full of bugs.
-    ///
-    /// This is `false` by default.
-    ///
-    /// [proposal]: https://github.com/webassembly/module-linking
-    pub fn wasm_module_linking(&mut self, enable: bool) -> &mut Self {
-        self.features.module_linking = enable;
         self
     }
 
@@ -1224,6 +1196,33 @@ impl Config {
         self
     }
 
+    /// A configuration option to force the usage of `memfd_create` on Linux to
+    /// be used as the backing source for a module's initial memory image.
+    ///
+    /// When [`Config::memory_init_cow`] is enabled, which is enabled by
+    /// default, module memory initialization images are taken from a module's
+    /// original mmap if possible. If a precompiled module was loaded from disk
+    /// this means that the disk's file is used as an mmap source for the
+    /// initial linear memory contents. This option can be used to force, on
+    /// Linux, that instead of using the original file on disk a new in-memory
+    /// file is created with `memfd_create` to hold the contents of the initial
+    /// image.
+    ///
+    /// This option can be used to avoid possibly loading the contents of memory
+    /// from disk through a page fault. Instead with `memfd_create` the contents
+    /// of memory are always in RAM, meaning that even page faults which
+    /// initially populate a wasm linear memory will only work with RAM instead
+    /// of ever hitting the disk that the original precompiled module is stored
+    /// on.
+    ///
+    /// This option is disabled by default.
+    #[cfg(feature = "memory-init-cow")]
+    #[cfg_attr(nightlydoc, doc(cfg(feature = "memory-init-cow")))]
+    pub fn force_memory_init_memfd(&mut self, enable: bool) -> &mut Self {
+        self.force_memory_init_memfd = enable;
+        self
+    }
+
     /// Configures the "guaranteed dense image size" for copy-on-write
     /// initialized memories.
     ///
@@ -1281,12 +1280,10 @@ impl Config {
             #[cfg(feature = "pooling-allocator")]
             InstanceAllocationStrategy::Pooling {
                 strategy,
-                module_limits,
                 instance_limits,
             } => Ok(Box::new(wasmtime_runtime::PoolingInstanceAllocator::new(
-                strategy.into(),
-                module_limits.into(),
-                instance_limits.into(),
+                strategy,
+                instance_limits,
                 stack_size,
                 &self.tunables,
             )?)),
@@ -1296,9 +1293,20 @@ impl Config {
 
 #[cfg(compiler)]
 fn compiler_builder(strategy: Strategy) -> Result<Box<dyn CompilerBuilder>> {
-    match strategy {
-        Strategy::Auto | Strategy::Cranelift => Ok(wasmtime_cranelift::builder()),
-    }
+    let mut builder = match strategy {
+        Strategy::Auto | Strategy::Cranelift => wasmtime_cranelift::builder(),
+    };
+    builder
+        .set(
+            "unwind_info",
+            if cfg!(feature = "wasm-backtrace") {
+                "true"
+            } else {
+                "false"
+            },
+        )
+        .unwrap();
+    Ok(builder)
 }
 
 fn round_up_to_pages(val: u64) -> u64 {
@@ -1337,6 +1345,7 @@ impl Clone for Config {
             paged_memory_initialization: self.paged_memory_initialization,
             memory_init_cow: self.memory_init_cow,
             memory_guaranteed_dense_image_size: self.memory_guaranteed_dense_image_size,
+            force_memory_init_memfd: self.force_memory_init_memfd,
         }
     }
 }
@@ -1351,7 +1360,6 @@ impl fmt::Debug for Config {
             .field("wasm_bulk_memory", &self.features.bulk_memory)
             .field("wasm_simd", &self.features.simd)
             .field("wasm_multi_value", &self.features.multi_value)
-            .field("wasm_module_linking", &self.features.module_linking)
             .field(
                 "static_memory_maximum_size",
                 &(u64::from(self.tunables.static_memory_bound)
