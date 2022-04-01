@@ -2,6 +2,7 @@ use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRType, RuleSemantics};
+use veri_annotation::parser_wrapper::{AnnotationEnv};
 
 use std::{collections::HashMap};
 use std::fmt::Debug;
@@ -93,6 +94,9 @@ pub struct AssumptionContext<'ctx> {
 
     // For type checking
     type_ctx: TypeContext<'ctx>,
+
+    // For annotations
+    annotation_env: &'ctx AnnotationEnv,
 }
 
 impl<'ctx> AssumptionContext<'ctx> {
@@ -262,6 +266,7 @@ impl<'ctx> AssumptionContext<'ctx> {
         lhs: &Pattern,
         termenv: &'ctx TermEnv,
         typeenv: &'ctx TypeEnv,
+        annotation_env: &'ctx AnnotationEnv,
         ty: &VIRType,
     ) -> (AssumptionContext<'ctx>, VIRExpr) {
         let mut ctx = AssumptionContext {
@@ -273,7 +278,8 @@ impl<'ctx> AssumptionContext<'ctx> {
             ident_map: HashMap::new(),
             lhs_undefined_terms: vec![],
             rhs_undefined_terms: vec![],
-            type_ctx: TypeContext::new(termenv, typeenv, ty.clone()),
+            type_ctx: TypeContext::new(termenv, typeenv, annotation_env, ty.clone()),
+            annotation_env,
         };
         let expr = ctx.lhs_to_assumptions(lhs, ty);
         (ctx, expr)
@@ -283,9 +289,10 @@ impl<'ctx> AssumptionContext<'ctx> {
         rule: &isle::sema::Rule,
         termenv: &TermEnv,
         typeenv: &TypeEnv,
+        annotation_env: &AnnotationEnv,
         ty: &VIRType,
     ) -> RuleSemantics {
-        let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, ty);
+        let (mut assumption_ctx, lhs) = AssumptionContext::from_lhs(&rule.lhs, termenv, typeenv, annotation_env, ty);
         let rhs = assumption_ctx.interp_sema_expr(&rule.rhs, ty);
         RuleSemantics {
             lhs, 

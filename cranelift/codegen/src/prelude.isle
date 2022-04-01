@@ -53,6 +53,8 @@
 (type VecWritableReg extern (enum))
 
 ;; Construct a `ValueRegs` of one register.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl value_reg (Reg) ValueRegs)
 (extern constructor value_reg value_reg)
 
@@ -83,6 +85,8 @@
 ;; multiple registers for its representation (like `i128` on x64 for example).
 ;;
 ;; As a side effect, this marks the value as used.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl put_in_reg (Value) Reg)
 (extern constructor put_in_reg put_in_reg)
 
@@ -191,6 +195,8 @@
 (extern extractor fits_in_32 fits_in_32)
 
 ;; An extractor that only matches types that can fit in 64 bits.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
@@ -253,14 +259,20 @@
 (extern extractor infallible inst_results inst_results)
 
 ;; Extract the first result value of the given instruction.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl first_result (Value) Inst)
 (extern extractor first_result first_result)
 
 ;; Extract the `InstructionData` for an `Inst`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl inst_data (InstructionData) Inst)
 (extern extractor infallible inst_data inst_data)
 
 ;; Extract the type of a `Value`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (tywidth))))
 (decl value_type (Type) Value)
 (extern extractor infallible value_type value_type)
 
@@ -271,6 +283,8 @@
 
 ;; Extract the type of the instruction's first result and pass along the
 ;; instruction as well.
+;;@ (spec (sig (args ty, arg) (ret))
+;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extractor (has_type ty inst)
            (and (result_type ty)

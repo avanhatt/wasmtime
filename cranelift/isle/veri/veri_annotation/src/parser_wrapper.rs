@@ -1,6 +1,4 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
+use std::path::{PathBuf};
 use std::collections::{HashMap};
 
 use crate::parser::{TermAnnotationParser};
@@ -15,61 +13,70 @@ fn get_term(isle: &str) -> &str {
     tokens[1]
 }
 
+#[derive(Clone, Debug)]
 pub struct AnnotationEnv {
     pub annotation_map: HashMap<String, TermAnnotation>,
 }
 
-pub fn parse(filename: &str) -> AnnotationEnv {
-    let mut reader = get_reader(filename).unwrap();
-    let mut line = String::new();
+impl AnnotationEnv {
+    pub fn new(annotation_env: HashMap<String, TermAnnotation>) -> Self {
+        AnnotationEnv{annotation_map: annotation_env}
+    }
 
+    pub fn get_annotation_for_term(&self, term: &str) -> Option<TermAnnotation> {
+        if self.annotation_map.contains_key(term) {
+            return Some(self.annotation_map[term].clone());
+        }
+        None
+    }
+}
+
+// Assume every term has at most one definition.
+pub fn parse_annotations(files: &Vec<PathBuf>) -> AnnotationEnv {
     let mut annotation_env = HashMap::new();
-    let p = TermAnnotationParser::new();
 
-    loop {
-        let mut cur = String::from("");
+    for file in files {
+        let code = std::fs::read_to_string(file).unwrap();
+        let a = parse_annotations_str(&code);
 
-        match reader.read_line(&mut line) {
-            Ok(bytes_read) => {
-                if bytes_read == 0 {
-                    break;
-                }
-
-                // ignore lines that don't start with ;;@
-                if line.len() < 3 || &line[..3] != ";;@" {
-                    line.clear();
-                    continue;
-                }
-                
-                // lines that begin with ;;@ are part of annotations
-                let mut annotation_line = line.clone();
-                while annotation_line.len() >= 3 && &annotation_line[..3] == ";;@" {
-	            cur = cur + &annotation_line[3..];
-                    annotation_line.clear();
-                    if let Err(err) = reader.read_line(&mut annotation_line) {
-                        panic!("Error reading file: {}", err);
-                    }
-                }
-
-                let annotation = p.parse(&cur).unwrap();
-                cur = String::from("");
-
-                // parse the term associated with the annotation
-                let term = get_term(&annotation_line).to_owned();
-	        annotation_env.insert(term, annotation);
-                line.clear();
-            }
-            Err(err) => {
-                panic!("Error reading file: {}", err);
-            }
+        for k in a.annotation_map.keys() {
+            annotation_env.insert(k.clone(), a.annotation_map[k].clone());
         }
     }
 
     AnnotationEnv{annotation_map: annotation_env}
 }
 
-fn get_reader<P>(filename: P) -> io::Result<io::BufReader<File>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file))
+pub fn parse_annotations_str(code: &str) -> AnnotationEnv {
+    let mut annotation_env = HashMap::new();
+    let p = TermAnnotationParser::new();
+    let mut lines = code.lines();
+
+    while let Some(l) = lines.next() {
+        let line = l.trim_start().trim_end();
+        let mut cur = String::from("");
+
+        // ignore lines that don't start with ;;@
+        if line.len() < 3 || &line[..3] != ";;@" {
+            continue;
+        }
+        
+        // lines that begin with ;;@ are part of annotations
+        let mut next_line = line;
+        while next_line.len() >= 3 && &next_line[..3] == ";;@" {
+	    cur = cur + &next_line[3..];
+            if let Some(annotation_line) = lines.next() {
+                next_line = annotation_line.trim_start().trim_end();
+            }
+        }
+
+        let annotation = p.parse(&cur).unwrap();
+        cur = String::from("");
+
+        // parse the term associated with the annotation
+        let term = get_term(&next_line).to_owned();
+	annotation_env.insert(term, annotation);
+    }
+
+    AnnotationEnv{annotation_map: annotation_env}
 }

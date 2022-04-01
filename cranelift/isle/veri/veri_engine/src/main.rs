@@ -6,6 +6,7 @@ use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
 use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
+use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 
 use crate::interp::AssumptionContext;
 use crate::solver::run_solver;
@@ -15,7 +16,7 @@ mod renaming;
 mod solver;
 mod type_check;
 
-fn isle_files_to_terms(files: Vec<PathBuf>) -> (TermEnv, TypeEnv) {
+fn isle_files_to_terms(files: &Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();
     parse_isle_to_terms(lexer)
 }
@@ -37,11 +38,12 @@ fn verify_rule_for_type(
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
+    annotation_env: &AnnotationEnv,
     ty: &VIRType,
 ) -> VerificationResult {
     // For now, starting types must be bitvectors
     assert!(ty.is_bv());
-    let rule_semantics = AssumptionContext::interp_rule(rule, termenv, typeenv, ty);
+    let rule_semantics = AssumptionContext::interp_rule(rule, termenv, typeenv, annotation_env, ty);
     run_solver(rule_semantics, ty)
 }
 
@@ -55,11 +57,11 @@ fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> 
     }
 }
 
-fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeEnv) {
+fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeEnv, annotation_env: &AnnotationEnv) {
     for ty in all_starting_bitvectors() {
         for rule in &termenv.rules {
             if pattern_term_name(rule.lhs.clone(), termenv, typeenv) == root {
-                let _res = verify_rule_for_type(rule, termenv, typeenv, &ty);
+                let _res = verify_rule_for_type(rule, termenv, typeenv, annotation_env, &ty);
             }
         }
     }
@@ -87,21 +89,23 @@ fn main() {
 
     let inputs = vec![clif_isle, prelude_isle, input];
 
-    let (termenv, typeenv) = isle_files_to_terms(inputs);
+    let (termenv, typeenv) = isle_files_to_terms(&inputs);
+    let annotation_env = parse_annotations(&inputs);
 
     // For now, verify rules rooted in `lower`
-    verify_rules_with_lhs_root("lower", &termenv, &typeenv)
+    verify_rules_with_lhs_root("lower", &termenv, &typeenv, &annotation_env);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use veri_annotation::parser_wrapper::{parse_annotations_str};
 
     fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
         let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
         parse_isle_to_terms(lexer)
     }
-
+    
     #[test]
     fn test_iadds() {
         let prelude = "
@@ -118,14 +122,20 @@ mod tests {
         (type Imm12 (primitive Imm12))
     
         ;; EXTRACTORS
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret))))
         (decl lower (Inst) ValueRegs)
     
+        ;;@ (spec (sig (args ty, arg) (ret))
+        ;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
         (decl has_type (Type Inst) Inst)
         (extern extractor has_type has_type)
     
         ;; (decl (a) b SMTType) (assert (= a b) (<= a 64)))
         ;; {((a : Type) b : Type) | a = b, a.ty.width <= 64}
         ;; (decl fits_in_64 (Type) Type)
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
         (decl fits_in_64 (Type) Type)
         (extern extractor fits_in_64 fits_in_64)
     
@@ -133,23 +143,34 @@ mod tests {
         (extern extractor fits_in_32 fits_in_32)
     
         ;; (decl (a b) c bvX) (assert (= c (+ a b)))
+        ;;@ (spec (sig (args a, b) (r))
+        ;;@     (assertions (= (+ (a) (b)) (r))))
         (decl iadd (Value Value) Inst)
         (extern extractor iadd iadd)
     
+        ;;@ (spec (sig (args imm_arg) (ret))
+        ;;@     (assertions (= (-(conv_from 12 (imm_arg))) (ret))))
         (decl imm12_from_negated_value (Imm12) Value)
         (extern extractor imm12_from_negated_value imm12_from_negated_value)
     
         ;; CONSTRUCTORS
-    
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret))))
         (decl value_reg (Reg) ValueRegs)
         (extern constructor value_reg value_reg)
     
+        ;;@ (spec (sig (args ty, a, b) (r))
+        ;;@     (assertions (= (+ (a) (b)) (r))))
         (decl add (Type Reg Reg) Reg)
         (extern constructor add add)
     
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret))))
         (decl put_in_reg (Value) Reg)
         (extern constructor put_in_reg put_in_reg)
     
+        ;;@ (spec (sig (args ty, reg, imm_arg) (ret))
+        ;;@     (assertions (= (-(reg) (conv_from 12 (imm_arg))) (ret))))
         (decl sub_imm (Type Reg Imm12) Reg)
         (extern constructor sub_imm sub_imm)
         ";
@@ -174,7 +195,8 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
                 let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let annotation_env = parse_annotations_str(&simple_iadd);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
                 assert_eq!(res, expected_result);
             }
             {
@@ -182,7 +204,8 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
                 let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
                 let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let annotation_env = parse_annotations_str(&iadd_to_sub);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
                 assert_eq!(res, expected_result);
             }
         }
@@ -208,14 +231,20 @@ mod tests {
         (convert Value Reg put_in_reg)
     
         ;; EXTRACTORS
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret))))
         (decl lower (Inst) ValueRegs)
     
+        ;;@ (spec (sig (args ty, arg) (ret))
+        ;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
         (decl has_type (Type Inst) Inst)
         (extern extractor has_type has_type)
     
         ;; (decl (a) b SMTType) (assert (= a b) (<= a 64)))
         ;; {((a : Type) b : Type) | a = b, a.ty.width <= 64}
         ;; (decl fits_in_64 (Type) Type)
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
         (decl fits_in_64 (Type) Type)
         (extern extractor fits_in_64 fits_in_64)
     
@@ -223,23 +252,35 @@ mod tests {
         (extern extractor fits_in_32 fits_in_32)
     
         ;; (decl (a b) c bvX) (assert (= c (+ a b)))
+        ;;@ (spec (sig (args a, b) (r))
+        ;;@     (assertions (= (+ (a) (b)) (r))))
         (decl iadd (Value Value) Inst)
         (extern extractor iadd iadd)
     
+        ;;@ (spec (sig (args imm_arg) (ret))
+        ;;@     (assertions (= (-(conv_from 12 (imm_arg))) (ret))))
         (decl imm12_from_negated_value (Imm12) Value)
         (extern extractor imm12_from_negated_value imm12_from_negated_value)
     
         ;; CONSTRUCTORS
     
+        ;;@ (spec (sig (args ty, a, b) (r))
+        ;;@     (assertions (= (+ (a) (b)) (r))))
         (decl add (Type Reg Reg) Reg)
         (extern constructor add add)
     
+        ;;@ (spec (sig (args ty, reg, imm_arg) (ret))
+        ;;@     (assertions (= (-(reg) (conv_from 12 (imm_arg))) (ret))))
         (decl sub_imm (Type Reg Imm12) Reg)
         (extern constructor sub_imm sub_imm)
 
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret))))
         (decl value_reg (Reg) ValueRegs)
         (extern constructor value_reg value_reg)
     
+        ;;@ (spec (sig (args arg) (ret))
+        ;;@     (assertions (= (arg) (ret))))
         (decl put_in_reg (Value) Reg)
         (extern constructor put_in_reg put_in_reg)
         ";
@@ -268,7 +309,8 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", simple_iadd);
                 let simple_iadd = prelude.to_owned() + simple_iadd;
                 let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let annotation_env = parse_annotations_str(&simple_iadd);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
                 assert_eq!(res, expected_result);
             }
             {
@@ -276,7 +318,8 @@ mod tests {
                 println!("\nRunning verification for rule:\n{}\n", iadd_to_sub);
                 let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
                 let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
-                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &ty);
+                let annotation_env = parse_annotations_str(&iadd_to_sub);
+                let res = verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
                 assert_eq!(res, expected_result);
             }
         }
@@ -292,9 +335,10 @@ mod tests {
     
         let inputs = vec![clif_isle, prelude_isle, input];
     
-        let (termenv, typeenv) = isle_files_to_terms(inputs);
+        let (termenv, typeenv) = isle_files_to_terms(&inputs);
+        let annotation_env = parse_annotations(&inputs);
     
         // For now, verify rules rooted in `lower`
-        verify_rules_with_lhs_root("lower", &termenv, &typeenv)
+        verify_rules_with_lhs_root("lower", &termenv, &typeenv, &annotation_env);
     }
 }
