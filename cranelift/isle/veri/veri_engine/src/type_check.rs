@@ -5,8 +5,8 @@ use veri_ir::{annotation_ir, Function, FunctionApplication};
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
 use cranelift_isle as isle;
-use isle::sema::{TermEnv, TypeEnv, TypeId};
-use veri_ir::isle_annotations::isle_annotation_for_term;
+use isle::sema::{TypeEnv, TypeId};
+use veri_annotation::parser_wrapper::AnnotationEnv;
 
 #[derive(Clone, Debug)]
 pub struct TypeContext<'ctx> {
@@ -14,19 +14,21 @@ pub struct TypeContext<'ctx> {
     pub ty: VIRType,
 
     // Pointers to ISLE environments
-    termenv: &'ctx TermEnv,
     typeenv: &'ctx TypeEnv,
+
+    // Isle annotations
+    annotation_env: &'ctx AnnotationEnv,
 
     // Map of bound variables to types
     var_types: HashMap<String, VIRType>,
 }
 
 impl<'ctx> TypeContext<'ctx> {
-    pub fn new(termenv: &'ctx TermEnv, typeenv: &'ctx TypeEnv, ty: VIRType) -> Self {
+    pub fn new(typeenv: &'ctx TypeEnv, annotation_env: &'ctx AnnotationEnv, ty: VIRType) -> Self {
         assert!(ty.is_bv());
         TypeContext {
-            termenv,
             typeenv,
+            annotation_env,
             ty,
             var_types: HashMap::new(),
         }
@@ -291,7 +293,7 @@ impl<'ctx> TypeContext<'ctx> {
         subterm_typeids: Vec<TypeId>,
         ty: &VIRType,
     ) -> Option<VIRTermAnnotation> {
-        let initial_term = isle_annotation_for_term(term);
+        let initial_term = self.annotation_env.get_annotation_for_term(term);
         let subterm_types: Vec<VIRType> = subterm_typeids
             .iter()
             .map(|tid| self.vir_type_for_type_id(*tid))

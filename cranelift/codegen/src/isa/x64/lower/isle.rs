@@ -9,8 +9,10 @@ use regalloc::Writable;
 use super::{is_int_or_ref_ty, is_mergeable_load, lower_to_amode, Reg};
 use crate::{
     ir::{
-        condcodes::FloatCC, immediates::*, types::*, Inst, InstructionData, Opcode, TrapCode,
-        Value, ValueLabel, ValueList,
+        condcodes::{FloatCC, IntCC},
+        immediates::*,
+        types::*,
+        Inst, InstructionData, Opcode, TrapCode, Value, ValueLabel, ValueList,
     },
     isa::{
         settings::Flags,
@@ -172,6 +174,42 @@ where
     }
 
     #[inline]
+    fn avx512bitalg_enabled(&mut self, _: Type) -> Option<()> {
+        if self.isa_flags.use_avx512bitalg_simd() {
+            Some(())
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn use_lzcnt(&mut self, _: Type) -> Option<()> {
+        if self.isa_flags.use_lzcnt() {
+            Some(())
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn use_bmi1(&mut self, _: Type) -> Option<()> {
+        if self.isa_flags.use_bmi1() {
+            Some(())
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn use_popcnt(&mut self, _: Type) -> Option<()> {
+        if self.isa_flags.use_popcnt() {
+            Some(())
+        } else {
+            None
+        }
+    }
+
+    #[inline]
     fn imm8_from_value(&mut self, val: Value) -> Option<Imm8Reg> {
         let inst = self.lower_ctx.dfg().value_def(val).inst()?;
         let constant = self.lower_ctx.get_constant(inst)?;
@@ -326,6 +364,16 @@ where
         SyntheticAmode::ConstantOffset(mask_table)
     }
 
+    fn popcount_4bit_table(&mut self) -> VCodeConstant {
+        self.lower_ctx
+            .use_constant(VCodeConstantData::WellKnown(&POPCOUNT_4BIT_TABLE))
+    }
+
+    fn popcount_low_mask(&mut self) -> VCodeConstant {
+        self.lower_ctx
+            .use_constant(VCodeConstantData::WellKnown(&POPCOUNT_LOW_MASK))
+    }
+
     #[inline]
     fn writable_reg_to_xmm(&mut self, r: WritableReg) -> WritableXmm {
         Writable::from_reg(Xmm::new(r.to_reg()).unwrap())
@@ -466,6 +514,11 @@ where
             None
         }
     }
+
+    #[inline]
+    fn intcc_to_cc(&mut self, intcc: &IntCC) -> CC {
+        CC::from_intcc(*intcc)
+    }
 }
 
 // Since x64 doesn't have 8x16 shifts and we must use a 16x8 shift instead, we
@@ -498,6 +551,18 @@ const I8X16_USHR_MASKS: [u8; 128] = [
     0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 ];
+
+/// Number of bits set in a given nibble (4-bit value). Used in the
+/// vector implementation of popcount.
+#[rustfmt::skip] // Preserve 4x4 layout.
+const POPCOUNT_4BIT_TABLE: [u8; 16] = [
+    0x00, 0x01, 0x01, 0x02,
+    0x01, 0x02, 0x02, 0x03,
+    0x01, 0x02, 0x02, 0x03,
+    0x02, 0x03, 0x03, 0x04,
+];
+
+const POPCOUNT_LOW_MASK: [u8; 16] = [0x0f; 16];
 
 #[inline]
 fn to_simm32(constant: i64) -> Option<GprMemImm> {

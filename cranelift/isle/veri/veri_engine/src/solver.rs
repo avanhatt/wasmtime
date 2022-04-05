@@ -4,7 +4,7 @@
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
 use std::collections::HashSet;
-use veri_ir::{Counterexample, RuleSemantics, VIRExpr, VIRType, VerificationResult, RulePath};
+use veri_ir::{Counterexample, RulePath, VIRExpr, VIRType, VerificationResult};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
@@ -152,7 +152,7 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
                 .declare_fun(
                     func.name.clone(),
                     arg_tys,
-                    vir_to_rsmt2_constant_ty(&func.ty.function_ret_type()),
+                    vir_to_rsmt2_constant_ty(func.ty.function_ret_type()),
                 )
                 .unwrap();
 
@@ -186,7 +186,8 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-pub fn run_solver_single_rule(rule_sem: RuleSemantics, _ty: &VIRType) -> VerificationResult {
+#[cfg(test)]
+pub fn run_solver_single_rule(rule_sem: veri_ir::RuleSemantics, _ty: &VIRType) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in rule_sem.quantified_vars {
@@ -195,8 +196,7 @@ pub fn run_solver_single_rule(rule_sem: RuleSemantics, _ty: &VIRType) -> Verific
         match ty.clone() {
             VIRType::Function(args, ret) => {
                 println!("\tFUNCTION {} : {:?}", name, ty);
-                let arg_tys: Vec<String> =
-                    args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
+                let arg_tys: Vec<String> = args.iter().map(vir_to_rsmt2_constant_ty).collect();
                 solver
                     .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
                     .unwrap();
@@ -284,7 +284,7 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
                 VIRType::Function(args, ret) => {
                     println!("\tFUNCTION {} : {:?}", name, ty);
                     let arg_tys: Vec<String> =
-                        args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
+                        args.iter().map(vir_to_rsmt2_constant_ty).collect();
                     solver
                         .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
                         .unwrap();
@@ -307,9 +307,9 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
             println!("\t{}", p);
             assumptions.push(p)
         }
-    
+
         let assumption_str = format!("(and {})", assumptions.join(" "));
-    
+
         // Check whether the assumptions are possible
         if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
             println!("Rule not applicable as written for rule assumptions, skipping full query");
@@ -320,7 +320,7 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
     println!("Adding assumptions on relationship between rules");
     assumptions.append(&mut between_rule_assumptions);
 
-    let mut rules = rule_path.rules.clone();
+    let mut rules = rule_path.rules;
     let first = rules.remove(0);
 
     for other_rule in rules {
@@ -328,7 +328,7 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
         let rhs = vir_expr_to_rsmt2_str(other_rule.rhs.clone());
         assumptions.push(format!("(= {} {})", lhs, rhs));
     }
-    
+
     let assumption_str = format!("(and {})", assumptions.join(" "));
     if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
         println!("Rule not applicable as written for PATH assumptions, skipping full query");
@@ -337,10 +337,13 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
 
     // Correctness query
     // Verification condition: first rule's LHS and RHS are equal
-    let first_lhs = vir_expr_to_rsmt2_str(first.lhs.clone());
-    let first_rhs = vir_expr_to_rsmt2_str(first.rhs.clone());
+    let first_lhs = vir_expr_to_rsmt2_str(first.lhs);
+    let first_rhs = vir_expr_to_rsmt2_str(first.rhs);
 
-    let query = format!("(not (=> {} (= {} {})))", assumption_str, first_lhs, first_rhs);
+    let query = format!(
+        "(not (=> {} (= {} {})))",
+        assumption_str, first_lhs, first_rhs
+    );
     println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 
@@ -360,4 +363,3 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
         }
     }
 }
-

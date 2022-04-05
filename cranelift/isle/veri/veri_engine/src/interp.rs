@@ -1,6 +1,7 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
+use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{BoundVar, RuleSemantics, UndefinedTerm, VIRExpr, VIRTermAnnotation, VIRType};
 
 use std::collections::HashMap;
@@ -84,7 +85,6 @@ impl Assumption {
         &self.assume
     }
 }
-#[derive(Clone, Debug)]
 pub struct AssumptionContext<'ctx> {
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Assumption>,
@@ -204,7 +204,7 @@ impl<'ctx> AssumptionContext<'ctx> {
                 args.push(subexpr);
             }
 
-            let ret = self.new_var(&term_name, &ty);
+            let ret = self.new_var(term_name, ty);
             let undef = UndefinedTerm {
                 name: term_name.to_string(),
                 ret,
@@ -274,6 +274,7 @@ impl<'ctx> AssumptionContext<'ctx> {
     pub fn new(
         termenv: &'ctx TermEnv,
         typeenv: &'ctx TypeEnv,
+        annotation_env: &'ctx AnnotationEnv,
         ty: &VIRType,
     ) -> AssumptionContext<'ctx> {
         AssumptionContext {
@@ -285,7 +286,7 @@ impl<'ctx> AssumptionContext<'ctx> {
             ident_map: HashMap::new(),
             lhs_undefined_terms: HashMap::new(),
             rhs_undefined_terms: HashMap::new(),
-            type_ctx: TypeContext::new(termenv, typeenv, ty.clone()),
+            type_ctx: TypeContext::new(typeenv, annotation_env, ty.clone()),
         }
     }
 

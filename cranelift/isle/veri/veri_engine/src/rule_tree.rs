@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use itertools::Itertools;
+use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType};
 
 use crate::interp::AssumptionContext;
@@ -16,7 +17,6 @@ pub fn build_rule_tree_rec(
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
-    ty: &VIRType,
     depth: usize,
     max_depth: usize,
 ) -> RuleTree {
@@ -64,7 +64,7 @@ pub fn build_rule_tree_rec(
         let mut subtrees = vec![];
         for next_rule in rules_with_lhs_root(&t.name, termenv, typeenv) {
             let child =
-                build_rule_tree_rec(ctx, &next_rule, termenv, typeenv, ty, depth + 1, max_depth);
+                build_rule_tree_rec(ctx, &next_rule, termenv, typeenv, depth + 1, max_depth);
             if child.height > max_height {
                 max_height = child.height;
             }
@@ -99,7 +99,7 @@ fn enumerate_paths_to_leaves_rec(
         };
         return vec![RulePath {
             rules: vec![tree.value.clone()],
-            undefined_term_pairs: undefined_term_pairs,
+            undefined_term_pairs,
         }];
     }
     let mut all_paths = vec![];
@@ -113,7 +113,7 @@ fn enumerate_paths_to_leaves_rec(
                 .iter()
                 .find(|x| x.ret == *term);
             assert!(rhs_undefined_term.is_some());
-            let paths = enumerate_paths_to_leaves_rec(&child, rhs_undefined_term.cloned());
+            let paths = enumerate_paths_to_leaves_rec(child, rhs_undefined_term.cloned());
             for path in paths {
                 let mut rules = path.rules.clone();
                 rules.insert(0, tree.value.clone());
@@ -154,10 +154,11 @@ pub fn build_rule_tree_from_root(
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
+    annotationenv: &AnnotationEnv,
     ty: &VIRType,
 ) -> RuleTree {
-    let mut ctx = AssumptionContext::new(termenv, typeenv, ty);
-    build_rule_tree_rec(&mut ctx, rule, termenv, typeenv, ty, 0, 20)
+    let mut ctx = AssumptionContext::new(termenv, typeenv, annotationenv, ty);
+    build_rule_tree_rec(&mut ctx, rule, termenv, typeenv, 0, 20)
 }
 
 pub fn rules_with_lhs_root(name: &str, termenv: &TermEnv, typeenv: &TypeEnv) -> Vec<Rule> {
@@ -174,10 +175,15 @@ pub fn rules_with_lhs_root(name: &str, termenv: &TermEnv, typeenv: &TypeEnv) -> 
         .collect()
 }
 
-pub fn verify_rules_with_lhs_root(root: &str, termenv: &TermEnv, typeenv: &TypeEnv) {
+pub fn verify_rules_with_lhs_root(
+    root: &str,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    annotationenv: &AnnotationEnv,
+) {
     for ty in all_starting_bitvectors() {
         for rule in rules_with_lhs_root(root, termenv, typeenv) {
-            let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, &ty);
+            let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, &ty);
             let paths = enumerate_paths_to_leaves(&rule_tree);
             for rule_path in paths {
                 let _result = run_solver_rule_path(rule_path);
