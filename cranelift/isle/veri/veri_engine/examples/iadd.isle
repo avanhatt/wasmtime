@@ -1,3 +1,5 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) ValueRegs)
 
 ;; Instruction formats.
@@ -49,6 +51,8 @@
 (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
       (add ty x y))
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
 (rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
 
