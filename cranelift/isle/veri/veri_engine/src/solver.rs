@@ -319,6 +319,15 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
 
     println!("Adding assumptions on relationship between rules");
     assumptions.append(&mut between_rule_assumptions);
+
+    let mut rules = rule_path.rules.clone();
+    let first = rules.remove(0);
+
+    for other_rule in rules {
+        let lhs = vir_expr_to_rsmt2_str(other_rule.lhs.clone());
+        let rhs = vir_expr_to_rsmt2_str(other_rule.rhs.clone());
+        assumptions.push(format!("(= {} {})", lhs, rhs));
+    }
     
     let assumption_str = format!("(and {})", assumptions.join(" "));
     if !check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
@@ -327,11 +336,11 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
     }
 
     // Correctness query
-    // Verification condition: first rule's LHS and final rule's RHS are equal
-    let first_lhs = vir_expr_to_rsmt2_str(rule_path.rules.first().unwrap().lhs.clone());
-    let last_rhs = vir_expr_to_rsmt2_str(rule_path.rules.last().unwrap().rhs.clone());
+    // Verification condition: first rule's LHS and RHS are equal
+    let first_lhs = vir_expr_to_rsmt2_str(first.lhs.clone());
+    let first_rhs = vir_expr_to_rsmt2_str(first.rhs.clone());
 
-    let query = format!("(not (=> {} (= {} {})))", assumption_str, first_lhs, last_rhs);
+    let query = format!("(not (=> {} (= {} {})))", assumption_str, first_lhs, first_rhs);
     println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 
