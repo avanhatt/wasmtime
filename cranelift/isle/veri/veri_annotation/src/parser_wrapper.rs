@@ -5,10 +5,7 @@ use crate::parser::{TermAnnotationParser};
 use veri_ir::annotation_ir::{TermAnnotation};
 
 fn get_term(isle: &str) -> &str {
-    if !isle.contains("decl") {
-        panic!("could not find term in line \"{}\"", isle);
-    }
-
+    assert!(isle.contains("decl"));
     let tokens: Vec<&str> = isle.split(" ").collect();
     tokens[1]
 }
@@ -40,6 +37,7 @@ pub fn parse_annotations(files: &Vec<PathBuf>) -> AnnotationEnv {
         let a = parse_annotations_str(&code);
 
         for k in a.annotation_map.keys() {
+            assert!(!annotation_env.contains_key(k));
             annotation_env.insert(k.clone(), a.annotation_map[k].clone());
         }
     }
@@ -75,6 +73,7 @@ pub fn parse_annotations_str(code: &str) -> AnnotationEnv {
 
         // parse the term associated with the annotation
         let term = get_term(&next_line).to_owned();
+        assert!(!annotation_env.contains_key(&term));
 	annotation_env.insert(term, annotation);
     }
 
