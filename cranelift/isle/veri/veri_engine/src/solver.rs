@@ -198,7 +198,7 @@ pub fn run_solver(
             VIRType::Function(args, ret) => {
                 println!("\tFUNCTION {} : {:?}", name, ty);
                 let arg_tys: Vec<String> =
-                    args.iter().map(|a| vir_to_rsmt2_constant_ty(a)).collect();
+                    args.iter().map(vir_to_rsmt2_constant_ty).collect();
                 solver
                     .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
                     .unwrap();

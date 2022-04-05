@@ -75,7 +75,6 @@ impl Assumption {
         &self.assume
     }
 }
-#[derive(Clone, Debug)]
 pub struct AssumptionContext<'ctx> {
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Assumption>,
@@ -94,9 +93,6 @@ pub struct AssumptionContext<'ctx> {
 
     // For type checking
     type_ctx: TypeContext<'ctx>,
-
-    // For annotations
-    annotation_env: &'ctx AnnotationEnv,
 }
 
 impl<'ctx> AssumptionContext<'ctx> {
@@ -278,8 +274,7 @@ impl<'ctx> AssumptionContext<'ctx> {
             ident_map: HashMap::new(),
             lhs_undefined_terms: vec![],
             rhs_undefined_terms: vec![],
-            type_ctx: TypeContext::new(termenv, typeenv, annotation_env, ty.clone()),
-            annotation_env,
+            type_ctx: TypeContext::new(typeenv, annotation_env, ty.clone()),
         };
         let expr = ctx.lhs_to_assumptions(lhs, ty);
         (ctx, expr)

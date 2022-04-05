@@ -6,7 +6,7 @@ use veri_ir::annotation_ir::{TermAnnotation};
 
 fn get_term(isle: &str) -> &str {
     assert!(isle.contains("decl"));
-    let tokens: Vec<&str> = isle.split(" ").collect();
+    let tokens: Vec<&str> = isle.split(' ').collect();
     tokens[1]
 }
 
@@ -62,17 +62,16 @@ pub fn parse_annotations_str(code: &str) -> AnnotationEnv {
         // lines that begin with ;;@ are part of annotations
         let mut next_line = line;
         while next_line.len() >= 3 && &next_line[..3] == ";;@" {
-	    cur = cur + &next_line[3..];
+	    cur += &next_line[3..];
             if let Some(annotation_line) = lines.next() {
                 next_line = annotation_line.trim_start().trim_end();
             }
         }
 
         let annotation = p.parse(&cur).unwrap();
-        cur = String::from("");
 
         // parse the term associated with the annotation
-        let term = get_term(&next_line).to_owned();
+        let term = get_term(next_line).to_owned();
         assert!(!annotation_env.contains_key(&term));
 	annotation_env.insert(term, annotation);
     }

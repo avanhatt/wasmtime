@@ -6,12 +6,11 @@ use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
 use veri_annotation::parser_wrapper::{AnnotationEnv};
 use cranelift_isle as isle;
-use isle::sema::{TermEnv, TypeEnv, TypeId};
+use isle::sema::{TypeEnv, TypeId};
 
 #[derive(Clone, Debug)]
 pub struct TypeContext<'ctx> {
     // Pointers to ISLE environments
-    termenv: &'ctx TermEnv,
     typeenv: &'ctx TypeEnv,
 
     // Isle annotations
@@ -25,10 +24,9 @@ pub struct TypeContext<'ctx> {
 }
 
 impl<'ctx> TypeContext<'ctx> {
-    pub fn new(termenv: &'ctx TermEnv, typeenv: &'ctx TypeEnv, annotation_env: &'ctx AnnotationEnv, ty: VIRType) -> Self {
+    pub fn new(typeenv: &'ctx TypeEnv, annotation_env: &'ctx AnnotationEnv, ty: VIRType) -> Self {
         assert!(ty.is_bv());
         TypeContext {
-            termenv,
             typeenv,
             annotation_env,
             ty,
