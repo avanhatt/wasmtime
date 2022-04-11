@@ -1,6 +1,6 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
-use crate::rule_tree::{verify_rules_with_lhs_root, verify_rules_for_type_with_lhs_root};
+use crate::rule_tree::{verify_rules_with_lhs_root};
 use clap::{Arg, Command};
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermEnv, TypeEnv};
@@ -75,6 +75,7 @@ fn main() {
 mod tests {
     use crate::interp::AssumptionContext;
     use crate::solver::run_solver_single_rule;
+    use crate::rule_tree::verify_rules_for_type_with_lhs_root;
 
     use super::*;
     use isle::sema::Rule;

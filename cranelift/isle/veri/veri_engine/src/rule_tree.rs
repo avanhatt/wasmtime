@@ -198,7 +198,7 @@ pub fn verify_rules_for_type_with_lhs_root(
     ty: &VIRType,
 ) -> VerificationResult {
     for rule in rules_with_lhs_root(root, termenv, typeenv) {
-        let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, &ty);
+        let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, ty);
         let paths = enumerate_paths_to_leaves(&rule_tree);
         for rule_path in paths {
             let result = run_solver_rule_path(rule_path);
