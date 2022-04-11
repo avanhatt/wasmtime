@@ -261,6 +261,13 @@ pub fn run_solver_single_rule(
     }
 }
 
+/// Overall query:
+/// <declare vars>
+/// (not (=> (and 
+///             <all rules' assumptions>
+///             <between rule assumptions>
+///             <all but first rule's <LHS> = <RHS>>) 
+///          (= <first rule LHS> <first rule RHS>))))))
 pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
 
