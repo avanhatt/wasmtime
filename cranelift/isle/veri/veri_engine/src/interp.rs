@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
-use isle::sema::{Pattern, TermArgPattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
+use isle::sema::{Expr, Pattern, TermArgPattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
@@ -25,7 +25,17 @@ impl ToVIRExpr for TermArgPattern {
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
         match self {
             TermArgPattern::Pattern(pat) => ctx.interp_pattern(pat, ty),
-            _ => unimplemented!("{:?}", self),
+            TermArgPattern::Expr(expr) => match expr {
+                Expr::Term(_, _, _) => todo!(),
+                Expr::Var(_, varid) => {
+                    let var = ctx.new_var("x", ty);
+                    ctx.var_map.insert(*varid, var.clone());
+                    VIRExpr::Var(var)
+                }
+                Expr::ConstInt(_, _) => todo!(),
+                Expr::ConstPrim(_, _) => todo!(),
+                Expr::Let { .. } => todo!(),
+            },
         }
     }
 
@@ -261,6 +271,9 @@ impl<'ctx> AssumptionContext<'ctx> {
             isle::sema::Expr::Var(_, varid) => {
                 let bound_var = self.var_map.get(varid).unwrap();
                 bound_var.ty.bv_var(bound_var.name.clone())
+            }
+            Expr::ConstInt(_, v) => {
+                VIRExpr::Const(ty.clone(), *v as i128)
             }
             _ => unimplemented!("{:?}", expr),
         }

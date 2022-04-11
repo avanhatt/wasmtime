@@ -1,12 +1,12 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
+use crate::rule_tree::{verify_rules_with_lhs_root, verify_rules_for_type_with_lhs_root};
 use clap::{Arg, Command};
 use cranelift_isle as isle;
 use isle::sema::{Pattern, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
-use veri_annotation::parser_wrapper::{parse_annotations};
-use crate::rule_tree::verify_rules_with_lhs_root;
+use veri_annotation::parser_wrapper::parse_annotations;
 
 mod interp;
 mod renaming;
@@ -79,7 +79,7 @@ mod tests {
     use super::*;
     use isle::sema::Rule;
     use veri_annotation::parser_wrapper::{parse_annotations_str, AnnotationEnv};
-    use veri_ir::{all_starting_bitvectors, VerificationResult, VIRType};
+    use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 
     fn verify_rule_for_type(
         rule: &Rule,
@@ -357,6 +357,40 @@ mod tests {
         let annotation_env = parse_annotations(&inputs);
 
         // For now, verify rules rooted in `lower`
-        verify_rules_with_lhs_root("lower", &termenv, &typeenv, &annotation_env);
+        for ty in all_starting_bitvectors() {
+            // The expected result is based on whether the type matches fits_in_64
+            let expected_result = if ty.clone().width() <= 64 {
+                VerificationResult::Success
+            } else {
+                VerificationResult::InapplicableRule
+            };
+            let result = verify_rules_for_type_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &ty);
+            assert_eq!(result, expected_result);
+        }
     }
+
+    #[test]
+    fn test_chained_iadd_from_file() {
+        let cur_dir = env::current_dir().expect("Can't access current working directory");
+        // TODO: clean up path logic
+        let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+        let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+        let input = PathBuf::from("./examples/iadd-two-rule-chain.isle");
+
+        let inputs = vec![clif_isle, prelude_isle, input];
+
+        let (termenv, typeenv) = isle_files_to_terms(&inputs);
+        let annotation_env = parse_annotations(&inputs);
+
+        // For now, verify rules rooted in `lower`
+        for ty in all_starting_bitvectors() {
+            // The expected result is based on whether the type matches fits_in_64
+            let expected_result = if ty.clone().width() <= 64 {
+                VerificationResult::Success
+            } else {
+                VerificationResult::InapplicableRule
+            };
+            let result = verify_rules_for_type_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &ty);
+            assert_eq!(result, expected_result);
+        }    }
 }

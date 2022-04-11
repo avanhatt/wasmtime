@@ -4,7 +4,7 @@ use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType};
+use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType, VerificationResult};
 
 use crate::interp::AssumptionContext;
 use crate::pattern_term_name;
@@ -180,14 +180,32 @@ pub fn verify_rules_with_lhs_root(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotationenv: &AnnotationEnv,
-) {
+) -> VerificationResult {
     for ty in all_starting_bitvectors() {
-        for rule in rules_with_lhs_root(root, termenv, typeenv) {
-            let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, &ty);
-            let paths = enumerate_paths_to_leaves(&rule_tree);
-            for rule_path in paths {
-                let _result = run_solver_rule_path(rule_path);
+        let result = verify_rules_for_type_with_lhs_root(root, termenv, typeenv, annotationenv, &ty);
+        if result != VerificationResult::Success {
+            return result
+        }
+    }
+    VerificationResult::Success
+}
+
+pub fn verify_rules_for_type_with_lhs_root(
+    root: &str,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    annotationenv: &AnnotationEnv,
+    ty: &VIRType,
+) -> VerificationResult {
+    for rule in rules_with_lhs_root(root, termenv, typeenv) {
+        let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, &ty);
+        let paths = enumerate_paths_to_leaves(&rule_tree);
+        for rule_path in paths {
+            let result = run_solver_rule_path(rule_path);
+            if result != VerificationResult::Success {
+                return result
             }
         }
     }
+    VerificationResult::Success
 }

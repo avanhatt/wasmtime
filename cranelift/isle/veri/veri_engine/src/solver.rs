@@ -187,7 +187,10 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 #[cfg(test)]
-pub fn run_solver_single_rule(rule_sem: veri_ir::RuleSemantics, _ty: &VIRType) -> VerificationResult {
+pub fn run_solver_single_rule(
+    rule_sem: veri_ir::RuleSemantics,
+    _ty: &VIRType,
+) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
     println!("Declaring constants:");
     for v in rule_sem.quantified_vars {
@@ -283,8 +286,7 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
             match ty.clone() {
                 VIRType::Function(args, ret) => {
                     println!("\tFUNCTION {} : {:?}", name, ty);
-                    let arg_tys: Vec<String> =
-                        args.iter().map(vir_to_rsmt2_constant_ty).collect();
+                    let arg_tys: Vec<String> = args.iter().map(vir_to_rsmt2_constant_ty).collect();
                     solver
                         .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
                         .unwrap();

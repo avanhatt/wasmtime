@@ -23,6 +23,33 @@ pub struct RuleSemantics {
 }
 
 
+// (rule a (foo (bar a)))
+
+// (rule foo (has_type))
+// (rule foo...)
+// (rule bar...)
+
+
+
+// (rule (lower (op a b))
+//       (foo a (bar b)))
+
+//  (rule (foo x y) (ll_foo x y))
+//  (rule (bar z) (ll_bar z))
+//  (rule (bar (fits_in_b z)) (ll_bar z))
+
+// have annotations for: lower, ll_foo, ll_bar
+
+// [lower] -> (foo, [foo])
+//         -> (bar, [bar1, bar2])
+
+// lower, foo, bar1
+// lower, foo, bar2
+
+// VC: lower.lhs = lower.rhs
+//      lower_ret = foo_ret
+
+// TODO: can nuke this
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RulePath {
     pub rules: Vec<RuleSemantics>,

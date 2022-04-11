@@ -44,6 +44,8 @@ impl<'ctx> TypeContext<'ctx> {
         match clif_name.as_str() {
             "Type" => VIRType::Int,
             "Imm12" => VIRType::BitVector(12),
+            "Imm64" => VIRType::BitVector(64),
+            "ImmShift" => VIRType::BitVector(6),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
             "Opcode" => VIRType::Function(

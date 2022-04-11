@@ -846,6 +846,7 @@
 (type UImm5 (primitive UImm5))
 (type Imm12 (primitive Imm12))
 (type ImmLogic (primitive ImmLogic))
+;; @(spec bv(8))
 (type ImmShift (primitive ImmShift))
 (type ShiftOpAndAmt (primitive ShiftOpAndAmt))
 (type MoveWideConst (primitive MoveWideConst))

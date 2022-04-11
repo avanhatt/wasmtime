@@ -206,21 +206,6 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             };
             Some(TermAnnotation::new(func, vec![sem]))
         }
-        "manual_add" => {
-            let a = BoundVar::new("a");
-            let b = BoundVar::new("b");
-            let r = BoundVar::new("r");
-            let sem = Expr::binary(
-                Expr::Eq,
-                Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr()),
-                r.as_expr(),
-            );
-            let func = TermSignature {
-                args: vec![a, b],
-                ret: r,
-            };
-            Some(TermAnnotation::new(func, vec![sem]))
-        }
         "imm12_from_negated_value" => {
             // Width: bv12
             let imm_arg = BoundVar::new("imm_arg");

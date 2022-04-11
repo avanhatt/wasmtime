@@ -1,3 +1,9 @@
+;; This file defined iadd with two rules, using the actual intermediate iadd
+;; term plus a dummy `ll_add` (low level add) term to avoid needed let support 
+;; for now
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) ValueRegs)
 
 ;; Instruction formats.
@@ -50,15 +56,9 @@
       (add ty x y))
 
 (decl add (Type Reg Reg) Reg)
-(rule (add ty x y) (manual_add x y))
+(rule (add ty x y) (ll_add x (ll_add y 0)))
 
-(decl manual_add (Reg Reg) Reg)
-(extern constructor manual_add manual_add)
-
-;; (decl alu_rrr (ALUOp Type Reg Reg) Reg)
-;; (extern constructor alu_rrr alu_rrr)
-;; (rule (alu_rrr op ty src1 src2)
-;;       (let ((dst WritableReg (temp_writable_reg $I64))
-;;             (_ Unit (emit (MInst.AluRRR op (operand_size ty) dst src1 src2))))
-;;         dst))
-
+;;@ (spec (sig (args a, b) (r))
+;;@     (assertions (= (+ (a) (b)) (r))))
+(decl ll_add (Reg Reg) Reg)
+(extern constructor ll_add ll_add)
