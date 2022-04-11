@@ -56,7 +56,7 @@
       (add ty x y))
 
 (decl add (Type Reg Reg) Reg)
-(rule (add ty x y) (ll_add x (ll_add y 0)))
+(rule (add ty x y) (ll_add x y))
 
 ;;@ (spec (sig (args a, b) (r))
 ;;@     (assertions (= (+ (a) (b)) (r))))
