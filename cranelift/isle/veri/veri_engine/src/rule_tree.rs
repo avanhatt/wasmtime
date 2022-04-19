@@ -1,13 +1,11 @@
 use std::collections::HashMap;
 
 use cranelift_isle as isle;
-use isle::sema::{Rule, TermEnv, TypeEnv};
+use isle::sema::{Rule, TermEnv, TypeEnv, Pattern};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType, VerificationResult};
-
 use crate::interp::AssumptionContext;
-use crate::pattern_term_name;
 use crate::solver::run_solver_rule_path;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
@@ -208,4 +206,14 @@ pub fn verify_rules_for_type_with_lhs_root(
         }
     }
     VerificationResult::Success
+}
+
+fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
+    match pattern {
+        Pattern::Term(_, termid, _) => {
+            let term = &termenv.terms[termid.index()];
+            typeenv.syms[term.name.index()].clone()
+        }
+        _ => unreachable!("Must be term"),
+    }
 }
