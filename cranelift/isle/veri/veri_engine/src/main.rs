@@ -1,19 +1,13 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
-use crate::rule_tree::{verify_rules_with_lhs_root};
+//use crate::rule_tree::{verify_rules_with_lhs_root};
 use clap::{Arg, Command};
 use cranelift_isle as isle;
-use isle::sema::{Pattern, TermEnv, TypeEnv};
+use isle::sema::{TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
 use veri_annotation::parser_wrapper::parse_annotations;
-use veri_engine_lib;
-
-mod interp;
-mod renaming;
-mod rule_tree;
-mod solver;
-mod type_check;
+use veri_engine_lib::rule_tree::verify_rules_with_lhs_root;
 
 fn isle_files_to_terms(files: &Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();

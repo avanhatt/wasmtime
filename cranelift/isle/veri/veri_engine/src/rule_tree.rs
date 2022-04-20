@@ -7,7 +7,6 @@ use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType, VerificationResult};
 
 use crate::interp::AssumptionContext;
-use crate::pattern_term_name;
 use crate::solver::run_solver_rule_path;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
