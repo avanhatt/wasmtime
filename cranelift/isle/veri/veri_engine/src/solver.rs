@@ -186,7 +186,6 @@ fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
 /// Overall query:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-#[cfg(test)]
 pub fn run_solver_single_rule(
     rule_sem: veri_ir::RuleSemantics,
     _ty: &VIRType,

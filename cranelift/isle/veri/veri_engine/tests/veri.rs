@@ -7,6 +7,7 @@ use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 
 mod utils;
 
+#[cfg(test)]
 #[test]
 fn foo () {
     assert_eq!(4, 2+2);
