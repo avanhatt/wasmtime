@@ -7,6 +7,7 @@ use isle::sema::{Pattern, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
 use veri_annotation::parser_wrapper::parse_annotations;
+use veri_engine_lib;
 
 mod interp;
 mod renaming;
