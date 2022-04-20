@@ -8,6 +8,7 @@ pub mod rule_tree;
 pub mod solver;
 pub mod type_check;
 
+/// Given a file, lexes and parses the file to an ISLE term and type environment tuple
 pub fn isle_files_to_terms(files: &Vec<PathBuf>) -> (TermEnv, TypeEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();
     parse_isle_to_terms(lexer)
@@ -24,9 +25,4 @@ pub fn parse_isle_to_terms(lexer: isle::lexer::Lexer) -> (TermEnv, TypeEnv) {
     // Produces a list of terms, rules, and map from symbols to terms
     let termenv = TermEnv::from_ast(&mut typeenv, &defs).unwrap();
     (termenv, typeenv)
-}
-
-
-pub fn foo () {
-    panic!()
 }
