@@ -33,16 +33,6 @@ fn parse_isle_to_terms(lexer: isle::lexer::Lexer) -> (TermEnv, TypeEnv) {
     (termenv, typeenv)
 }
 
-fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
-    match pattern {
-        Pattern::Term(_, termid, _) => {
-            let term = &termenv.terms[termid.index()];
-            typeenv.syms[term.name.index()].clone()
-        }
-        _ => unreachable!("Must be term"),
-    }
-}
-
 fn main() {
     let cur_dir = env::current_dir().expect("Can't access current working directory");
 

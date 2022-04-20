@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use cranelift_isle as isle;
-use isle::sema::{Rule, TermEnv, TypeEnv};
+use isle::sema::{Rule, TermEnv, TypeEnv, Pattern};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType, VerificationResult};
@@ -208,4 +208,14 @@ pub fn verify_rules_for_type_with_lhs_root(
         }
     }
     VerificationResult::Success
+}
+
+fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
+    match pattern {
+        Pattern::Term(_, termid, _) => {
+            let term = &termenv.terms[termid.index()];
+            typeenv.syms[term.name.index()].clone()
+        }
+        _ => unreachable!("Must be term"),
+    }
 }
