@@ -263,33 +263,12 @@ fn test_implicit_conversions() {
 
 #[test]
 fn test_iadd_from_file() {
-    test_from_file("hi")
+    test_from_file("./examples/iadd.isle")
 }
 
 #[test]
 fn test_chained_iadd_from_file() {
-    let cur_dir = env::current_dir().expect("Can't access current working directory");
-    // TODO: clean up path logic
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
-    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let input = PathBuf::from("./examples/iadd-two-rule-chain.isle");
-    
-    let inputs = vec![clif_isle, prelude_isle, input];
-    
-    let (termenv, typeenv) = isle_files_to_terms(&inputs);
-    let annotation_env = parse_annotations(&inputs);
-    
-    // For now, verify rules rooted in `lower`
-    for ty in all_starting_bitvectors() {
-        // The expected result is based on whether the type matches fits_in_64
-        let expected_result = if ty.clone().width() <= 64 {
-            VerificationResult::Success
-        } else {
-            VerificationResult::InapplicableRule
-        };
-        let result = verify_rules_for_type_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &ty);
-        assert_eq!(result, expected_result);
-    }    
+    test_from_file("./examples/iadd-two-rule-chain.isle")
 }
 
 #[test]

@@ -34,7 +34,7 @@ pub fn test_from_file(s: &str) -> () {
     // TODO: clean up path logic
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let input = PathBuf::from("./examples/iadd.isle");
+    let input = PathBuf::from(s);
 
     let inputs = vec![clif_isle, prelude_isle, input];
     
