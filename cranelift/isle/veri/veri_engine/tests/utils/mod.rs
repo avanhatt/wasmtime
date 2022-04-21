@@ -18,25 +18,15 @@ pub enum Bitwidth {
     I128,
 }
 
-pub enum RangeInfo {
-    Inclusive,
-    Exclusive,
-}
-
 pub struct TestRange {
     pub start: Bitwidth,
-    pub start_range: RangeInfo,
     pub end: Bitwidth,
-    pub end_range: RangeInfo, 
 }
-
 
 pub fn all_widths() -> TestRange {
     TestRange {
 	start: Bitwidth::I1,
-	start_range: RangeInfo::Inclusive,
 	end: Bitwidth::I128,
-	end_range: RangeInfo::Inclusive,
     }
 }
 
@@ -72,7 +62,7 @@ pub fn test_from_file(s: &str, range: TestRange) -> () {
     let annotation_env = parse_annotations(&inputs);
     
     // For now, verify rules rooted in `lower`
-    for ty in all_starting_bitvectors() {
+    for ty in range_to_types(range) {
         // The expected result is based on whether the type matches fits_in_64
         let expected_result = if ty.clone().width() <= 64 {
             VerificationResult::Success
@@ -86,4 +76,19 @@ pub fn test_from_file(s: &str, range: TestRange) -> () {
 
 pub fn test_from_file_self_contained(s: &str) -> () {
 
+}
+
+fn range_to_types(r: TestRange) -> Vec<VIRType> {
+    all_starting_bitvectors()
+}
+    
+fn bitwidth_to_type(b: Bitwidth) -> VIRType {
+    match b {
+	Bitwidth::I1 => VIRType::BitVector(1),
+	Bitwidth::I8 => VIRType::BitVector(8),
+	Bitwidth::I16 => VIRType::BitVector(16),
+	Bitwidth::I32 => VIRType::BitVector(32),
+	Bitwidth::I64 => VIRType::BitVector(64),
+	Bitwidth::I128 => VIRType::BitVector(128),
+    }
 }
