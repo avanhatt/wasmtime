@@ -11,19 +11,14 @@ use std::env;
 use strum::IntoEnumIterator; 
 use strum_macros::EnumIter; 
 
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 pub enum Bitwidth {
-    I1,
-    I8,
-    I16,
-    I32,
-    I64,
-    I128,
-}
-
-pub struct TestRange {
-    pub start: Bitwidth,
-    pub end: Bitwidth,
+    I1 = 1,
+    I8 = 8,
+    I16 = 16,
+    I32 = 32,
+    I64 = 64,
+    I128 = 128,
 }
 
 type Result = (Bitwidth, VerificationResult);
@@ -33,13 +28,8 @@ pub fn all_success() -> TestResult {
     Bitwidth::iter().map(|w| (w, VerificationResult::Success)).collect()
 }
 
-pub fn 
-
-pub fn all_widths() -> TestRange {
-    TestRange {
-	start: Bitwidth::I1,
-	end: Bitwidth::I128,
-    }
+pub fn lt_64_success() -> TestResult {
+    Bitwidth::iter().map(|w| (w, if w as usize <= 64 { VerificationResult::Success } else { VerificationResult::InapplicableRule } )).collect()
 }
 
 pub fn verify_rule_for_type(
@@ -61,7 +51,7 @@ pub fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     parse_isle_to_terms(lexer)
 }
 
-pub fn test_from_file(s: &str, range: TestRange) -> () {
+pub fn test_from_file(s: &str, tr: TestResult) -> () {
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     // TODO: clean up path logic
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
@@ -72,35 +62,14 @@ pub fn test_from_file(s: &str, range: TestRange) -> () {
     
     let (termenv, typeenv) = isle_files_to_terms(&inputs);
     let annotation_env = parse_annotations(&inputs);
-    
+
     // For now, verify rules rooted in `lower`
-    for ty in range_to_types(range) {
-        // The expected result is based on whether the type matches fits_in_64
-        let expected_result = if ty.clone().width() <= 64 {
-            VerificationResult::Success
-        } else {
-            VerificationResult::InapplicableRule
-        };
-        let result = verify_rules_for_type_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &ty);
-        assert_eq!(result, expected_result);
+    for (bw, expected_result) in tr {
+        let result = verify_rules_for_type_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &VIRType::BitVector(bw as usize));
+	assert_eq!(result, expected_result);
     }
 }
 
 pub fn test_from_file_self_contained(s: &str) -> () {
 
-}
-
-fn range_to_types(r: TestRange) -> Vec<VIRType> {
-    all_starting_bitvectors()
-}
-    
-fn bitwidth_to_type(b: Bitwidth) -> VIRType {
-    match b {
-	Bitwidth::I1 => VIRType::BitVector(1),
-	Bitwidth::I8 => VIRType::BitVector(8),
-	Bitwidth::I16 => VIRType::BitVector(16),
-	Bitwidth::I32 => VIRType::BitVector(32),
-	Bitwidth::I64 => VIRType::BitVector(64),
-	Bitwidth::I128 => VIRType::BitVector(128),
-    }
 }

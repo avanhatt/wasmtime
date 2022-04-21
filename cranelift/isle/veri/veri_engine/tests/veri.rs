@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use std::env;
 
 mod utils;
-use utils::{verify_rule_for_type, isle_str_to_terms, test_from_file, all_widths}; 
+use utils::{verify_rule_for_type, isle_str_to_terms, test_from_file, all_success, lt_64_success}; 
 
 #[cfg(test)]
 #[test]
@@ -263,12 +263,12 @@ fn test_implicit_conversions() {
 
 #[test]
 fn test_iadd_from_file() {
-    test_from_file("./examples/iadd.isle", all_widths())
+    test_from_file("./examples/iadd.isle", lt_64_success())
 }
 
 #[test]
 fn test_chained_iadd_from_file() {
-    test_from_file("./examples/iadd-two-rule-chain.isle", all_widths())
+    test_from_file("./examples/iadd-two-rule-chain.isle", lt_64_success())
 }
 
 #[test]
