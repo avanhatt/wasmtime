@@ -27,24 +27,29 @@ pub fn just_8_result() -> TestResult {
     vec![(Bitwidth::I8, VerificationResult::Success)]
 }
 
-pub fn _just_16_result() -> TestResult {
+#[allow(dead_code)]
+pub fn just_16_result() -> TestResult {
     vec![(Bitwidth::I16, VerificationResult::Success)]
 }
 
-pub fn _just_32_result() -> TestResult {
+#[allow(dead_code)]
+pub fn just_32_result() -> TestResult {
     vec![(Bitwidth::I32, VerificationResult::Success)]
 }
 
-pub fn _just_64_result() -> TestResult {
+#[allow(dead_code)]
+pub fn just_64_result() -> TestResult {
     vec![(Bitwidth::I64, VerificationResult::Success)]
 }
 
-pub fn _just_128_result() -> TestResult {
+#[allow(dead_code)]
+pub fn just_128_result() -> TestResult {
     vec![(Bitwidth::I128, VerificationResult::Success)]
 }
 
 /// All bitwidths verify
-pub fn _all_success_result() -> TestResult {
+#[allow(dead_code)]
+pub fn all_success_result() -> TestResult {
     custom_result(&|w| (w, VerificationResult::Success))
 }
 
