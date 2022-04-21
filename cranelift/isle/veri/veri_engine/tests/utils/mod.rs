@@ -9,6 +9,36 @@ use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 use std::path::PathBuf;
 use std::env;
 
+pub enum Bitwidth {
+    I1,
+    I8,
+    I16,
+    I32,
+    I64,
+    I128,
+}
+
+pub enum RangeInfo {
+    Inclusive,
+    Exclusive,
+}
+
+pub struct TestRange {
+    pub start: Bitwidth,
+    pub start_range: RangeInfo,
+    pub end: Bitwidth,
+    pub end_range: RangeInfo, 
+}
+
+
+pub fn all_widths() -> TestRange {
+    TestRange {
+	start: Bitwidth::I1,
+	start_range: RangeInfo::Inclusive,
+	end: Bitwidth::I128,
+	end_range: RangeInfo::Inclusive,
+    }
+}
 
 pub fn verify_rule_for_type(
     rule: &Rule,
@@ -29,7 +59,7 @@ pub fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     parse_isle_to_terms(lexer)
 }
 
-pub fn test_from_file(s: &str) -> () {
+pub fn test_from_file(s: &str, range: TestRange) -> () {
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     // TODO: clean up path logic
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
