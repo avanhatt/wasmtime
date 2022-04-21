@@ -119,3 +119,10 @@ pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {
     let input = PathBuf::from(s);
     test(vec![input], tr);
 }
+
+pub fn test_from_file_custom_prelude(p: &str, s: &str, tr: TestResult) -> () {
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let prelude = PathBuf::from(p);
+    let input = PathBuf::from(s);
+    test(vec![prelude, input], tr);
+}
