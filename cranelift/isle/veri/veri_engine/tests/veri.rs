@@ -1,20 +1,20 @@
-use veri_engine_lib::interp::AssumptionContext;
-use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
-use veri_engine_lib::isle_files_to_terms;
 use cranelift_isle as isle;
 use isle::sema::Rule;
-use veri_annotation::parser_wrapper::{parse_annotations_str, AnnotationEnv, parse_annotations};
-use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
-use std::path::PathBuf;
 use std::env;
+use std::path::PathBuf;
+use veri_annotation::parser_wrapper::{parse_annotations, parse_annotations_str, AnnotationEnv};
+use veri_engine_lib::interp::AssumptionContext;
+use veri_engine_lib::isle_files_to_terms;
+use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
+use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 
 mod utils;
-use utils::{verify_rule_for_type, isle_str_to_terms, test_from_file, all_success, lt_64_success}; 
+use utils::{all_success, isle_str_to_terms, lt_64_success, test_from_file, verify_rule_for_type};
 
 #[cfg(test)]
 #[test]
-fn foo () {
-    assert_eq!(4, 2+2);
+fn foo() {
+    assert_eq!(4, 2 + 2);
 }
 
 #[test]
@@ -107,13 +107,8 @@ fn test_iadds() {
             let simple_iadd = prelude.to_owned() + simple_iadd;
             let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
             let annotation_env = parse_annotations_str(&simple_iadd);
-            let res = verify_rule_for_type(
-                &termenv.rules[0],
-                &termenv,
-                &typeenv,
-                &annotation_env,
-                &ty,
-            );
+            let res =
+                verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
             assert_eq!(res, expected_result);
         }
         {
@@ -122,13 +117,8 @@ fn test_iadds() {
             let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
             let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
             let annotation_env = parse_annotations_str(&iadd_to_sub);
-            let res = verify_rule_for_type(
-                &termenv.rules[0],
-                &termenv,
-                &typeenv,
-                &annotation_env,
-                &ty,
-            );
+            let res =
+                verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
             assert_eq!(res, expected_result);
         }
     }
@@ -234,13 +224,8 @@ fn test_implicit_conversions() {
             let simple_iadd = prelude.to_owned() + simple_iadd;
             let (termenv, typeenv) = isle_str_to_terms(&simple_iadd);
             let annotation_env = parse_annotations_str(&simple_iadd);
-            let res = verify_rule_for_type(
-                &termenv.rules[0],
-                &termenv,
-                &typeenv,
-                &annotation_env,
-                &ty,
-            );
+            let res =
+                verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
             assert_eq!(res, expected_result);
         }
         {
@@ -249,13 +234,8 @@ fn test_implicit_conversions() {
             let iadd_to_sub = prelude.to_owned() + iadd_to_sub;
             let (termenv, typeenv) = isle_str_to_terms(&iadd_to_sub);
             let annotation_env = parse_annotations_str(&iadd_to_sub);
-            let res = verify_rule_for_type(
-                &termenv.rules[0],
-                &termenv,
-                &typeenv,
-                &annotation_env,
-                &ty,
-            );
+            let res =
+                verify_rule_for_type(&termenv.rules[0], &termenv, &typeenv, &annotation_env, &ty);
             assert_eq!(res, expected_result);
         }
     }
@@ -358,4 +338,3 @@ fn test_let() {
     );
     assert_eq!(res, VerificationResult::Success);
 }
-
