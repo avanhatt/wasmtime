@@ -1,11 +1,14 @@
 use veri_engine_lib::interp::AssumptionContext;
 use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
 use veri_engine_lib::solver::run_solver_single_rule;
-use veri_engine_lib::parse_isle_to_terms;
+use veri_engine_lib::{isle_files_to_terms, parse_isle_to_terms};
 use cranelift_isle as isle;
 use isle::sema::{Rule, TermEnv, TypeEnv};
-use veri_annotation::parser_wrapper::{parse_annotations_str, AnnotationEnv};
+use veri_annotation::parser_wrapper::{parse_annotations_str, parse_annotations, AnnotationEnv};
 use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
+use std::path::PathBuf;
+use std::env;
+
 
 pub fn verify_rule_for_type(
     rule: &Rule,
@@ -26,3 +29,31 @@ pub fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     parse_isle_to_terms(lexer)
 }
 
+pub fn test_from_file(s: &str) -> () {
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    // TODO: clean up path logic
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let input = PathBuf::from("./examples/iadd.isle");
+
+    let inputs = vec![clif_isle, prelude_isle, input];
+    
+    let (termenv, typeenv) = isle_files_to_terms(&inputs);
+    let annotation_env = parse_annotations(&inputs);
+    
+    // For now, verify rules rooted in `lower`
+    for ty in all_starting_bitvectors() {
+        // The expected result is based on whether the type matches fits_in_64
+        let expected_result = if ty.clone().width() <= 64 {
+            VerificationResult::Success
+        } else {
+            VerificationResult::InapplicableRule
+        };
+        let result = verify_rules_for_type_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &ty);
+        assert_eq!(result, expected_result);
+    }
+}
+
+pub fn test_from_file_self_contained(s: &str) -> () {
+
+}
