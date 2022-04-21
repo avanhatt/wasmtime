@@ -23,26 +23,50 @@ pub enum Bitwidth {
 
 type Result = (Bitwidth, VerificationResult);
 type TestResult = Vec<Result>;
+type TestResultBuilder = dyn Fn(Bitwidth) -> (Bitwidth, VerificationResult);
 
-pub fn all_success() -> TestResult {
-    Bitwidth::iter()
-        .map(|w| (w, VerificationResult::Success))
-        .collect()
+pub fn just_8_result() -> TestResult {
+    vec![(Bitwidth::I8, VerificationResult::Success)]
 }
 
-pub fn lt_64_success() -> TestResult {
-    Bitwidth::iter()
-        .map(|w| {
-            (
-                w,
-                if w as usize <= 64 {
-                    VerificationResult::Success
-                } else {
-                    VerificationResult::InapplicableRule
-                },
-            )
-        })
-        .collect()
+pub fn just_16_result() -> TestResult {
+    vec![(Bitwidth::I16, VerificationResult::Success)]
+}
+
+pub fn just_32_result() -> TestResult {
+    vec![(Bitwidth::I32, VerificationResult::Success)]
+}
+
+pub fn just_64_result() -> TestResult {
+    vec![(Bitwidth::I64, VerificationResult::Success)]
+}
+
+pub fn just_128_result() -> TestResult {
+    vec![(Bitwidth::I128, VerificationResult::Success)]
+}
+
+/// All bitwidths verify 
+pub fn all_success_result() -> TestResult {
+    custom_result(&|w| (w, VerificationResult::Success))
+}
+
+/// Only bitwidths under and including 64 should verify, rest inapplicable 
+pub fn lt_64_success_result() -> TestResult {
+    custom_result(&|w| {
+        (w,
+         if w as usize <= 64 {
+             VerificationResult::Success
+         } else {
+             VerificationResult::InapplicableRule
+         },
+        )
+    })
+}
+
+/// Specify a custom set expected result (helpful if you want to test all the bitwidths and expect
+/// a range of different success, failure, and inapplicable outcomes)
+pub fn custom_result(f: &TestResultBuilder) -> TestResult {
+    Bitwidth::iter().map(|w| f(w)).collect()
 }
 
 pub fn verify_rule_for_type(
@@ -64,15 +88,7 @@ pub fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
     parse_isle_to_terms(lexer)
 }
 
-pub fn test_from_file(s: &str, tr: TestResult) -> () {
-    let cur_dir = env::current_dir().expect("Can't access current working directory");
-    // TODO: clean up path logic
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
-    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let input = PathBuf::from(s);
-
-    let inputs = vec![clif_isle, prelude_isle, input];
-
+fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
     let (termenv, typeenv) = isle_files_to_terms(&inputs);
     let annotation_env = parse_annotations(&inputs);
 
@@ -86,7 +102,20 @@ pub fn test_from_file(s: &str, tr: TestResult) -> () {
             &VIRType::BitVector(bw as usize),
         );
         assert_eq!(result, expected_result);
-    }
+    }    
 }
 
-pub fn test_from_file_self_contained(s: &str) -> () {}
+pub fn test_from_file(s: &str, tr: TestResult) -> () {
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    // TODO: clean up path logic
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let input = PathBuf::from(s);
+    test(vec![clif_isle, prelude_isle, input], tr);
+}
+
+pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let input = PathBuf::from(s);
+    test(vec![input], tr);
+}
