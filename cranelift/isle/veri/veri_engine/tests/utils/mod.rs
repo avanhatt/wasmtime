@@ -8,7 +8,10 @@ use veri_annotation::parser_wrapper::{parse_annotations_str, parse_annotations, 
 use veri_ir::{all_starting_bitvectors, VIRType, VerificationResult};
 use std::path::PathBuf;
 use std::env;
+use strum::IntoEnumIterator; 
+use strum_macros::EnumIter; 
 
+#[derive(Debug, EnumIter)]
 pub enum Bitwidth {
     I1,
     I8,
@@ -22,6 +25,15 @@ pub struct TestRange {
     pub start: Bitwidth,
     pub end: Bitwidth,
 }
+
+type Result = (Bitwidth, VerificationResult);
+type TestResult = Vec<Result>;
+
+pub fn all_success() -> TestResult {
+    Bitwidth::iter().map(|w| (w, VerificationResult::Success)).collect()
+}
+
+pub fn 
 
 pub fn all_widths() -> TestRange {
     TestRange {
