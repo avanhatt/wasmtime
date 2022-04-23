@@ -7,6 +7,12 @@ use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::isle_files_to_terms; // parse_isle_to_terms};
 use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
 
+// TODO FB: once the opcode situation is resolved, return and:
+// - add nice output
+// - create a standard prelude and figure out if its more intuitive to send
+//   in rule strings or files
+// - intermediate tests?
+
 #[derive(Debug, EnumIter, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 pub enum Bitwidth {
     I1 = 1,
