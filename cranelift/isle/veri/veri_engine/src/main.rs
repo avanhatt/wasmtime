@@ -4,8 +4,8 @@ use clap::{Arg, Command};
 use std::env;
 use std::path::PathBuf;
 use veri_annotation::parser_wrapper::parse_annotations;
-use veri_engine_lib::rule_tree::verify_rules_with_lhs_root;
 use veri_engine_lib::isle_files_to_terms;
+use veri_engine_lib::rule_tree::verify_rules_with_lhs_root;
 
 fn main() {
     let cur_dir = env::current_dir().expect("Can't access current working directory");
