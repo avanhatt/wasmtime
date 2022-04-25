@@ -272,25 +272,21 @@ impl<'ctx> AssumptionContext<'ctx> {
                 let bound_var = self.var_map.get(varid).unwrap();
                 bound_var.ty.bv_var(bound_var.name.clone())
             }
-            Expr::ConstInt(_, v) => {
-                VIRExpr::Const(ty.clone(), *v as i128)
-            }
+            Expr::ConstInt(_, v) => VIRExpr::Const(ty.clone(), *v as i128),
             Expr::ConstPrim(_, sym) => {
                 let name = &self.typeenv.syms[sym.index()];
                 match name.as_str() {
-                    "I64" =>   VIRExpr::Const(VIRType::Int, 64),
-                    _ => todo!()
+                    "I64" => VIRExpr::Const(VIRType::Int, 64),
+                    _ => todo!(),
                 }
-            },
-            Expr::Let {bindings, body, .. } => {
+            }
+            Expr::Let { bindings, body, .. } => {
                 for (varid, _tyid, expr) in bindings {
                     let to_bind = self.interp_sema_expr(expr, ty);
                     let var = self.new_var("let", to_bind.ty());
                     self.var_map.insert(*varid, var.clone());
-                    self.assumptions.push(Assumption::new(VIRType::eq(
-                        var.as_expr(),
-                        to_bind,
-                    )));
+                    self.assumptions
+                        .push(Assumption::new(VIRType::eq(var.as_expr(), to_bind)));
                 }
                 self.interp_sema_expr(body, ty)
             }

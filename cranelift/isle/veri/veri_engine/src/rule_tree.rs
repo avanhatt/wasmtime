@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
 use cranelift_isle as isle;
-use isle::sema::{Rule, TermEnv, TypeEnv};
+use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::{all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType, VerificationResult};
+use veri_ir::{
+    all_starting_bitvectors, BoundVar, RulePath, RuleTree, UndefinedTerm, VIRType,
+    VerificationResult,
+};
 
 use crate::interp::AssumptionContext;
-use crate::pattern_term_name;
 use crate::solver::run_solver_rule_path;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
@@ -182,9 +184,10 @@ pub fn verify_rules_with_lhs_root(
     annotationenv: &AnnotationEnv,
 ) -> VerificationResult {
     for ty in all_starting_bitvectors() {
-        let result = verify_rules_for_type_with_lhs_root(root, termenv, typeenv, annotationenv, &ty);
+        let result =
+            verify_rules_for_type_with_lhs_root(root, termenv, typeenv, annotationenv, &ty);
         if result != VerificationResult::Success {
-            return result
+            return result;
         }
     }
     VerificationResult::Success
@@ -203,9 +206,19 @@ pub fn verify_rules_for_type_with_lhs_root(
         for rule_path in paths {
             let result = run_solver_rule_path(rule_path);
             if result != VerificationResult::Success {
-                return result
+                return result;
             }
         }
     }
     VerificationResult::Success
+}
+
+fn pattern_term_name(pattern: Pattern, termenv: &TermEnv, typeenv: &TypeEnv) -> String {
+    match pattern {
+        Pattern::Term(_, termid, _) => {
+            let term = &termenv.terms[termid.index()];
+            typeenv.syms[term.name.index()].clone()
+        }
+        _ => unreachable!("Must be term"),
+    }
 }
