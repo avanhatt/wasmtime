@@ -27,7 +27,7 @@ fn test_aarch64_binemit() {
     // Then:
     //
     //      $ echo "mov x1, x2" | aarch64inst.sh
-    insns.push((Inst::Ret, "C0035FD6", "ret"));
+    insns.push((Inst::Ret { rets: vec![] }, "C0035FD6", "ret"));
     insns.push((Inst::Nop0, "", "nop-zero-len"));
     insns.push((Inst::Nop4, "1F2003D5", "nop"));
     insns.push((
@@ -995,7 +995,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::AluRRRR {
-            alu_op: ALUOp3::MAdd32,
+            alu_op: ALUOp3::MAdd,
+            size: OperandSize::Size32,
             rd: writable_xreg(1),
             rn: xreg(2),
             rm: xreg(3),
@@ -1006,7 +1007,8 @@ fn test_aarch64_binemit() {
     ));
     insns.push((
         Inst::AluRRRR {
-            alu_op: ALUOp3::MAdd64,
+            alu_op: ALUOp3::MAdd,
+            size: OperandSize::Size64,
             rd: writable_xreg(1),
             rn: xreg(2),
             rm: xreg(3),
@@ -1017,7 +1019,8 @@ fn test_aarch64_binemit() {
     ));
     insns.push((
         Inst::AluRRRR {
-            alu_op: ALUOp3::MSub32,
+            alu_op: ALUOp3::MSub,
+            size: OperandSize::Size32,
             rd: writable_xreg(1),
             rn: xreg(2),
             rm: xreg(3),
@@ -1028,7 +1031,8 @@ fn test_aarch64_binemit() {
     ));
     insns.push((
         Inst::AluRRRR {
-            alu_op: ALUOp3::MSub64,
+            alu_op: ALUOp3::MSub,
+            size: OperandSize::Size64,
             rd: writable_xreg(1),
             rn: xreg(2),
             rm: xreg(3),
@@ -1631,7 +1635,7 @@ fn test_aarch64_binemit() {
             flags: MemFlags::trusted(),
         },
         "E18040F8",
-        "ldur x1, [x7, #8]",
+        "ldr x1, [x7, #8]",
     ));
 
     insns.push((
@@ -1916,7 +1920,8 @@ fn test_aarch64_binemit() {
     ));
 
     insns.push((
-        Inst::Mov64 {
+        Inst::Mov {
+            size: OperandSize::Size64,
             rd: writable_xreg(8),
             rm: xreg(9),
         },
@@ -1924,7 +1929,8 @@ fn test_aarch64_binemit() {
         "mov x8, x9",
     ));
     insns.push((
-        Inst::Mov32 {
+        Inst::Mov {
+            size: OperandSize::Size32,
             rd: writable_xreg(8),
             rm: xreg(9),
         },
@@ -1933,7 +1939,8 @@ fn test_aarch64_binemit() {
     ));
 
     insns.push((
-        Inst::MovZ {
+        Inst::MovWide {
+            op: MoveWideOp::MovZ,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_0000_ffff).unwrap(),
             size: OperandSize::Size64,
@@ -1942,7 +1949,8 @@ fn test_aarch64_binemit() {
         "movz x8, #65535",
     ));
     insns.push((
-        Inst::MovZ {
+        Inst::MovWide {
+            op: MoveWideOp::MovZ,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_ffff_0000).unwrap(),
             size: OperandSize::Size64,
@@ -1951,7 +1959,8 @@ fn test_aarch64_binemit() {
         "movz x8, #65535, LSL #16",
     ));
     insns.push((
-        Inst::MovZ {
+        Inst::MovWide {
+            op: MoveWideOp::MovZ,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_ffff_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -1960,7 +1969,8 @@ fn test_aarch64_binemit() {
         "movz x8, #65535, LSL #32",
     ));
     insns.push((
-        Inst::MovZ {
+        Inst::MovWide {
+            op: MoveWideOp::MovZ,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0xffff_0000_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -1969,7 +1979,8 @@ fn test_aarch64_binemit() {
         "movz x8, #65535, LSL #48",
     ));
     insns.push((
-        Inst::MovZ {
+        Inst::MovWide {
+            op: MoveWideOp::MovZ,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_ffff_0000).unwrap(),
             size: OperandSize::Size32,
@@ -1979,7 +1990,8 @@ fn test_aarch64_binemit() {
     ));
 
     insns.push((
-        Inst::MovN {
+        Inst::MovWide {
+            op: MoveWideOp::MovN,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_0000_ffff).unwrap(),
             size: OperandSize::Size64,
@@ -1988,7 +2000,8 @@ fn test_aarch64_binemit() {
         "movn x8, #65535",
     ));
     insns.push((
-        Inst::MovN {
+        Inst::MovWide {
+            op: MoveWideOp::MovN,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_ffff_0000).unwrap(),
             size: OperandSize::Size64,
@@ -1997,7 +2010,8 @@ fn test_aarch64_binemit() {
         "movn x8, #65535, LSL #16",
     ));
     insns.push((
-        Inst::MovN {
+        Inst::MovWide {
+            op: MoveWideOp::MovN,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_ffff_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -2006,7 +2020,8 @@ fn test_aarch64_binemit() {
         "movn x8, #65535, LSL #32",
     ));
     insns.push((
-        Inst::MovN {
+        Inst::MovWide {
+            op: MoveWideOp::MovN,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0xffff_0000_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -2015,7 +2030,8 @@ fn test_aarch64_binemit() {
         "movn x8, #65535, LSL #48",
     ));
     insns.push((
-        Inst::MovN {
+        Inst::MovWide {
+            op: MoveWideOp::MovN,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_0000_ffff).unwrap(),
             size: OperandSize::Size32,
@@ -2025,7 +2041,8 @@ fn test_aarch64_binemit() {
     ));
 
     insns.push((
-        Inst::MovK {
+        Inst::MovWide {
+            op: MoveWideOp::MovK,
             rd: writable_xreg(12),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -2034,7 +2051,8 @@ fn test_aarch64_binemit() {
         "movk x12, #0",
     ));
     insns.push((
-        Inst::MovK {
+        Inst::MovWide {
+            op: MoveWideOp::MovK,
             rd: writable_xreg(19),
             imm: MoveWideConst::maybe_with_shift(0x0000, 16).unwrap(),
             size: OperandSize::Size64,
@@ -2043,7 +2061,8 @@ fn test_aarch64_binemit() {
         "movk x19, #0, LSL #16",
     ));
     insns.push((
-        Inst::MovK {
+        Inst::MovWide {
+            op: MoveWideOp::MovK,
             rd: writable_xreg(3),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_0000_ffff).unwrap(),
             size: OperandSize::Size64,
@@ -2052,7 +2071,8 @@ fn test_aarch64_binemit() {
         "movk x3, #65535",
     ));
     insns.push((
-        Inst::MovK {
+        Inst::MovWide {
+            op: MoveWideOp::MovK,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_0000_ffff_0000).unwrap(),
             size: OperandSize::Size64,
@@ -2061,7 +2081,8 @@ fn test_aarch64_binemit() {
         "movk x8, #65535, LSL #16",
     ));
     insns.push((
-        Inst::MovK {
+        Inst::MovWide {
+            op: MoveWideOp::MovK,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0x0000_ffff_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -2070,7 +2091,8 @@ fn test_aarch64_binemit() {
         "movk x8, #65535, LSL #32",
     ));
     insns.push((
-        Inst::MovK {
+        Inst::MovWide {
+            op: MoveWideOp::MovK,
             rd: writable_xreg(8),
             imm: MoveWideConst::maybe_from_u64(0xffff_0000_0000_0000).unwrap(),
             size: OperandSize::Size64,
@@ -5344,7 +5366,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRR {
-            fpu_op: FPUOp1::Abs32,
+            fpu_op: FPUOp1::Abs,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5354,7 +5377,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRR {
-            fpu_op: FPUOp1::Abs64,
+            fpu_op: FPUOp1::Abs,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5364,7 +5388,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRR {
-            fpu_op: FPUOp1::Neg32,
+            fpu_op: FPUOp1::Neg,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5374,7 +5399,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRR {
-            fpu_op: FPUOp1::Neg64,
+            fpu_op: FPUOp1::Neg,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5384,7 +5410,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRR {
-            fpu_op: FPUOp1::Sqrt32,
+            fpu_op: FPUOp1::Sqrt,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5394,7 +5421,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRR {
-            fpu_op: FPUOp1::Sqrt64,
+            fpu_op: FPUOp1::Sqrt,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5405,6 +5433,7 @@ fn test_aarch64_binemit() {
     insns.push((
         Inst::FpuRR {
             fpu_op: FPUOp1::Cvt32To64,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5415,6 +5444,7 @@ fn test_aarch64_binemit() {
     insns.push((
         Inst::FpuRR {
             fpu_op: FPUOp1::Cvt64To32,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
         },
@@ -5424,7 +5454,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Add32,
+            fpu_op: FPUOp2::Add,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5435,7 +5466,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Add64,
+            fpu_op: FPUOp2::Add,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5446,7 +5478,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Sub32,
+            fpu_op: FPUOp2::Sub,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5457,7 +5490,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Sub64,
+            fpu_op: FPUOp2::Sub,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5468,7 +5502,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Mul32,
+            fpu_op: FPUOp2::Mul,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5479,7 +5514,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Mul64,
+            fpu_op: FPUOp2::Mul,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5490,7 +5526,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Div32,
+            fpu_op: FPUOp2::Div,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5501,7 +5538,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Div64,
+            fpu_op: FPUOp2::Div,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5512,7 +5550,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Max32,
+            fpu_op: FPUOp2::Max,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5523,7 +5562,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Max64,
+            fpu_op: FPUOp2::Max,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5534,7 +5574,8 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Min32,
+            fpu_op: FPUOp2::Min,
+            size: ScalarSize::Size32,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
@@ -5545,57 +5586,14 @@ fn test_aarch64_binemit() {
 
     insns.push((
         Inst::FpuRRR {
-            fpu_op: FPUOp2::Min64,
+            fpu_op: FPUOp2::Min,
+            size: ScalarSize::Size64,
             rd: writable_vreg(15),
             rn: vreg(30),
             rm: vreg(31),
         },
         "CF5B7F1E",
         "fmin d15, d30, d31",
-    ));
-
-    insns.push((
-        Inst::FpuRRR {
-            fpu_op: FPUOp2::Uqadd64,
-            rd: writable_vreg(21),
-            rn: vreg(22),
-            rm: vreg(23),
-        },
-        "D50EF77E",
-        "uqadd d21, d22, d23",
-    ));
-
-    insns.push((
-        Inst::FpuRRR {
-            fpu_op: FPUOp2::Sqadd64,
-            rd: writable_vreg(21),
-            rn: vreg(22),
-            rm: vreg(23),
-        },
-        "D50EF75E",
-        "sqadd d21, d22, d23",
-    ));
-
-    insns.push((
-        Inst::FpuRRR {
-            fpu_op: FPUOp2::Uqsub64,
-            rd: writable_vreg(21),
-            rn: vreg(22),
-            rm: vreg(23),
-        },
-        "D52EF77E",
-        "uqsub d21, d22, d23",
-    ));
-
-    insns.push((
-        Inst::FpuRRR {
-            fpu_op: FPUOp2::Sqsub64,
-            rd: writable_vreg(21),
-            rn: vreg(22),
-            rm: vreg(23),
-        },
-        "D52EF75E",
-        "sqsub d21, d22, d23",
     ));
 
     insns.push((
@@ -5823,7 +5821,8 @@ fn test_aarch64_binemit() {
     ));
 
     insns.push((
-        Inst::FpuCmp32 {
+        Inst::FpuCmp {
+            size: ScalarSize::Size32,
             rn: vreg(23),
             rm: vreg(24),
         },
@@ -5832,7 +5831,8 @@ fn test_aarch64_binemit() {
     ));
 
     insns.push((
-        Inst::FpuCmp64 {
+        Inst::FpuCmp {
+            size: ScalarSize::Size64,
             rn: vreg(23),
             rm: vreg(24),
         },
@@ -6794,7 +6794,6 @@ fn test_aarch64_binemit() {
     insns.push((Inst::Fence {}, "BF3B03D5", "dmb ish"));
 
     let flags = settings::Flags::new(settings::builder());
-    let rru = create_reg_universe(&flags);
     let emit_info = EmitInfo::new(flags);
     for (insn, expected_encoding, expected_printing) in insns {
         println!(
@@ -6803,11 +6802,12 @@ fn test_aarch64_binemit() {
         );
 
         // Check the printed text is as expected.
-        let actual_printing = insn.show_rru(Some(&rru));
+        let actual_printing =
+            insn.print_with_state(&mut EmitState::default(), &mut AllocationConsumer::new(&[]));
         assert_eq!(expected_printing, actual_printing);
 
         let mut buffer = MachBuffer::new();
-        insn.emit(&mut buffer, &emit_info, &mut Default::default());
+        insn.emit(&[], &mut buffer, &emit_info, &mut Default::default());
         let buffer = buffer.finish();
         let actual_encoding = &buffer.stringify_code_bytes();
         assert_eq!(expected_encoding, actual_encoding);
