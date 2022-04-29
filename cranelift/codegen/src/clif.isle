@@ -1010,6 +1010,12 @@
 ;;@      }))))
 ;;decl Opcode.Iadd
 
+;;@ (spec (sig (args) (r))
+;;@     (assertions (= (r) (Opcode.Isub (xs) (func (bvlist(2)) (bv)) {
+;;@         (- (get (xs) 1) (get (xs) 0))
+;;@      }))))
+;;decl Opcode.Isub
+
 ;; TODO: fix annotation
 ;;@ (spec (sig (args) (r))
 ;;@     (assertions (= (r) (Opcode.Iadd (xs) (func (bv) (bv)) {

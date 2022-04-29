@@ -76,6 +76,8 @@
 (extern constructor output_none output_none)
 
 ;; Construct a single-element `InstOutput`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl output (ValueRegs) InstOutput)
 (extern constructor output output)
 
