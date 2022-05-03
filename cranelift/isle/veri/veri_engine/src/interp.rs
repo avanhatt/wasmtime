@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
-use isle::sema::{Expr, Pattern, TermArgPattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
+use isle::sema::{Expr, Pattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
@@ -21,29 +21,27 @@ trait ToVIRExpr {
 }
 
 /// Type for term arguments for ISLE LHS terms.
-impl ToVIRExpr for TermArgPattern {
+impl ToVIRExpr for Pattern {
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
-        match self {
-            TermArgPattern::Pattern(pat) => ctx.interp_pattern(pat, ty),
-            TermArgPattern::Expr(expr) => match expr {
-                Expr::Term(_, _, _) => todo!(),
-                Expr::Var(_, varid) => {
-                    let var = ctx.new_var("x", ty);
-                    ctx.var_map.insert(*varid, var.clone());
-                    VIRExpr::Var(var)
-                }
-                Expr::ConstInt(_, _) => todo!(),
-                Expr::ConstPrim(_, _) => todo!(),
-                Expr::Let { .. } => todo!(),
-            },
-        }
+        ctx.interp_pattern(self, ty)
+        // match self {
+        //     Pattern::Pattern(pat) => ctx.interp_pattern(pat, ty),
+        //     Pattern::Expr(expr) => match expr {
+        //         Expr::Term(_, _, _) => todo!(),
+        //         Expr::Var(_, varid) => {
+        //             let var = ctx.new_var("x", ty);
+        //             ctx.var_map.insert(*varid, var.clone());
+        //             VIRExpr::Var(var)
+        //         }
+        //         Expr::ConstInt(_, _) => todo!(),
+        //         Expr::ConstPrim(_, _) => todo!(),
+        //         Expr::Let { .. } => todo!(),
+        //     },
+        // }
     }
 
     fn type_id(&self) -> TypeId {
-        match self {
-            TermArgPattern::Expr(e) => e.type_id(),
-            TermArgPattern::Pattern(p) => p.ty(),
-        }
+        self.ty()
     }
 
     fn add_undefined_term(term: UndefinedTerm, ctx: &mut AssumptionContext) {

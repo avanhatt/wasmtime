@@ -1108,8 +1108,8 @@ impl PrettyPrint for Inst {
                 ..
             } => {
                 let src1 = pretty_print_reg(src1.to_reg(), 8, allocs);
-                let src2 = src2.pretty_print(8, allocs);
                 let dst = pretty_print_reg(dst.to_reg().to_reg(), 8, allocs);
+                let src2 = src2.pretty_print(8, allocs);
                 format!("{} {}, {}, {}", ljustify(op.to_string()), src1, src2, dst)
             }
 
@@ -2015,7 +2015,7 @@ fn x64_get_operands<F: Fn(VReg) -> VReg>(inst: &Inst, collector: &mut OperandCol
             ..
         } => {
             collector.reg_use(*idx);
-            collector.reg_early_def(*tmp1);
+            collector.reg_mod(*tmp1);
             collector.reg_early_def(*tmp2);
         }
 
