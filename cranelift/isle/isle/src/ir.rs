@@ -434,7 +434,35 @@ impl PatternSequence {
                                 extractor_kind: Some(ExtractorKind::InternalExtractor { .. }),
                                 ..
                             } => {
-                                panic!("Should have been expanded away")
+                                // Evaluate all `input` args.
+                                let mut inputs = vec![];
+                                let mut input_tys = vec![];
+                                let mut output_tys = vec![];
+                                let mut output_pats = vec![];
+                                inputs.push(input);
+                                input_tys.push(termdata.ret_ty);
+                                for arg in args.iter() {
+                                    let pat = match arg {
+                                        &TermArgPattern::Pattern(ref pat) => pat,
+                                        _ => panic!("Should have been caught by typechecking"),
+                                    };
+                                    output_tys.push(pat.ty());
+                                    output_pats.push(pat);
+                                }
+
+                                // Invoke the extractor.
+                                let arg_values =
+                                    self.add_extract(inputs, input_tys, output_tys, term, true);
+
+                                for (pat, &val) in output_pats.iter().zip(arg_values.iter()) {
+                                    self.gen_pattern(
+                                        ValueOrArgs::Value(val),
+                                        typeenv,
+                                        termenv,
+                                        pat,
+                                        vars,
+                                    );
+                                }
                             }
                             TermKind::Decl {
                                 extractor_kind:
@@ -628,13 +656,14 @@ impl ExprSequence {
                     }
                     TermKind::Decl {
                         constructor_kind: Some(ConstructorKind::ExternalConstructor { .. }),
+                        pure,
                         ..
                     } => {
                         self.add_construct(
                             &arg_values_tys[..],
                             ty,
                             term,
-                            /* infallible = */ true,
+                            /* infallible = */ !pure,
                         )
                     }
                     TermKind::Decl {
@@ -674,6 +703,23 @@ pub fn lower_rule(
         &ruledata.lhs,
         &mut vars,
     );
+
+    // Lower the `if-let` clauses into the pattern seq, using
+    // `PatternInst::Expr` for the sub-exprs (right-hand sides).
+    for iflet in &ruledata.iflets {
+        let mut subexpr_seq: ExprSequence = Default::default();
+        let subexpr_ret_value = subexpr_seq.gen_expr(tyenv, termenv, &iflet.rhs, &mut vars);
+        subexpr_seq.add_return(iflet.rhs.ty(), subexpr_ret_value);
+        let pattern_value =
+            pattern_seq.add_expr_seq(subexpr_seq, subexpr_ret_value, iflet.rhs.ty());
+        pattern_seq.gen_pattern(
+            ValueOrArgs::Value(pattern_value),
+            tyenv,
+            termenv,
+            &iflet.lhs,
+            &mut vars,
+        );
+    }
 
     // Lower the expression, making use of the bound variables
     // from the pattern.
