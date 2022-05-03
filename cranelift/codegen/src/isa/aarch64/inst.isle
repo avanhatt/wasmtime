@@ -1297,6 +1297,8 @@
 (decl imm_logic_from_imm64 (Type ImmLogic) Imm64)
 (extern extractor imm_logic_from_imm64 imm_logic_from_imm64 (in out))
 
+;;@ (spec (sig (args x) (r))
+;;@     (assertions (= (x) (r))))
 (decl imm_shift_from_imm64 (Type ImmShift) Imm64)
 (extern extractor imm_shift_from_imm64 imm_shift_from_imm64 (in out))
 
