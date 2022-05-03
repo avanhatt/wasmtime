@@ -48,17 +48,13 @@ impl<'ctx> TypeContext<'ctx> {
             "ImmShift" => VIRType::BitVector(6),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
-            "Opcode" => VIRType::Function(
-                vec![VIRType::BitVectorList(2, self.ty.width())],
-                Box::new(self.ty.clone()),
-            ),
-            // (decl alu_rrr (ALUOp Type Reg Reg) Reg)
-            "ALUOp" => VIRType::Function(
-                vec![VIRType::Int, self.ty.clone(), self.ty.clone()],
-                Box::new(self.ty.clone()),
-            ),
-            "ValueArray2" => VIRType::BitVectorList(2, self.ty.width()),
             "Reg" | "Inst" | "Value" | "InstructionData" => self.ty.clone(),
+
+            // For now, hard code errors for these types that we later want to 
+            // explicitly mark as unsafe.
+            "Opcode" => unreachable!(),
+            "ALUOp" => unreachable!(),
+            "ValueArray2" => unreachable!(),
             _ => unimplemented!("ty: {}", clif_name),
         }
     }

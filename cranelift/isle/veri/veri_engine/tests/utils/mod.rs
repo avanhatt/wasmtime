@@ -79,15 +79,9 @@ pub fn custom_result(f: &TestResultBuilder) -> TestResult {
     Bitwidth::iter().map(|w| f(w)).collect()
 }
 
-// May want this again
-// pub fn isle_str_to_terms(s: &str) -> (TermEnv, TypeEnv) {
-//     let lexer = isle::lexer::Lexer::from_str(s, "input.isle").unwrap();
-//     parse_isle_to_terms(lexer)
-// }
-
 // TODO: waiting on output thoughts. re do previous?
 fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
-    let (termenv, typeenv) = isle_files_to_terms(&inputs);
+    let (typeenv, termenv) = isle_files_to_terms(&inputs);
     let annotation_env = parse_annotations(&inputs);
 
     // For now, verify rules rooted in `lower`

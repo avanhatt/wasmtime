@@ -29,7 +29,7 @@ fn main() {
 
     let inputs = vec![clif_isle, prelude_isle, input];
 
-    let (termenv, typeenv) = isle_files_to_terms(&inputs);
+    let (typeenv, termenv) = isle_files_to_terms(&inputs);
     let annotation_env = parse_annotations(&inputs);
 
     // For now, verify rules rooted in `lower`

@@ -883,29 +883,6 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.IfcmpImm) x Y))
 )
 
-;;@ (spec (sig (args) (r))
-;;@     (assertions (= (r) (Opcode.Iadd (xs) (func (bvlist(2)) (bv)) {
-;;@         (+ (get (xs) 0) (get (xs) 1))
-;;@      }))))
-;;decl Opcode.Iadd
-
-;; TODO: fix annotation
-;;@ (spec (sig (args) (r))
-;;@     (assertions (= (r) (Opcode.Iadd (xs) (func (bv) (bv)) {
-;;@         (+ (get (xs) 0) (get (xs) 1))
-;;@      }))))
-;;decl Opcode.Rotl1
-
-;;@ (spec (sig (args opcode: func(bvlist(2)) (bv), arg_list) (ret))
-;;@     (assertions (= ((opcode)((arg_list))) (ret))))
-;;decl InstructionData.Binary
-
-;; TODO: fix annotation
-;;  (UnaryImm (opcode Opcode) (imm Imm64))
-;;@ (spec (sig (args opcode: func(bv) (bv), arg_list) (ret))
-;;@     (assertions (= ((opcode)((arg_list))) (ret))))
-;;decl InstructionData.UnaryImm
-
 
 ;;@ (spec (sig (args a, b) (r))
 ;;@     (assertions (= (+ (a) (b)) (r))))
@@ -915,6 +892,8 @@
     (inst_data (InstructionData.Binary (Opcode.Iadd) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args a, b) (r))
+;;@     (assertions (= (- (a) (b)) (r))))
 (decl isub (Value Value) Inst)
 (extractor
     (isub x y)
