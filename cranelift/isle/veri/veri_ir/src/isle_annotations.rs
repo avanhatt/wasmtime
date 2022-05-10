@@ -121,6 +121,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 Expr::Const(Const {
                     ty: Type::Int,
                     value: 64_i128,
+                    width: 128,
                 }),
             );
             let func = TermSignature {

@@ -48,7 +48,7 @@ impl<'ctx> TypeContext<'ctx> {
             "ImmShift" => VIRType::BitVector(6),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
-            "Reg" | "Inst" | "Value" | "InstructionData" => self.ty.clone(),
+            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
 
             // For now, hard code errors for these types that we later want to 
             // explicitly mark as unsafe.
@@ -130,6 +130,7 @@ impl<'ctx> TypeContext<'ctx> {
             }),
             annotation_ir::Expr::Const(c) => match c.ty {
                 annotation_ir::Type::Int => VIRExpr::Const(VIRType::Int, c.value),
+                annotation_ir::Type::BitVector => VIRExpr::Const(VIRType::BitVector(c.width), c.value),
                 _ => todo!("Non-integer constants"),
             },
             annotation_ir::Expr::True => VIRExpr::True,
