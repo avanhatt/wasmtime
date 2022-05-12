@@ -24,20 +24,6 @@ trait ToVIRExpr {
 impl ToVIRExpr for Pattern {
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
         ctx.interp_pattern(self, ty)
-        // match self {
-        //     Pattern::Pattern(pat) => ctx.interp_pattern(pat, ty),
-        //     Pattern::Expr(expr) => match expr {
-        //         Expr::Term(_, _, _) => todo!(),
-        //         Expr::Var(_, varid) => {
-        //             let var = ctx.new_var("x", ty);
-        //             ctx.var_map.insert(*varid, var.clone());
-        //             VIRExpr::Var(var)
-        //         }
-        //         Expr::ConstInt(_, _) => todo!(),
-        //         Expr::ConstPrim(_, _) => todo!(),
-        //         Expr::Let { .. } => todo!(),
-        //     },
-        // }
     }
 
     fn type_id(&self) -> TypeId {

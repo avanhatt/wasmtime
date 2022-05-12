@@ -50,7 +50,7 @@ impl<'ctx> TypeContext<'ctx> {
             // register width for some of these
             "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
 
-            // For now, hard code errors for these types that we later want to 
+            // For now, hard code errors for these types that we later want to
             // explicitly mark as unsafe.
             "Opcode" => unreachable!(),
             "ALUOp" => unreachable!(),

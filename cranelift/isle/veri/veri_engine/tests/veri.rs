@@ -54,6 +54,11 @@ fn test_ineg() {
 }
 
 #[test]
+fn test_rotl_from_file() {
+    test_from_file("./examples/rotl.isle", just_8_result());
+}
+
+#[test]
 fn test_let() {
     test_from_file_self_contained("./tests/code/selfcontained/let.isle", just_8_result());
 }

@@ -11,6 +11,7 @@ use veri_ir::{
 
 use crate::interp::AssumptionContext;
 use crate::solver::run_solver_rule_path;
+use crate::termname::pattern_contains_termname;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
 /// terms on the left hand sides (LHS) and right hand sides (RHS).
@@ -201,6 +202,29 @@ pub fn verify_rules_for_type_with_lhs_root(
     ty: &VIRType,
 ) -> VerificationResult {
     for rule in rules_with_lhs_root(root, termenv, typeenv) {
+        let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, ty);
+        let paths = enumerate_paths_to_leaves(&rule_tree);
+        for rule_path in paths {
+            let result = run_solver_rule_path(rule_path);
+            if result != VerificationResult::Success {
+                return result;
+            }
+        }
+    }
+    VerificationResult::Success
+}
+
+pub fn verify_rules_for_type_wih_rule_filter(
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    annotationenv: &AnnotationEnv,
+    ty: &VIRType,
+    filter: impl Fn(&Rule, &TermEnv, &TypeEnv) -> bool 
+) -> VerificationResult {
+    for rule in &termenv.rules {
+        if !filter(&rule, termenv, typeenv) {
+            continue
+        }
         let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, ty);
         let paths = enumerate_paths_to_leaves(&rule_tree);
         for rule_path in paths {

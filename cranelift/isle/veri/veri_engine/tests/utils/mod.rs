@@ -1,11 +1,12 @@
+use cranelift_isle::sema::{Rule, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use veri_ir::{VIRType, VerificationResult};
 use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::isle_files_to_terms; // parse_isle_to_terms};
 use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
+use veri_ir::{VIRType, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -80,7 +81,10 @@ pub fn custom_result(f: &TestResultBuilder) -> TestResult {
 }
 
 // TODO: waiting on output thoughts. re do previous?
-fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
+fn test(
+    inputs: Vec<PathBuf>,
+    tr: TestResult,
+) -> () {
     let (typeenv, termenv) = isle_files_to_terms(&inputs);
     let annotation_env = parse_annotations(&inputs);
 
@@ -97,12 +101,42 @@ fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
     }
 }
 
+fn test_with_rule_filter(
+    inputs: Vec<PathBuf>,
+    tr: TestResult,
+    filter: impl Fn(&Rule, &TermEnv, &TypeEnv) -> bool 
+) -> () {
+    let (typeenv, termenv) = isle_files_to_terms(&inputs);
+    let annotation_env = parse_annotations(&inputs);
+
+    // For now, verify rules rooted in `lower`
+    for (bw, expected_result) in tr {
+        let result = verify_rules_for_type_with_rule_filter(
+            "lower",
+            &termenv,
+            &typeenv,
+            &annotation_env,
+            &VIRType::BitVector(bw as usize),
+        );
+        assert_eq!(result, expected_result);
+    }
+}
+
 pub fn test_from_file(s: &str, tr: TestResult) -> () {
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let input = PathBuf::from(s);
+    test(vec![clif_isle, prelude_isle, input], tr);
+}
+
+pub fn test_from_file_with_lhs_termname(filename: &str, termname: &str, tr: TestResult) -> () {
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let input = PathBuf::from(filename);
     test(vec![clif_isle, prelude_isle, input], tr);
 }
 
