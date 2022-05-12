@@ -4,6 +4,11 @@ use crate::isa::s390x::settings as s390x_settings;
 use crate::settings;
 use alloc::vec::Vec;
 
+#[cfg(test)]
+fn simm20_zero() -> SImm20 {
+    SImm20::maybe_from_i64(0).unwrap()
+}
+
 #[test]
 fn test_s390x_binemit() {
     let mut insns = Vec::<(Inst, &str, &str)>::new();
@@ -173,7 +178,7 @@ fn test_s390x_binemit() {
     ));
     insns.push((
         Inst::AluRRR {
-            alu_op: ALUOp::AndNot32,
+            alu_op: ALUOp::NotAnd32,
             rd: writable_gpr(1),
             rn: gpr(2),
             rm: gpr(3),
@@ -183,7 +188,7 @@ fn test_s390x_binemit() {
     ));
     insns.push((
         Inst::AluRRR {
-            alu_op: ALUOp::AndNot64,
+            alu_op: ALUOp::NotAnd64,
             rd: writable_gpr(4),
             rn: gpr(5),
             rm: gpr(6),
@@ -193,7 +198,7 @@ fn test_s390x_binemit() {
     ));
     insns.push((
         Inst::AluRRR {
-            alu_op: ALUOp::OrrNot32,
+            alu_op: ALUOp::NotOrr32,
             rd: writable_gpr(1),
             rn: gpr(2),
             rm: gpr(3),
@@ -203,7 +208,7 @@ fn test_s390x_binemit() {
     ));
     insns.push((
         Inst::AluRRR {
-            alu_op: ALUOp::OrrNot64,
+            alu_op: ALUOp::NotOrr64,
             rd: writable_gpr(4),
             rn: gpr(5),
             rm: gpr(6),
@@ -213,7 +218,7 @@ fn test_s390x_binemit() {
     ));
     insns.push((
         Inst::AluRRR {
-            alu_op: ALUOp::XorNot32,
+            alu_op: ALUOp::NotXor32,
             rd: writable_gpr(1),
             rn: gpr(2),
             rm: gpr(3),
@@ -223,13 +228,53 @@ fn test_s390x_binemit() {
     ));
     insns.push((
         Inst::AluRRR {
-            alu_op: ALUOp::XorNot64,
+            alu_op: ALUOp::NotXor64,
             rd: writable_gpr(4),
             rn: gpr(5),
             rm: gpr(6),
         },
         "B9676045",
         "nxgrk %r4, %r5, %r6",
+    ));
+    insns.push((
+        Inst::AluRRR {
+            alu_op: ALUOp::AndNot32,
+            rd: writable_gpr(1),
+            rn: gpr(2),
+            rm: gpr(3),
+        },
+        "B9F53012",
+        "ncrk %r1, %r2, %r3",
+    ));
+    insns.push((
+        Inst::AluRRR {
+            alu_op: ALUOp::AndNot64,
+            rd: writable_gpr(4),
+            rn: gpr(5),
+            rm: gpr(6),
+        },
+        "B9E56045",
+        "ncgrk %r4, %r5, %r6",
+    ));
+    insns.push((
+        Inst::AluRRR {
+            alu_op: ALUOp::OrrNot32,
+            rd: writable_gpr(1),
+            rn: gpr(2),
+            rm: gpr(3),
+        },
+        "B9753012",
+        "ocrk %r1, %r2, %r3",
+    ));
+    insns.push((
+        Inst::AluRRR {
+            alu_op: ALUOp::OrrNot64,
+            rd: writable_gpr(4),
+            rn: gpr(5),
+            rm: gpr(6),
+        },
+        "B9656045",
+        "ocgrk %r4, %r5, %r6",
     ));
 
     insns.push((
@@ -498,7 +543,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -512,7 +557,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -582,7 +627,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -652,7 +697,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -666,7 +711,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -736,7 +781,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -806,7 +851,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -820,7 +865,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -890,7 +935,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -932,7 +977,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -974,7 +1019,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -1573,7 +1618,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -1612,7 +1657,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },
@@ -1726,7 +1771,7 @@ fn test_s390x_binemit() {
             mem: MemArg::BXD20 {
                 base: gpr(2),
                 index: zero_reg(),
-                disp: SImm20::zero(),
+                disp: simm20_zero(),
                 flags: MemFlags::trusted(),
             },
         },

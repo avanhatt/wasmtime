@@ -5,7 +5,7 @@ use crate::sema::{TermEnv, TypeEnv};
 use crate::{ast, codegen, sema, trie};
 
 /// Compile the given AST definitions into Rust source code.
-pub fn compile(defs: &ast::Defs) -> Result<String> {
+pub fn compile(defs: &ast::Defs, options: &codegen::CodegenOptions) -> Result<String> {
     let mut typeenv = sema::TypeEnv::from_ast(defs)?;
     let termenv = sema::TermEnv::from_ast(
         &mut typeenv,
@@ -13,7 +13,7 @@ pub fn compile(defs: &ast::Defs) -> Result<String> {
         /* expand_internal_extractors */ true,
     )?;
     let tries = trie::build_tries(&typeenv, &termenv);
-    Ok(codegen::codegen(&typeenv, &termenv, &tries))
+    Ok(codegen::codegen(&typeenv, &termenv, &tries, options))
 }
 
 /// Construct the ISLE type and term environments for further analysis
