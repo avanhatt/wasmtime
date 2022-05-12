@@ -500,7 +500,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
  "cranelift-frontend",
@@ -508,14 +508,14 @@ dependencies = [
 
 [[package]]
 name = "cranelift-bforest"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-entity",
 ]
 
 [[package]]
 name = "cranelift-codegen"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "bincode",
  "cranelift-bforest",
@@ -537,18 +537,18 @@ dependencies = [
 
 [[package]]
 name = "cranelift-codegen-meta"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen-shared",
 ]
 
 [[package]]
 name = "cranelift-codegen-shared"
-version = "0.84.0"
+version = "0.85.0"
 
 [[package]]
 name = "cranelift-entity"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "serde",
 ]
@@ -576,7 +576,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-frontend"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
  "hashbrown",
@@ -596,7 +596,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-interpreter"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
  "cranelift-entity",
@@ -609,17 +609,16 @@ dependencies = [
 
 [[package]]
 name = "cranelift-isle"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "log",
  "miette",
  "tempfile",
- "thiserror",
 ]
 
 [[package]]
 name = "cranelift-jit"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "anyhow",
  "cranelift",
@@ -638,7 +637,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-module"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "anyhow",
  "cranelift-codegen",
@@ -647,7 +646,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-native"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
  "libc",
@@ -656,7 +655,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-object"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "anyhow",
  "cranelift-codegen",
@@ -670,14 +669,14 @@ dependencies = [
 
 [[package]]
 name = "cranelift-preopt"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
 ]
 
 [[package]]
 name = "cranelift-reader"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
  "smallvec",
@@ -686,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-serde"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "clap 3.1.15",
  "cranelift-codegen",
@@ -730,7 +729,7 @@ dependencies = [
 
 [[package]]
 name = "cranelift-wasm"
-version = "0.84.0"
+version = "0.85.0"
 dependencies = [
  "cranelift-codegen",
  "cranelift-entity",
@@ -1679,9 +1678,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.16"
+version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6389c490849ff5bc16be905ae24bc913a9c8892e19b2341dbc175e14c341c2b8"
+checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if",
 ]
@@ -1742,9 +1741,9 @@ checksum = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
 
 [[package]]
 name = "miette"
-version = "3.3.0"
+version = "4.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd2adcfcced5d625bf90a958a82ae5b93231f57f3df1383fee28c9b5096d35ed"
+checksum = "a565d01cf2dcab463159347d98a18f509fda8e4824e2965c3b430dd045ac1f23"
 dependencies = [
  "atty",
  "backtrace",
@@ -1755,15 +1754,16 @@ dependencies = [
  "supports-hyperlinks",
  "supports-unicode",
  "terminal_size",
- "textwrap 0.14.2",
+ "textwrap 0.15.0",
  "thiserror",
+ "unicode-width",
 ]
 
 [[package]]
 name = "miette-derive"
-version = "3.3.0"
+version = "4.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c01a8b61312d367ce87956bb686731f87e4c6dd5dbc550e8f06e3c24fb1f67f"
+checksum = "3240cd84b71bf89e5994030c21221f399a882251ed4b89849d3b8610fe8fe8ab"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1888,9 +1888,9 @@ dependencies = [
 
 [[package]]
 name = "num-traits"
-version = "0.2.14"
+version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a64b1ec5cda2586e284722486d802acf1f7dbdc623e2bfc57e65ca1cd099290"
+checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg 1.1.0",
  "libm",
@@ -3019,20 +3019,14 @@ dependencies = [
 
 [[package]]
 name = "textwrap"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0066c8d12af8b5acd21e00547c3797fde4e8677254a7ee429176ccebbe93dd80"
+checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
 dependencies = [
  "smawk",
  "unicode-linebreak",
  "unicode-width",
 ]
-
-[[package]]
-name = "textwrap"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
 
 [[package]]
 name = "thiserror"
@@ -3324,7 +3318,7 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasi-cap-std-sync"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3347,7 +3341,7 @@ dependencies = [
 
 [[package]]
 name = "wasi-common"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -3392,7 +3386,7 @@ dependencies = [
 
 [[package]]
 name = "wasi-tokio"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "cap-std",
@@ -3554,7 +3548,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3594,8 +3588,10 @@ dependencies = [
  "anyhow",
  "cap-std",
  "shuffling-allocator",
+ "target-lexicon",
  "wasi-cap-std-sync",
  "wasmtime",
+ "wasmtime-cli-flags",
  "wasmtime-wasi",
  "wasmtime-wasi-crypto",
  "wasmtime-wasi-nn",
@@ -3627,7 +3623,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-cache"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -3650,14 +3646,13 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-cli"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "async-trait",
  "clap 3.1.15",
  "criterion",
  "env_logger 0.9.0",
- "file-per-thread-logger",
  "filecheck",
  "humantime 2.1.0",
  "lazy_static",
@@ -3667,7 +3662,6 @@ dependencies = [
  "more-asserts",
  "num_cpus",
  "once_cell",
- "pretty_env_logger",
  "rayon",
  "rustix",
  "target-lexicon",
@@ -3678,6 +3672,7 @@ dependencies = [
  "wasmparser",
  "wasmtime",
  "wasmtime-cache",
+ "wasmtime-cli-flags",
  "wasmtime-cranelift",
  "wasmtime-environ",
  "wasmtime-runtime",
@@ -3691,8 +3686,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "wasmtime-cli-flags"
+version = "0.38.0"
+dependencies = [
+ "anyhow",
+ "clap 3.1.15",
+ "file-per-thread-logger",
+ "pretty_env_logger",
+ "rayon",
+ "wasmtime",
+]
+
+[[package]]
 name = "wasmtime-cranelift"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "cranelift-codegen",
@@ -3712,7 +3719,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-environ"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "cranelift-entity",
@@ -3730,7 +3737,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-fiber"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "backtrace",
  "cc",
@@ -3781,7 +3788,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-jit"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "addr2line",
  "anyhow",
@@ -3806,7 +3813,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-jit-debug"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "lazy_static",
  "object",
@@ -3815,7 +3822,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-runtime"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "backtrace",
@@ -3840,7 +3847,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-types"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "cranelift-entity",
  "serde",
@@ -3850,7 +3857,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-wasi"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "wasi-cap-std-sync",
@@ -3862,7 +3869,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-wasi-crypto"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "wasi-crypto",
@@ -3872,7 +3879,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-wasi-nn"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "openvino",
@@ -3883,7 +3890,7 @@ dependencies = [
 
 [[package]]
 name = "wasmtime-wast"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "wasmtime",
@@ -3942,7 +3949,7 @@ dependencies = [
 
 [[package]]
 name = "wiggle"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3959,7 +3966,7 @@ dependencies = [
 
 [[package]]
 name = "wiggle-generate"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "anyhow",
  "heck",
@@ -3972,7 +3979,7 @@ dependencies = [
 
 [[package]]
 name = "wiggle-macro"
-version = "0.37.0"
+version = "0.38.0"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -1,8 +1,5 @@
 //! This module defines s390x-specific machine instruction types.
 
-// Some variants are not constructed, but we still want them as options in the future.
-#![allow(dead_code)]
-
 use crate::binemit::{Addend, CodeOffset, Reloc};
 use crate::ir::{types, ExternalName, Opcode, Type};
 use crate::machinst::*;
@@ -196,9 +193,11 @@ impl Inst {
 
             // These depend on the opcode
             Inst::AluRRR { alu_op, .. } => match alu_op {
+                ALUOp::NotAnd32 | ALUOp::NotAnd64 => InstructionSet::MIE2,
+                ALUOp::NotOrr32 | ALUOp::NotOrr64 => InstructionSet::MIE2,
+                ALUOp::NotXor32 | ALUOp::NotXor64 => InstructionSet::MIE2,
                 ALUOp::AndNot32 | ALUOp::AndNot64 => InstructionSet::MIE2,
                 ALUOp::OrrNot32 | ALUOp::OrrNot64 => InstructionSet::MIE2,
-                ALUOp::XorNot32 | ALUOp::XorNot64 => InstructionSet::MIE2,
                 _ => InstructionSet::Base,
             },
             Inst::UnaryRR { op, .. } => match op {
@@ -936,12 +935,16 @@ impl Inst {
                     ALUOp::Orr64 => ("ogrk", true),
                     ALUOp::Xor32 => ("xrk", true),
                     ALUOp::Xor64 => ("xgrk", true),
-                    ALUOp::AndNot32 => ("nnrk", false),
-                    ALUOp::AndNot64 => ("nngrk", false),
-                    ALUOp::OrrNot32 => ("nork", false),
-                    ALUOp::OrrNot64 => ("nogrk", false),
-                    ALUOp::XorNot32 => ("nxrk", false),
-                    ALUOp::XorNot64 => ("nxgrk", false),
+                    ALUOp::NotAnd32 => ("nnrk", false),
+                    ALUOp::NotAnd64 => ("nngrk", false),
+                    ALUOp::NotOrr32 => ("nork", false),
+                    ALUOp::NotOrr64 => ("nogrk", false),
+                    ALUOp::NotXor32 => ("nxrk", false),
+                    ALUOp::NotXor64 => ("nxgrk", false),
+                    ALUOp::AndNot32 => ("ncrk", false),
+                    ALUOp::AndNot64 => ("ncgrk", false),
+                    ALUOp::OrrNot32 => ("ocrk", false),
+                    ALUOp::OrrNot64 => ("ocgrk", false),
                     _ => unreachable!(),
                 };
                 if have_rr && rd.to_reg() == rn {
@@ -2019,6 +2022,7 @@ impl Inst {
 /// Different forms of label references for different instruction formats.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LabelUse {
+    #[allow(dead_code)]
     /// RI-format branch.  16-bit signed offset.  PC-relative, offset is imm << 1.
     BranchRI,
     /// RIL-format branch.  32-bit signed offset.  PC-relative, offset is imm << 1.

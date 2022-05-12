@@ -188,21 +188,6 @@ jobs:
     # Check that the ISLE fuzz targets build too.
     - run: cargo fuzz build --dev --fuzz-dir ./cranelift/isle/fuzz
 
-  rebuild_isle:
-    name: Rebuild ISLE
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-    - uses: ./.github/actions/install-rust
-    - name: Rebuild ISLE DSL files
-      run: cargo build -p cranelift-codegen --features "rebuild-isle"
-    - name: Reformat
-      run: cargo fmt -p cranelift-codegen
-    - name: Check that the ISLE DSL files are up-to-date
-      run: git diff --exit-code
-
   # Perform all tests (debug mode) for `wasmtime`. This runs stable/beta/nightly
   # channels of Rust as well as macOS/Linux/Windows.
   test:
@@ -364,7 +349,7 @@ jobs:
         submodules: true
     - name: Install Rust
       run: rustup update stable && rustup default stable
-    - run: cd cranelift/codegen && cargo build --features "all-arch completely-skip-isle-for-ci-deterministic-check"
+    - run: cd cranelift/codegen && cargo build --features all-arch
     - run: ci/ensure_deterministic_build.sh
 
   # Perform release builds of `wasmtime` and `libwasmtime.so`. Builds on
@@ -459,6 +444,8 @@ jobs:
         curl -L https://github.com/mozilla/sccache/releases/download/0.2.13/sccache-0.2.13-x86_64-unknown-linux-musl.tar.gz | tar xzf -
         echo "`pwd`/sccache-0.2.13-x86_64-unknown-linux-musl" >> $GITHUB_PATH
         echo RUSTC_WRAPPER=sccache >> $GITHUB_ENV
-    - run: |
-        rustc scripts/publish.rs
-        ./publish verify
+    - run: rustc scripts/publish.rs
+    # Make sure the tree is publish-able as-is
+    - run: ./publish verify
+    # Make sure we can bump version numbers for the next release
+    - run: ./publish bump

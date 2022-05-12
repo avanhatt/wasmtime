@@ -1,8 +1,9 @@
 //! Lowered matching IR.
 
 use crate::lexer::Pos;
+use crate::log;
 use crate::sema::*;
-use std::collections::BTreeMap;
+use crate::StableMap;
 
 declare_id!(
     /// The id of an instruction in a `PatternSequence`.
@@ -340,7 +341,7 @@ impl PatternSequence {
         typeenv: &TypeEnv,
         termenv: &TermEnv,
         pat: &Pattern,
-        vars: &mut BTreeMap<VarId, Value>,
+        vars: &mut StableMap<VarId, Value>,
     ) {
         match pat {
             &Pattern::BindPattern(_ty, var, ref subpat) => {
@@ -571,9 +572,9 @@ impl ExprSequence {
         typeenv: &TypeEnv,
         termenv: &TermEnv,
         expr: &Expr,
-        vars: &BTreeMap<VarId, Value>,
+        vars: &StableMap<VarId, Value>,
     ) -> Value {
-        log::trace!("gen_expr: expr {:?}", expr);
+        log!("gen_expr: expr {:?}", expr);
         match expr {
             &Expr::ConstInt(ty, val) => self.add_const_int(ty, val),
             &Expr::ConstPrim(ty, val) => self.add_const_prim(ty, val),
@@ -645,13 +646,13 @@ pub fn lower_rule(
     expr_seq.pos = termenv.rules[rule.index()].pos;
 
     let ruledata = &termenv.rules[rule.index()];
-    let mut vars = BTreeMap::new();
+    let mut vars = StableMap::new();
     let root_term = ruledata
         .lhs
         .root_term()
         .expect("Pattern must have a term at the root");
 
-    log::trace!("lower_rule: ruledata {:?}", ruledata,);
+    log!("lower_rule: ruledata {:?}", ruledata,);
 
     // Lower the pattern, starting from the root input value.
     pattern_seq.gen_pattern(
