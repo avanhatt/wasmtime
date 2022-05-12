@@ -60,7 +60,7 @@ pub fn all_success_result() -> TestResult {
 }
 
 /// Only bitwidths under and including 64 should verify, rest inapplicable
-pub fn lt_64_success_result() -> TestResult {
+pub fn lte_64_success_result() -> TestResult {
     custom_result(&|w| {
         (
             w,
