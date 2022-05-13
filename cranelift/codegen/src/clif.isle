@@ -897,6 +897,8 @@
     (inst_data (InstructionData.Binary (Opcode.Isub) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (-(x)) (ret))))
 (decl ineg (Value) Inst)
 (extractor
     (ineg x)

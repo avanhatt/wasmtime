@@ -102,6 +102,7 @@ pub enum Type {
 pub struct Const {
     pub ty: Type,
     pub value: i128,
+    pub width: usize,
 }
 
 /// A bound function with named arguments, the VIR type signature, and the body

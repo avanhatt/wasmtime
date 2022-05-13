@@ -57,7 +57,7 @@ pub FunctionType: FunctionType = {
 };
 
 pub Const: Const = {
-    <v:Num> <n:UNum> ":" <t:Type> => Const{ty: t, value: v},
+    <v:Num> <n:UNum> ":" <t:Type> => Const{ty: t, value: v, width: n},
 };
 
 pub Function: Function = {
