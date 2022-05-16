@@ -166,6 +166,8 @@ pub enum VIRExpr {
     BVAdd(VIRType, Box<VIRExpr>, Box<VIRExpr>),
     BVSub(VIRType, Box<VIRExpr>, Box<VIRExpr>),
     BVAnd(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVOr(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVRotl(VIRType, Box<VIRExpr>, Box<VIRExpr>),
 
     // Conversions
     BVZeroExt(VIRType, usize, Box<VIRExpr>),
@@ -194,6 +196,8 @@ impl VIRExpr {
             VIRExpr::BVAdd(t, _, _) => t,
             VIRExpr::BVSub(t, _, _) => t,
             VIRExpr::BVAnd(t, _, _) => t,
+            VIRExpr::BVOr(t, _, _) => t,
+            VIRExpr::BVRotl(t, _, _) => t,
             VIRExpr::BVZeroExt(t, _, _) => t,
             VIRExpr::BVSignExt(t, _, _) => t,
             VIRExpr::BVExtract(t, _, _, _) => t,
@@ -231,7 +235,9 @@ impl VIRExpr {
             | VIRExpr::Lte(x, y)
             | VIRExpr::BVAdd(_, x, y)
             | VIRExpr::BVSub(_, x, y)
-            | VIRExpr::BVAnd(_, x, y) => {
+            | VIRExpr::BVAnd(_, x, y)
+            | VIRExpr::BVOr(_, x, y)
+            | VIRExpr::BVRotl(_, x, y) => {
                 (*x).for_each_subexpr(func);
                 (*y).for_each_subexpr(func)
             }

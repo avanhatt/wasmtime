@@ -45,6 +45,8 @@ where
         VIRExpr::BVAdd(ty, x, y) => VIRExpr::BVAdd(ty, f(x), f(y)),
         VIRExpr::BVSub(ty, x, y) => VIRExpr::BVSub(ty, f(x), f(y)),
         VIRExpr::BVAnd(ty, x, y) => VIRExpr::BVAnd(ty, f(x), f(y)),
+        VIRExpr::BVOr(ty, x, y) => VIRExpr::BVOr(ty, f(x), f(y)),
+        VIRExpr::BVRotl(ty, x, y) => VIRExpr::BVRotl(ty, f(x), f(y)),
         VIRExpr::BVZeroExt(ty, i, x) => VIRExpr::BVZeroExt(ty, i, f(x)),
         VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
         VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),

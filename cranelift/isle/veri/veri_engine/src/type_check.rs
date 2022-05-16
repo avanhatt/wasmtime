@@ -46,6 +46,11 @@ impl<'ctx> TypeContext<'ctx> {
             "Imm12" => VIRType::BitVector(12),
             "Imm64" => VIRType::BitVector(64),
             "ImmShift" => VIRType::BitVector(6),
+            "ImmLogic" => VIRType::BitVector(12),
+            "u64" => VIRType::BitVector(64),
+            "u8" => VIRType::BitVector(8),
+            "MoveWideConst" => VIRType::BitVector(16),
+            "OperandSize" => self.ty.clone(),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
             "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
@@ -115,12 +120,12 @@ impl<'ctx> TypeContext<'ctx> {
         };
         let expect_boxed_bool = |e: &annotation_ir::Expr, ctx: &mut Self| {
             let ve = ctx.type_expr(&*e);
-            assert!(ve.ty().is_bool());
+            assert!(ve.ty().is_bool(), "expect_boxed_bool got {:?}", ve);
             Box::new(ve)
         };
         let expect_boxed_bv = |e: &annotation_ir::Expr, ctx: &mut Self| {
             let ve = ctx.type_expr(&*e);
-            assert!(ve.ty().is_bv());
+            assert!(ve.ty().is_bv(), "expect_boxed_bv got {:?}", ve);
             Box::new(ve)
         };
         match term {
@@ -130,7 +135,9 @@ impl<'ctx> TypeContext<'ctx> {
             }),
             annotation_ir::Expr::Const(c) => match c.ty {
                 annotation_ir::Type::Int => VIRExpr::Const(VIRType::Int, c.value),
-                annotation_ir::Type::BitVector => VIRExpr::Const(VIRType::BitVector(c.width), c.value),
+                annotation_ir::Type::BitVector => {
+                    VIRExpr::Const(VIRType::BitVector(c.width), c.value)
+                }
                 _ => todo!("Non-integer constants"),
             },
             annotation_ir::Expr::True => VIRExpr::True,
@@ -149,7 +156,7 @@ impl<'ctx> TypeContext<'ctx> {
             annotation_ir::Expr::Eq(x, y) => {
                 let vx = expect_boxed(x, self);
                 let vy = expect_boxed(y, self);
-                assert_eq!(vx.ty(), vy.ty());
+                assert_eq!(vx.ty(), vy.ty(), "= {:?} {:?}", vx, vy);
                 VIRExpr::Eq(vx, vy)
             }
             annotation_ir::Expr::Lte(x, y) => {
@@ -188,6 +195,20 @@ impl<'ctx> TypeContext<'ctx> {
                 assert_eq!(vx.ty(), vy.ty());
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVAnd(vx.ty().clone(), vx, vy)
+            }
+            annotation_ir::Expr::BVOr(x, y) => {
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
+                assert_eq!(vx.ty(), vy.ty());
+                assert!(vx.ty().is_bv());
+                VIRExpr::BVOr(vx.ty().clone(), vx, vy)
+            }
+            annotation_ir::Expr::BVRotl(x, y) => {
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
+                assert_eq!(vx.ty(), vy.ty());
+                assert!(vx.ty().is_bv());
+                VIRExpr::BVRotl(vx.ty().clone(), vx, vy)
             }
             annotation_ir::Expr::BVZeroExt(i, x) => {
                 let vx = expect_boxed_bv(x, self);

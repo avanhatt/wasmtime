@@ -1311,6 +1311,8 @@
 (decl u8_into_uimm5 (u8) UImm5)
 (extern constructor u8_into_uimm5 u8_into_uimm5)
 
+;; (spec (sig (args x) (ret r)))
+;;       (assumptions (= r (zext 4 x)))))
 (decl u8_into_imm12 (u8) Imm12)
 (extern constructor u8_into_imm12 u8_into_imm12)
 
@@ -1366,6 +1368,8 @@
 ;; Instruction creation helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Helper for creating the zero register.
+;;@ (spec (sig (args) (r))
+;;@     (assertions (= (conv_from 1 (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
@@ -1655,9 +1659,13 @@
 
 ;; Helpers for generating `sub` instructions.
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 
+;;@ (spec (sig (args ty, reg, imm_arg) (ret))
+;;@     (assertions (= (-(reg) (conv_from 12 (imm_arg))) (ret))))
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 
@@ -1802,7 +1810,8 @@
 (rule (orr_not_shift ty x y shift) (alu_rrr_shift (ALUOp.OrrNot) ty x y shift))
 
 ;; Helpers for generating `orr` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (| (a) (b)) (r))))
 (decl orr (Type Reg Reg) Reg)
 (rule (orr ty x y) (alu_rrr (ALUOp.Orr) ty x y))
 
@@ -1813,7 +1822,8 @@
 (rule (orr_vec x y size) (vec_rrr (VecALUOp.Orr) x y size))
 
 ;; Helpers for generating `and` instructions.
-
+;;@ (spec (sig (args ty, reg, imm_arg) (ret))
+;;@     (assertions (= (& (reg) (conv_from 12 (imm_arg))) (ret))))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (rule (and_imm ty x y) (alu_rr_imm_logic (ALUOp.And) ty x y))
 
@@ -1870,7 +1880,8 @@
 (rule (vec_cnt x size) (vec_misc (VecMisc2.Cnt) x size))
 
 ;; Immediate value helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;@ (spec (sig (args x) (r))
+;;@     (assertions (= (conv_from 64 (x)) (r))))
 (decl imm (Type u64) Reg)
 
 ;; 16-bit immediate (shifted by 0, 16, 32 or 48 bits) in MOVZ
@@ -1905,6 +1916,8 @@
 (rule (put_in_reg_sext32 val @ (value_type $I64)) val)
 
 ;; Place a `Value` into a register, zero extending it to 32-bits
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl put_in_reg_zext32 (Value) Reg)
 (rule (put_in_reg_zext32 val @ (value_type (fits_in_32 ty)))
       (extend val $false (ty_bits ty) 32))

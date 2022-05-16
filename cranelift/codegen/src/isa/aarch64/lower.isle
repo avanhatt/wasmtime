@@ -2,6 +2,8 @@
 
 ;; The main lowering constructor term: takes a clif `Inst` and returns the
 ;; register(s) within which the lowered instruction's result values live.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;;;; Rules for `iconst` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

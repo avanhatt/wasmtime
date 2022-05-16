@@ -1,6 +1,9 @@
 mod utils;
-use utils::{just_8_result, lte_64_success_result};
-use utils::{test_from_file, test_from_file_custom_prelude, test_from_file_self_contained};
+use utils::{all_success_result, just_8_result, lte_64_success_result};
+use utils::{
+    test_from_file, test_from_file_custom_prelude, test_from_file_self_contained,
+    test_from_files_with_lhs_termname,
+};
 
 #[test]
 fn test_iadds() {
@@ -47,15 +50,16 @@ fn test_chained_iadd_from_file() {
 
 #[test]
 fn test_ineg() {
-    test_from_file(
-        "./examples/ineg.isle",
-        lte_64_success_result(),
-    )
+    test_from_file("./examples/ineg.isle", lte_64_success_result())
 }
 
 #[test]
 fn test_rotl_from_file() {
-    test_from_file("./examples/rotl.isle", just_8_result());
+    let files = vec![
+        "../../../codegen/src/isa/aarch64/inst.isle",
+        "../../../codegen/src/isa/aarch64/lower.isle",
+    ];
+    test_from_files_with_lhs_termname(files, "rotl", all_success_result());
 }
 
 #[test]

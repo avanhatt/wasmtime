@@ -113,6 +113,8 @@
 (extern constructor output_pair output_pair)
 
 ;; Construct a single-element `InstOutput` from a single register.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl output_reg (Reg) InstOutput)
 (rule (output_reg reg) (output (value_reg reg)))
 
@@ -383,6 +385,8 @@
 (extern extractor infallible u8_from_uimm8 u8_from_uimm8)
 
 ;; Extract a `u64` from an `Imm64`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl u64_from_imm64 (u64) Imm64)
 (extern extractor infallible u64_from_imm64 u64_from_imm64)
 

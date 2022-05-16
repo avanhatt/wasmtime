@@ -169,6 +169,7 @@ impl<'ctx> AssumptionContext<'ctx> {
     ) -> VIRExpr {
         let term = &self.termenv.terms[termid.index()];
         let term_name = &self.typeenv.syms[term.name.index()];
+        dbg!(&term_name);
         let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
         if let Some(annotation) = self.get_annotation_for_term(term_name, subterm_typeids, ty) {
             // The annotation should have the same number of arguments as given here
@@ -261,7 +262,8 @@ impl<'ctx> AssumptionContext<'ctx> {
                 let name = &self.typeenv.syms[sym.index()];
                 match name.as_str() {
                     "I64" => VIRExpr::Const(VIRType::Int, 64),
-                    _ => todo!(),
+                    "I32" => VIRExpr::Const(VIRType::Int, 64),
+                    _ => todo!("{:?}", &name),
                 }
             }
             Expr::Let { bindings, body, .. } => {

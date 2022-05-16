@@ -154,6 +154,8 @@ pub enum Expr {
     BVAdd(Box<Expr>, Box<Expr>),
     BVSub(Box<Expr>, Box<Expr>),
     BVAnd(Box<Expr>, Box<Expr>),
+    BVOr(Box<Expr>, Box<Expr>),
+    BVRotl(Box<Expr>, Box<Expr>),
 
     // Conversions
     BVZeroExt(usize, Box<Expr>),

@@ -73,6 +73,8 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVAdd(_, x, y) => binary("bvadd", x, y),
         VIRExpr::BVSub(_, x, y) => binary("bvsub", x, y),
         VIRExpr::BVAnd(_, x, y) => binary("bvand", x, y),
+        VIRExpr::BVOr(_, x, y) => binary("bvor", x, y),
+        VIRExpr::BVRotl(_, x, y) => binary("rotate", x, y),
         VIRExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
         VIRExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
         VIRExpr::BVExtract(_, l, h, x) => {
