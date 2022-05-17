@@ -853,9 +853,9 @@
         (small_rotr ty (put_in_reg_zext32 x) neg_shift)))
 
 ;; Specialization for the 8/16-bit case when the rotation amount is an immediate.
-(rule (lower (has_type (fits_in_16 ty) (rotl x (iconst k))))
-      (if-let n (imm_shift_from_imm64 ty k))
-      (small_rotr_imm ty (put_in_reg_zext32 x) (negate_imm_shift ty n)))
+;; (rule (lower (has_type (fits_in_16 ty) (rotl x (iconst k))))
+;;       (if-let n (imm_shift_from_imm64 ty k))
+;;       (small_rotr_imm ty (put_in_reg_zext32 x) (negate_imm_shift ty n)))
 
 ;; aarch64 doesn't have a left-rotate instruction, but a left rotation of K
 ;; places is effectively a right rotation of N - K places, if N is the integer's
@@ -866,40 +866,40 @@
 ;; amount.
 
 ;; General 32-bit case.
-(rule (lower (has_type $I32 (rotl x y)))
-      (let ((neg_shift Reg (sub $I32 (zero_reg) y)))
-        (a64_rotr $I32 x neg_shift)))
+;; (rule (lower (has_type $I32 (rotl x y)))
+;;       (let ((neg_shift Reg (sub $I32 (zero_reg) y)))
+;;         (a64_rotr $I32 x neg_shift)))
 
 ;; General 64-bit case.
-(rule (lower (has_type $I64 (rotl x y)))
-      (let ((neg_shift Reg (sub $I64 (zero_reg) y)))
-        (a64_rotr $I64 x neg_shift)))
+;; (rule (lower (has_type $I64 (rotl x y)))
+;;       (let ((neg_shift Reg (sub $I64 (zero_reg) y)))
+;;         (a64_rotr $I64 x neg_shift)))
 
 ;; Specialization for the 32-bit case when the rotation amount is an immediate.
-(rule (lower (has_type $I32 (rotl x (iconst k))))
-      (if-let n (imm_shift_from_imm64 $I32 k))
-      (a64_rotr_imm $I32 x (negate_imm_shift $I32 n)))
+;; (rule (lower (has_type $I32 (rotl x (iconst k))))
+;;       (if-let n (imm_shift_from_imm64 $I32 k))
+;;       (a64_rotr_imm $I32 x (negate_imm_shift $I32 n)))
 
 ;; Specialization for the 64-bit case when the rotation amount is an immediate.
-(rule (lower (has_type $I64 (rotl x (iconst k))))
-      (if-let n (imm_shift_from_imm64 $I64 k))
-      (a64_rotr_imm $I64 x (negate_imm_shift $I64 n)))
+;; (rule (lower (has_type $I64 (rotl x (iconst k))))
+;;       (if-let n (imm_shift_from_imm64 $I64 k))
+;;       (a64_rotr_imm $I64 x (negate_imm_shift $I64 n)))
 
 (decl negate_imm_shift (Type ImmShift) ImmShift)
 (extern constructor negate_imm_shift negate_imm_shift)
 
 ;; General 128-bit case.
-;;
+
 ;; TODO: much better codegen is possible with a constant amount.
-(rule (lower (has_type $I128 (rotl x y)))
-      (let ((val ValueRegs x)
-            (amt Reg (value_regs_get y 0))
-            (neg_amt Reg (sub $I64 (imm $I64 128) amt))
-            (lshift ValueRegs (lower_shl128 val amt))
-            (rshift ValueRegs (lower_ushr128 val neg_amt)))
-        (value_regs
-          (orr $I64 (value_regs_get lshift 0) (value_regs_get rshift 0))
-          (orr $I64 (value_regs_get lshift 1) (value_regs_get rshift 1)))))
+;; (rule (lower (has_type $I128 (rotl x y)))
+;;       (let ((val ValueRegs x)
+;;             (amt Reg (value_regs_get y 0))
+;;             (neg_amt Reg (sub $I64 (imm $I64 128) amt))
+;;             (lshift ValueRegs (lower_shl128 val amt))
+;;             (rshift ValueRegs (lower_ushr128 val neg_amt)))
+;;         (value_regs
+;;           (orr $I64 (value_regs_get lshift 0) (value_regs_get rshift 0))
+;;           (orr $I64 (value_regs_get lshift 1) (value_regs_get rshift 1)))))
 
 ;;;; Rules for `rotr` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -951,6 +951,9 @@
             (val_lshift Reg (lsl $I32 val neg_amt)))
         (orr $I32 val_lshift val_rshift)))
 
+;; TODO AVH
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (0i12:bv) (ret))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 

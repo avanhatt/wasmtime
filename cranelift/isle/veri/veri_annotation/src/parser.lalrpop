@@ -91,6 +91,8 @@ pub Expr: Box<Expr> = {
     "(" "&" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAnd(u, v)),
     "(" "|" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVOr(u, v)),
     "(" "rotl" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVRotl(u, v)),
+    "(" "shl" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVShl(u, v)),
+    "(" "shr" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVShr(u, v)),
 
     "(" "zero_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVZeroExt(n, v)),
     "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),

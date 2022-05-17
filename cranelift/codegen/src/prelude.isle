@@ -264,6 +264,9 @@
 (extern const $F64X2 Type)
 
 ;; Get the bit width of a given type.
+;; TODO AVH
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (0i8:bv) (ret))))
 (decl pure ty_bits (Type) u8)
 (extern constructor ty_bits ty_bits)
 

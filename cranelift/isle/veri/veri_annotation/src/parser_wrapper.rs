@@ -7,7 +7,13 @@ use veri_ir::annotation_ir::{TermAnnotation};
 fn get_term(isle: &str) -> &str {
     assert!(isle.contains("decl"));
     let tokens: Vec<&str> = isle.split(' ').collect();
-    tokens[1]
+    let first_token = tokens[1];
+    // Stopgap for now
+    if first_token != "pure" {
+        first_token
+    } else {
+        tokens[2]
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -37,7 +43,7 @@ pub fn parse_annotations(files: &Vec<PathBuf>) -> AnnotationEnv {
         let a = parse_annotations_str(&code);
 
         for k in a.annotation_map.keys() {
-            assert!(!annotation_env.contains_key(k));
+            assert!(!annotation_env.contains_key(k), "double definition for key: {:?}", k);
             annotation_env.insert(k.clone(), a.annotation_map[k].clone());
         }
     }

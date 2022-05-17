@@ -210,6 +210,20 @@ impl<'ctx> TypeContext<'ctx> {
                 assert!(vx.ty().is_bv());
                 VIRExpr::BVRotl(vx.ty().clone(), vx, vy)
             }
+            annotation_ir::Expr::BVShl(x, y) => {
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
+                assert_eq!(vx.ty(), vy.ty());
+                assert!(vx.ty().is_bv());
+                VIRExpr::BVShl(vx.ty().clone(), vx, vy)
+            }
+            annotation_ir::Expr::BVShr(x, y) => {
+                let vx = expect_boxed_bv(x, self);
+                let vy = expect_boxed_bv(y, self);
+                assert_eq!(vx.ty(), vy.ty());
+                assert!(vx.ty().is_bv());
+                VIRExpr::BVShr(vx.ty().clone(), vx, vy)
+            }
             annotation_ir::Expr::BVZeroExt(i, x) => {
                 let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
