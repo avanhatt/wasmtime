@@ -74,17 +74,15 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVSub(_, x, y) => binary("bvsub", x, y),
         VIRExpr::BVAnd(_, x, y) => binary("bvand", x, y),
         VIRExpr::BVOr(_, x, y) => binary("bvor", x, y),
-        VIRExpr::BVRotl(_, x, i) => {
+        VIRExpr::BVRotl(ty, x, i) => {
             // SMT bitvector rotate_left requires that the rotate amount be
             // statically specified. Instead, to use a dynamic amount, desugar
             // to shifts and bit arithmetic.
             format!(
-                // "(bvor (bvshl {x} {i}) (bvlshr {x} (bvsub {width} {i})))",
-                // "(bvsub {width} {i})",
-                "{x}",
+                "(bvor (bvshl {x} {i}) (bvlshr {x} (bvsub {width} {i})))",
                 x = vir_expr_to_rsmt2_str(*x),
-                // i = vir_expr_to_rsmt2_str(*i.clone()),
-                // width = i.ty().width()
+                i = vir_expr_to_rsmt2_str(*i.clone()),
+                width = format!("(_ bv{} {})", ty.width(), i.ty().width())
             )
         }
         VIRExpr::BVShl(_, x, y) => binary("bvshl", x, y),
