@@ -214,11 +214,20 @@ impl<'ctx> AssumptionContext<'ctx> {
     fn interp_pattern(&mut self, bvpat: &Pattern, ty: &VIRType) -> VIRExpr {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
-            Pattern::BindPattern(_, varid, subpat) => match **subpat {
+            Pattern::BindPattern(_, varid, subpat) => match &**subpat {
                 Pattern::Wildcard(..) => {
                     let var = self.new_var("x", ty);
                     self.var_map.insert(*varid, var.clone());
                     VIRExpr::Var(var)
+                }
+                Pattern::Term(_, termid, arg_patterns) => {
+                    let var = self.new_var("iflet_x", ty);
+                    let expr = self.interp_term_with_subexprs(&termid, arg_patterns.to_vec(), ty);
+                    self.var_map.insert(*varid, var.clone());
+                    let expr_var = VIRExpr::Var(var);
+                    self.assumptions
+                        .push(Assumption::new(VIRType::eq(expr_var.clone(), expr.clone())));
+                    expr_var
                 }
                 _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
             },
@@ -262,7 +271,8 @@ impl<'ctx> AssumptionContext<'ctx> {
                 let name = &self.typeenv.syms[sym.index()];
                 match name.as_str() {
                     "I64" => VIRExpr::Const(VIRType::Int, 64),
-                    "I32" => VIRExpr::Const(VIRType::Int, 64),
+                    "I32" => VIRExpr::Const(VIRType::Int, 64), 
+                    "false" => VIRExpr::Const(VIRType::Bool, 0),
                     _ => todo!("{:?}", &name),
                 }
             }

@@ -42,24 +42,29 @@ impl<'ctx> TypeContext<'ctx> {
             }
         };
         match clif_name.as_str() {
+            // primitive types
+            "bool" => VIRType::Bool,
+            "u8" => VIRType::BitVector(8),
+
+            // custom types
             "Type" => VIRType::Int,
             "Imm12" => VIRType::BitVector(12),
             "Imm64" => VIRType::BitVector(64),
             "ImmShift" => VIRType::BitVector(6),
             "ImmLogic" => VIRType::BitVector(12),
             "u64" => VIRType::BitVector(64),
-            "u8" => VIRType::BitVector(8),
             "MoveWideConst" => VIRType::BitVector(16),
             "OperandSize" => self.ty.clone(),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
-            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
+            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" | "WritableReg" => self.ty.clone(),
 
             // For now, hard code errors for these types that we later want to
             // explicitly mark as unsafe.
             "Opcode" => unreachable!(),
             "ALUOp" => unreachable!(),
             "ValueArray2" => unreachable!(),
+            "MInst" => unreachable!(),
             _ => unimplemented!("ty: {}", clif_name),
         }
     }

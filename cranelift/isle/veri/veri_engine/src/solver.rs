@@ -11,7 +11,8 @@ pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
         VIRType::BitVector(width) => format!("(_ BitVec {})", width),
         VIRType::BitVectorList(len, width) => format!("(_ BitVec {})", len * width),
         VIRType::Int => "Int".to_string(),
-        VIRType::Bool | VIRType::Function(..) => unreachable!(),
+        VIRType::Bool => "Bool".to_string(),
+        VIRType::Function(..) => unreachable!(),
     }
 }
 
