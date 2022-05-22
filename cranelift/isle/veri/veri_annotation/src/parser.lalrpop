@@ -100,6 +100,8 @@ pub Expr: Box<Expr> = {
         Box::new(Expr::BVExtract(s, t, v)),
     "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
     "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v)),
+    "(" "int2bv" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v)),
+    "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v)),
 
     "(" <f:Function> ")" => Box::new(Expr::Function(f)),
     "(" <a:FunctionApplication> ")" => Box::new(Expr::FunctionApplication(a)),

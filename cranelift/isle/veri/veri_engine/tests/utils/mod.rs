@@ -114,7 +114,7 @@ fn test_with_rule_filter(
             &VIRType::BitVector(bw as usize),
             &filter,
         );
-        // assert_eq!(result, expected_result);
+        assert_eq!(result, expected_result);
     }
 }
 

@@ -135,6 +135,9 @@ pub enum Expr {
     // Special terminal node: the current width
     TyWidth,
 
+    // Get the width of a bitvector
+    WidthOf(Box<Expr>),
+
     // Boolean operations
     Not(Box<Expr>),
     And(Box<Expr>, Box<Expr>),
@@ -170,6 +173,7 @@ pub enum Expr {
     // A special, high level conversion from a source width. This currently
     // assumes that the destination width is the LHS values BV width.
     BVConvFrom(usize, Box<Expr>),
+    BVIntToBv(Box<Expr>, Box<Expr>),
 
     Function(Function),
     FunctionApplication(FunctionApplication),

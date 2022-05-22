@@ -128,6 +128,11 @@ impl<'ctx> TypeContext<'ctx> {
             assert!(ve.ty().is_bv(), "expect_boxed_bv got {:?}", ve);
             Box::new(ve)
         };
+        let expect_boxed_int = |e: &annotation_ir::Expr, ctx: &mut Self| {
+            let ve = ctx.type_expr(&*e);
+            assert!(ve.ty().is_int(), "expect_boxed_int got {:?}", ve);
+            Box::new(ve)
+        };
         match term {
             annotation_ir::Expr::Var(s) => VIRExpr::Var(BoundVar {
                 name: s.clone(),
@@ -143,6 +148,9 @@ impl<'ctx> TypeContext<'ctx> {
             annotation_ir::Expr::True => VIRExpr::True,
             annotation_ir::Expr::False => VIRExpr::False,
             annotation_ir::Expr::TyWidth => VIRExpr::Const(VIRType::Int, self.ty.width() as i128),
+            annotation_ir::Expr::WidthOf(x) => {
+                VIRExpr::WidthOf(Box::new(self.type_expr(&*x)))
+            }
             annotation_ir::Expr::Not(e) => VIRExpr::Not(expect_boxed_bool(e, self)),
             annotation_ir::Expr::And(x, y) => {
                 VIRExpr::And(expect_boxed_bool(x, self), expect_boxed_bool(y, self))
@@ -245,16 +253,21 @@ impl<'ctx> TypeContext<'ctx> {
             }
             annotation_ir::Expr::BVConvTo(dest, x) => {
                 let vx = expect_boxed_bv(x, self);
-                assert!(vx.ty().is_bv());
+                assert!(vx.ty().is_bv() || vx.ty().is_int());
                 assert!(self.ty.is_bv());
-                let width_diff = (*dest as i128) - (vx.ty().width() as i128);
                 let new_ty = VIRType::BitVector(*dest);
-                match width_diff.cmp(&0) {
-                    Ordering::Less => VIRExpr::BVExtract(new_ty, 0, *dest - 1, vx),
-                    Ordering::Greater => {
-                        VIRExpr::BVZeroExt(new_ty, width_diff.try_into().unwrap(), vx)
+                match vx.ty() {
+                    VIRType::BitVector(w) => {
+                        let width_diff = (*dest as i128) - (*w as i128);
+                        match width_diff.cmp(&0) {
+                            Ordering::Less => VIRExpr::BVExtract(new_ty, 0, *dest - 1, vx),
+                            Ordering::Greater => {
+                                VIRExpr::BVZeroExt(new_ty, width_diff.try_into().unwrap(), vx)
+                            }
+                            Ordering::Equal => *vx,
+                        }
                     }
-                    Ordering::Equal => *vx,
+                    _ => unreachable!("{:?}", vx.ty())
                 }
             }
             annotation_ir::Expr::BVConvFrom(src, x) => {
@@ -271,6 +284,11 @@ impl<'ctx> TypeContext<'ctx> {
                     }
                     Ordering::Equal => *vx,
                 }
+            }
+            annotation_ir::Expr::BVIntToBv(width, x) => {
+                let width = expect_boxed_bv(width, self);
+                let vx = expect_boxed_int(x, self);
+                VIRExpr::BVIntToBV(width.ty().clone(), vx)
             }
             annotation_ir::Expr::Function(f) => {
                 let func_ty = self.concretize_type(&f.ty);

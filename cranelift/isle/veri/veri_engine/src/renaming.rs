@@ -35,6 +35,7 @@ where
         VIRExpr::Function(..) => expr,
         VIRExpr::Var(v) => VIRExpr::Var(rename(&v)),
         VIRExpr::Not(x) => VIRExpr::Not(f(x)),
+        VIRExpr::WidthOf(x) => VIRExpr::WidthOf(f(x)),
         VIRExpr::And(x, y) => VIRExpr::And(f(x), f(y)),
         VIRExpr::Or(x, y) => VIRExpr::Or(f(x), f(y)),
         VIRExpr::Imp(x, y) => VIRExpr::Imp(f(x), f(y)),
@@ -52,6 +53,7 @@ where
         VIRExpr::BVZeroExt(ty, i, x) => VIRExpr::BVZeroExt(ty, i, f(x)),
         VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
         VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),
+        VIRExpr::BVIntToBV(ty, x) => VIRExpr::BVIntToBV(ty, f(x)),
         VIRExpr::FunctionApplication(app) => VIRExpr::FunctionApplication(FunctionApplication {
             ty: app.ty,
             func: f(app.func),

@@ -952,8 +952,9 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;; TODO AVH
+;;    (assertions (= (int2bv (widthof (ret)) (x)) (ret))))
 ;;@ (spec (sig (args x) (ret))
-;;@     (assertions (= (0i12:bv) (ret))))
+;;@   (assertions (= (7i12:bv) (ret))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 

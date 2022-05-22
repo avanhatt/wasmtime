@@ -92,6 +92,9 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVExtract(_, l, h, x) => {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
         }
+        VIRExpr::BVIntToBV(ty, x) => {
+            format!("((_ int2bv {}) {})", ty.width(), vir_expr_to_rsmt2_str(*x))
+        }
         VIRExpr::FunctionApplication(app) => {
             let func_name = vir_expr_to_rsmt2_str(*app.func);
             let args: Vec<String> = app
@@ -122,6 +125,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             let end = start + ty.width() - 1;
             vir_expr_to_rsmt2_str(VIRExpr::BVExtract(ty, start, end, ls))
         }
+        VIRExpr::WidthOf(x) => x.ty().width().to_string(),
     }
 }
 
