@@ -45,7 +45,16 @@ pub fn build_rule_tree_rec(
     let mut max_height = 0;
 
     // TODO: need more complicated logic for multiple undefined terms
-    assert!(rule_sem.rhs_undefined_terms.len() <= 1);
+    assert!(
+        rule_sem.rhs_undefined_terms.len() <= 1,
+        "too many undefined terms: {}",
+        rule_sem
+            .rhs_undefined_terms
+            .iter()
+            .map(|t| t.name.clone())
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
 
     for t in rule_sem
         .rhs_undefined_terms
@@ -64,7 +73,7 @@ pub fn build_rule_tree_rec(
             t.name
         );
         let mut subtrees = vec![];
-        for next_rule in rules_with_lhs_root(&t.name, termenv, typeenv) {
+        for next_rule in rules_with_lhs_root(dbg!(&t.name), termenv, typeenv) {
             let child =
                 build_rule_tree_rec(ctx, &next_rule, termenv, typeenv, depth + 1, max_depth);
             if child.height > max_height {
@@ -200,7 +209,26 @@ pub fn verify_rules_for_type_with_lhs_root(
     annotationenv: &AnnotationEnv,
     ty: &VIRType,
 ) -> VerificationResult {
-    for rule in rules_with_lhs_root(root, termenv, typeenv) {
+    verify_rules_for_type_wih_rule_filter(
+        termenv,
+        typeenv,
+        annotationenv,
+        ty,
+        |rule, termenv, typeenv| pattern_term_name(rule.lhs.clone(), termenv, typeenv) == root,
+    )
+}
+
+pub fn verify_rules_for_type_wih_rule_filter(
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    annotationenv: &AnnotationEnv,
+    ty: &VIRType,
+    filter: impl Fn(&Rule, &TermEnv, &TypeEnv) -> bool,
+) -> VerificationResult {
+    for rule in &termenv.rules {
+        if !filter(&rule, termenv, typeenv) {
+            continue;
+        }
         let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, ty);
         let paths = enumerate_paths_to_leaves(&rule_tree);
         for rule_path in paths {

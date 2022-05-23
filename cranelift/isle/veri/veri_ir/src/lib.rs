@@ -149,6 +149,9 @@ pub enum VIRExpr {
     True,
     False,
 
+    // Special width
+    WidthOf(Box<VIRExpr>),
+
     // Boolean operations
     Not(Box<VIRExpr>),
     And(Box<VIRExpr>, Box<VIRExpr>),
@@ -166,11 +169,16 @@ pub enum VIRExpr {
     BVAdd(VIRType, Box<VIRExpr>, Box<VIRExpr>),
     BVSub(VIRType, Box<VIRExpr>, Box<VIRExpr>),
     BVAnd(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVOr(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVRotl(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVShl(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVShr(VIRType, Box<VIRExpr>, Box<VIRExpr>),
 
     // Conversions
     BVZeroExt(VIRType, usize, Box<VIRExpr>),
     BVSignExt(VIRType, usize, Box<VIRExpr>),
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
+    BVIntToBV(VIRType, Box<VIRExpr>),
 
     // Functions
     Function(Function),
@@ -188,20 +196,25 @@ impl VIRExpr {
     pub fn ty(&self) -> &VIRType {
         match &self {
             VIRExpr::Var(bv) => &bv.ty,
-            VIRExpr::Const(t, _) => t,
-            VIRExpr::BVNeg(t, _) => t,
-            VIRExpr::BVNot(t, _) => t,
-            VIRExpr::BVAdd(t, _, _) => t,
-            VIRExpr::BVSub(t, _, _) => t,
-            VIRExpr::BVAnd(t, _, _) => t,
-            VIRExpr::BVZeroExt(t, _, _) => t,
-            VIRExpr::BVSignExt(t, _, _) => t,
-            VIRExpr::BVExtract(t, _, _, _) => t,
+            VIRExpr::Const(t, _)
+            | VIRExpr::BVNeg(t, _)
+            | VIRExpr::BVNot(t, _)
+            | VIRExpr::BVAdd(t, _, _)
+            | VIRExpr::BVSub(t, _, _)
+            | VIRExpr::BVAnd(t, _, _)
+            | VIRExpr::BVOr(t, _, _)
+            | VIRExpr::BVRotl(t, _, _)
+            | VIRExpr::BVShl(t, _, _)
+            | VIRExpr::BVShr(t, _, _)
+            | VIRExpr::BVZeroExt(t, _, _)
+            | VIRExpr::BVSignExt(t, _, _)
+            | VIRExpr::BVExtract(t, _, _, _)
+            | VIRExpr::BVIntToBV(t, _)
+            | VIRExpr::List(t, _)
+            | VIRExpr::GetElement(t, _, _) => t,
             VIRExpr::Function(func) => &func.ty,
             VIRExpr::UndefinedTerm(term) => &term.ret.ty,
             VIRExpr::FunctionApplication(app) => &app.ty,
-            VIRExpr::List(t, _) => t,
-            VIRExpr::GetElement(t, _, _) => t,
             VIRExpr::True
             | VIRExpr::False
             | VIRExpr::Not(..)
@@ -210,6 +223,7 @@ impl VIRExpr {
             | VIRExpr::Imp(..)
             | VIRExpr::Eq(..)
             | VIRExpr::Lte(..) => &VIRType::Bool,
+            VIRExpr::WidthOf(x) => x.ty(),
         }
     }
 
@@ -223,7 +237,9 @@ impl VIRExpr {
             | VIRExpr::BVZeroExt(_, _, x)
             | VIRExpr::BVSignExt(_, _, x)
             | VIRExpr::BVExtract(_, _, _, x)
-            | VIRExpr::GetElement(_, x, _) => (*x).for_each_subexpr(func),
+            | VIRExpr::BVIntToBV(_, x)
+            | VIRExpr::GetElement(_, x, _)
+            | VIRExpr::WidthOf(x) => (*x).for_each_subexpr(func),
             VIRExpr::And(x, y)
             | VIRExpr::Or(x, y)
             | VIRExpr::Imp(x, y)
@@ -231,7 +247,11 @@ impl VIRExpr {
             | VIRExpr::Lte(x, y)
             | VIRExpr::BVAdd(_, x, y)
             | VIRExpr::BVSub(_, x, y)
-            | VIRExpr::BVAnd(_, x, y) => {
+            | VIRExpr::BVAnd(_, x, y)
+            | VIRExpr::BVOr(_, x, y)
+            | VIRExpr::BVRotl(_, x, y) 
+            | VIRExpr::BVShl(_, x, y)
+            | VIRExpr::BVShr(_, x, y)=> {
                 (*x).for_each_subexpr(func);
                 (*y).for_each_subexpr(func)
             }

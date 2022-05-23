@@ -73,10 +73,27 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVAdd(_, x, y) => binary("bvadd", x, y),
         VIRExpr::BVSub(_, x, y) => binary("bvsub", x, y),
         VIRExpr::BVAnd(_, x, y) => binary("bvand", x, y),
+        VIRExpr::BVOr(_, x, y) => binary("bvor", x, y),
+        VIRExpr::BVRotl(ty, x, i) => {
+            // SMT bitvector rotate_left requires that the rotate amount be
+            // statically specified. Instead, to use a dynamic amount, desugar
+            // to shifts and bit arithmetic.
+            format!(
+                "(bvor (bvshl {x} {i}) (bvlshr {x} (bvsub {width} {i})))",
+                x = vir_expr_to_rsmt2_str(*x),
+                i = vir_expr_to_rsmt2_str(*i.clone()),
+                width = format!("(_ bv{} {})", ty.width(), i.ty().width())
+            )
+        }
+        VIRExpr::BVShl(_, x, y) => binary("bvshl", x, y),
+        VIRExpr::BVShr(_, x, y) => binary("bvlshr", x, y),
         VIRExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
         VIRExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
         VIRExpr::BVExtract(_, l, h, x) => {
             format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
+        }
+        VIRExpr::BVIntToBV(ty, x) => {
+            format!("((_ int2bv {}) {})", ty.width(), vir_expr_to_rsmt2_str(*x))
         }
         VIRExpr::FunctionApplication(app) => {
             let func_name = vir_expr_to_rsmt2_str(*app.func);
@@ -108,6 +125,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             let end = start + ty.width() - 1;
             vir_expr_to_rsmt2_str(VIRExpr::BVExtract(ty, start, end, ls))
         }
+        VIRExpr::WidthOf(x) => x.ty().width().to_string(),
     }
 }
 
