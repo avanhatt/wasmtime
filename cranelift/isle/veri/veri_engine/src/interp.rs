@@ -183,6 +183,7 @@ impl<'ctx> AssumptionContext<'ctx> {
     ) -> VIRExpr {
         let term = &self.termenv.terms[termid.index()];
         let term_name = &self.typeenv.syms[term.name.index()];
+        println!("Interpreting term: {}", term_name);
         let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
         if let Some(annotation) = self.get_annotation_for_term(term_name, subterm_typeids, ty) {
             // The annotation should have the same number of arguments as given here
