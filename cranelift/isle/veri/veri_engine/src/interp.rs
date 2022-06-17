@@ -42,7 +42,10 @@ impl ToVIRExpr for Pattern {
 
 /// Type for term arguments for ISLE RHS terms.
 impl ToVIRExpr for isle::sema::Expr {
+
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
+	println!("MOREEEEEEEE {:?}", self);
+	self.pretty_print(ctx.typeenv, None);
         ctx.interp_sema_expr(self, ty)
     }
 

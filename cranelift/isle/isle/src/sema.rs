@@ -494,8 +494,6 @@ pub enum Expr {
     },
 }
 
-
-
 impl Pattern {
     /// Get this pattern's type.
     pub fn ty(&self) -> TypeId {
@@ -534,18 +532,22 @@ impl Expr {
 
     /// Pretty print the Sema expression.
     /// Not using pretty trait (yet?).
-    pub fn pretty_print(&self, tyenv: &TypeEnv) -> () {
+    pub fn pretty_print(&self, tyenv: &TypeEnv, bs: Option<Vec<(VarId, TypeId, Box<Expr>)>>) -> () {
 	match self {
 	    Expr::Term(ty_id, term_id, exprs) => {
-		let ty = &tyenv.types[ty_id.index()];
-		let term = panic!();
-		panic!();
+		let ty = &tyenv.types[ty_id.index()].name(tyenv);
+		// let term = panic!();
+		println!("Term type is: {:?}", ty);
 	    },
 	    Expr::Var(ty_id, var_id) => {
-		let ty = &tyenv.types[ty_id.index()];
-		let v = panic!();
+		let ty = &tyenv.types[ty_id.index()].name(tyenv);
+		println!("Term type is: {:?}", ty);		
 	    },
-	    _ => panic!()
+	    Expr::ConstInt(ty_id, num) => {
+		let ty = &tyenv.types[ty_id.index()];
+		println!("Num: {} of type {:?}", num, ty);
+	    },
+	    _ => panic!(),
 	}
     }
 }
