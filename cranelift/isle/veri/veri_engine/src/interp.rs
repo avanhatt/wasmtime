@@ -214,9 +214,9 @@ impl<'ctx> AssumptionContext<'ctx> {
     fn interp_pattern(&mut self, bvpat: &Pattern, ty: &VIRType) -> VIRExpr {
         match bvpat {
             // If we hit a bound wildcard, then the bound variable has no assumptions
-            Pattern::BindPattern(_, varid, subpat) => match **subpat {
-                Pattern::Wildcard(..) => {
-                    let var = self.new_var("x", ty);
+            Pattern::BindPattern(_, varid, subpat) => match &**subpat {
+                Pattern::Wildcard(_, Some(name)) => {
+		    let var = self.new_var(name, ty);
                     self.var_map.insert(*varid, var.clone());
                     VIRExpr::Var(var)
                 }

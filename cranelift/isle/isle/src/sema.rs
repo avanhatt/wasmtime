@@ -464,6 +464,10 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
+    /// NOTE: If we're using the wildcard inside of a bind pattern,
+    /// the optional string allows us to track the name of the matched
+    /// thing for de-bugging reasons. Otherwise, conceptually the second
+    /// field of this tuple is indeed a None, not an empty string. 
     Wildcard(TypeId, Option<String>),
 
     /// Match all of the following patterns of the given type.
