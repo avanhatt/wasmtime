@@ -464,7 +464,7 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
-    Wildcard(TypeId, Option<Sym>),
+    Wildcard(TypeId, Option<String>),
 
     /// Match all of the following patterns of the given type.
     And(TypeId, Vec<Pattern>),
@@ -1586,7 +1586,7 @@ impl TermEnv {
                         log!("binding var {:?}", var.0);
                         bindings.vars.push(BoundVar { name, id, ty });
                         Some((
-                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
+                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(var.0.clone())))),
                             ty,
                         ))
                     }
