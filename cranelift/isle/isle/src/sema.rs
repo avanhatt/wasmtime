@@ -494,6 +494,8 @@ pub enum Expr {
     },
 }
 
+
+
 impl Pattern {
     /// Get this pattern's type.
     pub fn ty(&self) -> TypeId {
@@ -528,6 +530,23 @@ impl Expr {
             &Self::ConstPrim(t, ..) => t,
             &Self::Let { ty: t, .. } => t,
         }
+    }
+
+    /// Pretty print the Sema expression.
+    /// Not using pretty trait (yet?).
+    pub fn pretty_print(&self, tyenv: &TypeEnv) -> () {
+	match self {
+	    Expr::Term(ty_id, term_id, exprs) => {
+		let ty = &tyenv.types[ty_id.index()];
+		let term = panic!();
+		panic!();
+	    },
+	    Expr::Var(ty_id, var_id) => {
+		let ty = &tyenv.types[ty_id.index()];
+		let v = panic!();
+	    },
+	    _ => panic!()
+	}
     }
 }
 
