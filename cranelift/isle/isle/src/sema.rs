@@ -532,16 +532,20 @@ impl Expr {
 
     /// Pretty print the Sema expression.
     /// Not using pretty trait (yet?).
-    pub fn pretty_print(&self, termenv: &TermEnv, tyenv: &TypeEnv, bs: Option<Vec<(VarId, TypeId, Box<Expr>)>>) -> () {
+    pub fn pretty_print(&self, termenv: &TermEnv, tyenv: &TypeEnv, bs: &Option<Vec<(VarId, TypeId, Box<Expr>)>>) -> () {
 	match self {
 	    Expr::Term(ty_id, term_id, exprs) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		// let term = panic!();
-		println!("Term type is: {:?}", ty);
+		let term_sym = &termenv.terms[term_id.index()].name;
+		let name = &tyenv.syms[term_sym.index()];
+		println!("Term {:?} :: {:?}", name, ty);
+		// for expr in exprs {
+		//     println!("Expr is: {:?}", expr);
+		// }
 	    },
 	    Expr::Var(ty_id, var_id) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		println!("Term type is: {:?}", ty);		
+		println!("Var term type is: {:?}", ty);		
 	    },
 	    Expr::ConstInt(ty_id, num) => {
 		let ty = &tyenv.types[ty_id.index()];
