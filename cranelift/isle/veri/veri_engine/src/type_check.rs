@@ -57,7 +57,7 @@ impl<'ctx> TypeContext<'ctx> {
             "OperandSize" => self.ty.clone(),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
-            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" | "WritableReg" => self.ty.clone(),
+            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
 
             // For now, hard code errors for these types that we later want to
             // explicitly mark as unsafe.
