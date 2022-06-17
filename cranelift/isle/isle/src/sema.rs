@@ -464,11 +464,8 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
-    /// NOTE: If we're using the wildcard inside of a bind pattern,
-    /// the optional string allows us to track the name of the matched
-    /// thing for de-bugging reasons. Otherwise, conceptually the second
-    /// field of this tuple is indeed a None, not an empty string. 
-    Wildcard(TypeId, Option<String>),
+    /// Optionally include a reference to the the bound var the wildcard is capturing 
+    Wildcard(TypeId, Option<Sym>),
 
     /// Match all of the following patterns of the given type.
     And(TypeId, Vec<Pattern>),
@@ -1590,7 +1587,7 @@ impl TermEnv {
                         log!("binding var {:?}", var.0);
                         bindings.vars.push(BoundVar { name, id, ty });
                         Some((
-                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(var.0.clone())))),
+                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
                             ty,
                         ))
                     }
