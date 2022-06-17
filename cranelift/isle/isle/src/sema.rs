@@ -464,7 +464,7 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
-    Wildcard(TypeId),
+    Wildcard(TypeId, Option<Sym>),
 
     /// Match all of the following patterns of the given type.
     And(TypeId, Vec<Pattern>),
@@ -1508,7 +1508,7 @@ impl TermEnv {
                         return None;
                     }
                 };
-                Some((Pattern::Wildcard(ty), ty))
+                Some((Pattern::Wildcard(ty, None), ty))
             }
             &ast::Pattern::And { ref subpats, pos } => {
                 let mut expected_ty = expected_ty;
@@ -1586,7 +1586,7 @@ impl TermEnv {
                         log!("binding var {:?}", var.0);
                         bindings.vars.push(BoundVar { name, id, ty });
                         Some((
-                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty))),
+                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
                             ty,
                         ))
                     }
