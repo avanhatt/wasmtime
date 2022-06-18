@@ -36,7 +36,7 @@
 ;; Helper for emitting `MInst.Extend` instructions.
 ;; TODO: replace dummy annotation with something meaningful
 ;;@ (spec (sig (args a, b, c, d) (ret))
-;;@     (assertions (= (a) (a))))
+;;@     (assertions (= (a) (ret)))) 
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
       (let ((dst WritableReg (temp_writable_reg $I64))

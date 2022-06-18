@@ -64,6 +64,11 @@ fn test_const() {
 }
 
 #[test]
+fn test_width() {
+    assert!(parser::WidthParser::new().parse("(regwidth)").is_ok());
+}
+
+#[test]
 fn test_expr() {
     // consts
     assert!(parser::ExprParser::new().parse("(a)").is_ok());
@@ -206,5 +211,13 @@ fn test_real_annotations() {
             (assertions (= (-(reg) (conv_from 12 (imm_arg))) (ret))))"
     ).unwrap();
     let expected = isle_annotation_for_term("sub_imm").unwrap();
+    assert_eq!(parsed, expected);
+
+    // uextend
+     let parsed = parser::TermAnnotationParser::new().parse(
+        "(spec (sig (args arg) (ret))
+            (assertions (= (ret) (conv_to (regwidth) (arg)))))"
+    ).unwrap();
+    let expected = isle_annotation_for_term("uextend").unwrap();
     assert_eq!(parsed, expected);
 }

@@ -69,6 +69,10 @@ pub FunctionApplication: FunctionApplication = {
     <f:Expr> "(" <x:ExprList> ")" => FunctionApplication{func: f, args: x},
 };
 
+pub Width: Box<Width> = {
+    "(" "regwidth" ")" => Box::new(Width::RegWidth),
+}
+
 pub Expr: Box<Expr> = {
     "(" <n:Ident> ")" => Box::new(Expr::Var(n)), 
     "(" <c:Const> ")" => Box::new(Expr::Const(c)),
@@ -98,7 +102,9 @@ pub Expr: Box<Expr> = {
     "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v)),
-    "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
+    "(" "conv_to" <n:UNum> <v:Expr> ")" => 
+        Box::new(Expr::BVConvTo(Box::new(Width::Const(n)), v)),
+    "(" "conv_to" <w:Width> <v:Expr> ")" => Box::new(Expr::BVConvTo(w, v)), 
     "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v)),
     "(" "int2bv" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v)),
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v)),

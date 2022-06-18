@@ -105,6 +105,13 @@ pub struct Const {
     pub width: usize,
 }
 
+/// Width arguments
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Width {
+    Const(usize),
+    RegWidth,
+}
+
 /// A bound function with named arguments, the VIR type signature, and the body
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
@@ -169,7 +176,7 @@ pub enum Expr {
 
     // A special, high level conversion to a destination width. This currently
     // assumes that the source width is the LHS values BV width.
-    BVConvTo(usize, Box<Expr>),
+    BVConvTo(Box<Width>, Box<Expr>),
     // A special, high level conversion from a source width. This currently
     // assumes that the destination width is the LHS values BV width.
     BVConvFrom(usize, Box<Expr>),

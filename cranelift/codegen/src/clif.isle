@@ -1467,9 +1467,8 @@
     (inst_data (InstructionData.Binary (Opcode.WideningPairwiseDotProductS) (value_array_2 x y)))
 )
 
-;; TODO: MP don't hardcode!!
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (ret) (conv_to 1 (arg)))))
+;;@     (assertions (= (ret) (conv_to (regwidth) (arg)))))
 (decl uextend (Value) Inst)
 (extractor
     (uextend x)

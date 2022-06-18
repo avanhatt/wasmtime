@@ -171,12 +171,14 @@ impl<'ctx> AssumptionContext<'ctx> {
         let term_name = &self.typeenv.syms[term.name.index()];
         println!("Interpreting term: {}", term_name);
         let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
+
         if let Some(annotation) = self.get_annotation_for_term(term_name, subterm_typeids, ty) {
             // The annotation should have the same number of arguments as given here
             assert_eq!(subterms.len(), annotation.func().args.len());
 
             for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
                 let subexpr = subterm.to_expr(self, &arg.ty);
+                //println!("processing term {}: {:#?}", &term_name, &subexpr);
                 self.assumptions.push(Assumption::new(VIRType::eq(
                     subexpr,
                     VIRExpr::Var(arg.clone()),

@@ -8,6 +8,8 @@ use cranelift_isle as isle;
 use isle::sema::{TypeEnv, TypeId};
 use veri_annotation::parser_wrapper::AnnotationEnv;
 
+const REG_WIDTH: usize = 64;
+
 #[derive(Clone, Debug)]
 pub struct TypeContext<'ctx> {
     // Default bitvector type
@@ -41,6 +43,8 @@ impl<'ctx> TypeContext<'ctx> {
                 self.typeenv.syms[sym.index()].clone()
             }
         };
+        println!("vir_type_for_type_id: {}", clif_name);
+
         match clif_name.as_str() {
             // primitive types
             "bool" => VIRType::Bool,
@@ -57,7 +61,7 @@ impl<'ctx> TypeContext<'ctx> {
             "OperandSize" => self.ty.clone(),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
-            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
+            "Reg" | "Value" | "ValueRegs" | "Inst" | "InstructionData" => self.ty.clone(),
 
             // For now, hard code errors for these types that we later want to
             // explicitly mark as unsafe.
@@ -260,12 +264,16 @@ impl<'ctx> TypeContext<'ctx> {
                 let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv() || vx.ty().is_int());
                 assert!(self.ty.is_bv());
-                let new_ty = VIRType::BitVector(*dest);
+                let width = match **dest {
+                    annotation_ir::Width::Const(c) => c,
+                    annotation_ir::Width::RegWidth => REG_WIDTH,
+                };
+                let new_ty = VIRType::BitVector(width);
                 match vx.ty() {
                     VIRType::BitVector(w) => {
-                        let width_diff = (*dest as i128) - (*w as i128);
+                        let width_diff = (width as i128) - (*w as i128);
                         match width_diff.cmp(&0) {
-                            Ordering::Less => VIRExpr::BVExtract(new_ty, 0, *dest - 1, vx),
+                            Ordering::Less => VIRExpr::BVExtract(new_ty, 0, width - 1, vx),
                             Ordering::Greater => {
                                 VIRExpr::BVZeroExt(new_ty, width_diff.try_into().unwrap(), vx)
                             }
