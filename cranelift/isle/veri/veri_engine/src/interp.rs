@@ -44,8 +44,9 @@ impl ToVIRExpr for Pattern {
 impl ToVIRExpr for isle::sema::Expr {
 
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
-	println!("MOREEEEEEEE {:?}", self);
+	println!("==============================================");
 	self.pretty_print(ctx.termenv, ctx.typeenv, &None);
+	println!("==============================================");	
         ctx.interp_sema_expr(self, ty)
     }
 

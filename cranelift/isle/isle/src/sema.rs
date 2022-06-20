@@ -539,17 +539,18 @@ impl Expr {
 		let term_sym = &termenv.terms[term_id.index()].name;
 		let name = &tyenv.syms[term_sym.index()];
 		println!("Term {:?} :: {:?}", name, ty);
-		// for expr in exprs {
-		//     println!("Expr is: {:?}", expr);
-		// }
+		for expr in exprs {
+		    expr.pretty_print(termenv, tyenv, bs);
+		}
 	    },
 	    Expr::Var(ty_id, var_id) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		println!("Var term type is: {:?}", ty);		
+		println!("Var term type is: {:?}", ty);
+		println!("Var ID is: {:?}", var_id);
 	    },
 	    Expr::ConstInt(ty_id, num) => {
-		let ty = &tyenv.types[ty_id.index()];
-		println!("Num: {} of type {:?}", num, ty);
+		let ty = &tyenv.types[ty_id.index()].name(tyenv);
+		println!("{:?} :: {:?}", num, ty);
 	    },
 	    _ => panic!(),
 	}
