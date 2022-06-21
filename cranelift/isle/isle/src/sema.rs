@@ -568,9 +568,14 @@ impl Expr {
 	    },
 	    Expr::ConstInt(ty_id, num) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		println!("{:?} :: {:?}", num, ty);
+		println!("Num {:?} :: {:?}", num, ty);
 	    },
-	    _ => panic!(),
+	    Expr::ConstPrim(ty_id, sym) => {
+		let ty = &tyenv.types[ty_id.index()].name(tyenv);
+		let name = &tyenv.syms[sym.index()];
+		println!("Const {:?} :: {:?}", name, ty);
+	    }
+	    _ => panic!("Unmatched arm in pretty print"),	 
 	}
     }
 }
