@@ -516,6 +516,22 @@ impl Pattern {
             _ => None,
         }
     }
+
+    /// Given a var ID, find its matching sym in the pattern (if it exists)
+    pub fn get_sym(&self, vid: &VarId) -> Option<Sym> {
+	match self {
+	    Self::BindPattern(_, var_id, pat) =>
+		if var_id == vid { pat.get_sym(vid) } else { None },
+	    Self::Term(_, _, pats) => {
+		let sym = pats.iter().filter_map(|pat| pat.get_sym(vid)).collect::<Vec<Sym>>();
+		if sym.is_empty() { return None }
+		assert!(sym.len() == 1);
+		return Some(sym[0]);
+	    },
+	    Self::Wildcard(_, Some(sym)) => Some(*sym),
+	    _ => return None
+	}
+    }
 }
 
 impl Expr {
@@ -532,7 +548,7 @@ impl Expr {
 
     /// Pretty print the Sema expression.
     /// Not using pretty trait (yet?).
-    pub fn pretty_print(&self, termenv: &TermEnv, tyenv: &TypeEnv, bs: &Option<Vec<(VarId, TypeId, Box<Expr>)>>) -> () {
+    pub fn pretty_print(&self, termenv: &TermEnv, tyenv: &TypeEnv, pat: &Pattern) -> () {
 	match self {
 	    Expr::Term(ty_id, term_id, exprs) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);
@@ -540,13 +556,15 @@ impl Expr {
 		let name = &tyenv.syms[term_sym.index()];
 		println!("Term {:?} :: {:?}", name, ty);
 		for expr in exprs {
-		    expr.pretty_print(termenv, tyenv, bs);
+		    expr.pretty_print(termenv, tyenv, pat);
 		}
 	    },
 	    Expr::Var(ty_id, var_id) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		println!("Var term type is: {:?}", ty);
-		println!("Var ID is: {:?}", var_id);
+		match pat.get_sym(var_id) {
+		    Some(sym) => println!("Var {:?} :: {:?}", &tyenv.syms[sym.index()], ty),
+		    None => println!("Unknown var (ID {:?})", var_id),
+		};
 	    },
 	    Expr::ConstInt(ty_id, num) => {
 		let ty = &tyenv.types[ty_id.index()].name(tyenv);

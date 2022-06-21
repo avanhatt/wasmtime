@@ -44,9 +44,6 @@ impl ToVIRExpr for Pattern {
 impl ToVIRExpr for isle::sema::Expr {
 
     fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
-	println!("==============================================");
-	self.pretty_print(ctx.termenv, ctx.typeenv, &None);
-	println!("==============================================");	
         ctx.interp_sema_expr(self, ty)
     }
 
@@ -312,7 +309,8 @@ impl<'ctx> AssumptionContext<'ctx> {
         let ty = self.type_ctx.ty.clone();
         let lhs = self.lhs_to_assumptions(&rule.lhs, &ty);
         let rhs = self.interp_sema_expr(&rule.rhs, &ty);
-
+	rule.rhs.pretty_print(self.termenv, self.typeenv, &rule.lhs);
+	
         // Drain rule-specific fields (TODO: make this cleaner)
         let assumptions = self
             .assumptions
