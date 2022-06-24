@@ -427,6 +427,52 @@ pub struct Rule {
     pub pos: Pos,
 }
 
+impl Rule {
+
+    /// Pretty-print an (expanded) ISLE rule 
+    pub fn pretty_rule(&self, termenv: &TermEnv, tyenv: &TypeEnv) -> () {
+	println!("Pretty rule");
+	let rule_name = &termenv.rules[self.id.index()];
+	println!("Rule id: {:?}", self.id);
+	
+    }
+
+}
+
+fn build_rule_string(expr: &Expr, pat: &Pattern, dbg: String,
+		    termenv: &TermEnv, tyenv: &TypeEnv) -> String {
+    match expr {
+	Expr::Term(ty_id, term_id, exprs) => {
+	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
+	    let term_sym = &termenv.terms[term_id.index()].name;
+	    let name = &tyenv.syms[term_sym.index()];
+	    println!("Term {:?} :: {:?}", name, ty); // pass string thru 
+	    for expr in exprs {
+		build_rule_string(expr, pat, dbg.clone(), termenv, tyenv);
+	    }
+	},
+	Expr::Var(ty_id, var_id) => {
+	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
+	    match pat.get_sym(var_id) {
+		Some(sym) => println!("({:?} :: {:?})", &tyenv.syms[sym.index()], ty),
+		None => panic!("Unknown var (ID {:?})", var_id),
+	    };
+	},
+	Expr::ConstInt(ty_id, num) => {
+	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
+	    println!("({:?} :: {:?})", num, ty);
+	},
+	Expr::ConstPrim(ty_id, sym) => {
+	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
+	    let name = &tyenv.syms[sym.index()];
+	    println!("({:?} :: {:?})", name, ty);
+	},
+	_ => panic!("Unmatched arm in pretty print"),	 
+    }
+    return "".to_string();
+}
+
+
 /// An `if-let` clause with a subpattern match on an expr after the
 /// main LHS matches.
 #[derive(Clone, Debug)]
@@ -544,39 +590,6 @@ impl Expr {
             &Self::ConstPrim(t, ..) => t,
             &Self::Let { ty: t, .. } => t,
         }
-    }
-
-    /// Pretty print the Sema expression.
-    /// Not using pretty trait (yet?).
-    pub fn pretty_print(&self, termenv: &TermEnv, tyenv: &TypeEnv, pat: &Pattern) -> () {
-	match self {
-	    Expr::Term(ty_id, term_id, exprs) => {
-		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		let term_sym = &termenv.terms[term_id.index()].name;
-		let name = &tyenv.syms[term_sym.index()];
-		println!("Term {:?} :: {:?}", name, ty);
-		for expr in exprs {
-		    expr.pretty_print(termenv, tyenv, pat);
-		}
-	    },
-	    Expr::Var(ty_id, var_id) => {
-		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		match pat.get_sym(var_id) {
-		    Some(sym) => println!("Var {:?} :: {:?}", &tyenv.syms[sym.index()], ty),
-		    None => println!("Unknown var (ID {:?})", var_id),
-		};
-	    },
-	    Expr::ConstInt(ty_id, num) => {
-		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		println!("Num {:?} :: {:?}", num, ty);
-	    },
-	    Expr::ConstPrim(ty_id, sym) => {
-		let ty = &tyenv.types[ty_id.index()].name(tyenv);
-		let name = &tyenv.syms[sym.index()];
-		println!("Const {:?} :: {:?}", name, ty);
-	    }
-	    _ => panic!("Unmatched arm in pretty print"),	 
-	}
     }
 }
 
