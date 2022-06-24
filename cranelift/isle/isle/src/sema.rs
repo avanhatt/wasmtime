@@ -553,7 +553,10 @@ impl Pattern {
 		println!("Use {:?}", tyenv.syms[sym.index()]);
 	    },
 	    Pattern::ConstInt(_, val) => println!("Match {:?}", val),
-	    Pattern::Term(_, _, pats) => {
+	    Pattern::Term(_, term_id, pats) => {
+		let term_sym = &termenv.terms[term_id.index()].name;
+		let name = &tyenv.syms[term_sym.index()];
+		println!("Enumerating patterns in {:?}", name);
 		for pat in pats { pat.pretty_pattern("".to_string(), syms, termenv, tyenv); } 
 	    },
 	    Pattern::Wildcard(_, None) => println!("Match _"),
