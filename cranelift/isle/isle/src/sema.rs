@@ -434,7 +434,13 @@ impl Rule {
 	println!("Pretty rule");
 	let rule_name = &termenv.rules[self.id.index()];
 	println!("Rule id: {:?}", self.id);
+	let var_map = &mut BTreeMap::new();
+	self.lhs.build_var_map(var_map);
+	println!("Var map: {:?}", var_map);
 	
+	build_rule_string(&self.rhs, &self.lhs, "".to_string(), termenv, tyenv);
+	println!("{:?}", self.lhs);
+	println!("{:?}", self.rhs);	
     }
 
 }
@@ -515,6 +521,30 @@ pub enum Pattern {
 
     /// Match all of the following patterns of the given type.
     And(TypeId, Vec<Pattern>),
+}
+
+impl Pattern {
+
+    /// Build associations between var ids and syms.
+    /// May change key to var id index 
+    pub fn build_var_map(&self, syms: &mut BTreeMap<VarId, Sym>) -> () {
+	match self {
+	    Pattern::BindPattern(_, vid, pat) => {
+		match **pat {
+		    Pattern::Wildcard(_, Some(sym)) => {
+			println!("Here");
+			syms.insert(*vid, sym);
+		    },
+		    Pattern::Wildcard(_, None) => panic!("Unexpected bind pattern: {:?}", pat), 
+		    _ => pat.build_var_map(syms),
+		}
+	    },
+	    Pattern::Term(_, _, pats) => for pat in pats { pat.build_var_map(syms) }, 
+	    Pattern::And(_, pats) => for pat in pats { pat.build_var_map(syms) },
+	    _ => return, 
+	}
+    }
+    
 }
 
 /// A right-hand side expression of some rule.
