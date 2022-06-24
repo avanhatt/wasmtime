@@ -432,15 +432,11 @@ impl Rule {
     /// Pretty-print an (expanded) ISLE rule 
     pub fn pretty_rule(&self, termenv: &TermEnv, tyenv: &TypeEnv) -> () {
 	println!("Pretty rule");
-	let rule_name = &termenv.rules[self.id.index()];
-	println!("Rule id: {:?}", self.id);
 	let var_map = &mut BTreeMap::new();
 	self.lhs.build_var_map(var_map);
-	println!("Var map: {:?}", var_map);
+	self.lhs.pretty_pattern("".to_string(), &var_map, &termenv, &tyenv);
 	
 	build_rule_string(&self.rhs, &self.lhs, "".to_string(), termenv, tyenv);
-	println!("{:?}", self.lhs);
-	println!("{:?}", self.rhs);	
     }
 
 }
@@ -526,15 +522,15 @@ pub enum Pattern {
 impl Pattern {
 
     /// Build associations between var ids and syms.
-    /// May change key to var id index 
+    /// Why do this after the fact instead of keeping a mapping of VarIds to Syms in
+    /// the Termenv/Typeenv? Because that's a lot of VarIds, and this is really only
+    /// import for debugging in the verification infrastructure. 
+    /// MLFB: May change key to var id index.
     pub fn build_var_map(&self, syms: &mut BTreeMap<VarId, Sym>) -> () {
 	match self {
 	    Pattern::BindPattern(_, vid, pat) => {
 		match **pat {
-		    Pattern::Wildcard(_, Some(sym)) => {
-			println!("Here");
-			syms.insert(*vid, sym);
-		    },
+		    Pattern::Wildcard(_, Some(sym)) => { syms.insert(*vid, sym); },
 		    Pattern::Wildcard(_, None) => panic!("Unexpected bind pattern: {:?}", pat), 
 		    _ => pat.build_var_map(syms),
 		}
@@ -544,8 +540,36 @@ impl Pattern {
 	    _ => return, 
 	}
     }
-    
+
+    /// Format the pattern for debugging 
+    pub fn pretty_pattern(&self, pretty: String, syms: &BTreeMap<VarId, Sym>,
+			  termenv: &TermEnv, tyenv: &TypeEnv) -> () {
+	match self {
+	    Pattern::BindPattern(_, _, rest) => {
+		rest.pretty_pattern(pretty, syms, termenv, tyenv);
+	    }
+	    Pattern::Var(_, vid) => {
+		let sym = syms[vid];
+		println!("Use {:?}", tyenv.syms[sym.index()]);
+	    },
+	    Pattern::ConstInt(_, val) => println!("Match {:?}", val),
+	    Pattern::Term(_, _, pats) => {
+		for pat in pats { pat.pretty_pattern("".to_string(), syms, termenv, tyenv); } 
+	    },
+	    Pattern::Wildcard(_, None) => println!("Match _"),
+	    Pattern::Wildcard(_, Some(sym)) => {
+		println!("Bind {:?}", tyenv.syms[sym.index()]);
+	    },
+	    Pattern::And(_, pats) => {
+		for pat in pats { pat.pretty_pattern("".to_string(), syms, termenv, tyenv); }
+	    },
+	    _ => panic!(),
+	}
+    }
+
 }
+
+
 
 /// A right-hand side expression of some rule.
 #[derive(Clone, Debug, PartialEq, Eq)]
