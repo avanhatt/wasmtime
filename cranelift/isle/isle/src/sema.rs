@@ -434,9 +434,10 @@ impl Rule {
 	println!("Pretty rule");
 	let var_map = &mut BTreeMap::new();
 	self.lhs.build_var_map(var_map);
-	self.lhs.pretty_pattern("".to_string(), &var_map, &termenv, &tyenv);
-	
-	build_rule_string(&self.rhs, &self.lhs, "".to_string(), termenv, tyenv);
+	println!("Lefthand side pattern:");
+	self.lhs.pretty_pattern(0, &var_map, &termenv, &tyenv);
+	println!("Righthand side expression:");
+	self.rhs.pretty_expr(0, &var_map, &termenv, &tyenv);
     }
 
 }
@@ -542,29 +543,29 @@ impl Pattern {
     }
 
     /// Format the pattern for debugging 
-    pub fn pretty_pattern(&self, pretty: String, syms: &BTreeMap<VarId, Sym>,
+    pub fn pretty_pattern(&self, indent: usize, syms: &BTreeMap<VarId, Sym>,
 			  termenv: &TermEnv, tyenv: &TypeEnv) -> () {
 	match self {
 	    Pattern::BindPattern(_, _, rest) => {
-		rest.pretty_pattern(pretty, syms, termenv, tyenv);
+		rest.pretty_pattern(indent, syms, termenv, tyenv);
 	    }
 	    Pattern::Var(_, vid) => {
 		let sym = syms[vid];
-		println!("Use {:?}", tyenv.syms[sym.index()]);
+		println!("{:in$}{}", "", tyenv.syms[sym.index()], in=indent);
 	    },
-	    Pattern::ConstInt(_, val) => println!("Match {:?}", val),
+	    Pattern::ConstInt(_, val) => println!("{:in$}match {:?}", "", val, in=indent),
 	    Pattern::Term(_, term_id, pats) => {
 		let term_sym = &termenv.terms[term_id.index()].name;
 		let name = &tyenv.syms[term_sym.index()];
-		println!("Enumerating patterns in {:?}", name);
-		for pat in pats { pat.pretty_pattern("".to_string(), syms, termenv, tyenv); } 
+		println!("{:in$}{}", "", name, in=indent);
+		for pat in pats { pat.pretty_pattern(indent + 2, syms, termenv, tyenv); } 
 	    },
-	    Pattern::Wildcard(_, None) => println!("Match _"),
+	    Pattern::Wildcard(_, None) => println!("{:in$}match _", "", in=indent),
 	    Pattern::Wildcard(_, Some(sym)) => {
-		println!("Bind {:?}", tyenv.syms[sym.index()]);
+		println!("{:in$}bind {}", "", tyenv.syms[sym.index()], in=indent);
 	    },
 	    Pattern::And(_, pats) => {
-		for pat in pats { pat.pretty_pattern("".to_string(), syms, termenv, tyenv); }
+		for pat in pats { pat.pretty_pattern(indent + 2, syms, termenv, tyenv); }
 	    },
 	    _ => panic!(),
 	}
@@ -647,6 +648,28 @@ impl Expr {
             &Self::ConstPrim(t, ..) => t,
             &Self::Let { ty: t, .. } => t,
         }
+    }
+
+    /// Pretty-print a righthand side expr for verification debugging 
+    pub fn pretty_expr(&self, indent: usize, syms: &BTreeMap<VarId, Sym>,
+		       termenv: &TermEnv, tyenv: &TypeEnv) -> () {
+	match self {
+	    Expr::Term(_, term_id, exprs) => {
+		let term_sym = &termenv.terms[term_id.index()].name;
+		let name = &tyenv.syms[term_sym.index()];
+		println!("{:in$}{}", "", name, in=indent);
+		for expr in exprs { expr.pretty_expr(indent + 2, syms, termenv, tyenv); }
+	    },
+	    Expr::Var(_, vid) => {
+		let sym = syms[vid];
+		println!("{:in$}{}", "", tyenv.syms[sym.index()], in=indent);		
+	    },
+	    Expr::ConstInt(_, val) => println!("{:in$}{}", "", val, in=indent),
+	    Expr::ConstPrim(_, sym) => {
+		println!("{}", tyenv.syms[sym.index()]);
+	    },
+	    _ => panic!(),
+	}
     }
 }
 
