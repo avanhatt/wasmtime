@@ -309,7 +309,7 @@ impl<'ctx> AssumptionContext<'ctx> {
         let ty = self.type_ctx.ty.clone();
         let lhs = self.lhs_to_assumptions(&rule.lhs, &ty);
         let rhs = self.interp_sema_expr(&rule.rhs, &ty);
-	println!("Pretty printing the rhs of the rule:");
+	println!("Verifying the following rule:");
 	rule.pretty_rule(self.termenv, self.typeenv);
 	
         // Drain rule-specific fields (TODO: make this cleaner)

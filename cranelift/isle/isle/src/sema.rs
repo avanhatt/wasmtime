@@ -428,53 +428,16 @@ pub struct Rule {
 }
 
 impl Rule {
-
-    /// Pretty-print an (expanded) ISLE rule 
+    /// Pretty-print an (expanded) ISLE rule
     pub fn pretty_rule(&self, termenv: &TermEnv, tyenv: &TypeEnv) -> () {
-	println!("Pretty rule");
-	let var_map = &mut BTreeMap::new();
-	self.lhs.build_var_map(var_map);
-	println!("Lefthand side pattern:");
-	self.lhs.pretty_pattern(0, &var_map, &termenv, &tyenv);
-	println!("Righthand side expression:");
-	self.rhs.pretty_expr(0, &var_map, &termenv, &tyenv);
+        let var_map = &mut BTreeMap::new();
+        self.lhs.build_var_map(var_map);
+        println!("Lefthand side pattern:");
+        self.lhs.pretty_pattern(0, &var_map, &termenv, &tyenv);
+        println!("Righthand side expression:");
+        self.rhs.pretty_expr(0, &var_map, &termenv, &tyenv);
     }
-
 }
-
-fn build_rule_string(expr: &Expr, pat: &Pattern, dbg: String,
-		    termenv: &TermEnv, tyenv: &TypeEnv) -> String {
-    match expr {
-	Expr::Term(ty_id, term_id, exprs) => {
-	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
-	    let term_sym = &termenv.terms[term_id.index()].name;
-	    let name = &tyenv.syms[term_sym.index()];
-	    println!("Term {:?} :: {:?}", name, ty); // pass string thru 
-	    for expr in exprs {
-		build_rule_string(expr, pat, dbg.clone(), termenv, tyenv);
-	    }
-	},
-	Expr::Var(ty_id, var_id) => {
-	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
-	    match pat.get_sym(var_id) {
-		Some(sym) => println!("({:?} :: {:?})", &tyenv.syms[sym.index()], ty),
-		None => panic!("Unknown var (ID {:?})", var_id),
-	    };
-	},
-	Expr::ConstInt(ty_id, num) => {
-	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
-	    println!("({:?} :: {:?})", num, ty);
-	},
-	Expr::ConstPrim(ty_id, sym) => {
-	    let ty = &tyenv.types[ty_id.index()].name(tyenv);
-	    let name = &tyenv.syms[sym.index()];
-	    println!("({:?} :: {:?})", name, ty);
-	},
-	_ => panic!("Unmatched arm in pretty print"),	 
-    }
-    return "".to_string();
-}
-
 
 /// An `if-let` clause with a subpattern match on an expr after the
 /// main LHS matches.
@@ -513,7 +476,7 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
-    /// Optionally include a reference to the the bound var the wildcard is capturing 
+    /// Optionally include a reference to the the bound var the wildcard is capturing
     Wildcard(TypeId, Option<Sym>),
 
     /// Match all of the following patterns of the given type.
@@ -521,59 +484,72 @@ pub enum Pattern {
 }
 
 impl Pattern {
-
     /// Build associations between var ids and syms.
     /// Why do this after the fact instead of keeping a mapping of VarIds to Syms in
     /// the Termenv/Typeenv? Because that's a lot of VarIds, and this is really only
-    /// import for debugging in the verification infrastructure. 
+    /// import for debugging in the verification infrastructure.
     /// MLFB: May change key to var id index.
     pub fn build_var_map(&self, syms: &mut BTreeMap<VarId, Sym>) -> () {
-	match self {
-	    Pattern::BindPattern(_, vid, pat) => {
-		match **pat {
-		    Pattern::Wildcard(_, Some(sym)) => { syms.insert(*vid, sym); },
-		    Pattern::Wildcard(_, None) => panic!("Unexpected bind pattern: {:?}", pat), 
-		    _ => pat.build_var_map(syms),
-		}
-	    },
-	    Pattern::Term(_, _, pats) => for pat in pats { pat.build_var_map(syms) }, 
-	    Pattern::And(_, pats) => for pat in pats { pat.build_var_map(syms) },
-	    _ => return, 
-	}
+        match self {
+            Pattern::BindPattern(_, vid, pat) => match **pat {
+                Pattern::Wildcard(_, Some(sym)) => {
+                    syms.insert(*vid, sym);
+                }
+                Pattern::Wildcard(_, None) => panic!("Unexpected bind pattern: {:?}", pat),
+                _ => pat.build_var_map(syms),
+            },
+            Pattern::Term(_, _, pats) => {
+                for pat in pats {
+                    pat.build_var_map(syms)
+                }
+            }
+            Pattern::And(_, pats) => {
+                for pat in pats {
+                    pat.build_var_map(syms)
+                }
+            }
+            _ => return,
+        }
     }
 
-    /// Format the pattern for debugging 
-    pub fn pretty_pattern(&self, indent: usize, syms: &BTreeMap<VarId, Sym>,
-			  termenv: &TermEnv, tyenv: &TypeEnv) -> () {
-	match self {
-	    Pattern::BindPattern(_, _, rest) => {
-		rest.pretty_pattern(indent, syms, termenv, tyenv);
-	    }
-	    Pattern::Var(_, vid) => {
-		let sym = syms[vid];
-		println!("{:in$}{}", "", tyenv.syms[sym.index()], in=indent);
-	    },
-	    Pattern::ConstInt(_, val) => println!("{:in$}match {:?}", "", val, in=indent),
-	    Pattern::Term(_, term_id, pats) => {
-		let term_sym = &termenv.terms[term_id.index()].name;
-		let name = &tyenv.syms[term_sym.index()];
-		println!("{:in$}{}", "", name, in=indent);
-		for pat in pats { pat.pretty_pattern(indent + 2, syms, termenv, tyenv); } 
-	    },
-	    Pattern::Wildcard(_, None) => println!("{:in$}match _", "", in=indent),
-	    Pattern::Wildcard(_, Some(sym)) => {
-		println!("{:in$}bind {}", "", tyenv.syms[sym.index()], in=indent);
-	    },
-	    Pattern::And(_, pats) => {
-		for pat in pats { pat.pretty_pattern(indent + 2, syms, termenv, tyenv); }
-	    },
-	    _ => panic!(),
-	}
+    /// Format the pattern for debugging
+    pub fn pretty_pattern(
+        &self,
+        indent: usize,
+        syms: &BTreeMap<VarId, Sym>,
+        termenv: &TermEnv,
+        tyenv: &TypeEnv,
+    ) -> () {
+        match self {
+            Pattern::BindPattern(_, _, rest) => {
+                rest.pretty_pattern(indent, syms, termenv, tyenv);
+            }
+            Pattern::Var(_, vid) => {
+                let sym = syms[vid];
+                println!("{:in$}{}", "", tyenv.syms[sym.index()], in=indent);
+            }
+            Pattern::ConstInt(_, val) => println!("{:in$}match {:?}", "", val, in=indent),
+            Pattern::Term(_, term_id, pats) => {
+                let term_sym = &termenv.terms[term_id.index()].name;
+                let name = &tyenv.syms[term_sym.index()];
+                println!("{:in$}{}", "", name, in=indent);
+                for pat in pats {
+                    pat.pretty_pattern(indent + 2, syms, termenv, tyenv);
+                }
+            }
+            Pattern::Wildcard(_, None) => println!("{:in$}match _", "", in=indent),
+            Pattern::Wildcard(_, Some(sym)) => {
+                println!("{:in$}bind {}", "", tyenv.syms[sym.index()], in=indent);
+            }
+            Pattern::And(_, pats) => {
+                for pat in pats {
+                    pat.pretty_pattern(indent + 2, syms, termenv, tyenv);
+                }
+            }
+            _ => panic!(),
+        }
     }
-
 }
-
-
 
 /// A right-hand side expression of some rule.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -623,18 +599,28 @@ impl Pattern {
 
     /// Given a var ID, find its matching sym in the pattern (if it exists)
     pub fn get_sym(&self, vid: &VarId) -> Option<Sym> {
-	match self {
-	    Self::BindPattern(_, var_id, pat) =>
-		if var_id == vid { pat.get_sym(vid) } else { None },
-	    Self::Term(_, _, pats) => {
-		let sym = pats.iter().filter_map(|pat| pat.get_sym(vid)).collect::<Vec<Sym>>();
-		if sym.is_empty() { return None }
-		assert!(sym.len() == 1);
-		return Some(sym[0]);
-	    },
-	    Self::Wildcard(_, Some(sym)) => Some(*sym),
-	    _ => return None
-	}
+        match self {
+            Self::BindPattern(_, var_id, pat) => {
+                if var_id == vid {
+                    pat.get_sym(vid)
+                } else {
+                    None
+                }
+            }
+            Self::Term(_, _, pats) => {
+                let sym = pats
+                    .iter()
+                    .filter_map(|pat| pat.get_sym(vid))
+                    .collect::<Vec<Sym>>();
+                if sym.is_empty() {
+                    return None;
+                }
+                assert!(sym.len() == 1);
+                return Some(sym[0]);
+            }
+            Self::Wildcard(_, Some(sym)) => Some(*sym),
+            _ => return None,
+        }
     }
 }
 
@@ -650,26 +636,33 @@ impl Expr {
         }
     }
 
-    /// Pretty-print a righthand side expr for verification debugging 
-    pub fn pretty_expr(&self, indent: usize, syms: &BTreeMap<VarId, Sym>,
-		       termenv: &TermEnv, tyenv: &TypeEnv) -> () {
-	match self {
-	    Expr::Term(_, term_id, exprs) => {
-		let term_sym = &termenv.terms[term_id.index()].name;
-		let name = &tyenv.syms[term_sym.index()];
-		println!("{:in$}{}", "", name, in=indent);
-		for expr in exprs { expr.pretty_expr(indent + 2, syms, termenv, tyenv); }
-	    },
-	    Expr::Var(_, vid) => {
-		let sym = syms[vid];
-		println!("{:in$}{}", "", tyenv.syms[sym.index()], in=indent);		
-	    },
-	    Expr::ConstInt(_, val) => println!("{:in$}{}", "", val, in=indent),
-	    Expr::ConstPrim(_, sym) => {
-		println!("{}", tyenv.syms[sym.index()]);
-	    },
-	    _ => panic!(),
-	}
+    /// Pretty-print a righthand side expr for verification debugging
+    pub fn pretty_expr(
+        &self,
+        indent: usize,
+        syms: &BTreeMap<VarId, Sym>,
+        termenv: &TermEnv,
+        tyenv: &TypeEnv,
+    ) -> () {
+        match self {
+            Expr::Term(_, term_id, exprs) => {
+                let term_sym = &termenv.terms[term_id.index()].name;
+                let name = &tyenv.syms[term_sym.index()];
+                println!("{:in$}{}", "", name, in=indent);
+                for expr in exprs {
+                    expr.pretty_expr(indent + 2, syms, termenv, tyenv);
+                }
+            }
+            Expr::Var(_, vid) => {
+                let sym = syms[vid];
+                println!("{:in$}{}", "", tyenv.syms[sym.index()], in=indent);
+            }
+            Expr::ConstInt(_, val) => println!("{:in$}{}", "", val, in=indent),
+            Expr::ConstPrim(_, sym) => {
+                println!("{}", tyenv.syms[sym.index()]);
+            }
+            _ => panic!(),
+        }
     }
 }
 
@@ -1729,7 +1722,11 @@ impl TermEnv {
                         log!("binding var {:?}", var.0);
                         bindings.vars.push(BoundVar { name, id, ty });
                         Some((
-                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
+                            Pattern::BindPattern(
+                                ty,
+                                id,
+                                Box::new(Pattern::Wildcard(ty, Some(name))),
+                            ),
                             ty,
                         ))
                     }
