@@ -131,9 +131,9 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             Some(TermAnnotation::new(func, vec![identity, ty_fits]))
         }
         "iadd" => {
-            let a = BoundVar::new("a");
-            let b = BoundVar::new("b");
-            let r = BoundVar::new("r");
+            let a = BoundVar::new_with_ty("a", &Type::BitVector);
+            let b = BoundVar::new_with_ty("b", &Type::BitVector);
+            let r = BoundVar::new_with_ty("r", &Type::BitVector);
             let sem = Expr::binary(
                 Expr::Eq,
                 Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr()),
@@ -244,8 +244,8 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             Some(TermAnnotation::new(func, vec![assertion]))
         }
         "uextend" => {
-            let arg = BoundVar::new("arg");
-            let ret = BoundVar::new("ret");
+            let arg = BoundVar::new_with_ty("arg", &Type::BitVector);
+            let ret = BoundVar::new_with_ty("ret", &Type::BitVectorWithWidth(64));
 
             let ext = Expr::BVConvTo(Box::new(Width::RegWidth), Box::new(arg.as_expr()));
             let assertion = Expr::Eq(Box::new(ret.as_expr()), Box::new(ext));

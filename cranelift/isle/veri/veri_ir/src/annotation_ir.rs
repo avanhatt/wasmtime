@@ -82,6 +82,9 @@ pub enum Type {
     /// (type Value (primitive Value))
     BitVector,
 
+    /// Use if the width is known
+    BitVectorWithWidth(usize),
+
     // The expression is a list of bitvectors (see above)
     // BitVectorList(length)
     BitVectorList(usize),

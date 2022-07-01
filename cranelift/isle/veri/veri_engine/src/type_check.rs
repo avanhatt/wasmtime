@@ -49,6 +49,7 @@ impl<'ctx> TypeContext<'ctx> {
             // primitive types
             "bool" => VIRType::Bool,
             "u8" => VIRType::BitVector(8),
+            "u64" => VIRType::BitVector(64),
 
             // custom types
             "Type" => VIRType::Int,
@@ -56,13 +57,11 @@ impl<'ctx> TypeContext<'ctx> {
             "Imm64" => VIRType::BitVector(64),
             "ImmShift" => VIRType::BitVector(6),
             "ImmLogic" => VIRType::BitVector(12),
-            "u64" => VIRType::BitVector(64),
             "MoveWideConst" => VIRType::BitVector(16),
             "OperandSize" => self.ty.clone(),
             // TODO: should probably update this logic to use an actual
             // register width for some of these
-            "Reg" | "ValueRegs" => VIRType::BitVector(REG_WIDTH),
-            "Inst" | "Value" | /*"ValueRegs" |*/ "InstructionData" => self.ty.clone(),
+            "Reg" | "Inst" | "Value" | "ValueRegs" | "InstructionData" => self.ty.clone(),
 
             // For now, hard code errors for these types that we later want to
             // explicitly mark as unsafe.
@@ -79,6 +78,7 @@ impl<'ctx> TypeContext<'ctx> {
             (None, _) => true,
             (Some(annotation_ir::Type::Bool), VIRType::Bool) => true,
             (Some(annotation_ir::Type::Int), VIRType::Int) => true,
+            (Some(annotation_ir::Type::BitVectorWithWidth(m)), VIRType::BitVector(n)) => *m == *n,
             (Some(annotation_ir::Type::BitVector), VIRType::BitVector(..)) => true,
             (Some(annotation_ir::Type::BitVectorList(l1)), VIRType::BitVectorList(l2, _)) => {
                 *l1 == *l2
@@ -111,6 +111,7 @@ impl<'ctx> TypeContext<'ctx> {
     fn concretize_type(&self, ty: &annotation_ir::Type) -> VIRType {
         match ty {
             annotation_ir::Type::BitVector => VIRType::BitVector(self.ty.width()),
+            annotation_ir::Type::BitVectorWithWidth(n) => VIRType::BitVector(*n),
             annotation_ir::Type::BitVectorList(len) => {
                 VIRType::BitVectorList(*len, self.ty.width())
             }

@@ -11,11 +11,14 @@ UNum: usize = <s:r"[0-9]+">  => usize::from_str(s).unwrap();
 Num: i128 = <s:r"-?[0-9]+i">  => i128::from_str(&s[..s.len() - 1]).unwrap();
 
 Ident: String = {
-      <s:r"[A-Za-z][\.\w]*"> => s.to_string(),
+    <s:r"[A-Za-z]"> => s.to_string(),
+    <s:r"[A-Zac-z][\.\w]+"> => s.to_string(),
+    <s:r"b[\w&&[^v]][\.\w]*"> => s.to_string(),
 };
 
 pub Type: Type = {
     "bv" => Type::BitVector,
+    "bv" <n:UNum> => Type::BitVectorWithWidth(n),
     "bvlist" "(" <length:UNum> ")" => Type::BitVectorList(length),
     "isleType" => Type::Int,
     <f:FunctionType> => Type::Function(f),

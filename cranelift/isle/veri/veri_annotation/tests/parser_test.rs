@@ -3,6 +3,7 @@ use veri_annotation::parser;
 
 #[test]
 fn test_type() {
+    assert!(parser::TypeParser::new().parse("bv8").is_ok());
     assert!(parser::TypeParser::new().parse("bv").is_ok());
     assert!(parser::TypeParser::new().parse("bvlist(16)").is_ok());
     assert!(parser::TypeParser::new().parse("func(bv) (isleType)").is_ok());
@@ -14,6 +15,7 @@ fn test_type() {
 fn test_bound_var() {
     assert!(parser::BoundVarParser::new().parse("b").is_ok());
     assert!(parser::BoundVarParser::new().parse("bv").is_err());
+    assert!(parser::BoundVarParser::new().parse("bv1").is_err());
     assert!(parser::BoundVarParser::new().parse("ty: bvlist(1)").is_ok());
     assert!(parser::BoundVarParser::new().parse(
         "foo: func(bool, bool) (bv)").is_ok());
@@ -116,7 +118,7 @@ fn test_expr() {
 #[test]
 fn test_term_annotation() {
     assert!(parser::TermAnnotationParser::new()
-        .parse("(spec (sig (args x, y) (ret))
+        .parse("(spec (sig (args x: bv, y: bv) (ret: bv))
             (assertions (= (+ (x) (y)) (ret))))").is_ok());
 }
 
@@ -172,7 +174,7 @@ fn test_real_annotations() {
     
     // iadd
     let parsed = parser::TermAnnotationParser::new().parse(
-        "(spec (sig (args a, b) (r))
+        "(spec (sig (args a: bv, b: bv) (r: bv))
             (assertions (= (+ (a) (b)) (r))))"
     ).unwrap();
     let expected = isle_annotation_for_term("iadd").unwrap();
@@ -215,7 +217,7 @@ fn test_real_annotations() {
 
     // uextend
      let parsed = parser::TermAnnotationParser::new().parse(
-        "(spec (sig (args arg) (ret))
+        "(spec (sig (args arg:bv) (ret:bv64))
             (assertions (= (ret) (conv_to (regwidth) (arg)))))"
     ).unwrap();
     let expected = isle_annotation_for_term("uextend").unwrap();

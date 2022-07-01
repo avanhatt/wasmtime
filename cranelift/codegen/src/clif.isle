@@ -883,7 +883,7 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.IfcmpImm) x Y))
 )
 
-;;@ (spec (sig (args x, y) (ret))
+;;@ (spec (sig (args x: bv, y: bv) (ret: bv))
 ;;@       (assertions (= (+ (x) (y)) (ret))))
 (decl iadd (Value Value) Inst)
 (extractor
@@ -1467,7 +1467,7 @@
     (inst_data (InstructionData.Binary (Opcode.WideningPairwiseDotProductS) (value_array_2 x y)))
 )
 
-;;@ (spec (sig (args arg) (ret))
+;;@ (spec (sig (args arg:bv) (ret:bv64))
 ;;@     (assertions (= (ret) (conv_to (regwidth) (arg)))))
 (decl uextend (Value) Inst)
 (extractor

@@ -39,7 +39,7 @@ fn test_parser_str() {
         (decl fits_in_32 (Type) Type)
         (extern extractor fits_in_32 fits_in_32)
         
-        ;;@ (spec (sig (args a, b) (r))
+        ;;@ (spec (sig (args a: bv, b: bv) (r: bv))
         ;;@     (assertions (= (+ (a) (b)) (r))))
         (decl iadd (Value Value) Inst)
         (extern extractor iadd iadd)
