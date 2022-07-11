@@ -35,7 +35,7 @@
 
 ;; Helper for emitting `MInst.Extend` instructions.
 ;; TODO: replace dummy annotation with something meaningful
-;;@ (spec (sig (args a: bool, b: bv8, c: bv8, d: bv64) (ret:bool))
+;;@ (spec (sig (args a: bv64, b: bool, c: bv8, d: bv8) (ret:bv64))
 ;;@     (assertions (= (a) (ret)))) 
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
