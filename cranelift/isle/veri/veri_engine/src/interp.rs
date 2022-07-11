@@ -138,12 +138,10 @@ impl<'ctx> AssumptionContext<'ctx> {
     fn get_annotation_for_term(
         &mut self,
         term: &str,
-        subterm_typeids: Vec<TypeId>,
-        ty: &VIRType,
     ) -> Option<VIRTermAnnotation> {
         if let Some(initial_annotation) =
             self.type_ctx
-                .typed_isle_annotation_for_term(term, subterm_typeids, ty)
+                .typed_isle_annotation_for_term(term)
         {
             // Build renaming map from bound vars in the signature
             let read_renames = self.build_annotation_remapping(&initial_annotation, term);
@@ -170,9 +168,8 @@ impl<'ctx> AssumptionContext<'ctx> {
         let term = &self.termenv.terms[termid.index()];
         let term_name = &self.typeenv.syms[term.name.index()];
         println!("Interpreting term: {}", term_name);
-        let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
 
-        if let Some(annotation) = self.get_annotation_for_term(term_name, subterm_typeids, ty) {
+        if let Some(annotation) = self.get_annotation_for_term(term_name) {
             // The annotation should have the same number of arguments as given here
             assert_eq!(subterms.len(), annotation.func().args.len());
 

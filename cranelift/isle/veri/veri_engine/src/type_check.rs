@@ -43,7 +43,6 @@ impl<'ctx> TypeContext<'ctx> {
                 self.typeenv.syms[sym.index()].clone()
             }
         };
-        println!("vir_type_for_type_id: {}", clif_name);
 
         match clif_name.as_str() {
             // primitive types
@@ -357,14 +356,9 @@ impl<'ctx> TypeContext<'ctx> {
     pub fn typed_isle_annotation_for_term(
         &mut self,
         term: &str,
-        subterm_typeids: Vec<TypeId>,
-        ty: &VIRType,
     ) -> Option<VIRTermAnnotation> {
         let initial_term = self.annotation_env.get_annotation_for_term(term);
-        let subterm_types: Vec<VIRType> = subterm_typeids
-            .iter()
-            .map(|tid| self.vir_type_for_type_id(*tid))
-            .collect();
+        println!("typing annotation for term: {}", term);
         initial_term.map(|a| {
             VIRTermAnnotation::new(
                 VIRTermSignature {
@@ -372,10 +366,9 @@ impl<'ctx> TypeContext<'ctx> {
                         .sig()
                         .args
                         .iter()
-                        .enumerate()
-                        .map(|(i, b)| self.type_bound_var(b, subterm_types[i].clone()))
+                        .map(|b| self.type_bound_var(b, self.concretize_type(&b.ty.as_ref().unwrap())))
                         .collect(),
-                    ret: self.type_bound_var(&a.sig().ret, ty.clone()),
+                    ret: self.type_bound_var(&a.sig().ret, self.concretize_type(&a.sig.ret.ty.as_ref().unwrap())),
                 },
                 a.assertions().iter().map(|e| self.type_expr(e)).collect(),
             )

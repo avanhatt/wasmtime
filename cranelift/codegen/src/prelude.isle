@@ -304,7 +304,7 @@
 (extern extractor fits_in_32 fits_in_32)
 
 ;; An extractor that only matches types that can fit in 64 bits.
-;;@ (spec (sig (args arg) (ret))
+;;@ (spec (sig (args arg: isleType) (ret: isleType))
 ;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
@@ -421,7 +421,7 @@
 (extern extractor infallible inst_data inst_data)
 
 ;; Extract the type of a `Value`.
-;;@ (spec (sig (args arg) (ret))
+;;@ (spec (sig (args arg: isleType) (ret: bv))
 ;;@     (assertions (= (arg) (tywidth))))
 (decl value_type (Type) Value)
 (extern extractor infallible value_type value_type)
@@ -433,7 +433,7 @@
 
 ;; Extract the type of the instruction's first result and pass along the
 ;; instruction as well.
-;;@ (spec (sig (args ty, arg) (ret))
+;;@ (spec (sig (args ty: isleType, arg: bv) (ret: bv))
 ;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extractor (has_type ty inst)

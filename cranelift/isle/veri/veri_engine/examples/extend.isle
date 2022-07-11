@@ -1,4 +1,4 @@
-;;@ (spec (sig (args arg) (ret))
+;;@ (spec (sig (args arg: bv) (ret: bv))
 ;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
@@ -35,7 +35,7 @@
 
 ;; Helper for emitting `MInst.Extend` instructions.
 ;; TODO: replace dummy annotation with something meaningful
-;;@ (spec (sig (args a, b, c, d) (ret))
+;;@ (spec (sig (args a: bool, b: bv8, c: bv8, d: bv64) (ret:bool))
 ;;@     (assertions (= (a) (ret)))) 
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
