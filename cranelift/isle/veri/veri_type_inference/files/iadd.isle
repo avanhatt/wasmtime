@@ -1,0 +1,42 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) ValueRegs)
+
+;;@ (spec (sig (args ty, arg) (ret))
+;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
+(decl has_type (Type Inst) Inst)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+(decl fits_in_64 (Type) Type)
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (+ (x) (y)) (ret))))
+(decl iadd (Value Value) Inst)
+
+(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
+      (add ty x y))
+
+
+
+;; bind pattern case: generate constraint that bound var has same type as top level subpat
+
+
+
+
+;;1. traverse over rule (see lower is the first term)
+;;2. get lower's annotation
+;;3. check assertions, ie = arg ret
+;;4. see that arg = sig.args[0] so it's lower.children[0]
+;;5. see that ret is the ret so it's lower.children[-1]
+;;6. since assertion is equality set type vars equal
+;;7. somehow mark that we want arg and ret's types???
+
+;;8. for has_type, tywidth has known type: Int
+
+;;9. for fits_in_64, 64 is an Int const
+
+;;10. for iadd, x and y have same (bv or Int) type
+;;11. ret has the same type too
+
+;;12. add constraint for LHS = RHS??

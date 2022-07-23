@@ -78,6 +78,7 @@ members = [
   "cranelift/serde",
   "cranelift/isle/veri/veri_engine",
   "cranelift/isle/veri/veri_ir",
+  "cranelift/isle/veri/veri_type_inference",
   "crates/bench-api",
   "crates/c-api",
   "crates/cli-flags",

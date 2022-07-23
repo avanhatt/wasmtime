@@ -1,0 +1,8 @@
+[package]
+name = "veri_type_inference"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cranelift-isle = { path = "../../isle" }
+veri_annotation = { path = "../veri_annotation" }
