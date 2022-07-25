@@ -11,27 +11,12 @@ fn main() {
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
 
-    for (term, annotation) in annotation_env.annotation_map {
-        println!("{}", term);
-        let mut vars = HashSet::from([&annotation.sig.ret.name]);
-        for arg in &annotation.sig.args {
-            let _ = &vars.insert(&arg.name);
-        }
-        let mut init = HashMap::new();
-        for assertion in &annotation.assertions {
-            get_initial_types(assertion, &vars, String::from(""), &mut init);
-        }
-        println!("{:#?}", init);
-
-        let mut result = vec![];
-        for arg in annotation.sig.args {
-            result.push(init[&arg.name].clone());
-        }
-        result.push(init[&annotation.sig.ret.name].clone());
-        println!("{:#?}", result);
+    for (term, annotation) in &annotation_env.annotation_map {
+        let types = get_initial_types(term, &annotation_env);
+        println!("{}: {:#?}", term, types);
     }
 
-	/*let defs = isle::parser::parse(lexer).expect("should parse");
+	let defs = isle::parser::parse(lexer).expect("should parse");
     // TODO: clean up
     let mut parse_tree = RuleParseTree {
         lhs: ParseTreeNode{
@@ -53,7 +38,7 @@ fn main() {
             _ => continue,
         };
         println!("{:#?}", parse_tree);
-	}*/
+	}
 }
 
 #[derive(Debug)]
@@ -191,7 +176,7 @@ fn create_parse_tree_expr(
 
 // TODO: what if multiple assertions affect each others' initally assigned types?
 // as in fits_in_64
-fn get_initial_types(
+fn get_initial_types_help(
     expr: &Box<annotation_ir::Expr>,
     vars: &HashSet<&String>,
     curr_type: String,
@@ -223,33 +208,56 @@ fn get_initial_types(
         }
         annotation_ir::Expr::Eq(x, y) => {
             // TODO: make this less sketchy
-            let t1 = get_initial_types(&x, &vars, String::from("t"), initial_types);
-            let t2 = get_initial_types(&y, &vars, String::from("t"), initial_types);
+            let t1 = get_initial_types_help(&x, &vars, String::from("t"), initial_types);
+            let t2 = get_initial_types_help(&y, &vars, String::from("t"), initial_types);
             if &t1 != "t" && &t2 == "t" {
-                get_initial_types(&y, &vars, t1.clone(), initial_types);
+                get_initial_types_help(&y, &vars, t1.clone(), initial_types);
             }
             if &t1 == "t" && t2 != "t" {
-                get_initial_types(&x, &vars, t2.clone(), initial_types);
+                get_initial_types_help(&x, &vars, t2.clone(), initial_types);
             }
             String::from("bool")
         }
         annotation_ir::Expr::BVAdd(x, y) => {
-            get_initial_types(&x, &vars, String::from("bv"), initial_types);
-            get_initial_types(&y, &vars, String::from("bv"), initial_types);
+            get_initial_types_help(&x, &vars, String::from("bv"), initial_types);
+            get_initial_types_help(&y, &vars, String::from("bv"), initial_types);
             String::from("bv")
         }
         annotation_ir::Expr::Lte(x, y) => {
             // TODO: make this less sketchy
-            let t1 = get_initial_types(&x, &vars, String::from("t"), initial_types);
-            let t2 = get_initial_types(&y, &vars, String::from("t"), initial_types);
+            let t1 = get_initial_types_help(&x, &vars, String::from("t"), initial_types);
+            let t2 = get_initial_types_help(&y, &vars, String::from("t"), initial_types);
             if &t1 != "t" && &t2 == "t" {
-                get_initial_types(&y, &vars, t1.clone(), initial_types);
+                get_initial_types_help(&y, &vars, t1.clone(), initial_types);
             }
             if &t1 == "t" && t2 != "t" {
-                get_initial_types(&x, &vars, t2.clone(), initial_types);
+                get_initial_types_help(&x, &vars, t2.clone(), initial_types);
             }
             String::from("bool")
         }
         _ => todo!()
     }
+}
+
+fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<String> {
+    let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
+
+    let mut vars = HashSet::from([&annotation.sig.ret.name]);
+    for arg in &annotation.sig.args {
+        let _ = &vars.insert(&arg.name);
+    }
+
+    let mut init = HashMap::new();
+
+    for assertion in &annotation.assertions {
+        get_initial_types_help(assertion, &vars, String::from(""), &mut init);
+    }
+    
+    // for easy mapping to rule parse trees
+    let mut result = vec![];
+    for arg in annotation.sig.args {
+        result.push(init[&arg.name].clone());
+    }
+    result.push(init[&annotation.sig.ret.name].clone());
+    result
 }
