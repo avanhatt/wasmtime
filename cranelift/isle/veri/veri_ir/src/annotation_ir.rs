@@ -97,6 +97,18 @@ pub enum Type {
     Bool,
 }
 
+// TODO: should we add a polymorphic type and use Type instead of strings?
+impl Type {
+   pub fn to_string(&self) -> String {
+       match &self {
+           Type::BitVector => String::from("bv"),
+           Type::Int => String::from("Int"),
+           Type::Bool => String::from("bool"),
+           _ => todo!(),
+       }
+   }
+}
+
 /// Type-specified constants
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Const {

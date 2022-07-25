@@ -3,14 +3,35 @@ use std::path::PathBuf;
 
 use cranelift_isle as isle;
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
+use veri_ir::annotation_ir;
 
 fn main() {
-	let files = vec!["files/uextend.isle"];
+	let files = vec!["files/iadd.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
 
-	let defs = isle::parser::parse(lexer).expect("should parse");
+    for (term, annotation) in annotation_env.annotation_map {
+        println!("{}", term);
+        let mut vars = HashSet::from([&annotation.sig.ret.name]);
+        for arg in &annotation.sig.args {
+            let _ = &vars.insert(&arg.name);
+        }
+        let mut init = HashMap::new();
+        for assertion in &annotation.assertions {
+            get_initial_types(assertion, &vars, String::from(""), &mut init);
+        }
+        println!("{:#?}", init);
+
+        let mut result = vec![];
+        for arg in annotation.sig.args {
+            result.push(init[&arg.name].clone());
+        }
+        result.push(init[&annotation.sig.ret.name].clone());
+        println!("{:#?}", result);
+    }
+
+	/*let defs = isle::parser::parse(lexer).expect("should parse");
     // TODO: clean up
     let mut parse_tree = RuleParseTree {
         lhs: ParseTreeNode{
@@ -32,10 +53,7 @@ fn main() {
             _ => continue,
         };
         println!("{:#?}", parse_tree);
-	}
-
-    let mut constraints = HashSet::new();
-    generate_constraints_help(annotation_env, &parse_tree, &parse_tree.lhs, constraints);
+	}*/
 }
 
 #[derive(Debug)]
@@ -171,35 +189,67 @@ fn create_parse_tree_expr(
     }
 }
 
-fn generate_constraints_help(
-    annotations: AnnotationEnv,
-    tree: &RuleParseTree,
-    curr: &ParseTreeNode,
-    constraints: HashSet<(u32, u32)>,
-) {
-    let name = &curr.ident;
-    let a = annotations.get_annotation_for_term(&name);
-    match a {
-        None => return,
-        Some(annotation) => {
+// TODO: what if multiple assertions affect each others' initally assigned types?
+// as in fits_in_64
+fn get_initial_types(
+    expr: &Box<annotation_ir::Expr>,
+    vars: &HashSet<&String>,
+    curr_type: String,
+    initial_types: &mut HashMap<String, String>,
+) -> String {
+    match &**expr {
+        annotation_ir::Expr::Var(name) => {
+            // TODO: currently a hacky way to deal with fits_in_64 (see above)
+            // if we already have a non-polymorphic type from some other assertion
+            // do not overwrite it
+            // another option is that we can type each assertion independently
+            // and choose the most specific type at the end
+            // but assertions may not be independent :(
+            if initial_types.contains_key(name) && initial_types[name] != "t" {
+                return initial_types[name].clone();
+            }
 
+            // original logic when I wasn't worried about multiple assertions
+            if vars.contains(name) {
+                let _ = &initial_types.insert(name.to_string(), curr_type.clone());
+            }
+            curr_type
         }
-    };
-
-    // ;;1. traverse over rule (see lower is the first term)
-    // ;;2. get lower's annotation
-    // ;;3. check assertions, ie = arg ret
-    // ;;4. see that arg = sig.args[0] so it's lower.children[0]
-    // ;;5. see that ret is the ret so it's lower.children[-1]
-    // ;;6. since assertion is equality set type vars equal
-    // ;;7. somehow mark that we want arg and ret's types???    
-
-    // ;;8. for has_type, tywidth has known type: Int    
-
-    // ;;9. for fits_in_64, 64 is an Int const    
-
-    // ;;10. for iadd, x and y have same (bv or Int) type
-    // ;;11. ret has the same type too    
-
-    // ;;12. add constraint for LHS = RHS??
+        annotation_ir::Expr::Const(c) => {
+            c.ty.to_string()
+        }
+        annotation_ir::Expr::TyWidth => {
+            String::from("Int")
+        }
+        annotation_ir::Expr::Eq(x, y) => {
+            // TODO: make this less sketchy
+            let t1 = get_initial_types(&x, &vars, String::from("t"), initial_types);
+            let t2 = get_initial_types(&y, &vars, String::from("t"), initial_types);
+            if &t1 != "t" && &t2 == "t" {
+                get_initial_types(&y, &vars, t1.clone(), initial_types);
+            }
+            if &t1 == "t" && t2 != "t" {
+                get_initial_types(&x, &vars, t2.clone(), initial_types);
+            }
+            String::from("bool")
+        }
+        annotation_ir::Expr::BVAdd(x, y) => {
+            get_initial_types(&x, &vars, String::from("bv"), initial_types);
+            get_initial_types(&y, &vars, String::from("bv"), initial_types);
+            String::from("bv")
+        }
+        annotation_ir::Expr::Lte(x, y) => {
+            // TODO: make this less sketchy
+            let t1 = get_initial_types(&x, &vars, String::from("t"), initial_types);
+            let t2 = get_initial_types(&y, &vars, String::from("t"), initial_types);
+            if &t1 != "t" && &t2 == "t" {
+                get_initial_types(&y, &vars, t1.clone(), initial_types);
+            }
+            if &t1 == "t" && t2 != "t" {
+                get_initial_types(&x, &vars, t2.clone(), initial_types);
+            }
+            String::from("bool")
+        }
+        _ => todo!()
+    }
 }

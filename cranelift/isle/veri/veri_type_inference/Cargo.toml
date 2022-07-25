@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 cranelift-isle = { path = "../../isle" }
 veri_annotation = { path = "../veri_annotation" }
+veri_ir = { path = "../veri_ir" }
