@@ -41,9 +41,26 @@ fn main() {
 	}
 
     // TODO: add rhs
-    let mut constraints = HashSet::new();
-    generate_constraints(&annotation_env, &parse_tree, &parse_tree.lhs, &mut constraints);
-    println!("{:#?}", constraints);
+    let mut concrete_constraints = HashSet::new();
+    let mut var_constraints = HashSet::new();
+    generate_constraints(
+        &annotation_env,
+        &parse_tree,
+        &parse_tree.lhs,
+        &mut concrete_constraints,
+        &mut var_constraints,
+    );
+    println!("{:#?}", concrete_constraints);
+    println!("{:#?}", var_constraints);
+
+    let mut results = HashMap::new();
+    solve_constraints(
+        &concrete_constraints,
+        &var_constraints,
+        &mut results,
+        7,
+    );
+    println!("{:#?}", results);
 }
 
 #[derive(Debug)]
@@ -301,7 +318,8 @@ fn generate_constraints(
     annotations: &AnnotationEnv,
     tree: &RuleParseTree,
     curr: &TypeVarNode,
-    constraints: &mut HashSet<TypeExpr>,
+    concrete_constraints: &mut HashSet<TypeExpr>,
+    var_constraints: &mut HashSet<TypeExpr>,
 ) {
     if curr.children.len() == 0 {
         return;
@@ -317,9 +335,13 @@ fn generate_constraints(
             // If we know the type of some var from the annotation, set it.
             Type::Known(ref t) => {
                 if i == ret_index {
-                    constraints.insert(TypeExpr::Concrete(curr.type_var, t.clone()));
+                    concrete_constraints.insert(TypeExpr::Concrete(
+                        curr.type_var, t.clone())
+                    );
                 } else {
-                    constraints.insert(TypeExpr::Concrete(curr.children[i].type_var, t.clone()));
+                    concrete_constraints.insert(TypeExpr::Concrete(
+                        curr.children[i].type_var, t.clone())
+                    );
                 }
             }
             // If not, at least we know "relative polymorphic types."
@@ -338,11 +360,11 @@ fn generate_constraints(
                     }
                     if var == var2 {
                         if j == ret_index {
-                            constraints.insert(
+                            var_constraints.insert(
                                 TypeExpr::Variable(curr.children[i].type_var, curr.type_var),
                             );
                         } else {
-                            constraints.insert(TypeExpr::Variable(
+                            var_constraints.insert(TypeExpr::Variable(
                                 curr.children[i].type_var,
                                 curr.children[j].type_var,
                             ));
@@ -354,6 +376,52 @@ fn generate_constraints(
     }
 
     for child in &curr.children {
-        generate_constraints(&annotations, tree, &child, constraints);
+        generate_constraints(&annotations, tree, &child, concrete_constraints, var_constraints);
     }
+}
+
+fn solve_constraints_help(
+    concrete_constraints: &HashSet<TypeExpr>,
+    var_constraints: &HashSet<TypeExpr>,
+    results: &mut HashMap<u32, annotation_ir::Type>,
+    num_vars: usize,
+) {
+    if results.len() == num_vars {
+        return;
+    }
+    
+    for c1 in var_constraints {
+        match c1 {
+            TypeExpr::Variable(m, n) => {
+                if results.contains_key(&m) {
+                    results.insert(*n, results[&m].clone());
+                }
+
+                if results.contains_key(&n) {
+                    results.insert(*m, results[&n].clone());
+                }
+            }
+            _ => panic!("Found concrete constraint in variable constraints list: {:#?}", c1),
+        }
+    }
+
+    solve_constraints_help(concrete_constraints, var_constraints, results, num_vars);
+}
+
+fn solve_constraints(
+    concrete_constraints: &HashSet<TypeExpr>,
+    var_constraints: &HashSet<TypeExpr>,
+    results: &mut HashMap<u32, annotation_ir::Type>,
+    num_vars: usize,
+) {
+    for c in concrete_constraints {
+        match c {
+            TypeExpr::Concrete(type_var, concrete_type) => {
+                results.insert(*type_var, concrete_type.clone());
+            }
+            _ => panic!("Found variable constraint in concrete constraints list: {:#?}", c),
+        }
+    }
+
+    solve_constraints_help(concrete_constraints, var_constraints, results, num_vars);
 }
