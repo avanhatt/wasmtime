@@ -67,14 +67,14 @@ impl TermAnnotation {
 }
 
 /// Function type with argument and return types.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FunctionType {
     pub args: Vec<Type>,
     pub ret: Box<Type>,
 }
 
 /// Higher-level type, not including bitwidths.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Type {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -95,18 +95,6 @@ pub enum Type {
 
     /// The expression is a boolean.
     Bool,
-}
-
-// TODO: should we add a polymorphic type and use Type instead of strings?
-impl Type {
-   pub fn to_string(&self) -> String {
-       match &self {
-           Type::BitVector => String::from("bv"),
-           Type::Int => String::from("Int"),
-           Type::Bool => String::from("bool"),
-           _ => todo!(),
-       }
-   }
 }
 
 /// Type-specified constants

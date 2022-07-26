@@ -39,6 +39,11 @@ fn main() {
         };
         println!("{:#?}", parse_tree);
 	}
+
+    // TODO: add rhs
+    let mut constraints = HashSet::new();
+    generate_constraints(&annotation_env, &parse_tree, &parse_tree.lhs, &mut constraints);
+    println!("{:#?}", constraints);
 }
 
 #[derive(Debug)]
@@ -174,14 +179,21 @@ fn create_parse_tree_expr(
     }
 }
 
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum Type {
+    Poly(u32),
+    Known(annotation_ir::Type),
+}
+
 // TODO: what if multiple assertions affect each others' initally assigned types?
 // as in fits_in_64
+// TODO: fix polymorphism (don't hardcode Poly(0) everywhere)
 fn get_initial_types_help(
     expr: &Box<annotation_ir::Expr>,
     vars: &HashSet<&String>,
-    curr_type: String,
-    initial_types: &mut HashMap<String, String>,
-) -> String {
+    curr_type: Type,
+    initial_types: &mut HashMap<String, Type>,
+) -> Type {
     match &**expr {
         annotation_ir::Expr::Var(name) => {
             // TODO: currently a hacky way to deal with fits_in_64 (see above)
@@ -190,56 +202,71 @@ fn get_initial_types_help(
             // another option is that we can type each assertion independently
             // and choose the most specific type at the end
             // but assertions may not be independent :(
-            if initial_types.contains_key(name) && initial_types[name] != "t" {
+            if initial_types.contains_key(name) && initial_types[name] != Type::Poly(0) {
                 return initial_types[name].clone();
             }
 
-            // original logic when I wasn't worried about multiple assertions
+            // Original logic when I wasn't worried about multiple assertions.
+            // On the way down, start with a general type and get more specific as
+            // we encouter operators that enforce more strict type requirements.
             if vars.contains(name) {
                 let _ = &initial_types.insert(name.to_string(), curr_type.clone());
             }
             curr_type
         }
         annotation_ir::Expr::Const(c) => {
-            c.ty.to_string()
+            Type::Known(c.ty.clone())
         }
         annotation_ir::Expr::TyWidth => {
-            String::from("Int")
+            Type::Known(annotation_ir::Type::Int)
         }
         annotation_ir::Expr::Eq(x, y) => {
             // TODO: make this less sketchy
-            let t1 = get_initial_types_help(&x, &vars, String::from("t"), initial_types);
-            let t2 = get_initial_types_help(&y, &vars, String::from("t"), initial_types);
-            if &t1 != "t" && &t2 == "t" {
+            let t1 = get_initial_types_help(&x, &vars, Type::Poly(0), initial_types);
+            let t2 = get_initial_types_help(&y, &vars, Type::Poly(0), initial_types);
+            // On the way back up, if we have recovered a more specific type from going down,
+            // try going back down with this more specific initial type.
+            // If no specific type could be recovered, leave both subtrees polymorphic.
+            if t1 != Type::Poly(0) && t2 == Type::Poly(0) {
                 get_initial_types_help(&y, &vars, t1.clone(), initial_types);
             }
-            if &t1 == "t" && t2 != "t" {
+            if t1 == Type::Poly(0) && t2 != Type::Poly(0) {
                 get_initial_types_help(&x, &vars, t2.clone(), initial_types);
             }
-            String::from("bool")
+            Type::Known(annotation_ir::Type::Bool)
         }
         annotation_ir::Expr::BVAdd(x, y) => {
-            get_initial_types_help(&x, &vars, String::from("bv"), initial_types);
-            get_initial_types_help(&y, &vars, String::from("bv"), initial_types);
-            String::from("bv")
+            get_initial_types_help(
+                &x, 
+                &vars, 
+                Type::Known(annotation_ir::Type::BitVector), 
+                initial_types,
+            );
+            get_initial_types_help(
+                &y, 
+                &vars, 
+                Type::Known(annotation_ir::Type::BitVector), 
+                initial_types,
+            );
+            Type::Known(annotation_ir::Type::BitVector)
         }
         annotation_ir::Expr::Lte(x, y) => {
             // TODO: make this less sketchy
-            let t1 = get_initial_types_help(&x, &vars, String::from("t"), initial_types);
-            let t2 = get_initial_types_help(&y, &vars, String::from("t"), initial_types);
-            if &t1 != "t" && &t2 == "t" {
+            let t1 = get_initial_types_help(&x, &vars, Type::Poly(0), initial_types);
+            let t2 = get_initial_types_help(&y, &vars, Type::Poly(0), initial_types);
+            if t1 != Type::Poly(0) && t2 == Type::Poly(0) {
                 get_initial_types_help(&y, &vars, t1.clone(), initial_types);
             }
-            if &t1 == "t" && t2 != "t" {
+            if t1 == Type::Poly(0) && t2 != Type::Poly(0) {
                 get_initial_types_help(&x, &vars, t2.clone(), initial_types);
             }
-            String::from("bool")
+            Type::Known(annotation_ir::Type::Bool)
         }
         _ => todo!()
     }
 }
 
-fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<String> {
+fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<Type> {
     let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
 
     let mut vars = HashSet::from([&annotation.sig.ret.name]);
@@ -250,7 +277,7 @@ fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<String> 
     let mut init = HashMap::new();
 
     for assertion in &annotation.assertions {
-        get_initial_types_help(assertion, &vars, String::from(""), &mut init);
+        get_initial_types_help(assertion, &vars, Type::Poly(0), &mut init);
     }
     
     // for easy mapping to rule parse trees
@@ -260,4 +287,74 @@ fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<String> 
     }
     result.push(init[&annotation.sig.ret.name].clone());
     result
+}
+
+#[derive(Debug, Eq, Hash, PartialEq)]
+pub enum TypeVar {
+    Known(crate::Type),
+    Var(u32),
+}
+
+fn generate_constraints(
+    annotations: &AnnotationEnv,
+    tree: &RuleParseTree,
+    curr: &ParseTreeNode,
+    constraints: &mut HashSet<(u32, TypeVar)>,
+) {
+    if curr.children.len() == 0 {
+        return;
+    }
+
+    let name = &curr.ident;
+    let a = annotations.get_annotation_for_term(&name);
+    let initial_types = get_initial_types(&name, &annotations);
+
+    // TODO: make this not burn the eyes
+    let ret_index = initial_types.len() - 1;
+    for (i, var) in initial_types.iter().enumerate() {
+        match var {
+            // If we know the type of some var from the annotation, set it.
+            Type::Known(ref t) => {
+                if i == ret_index {
+                    constraints.insert((curr.type_var, TypeVar::Known(var.clone())));
+                } else {
+                    constraints.insert((curr.children[i].type_var, TypeVar::Known(var.clone())));
+                }
+            }
+            // If not, at least we know "relative polymorphic types."
+            // If there's some other var with the same polymorphic type,
+            // add a constraint that they must be equal.
+            Type::Poly(n) => {
+                // if ret is polymorphic and there is some other var that has
+                // the same type we will already have that constraint by this point
+                if i == ret_index {
+                    continue;
+                }
+
+                for(j, var2) in initial_types.iter().enumerate() {
+                    if i == j {
+                        continue;
+                    }
+                    if var == var2 {
+                        if j == ret_index {
+                            constraints.insert(
+                                (curr.children[i].type_var, TypeVar::Var(curr.type_var))
+                            );
+                        } else {
+                            constraints.insert(
+                                (
+                                    curr.children[i].type_var, 
+                                    TypeVar::Var(curr.children[j].type_var),
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for child in &curr.children {
+        generate_constraints(&annotations, tree, &child, constraints);
+    }
 }
