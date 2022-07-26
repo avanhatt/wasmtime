@@ -11,7 +11,7 @@ fn main() {
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
 
-    for (term, annotation) in &annotation_env.annotation_map {
+    for (term, _) in &annotation_env.annotation_map {
         let types = get_initial_types(term, &annotation_env);
         println!("{}: {:#?}", term, types);
     }
@@ -19,12 +19,12 @@ fn main() {
 	let defs = isle::parser::parse(lexer).expect("should parse");
     // TODO: clean up
     let mut parse_tree = RuleParseTree {
-        lhs: ParseTreeNode{
+        lhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
         },
-        rhs: ParseTreeNode{
+        rhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
@@ -48,28 +48,28 @@ fn main() {
 
 #[derive(Debug)]
 struct RuleParseTree {
-    lhs: ParseTreeNode,
-    rhs: ParseTreeNode,
+    lhs: TypeVarNode,
+    rhs: TypeVarNode,
     type_var_map: HashMap<String, u32>,
     next_type_var: u32,
 }
 
 #[derive(Debug)]
-struct ParseTreeNode {
+struct TypeVarNode {
     ident: String,
     type_var: u32,
-    children: Vec<ParseTreeNode>,
+    children: Vec<TypeVarNode>,
 }
 
 fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
     // TODO: clean up
     let mut tree = RuleParseTree{
-        lhs: ParseTreeNode{
+        lhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
         },
-        rhs: ParseTreeNode{
+        rhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
@@ -89,7 +89,7 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
 fn create_parse_tree_pattern(
     pattern: isle::ast::Pattern,
     tree: &mut RuleParseTree,
-) -> ParseTreeNode {
+) -> TypeVarNode {
     match pattern {
         isle::ast::Pattern::Term{ sym, args, .. } => {
             // process children first
@@ -108,7 +108,7 @@ fn create_parse_tree_pattern(
                 tree.next_type_var += 1;
             }
 
-            ParseTreeNode{
+            TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
                 children: children,
@@ -124,7 +124,7 @@ fn create_parse_tree_pattern(
             }
            
             // this is a base case so there are no children
-            ParseTreeNode{
+            TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
                 children: vec![],
@@ -137,7 +137,7 @@ fn create_parse_tree_pattern(
 fn create_parse_tree_expr(
     expr: isle::ast::Expr,
     tree: &mut RuleParseTree,
-) -> ParseTreeNode {
+) -> TypeVarNode {
     match expr {
         isle::ast::Expr::Term{ sym, args, .. } => {
             let mut children = vec![];
@@ -153,7 +153,7 @@ fn create_parse_tree_expr(
                 tree.next_type_var += 1;
             }
 
-            ParseTreeNode{
+            TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
                 children: children,
@@ -168,7 +168,7 @@ fn create_parse_tree_expr(
                 tree.next_type_var += 1;
             }
            
-            ParseTreeNode{
+            TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
                 children: vec![],
@@ -290,23 +290,24 @@ fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<Type> {
 }
 
 #[derive(Debug, Eq, Hash, PartialEq)]
-pub enum TypeVar {
-    Known(crate::Type),
-    Var(u32),
+// Constraints either assign concrete types to type variables
+// or set them equal to other type variables
+pub enum TypeExpr {
+    Concrete(u32, annotation_ir::Type),
+    Variable(u32, u32),
 }
 
 fn generate_constraints(
     annotations: &AnnotationEnv,
     tree: &RuleParseTree,
-    curr: &ParseTreeNode,
-    constraints: &mut HashSet<(u32, TypeVar)>,
+    curr: &TypeVarNode,
+    constraints: &mut HashSet<TypeExpr>,
 ) {
     if curr.children.len() == 0 {
         return;
     }
 
     let name = &curr.ident;
-    let a = annotations.get_annotation_for_term(&name);
     let initial_types = get_initial_types(&name, &annotations);
 
     // TODO: make this not burn the eyes
@@ -316,15 +317,15 @@ fn generate_constraints(
             // If we know the type of some var from the annotation, set it.
             Type::Known(ref t) => {
                 if i == ret_index {
-                    constraints.insert((curr.type_var, TypeVar::Known(var.clone())));
+                    constraints.insert(TypeExpr::Concrete(curr.type_var, t.clone()));
                 } else {
-                    constraints.insert((curr.children[i].type_var, TypeVar::Known(var.clone())));
+                    constraints.insert(TypeExpr::Concrete(curr.children[i].type_var, t.clone()));
                 }
             }
             // If not, at least we know "relative polymorphic types."
             // If there's some other var with the same polymorphic type,
             // add a constraint that they must be equal.
-            Type::Poly(n) => {
+            Type::Poly(_) => {
                 // if ret is polymorphic and there is some other var that has
                 // the same type we will already have that constraint by this point
                 if i == ret_index {
@@ -338,15 +339,13 @@ fn generate_constraints(
                     if var == var2 {
                         if j == ret_index {
                             constraints.insert(
-                                (curr.children[i].type_var, TypeVar::Var(curr.type_var))
+                                TypeExpr::Variable(curr.children[i].type_var, curr.type_var),
                             );
                         } else {
-                            constraints.insert(
-                                (
-                                    curr.children[i].type_var, 
-                                    TypeVar::Var(curr.children[j].type_var),
-                                )
-                            );
+                            constraints.insert(TypeExpr::Variable(
+                                curr.children[i].type_var,
+                                curr.children[j].type_var,
+                            ));
                         }
                     }
                 }
