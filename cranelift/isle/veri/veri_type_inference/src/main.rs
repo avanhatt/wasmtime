@@ -6,7 +6,7 @@ use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
 
 fn main() {
-	let files = vec!["files/iadd.isle"];
+	let files = vec!["files/ineg.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
@@ -261,7 +261,7 @@ fn get_initial_types_help(
         annotation_ir::Expr::TyWidth => {
             Type::Known(annotation_ir::Type::Int)
         }
-        annotation_ir::Expr::Eq(x, y) => {
+        annotation_ir::Expr::Eq(x, y) | annotation_ir::Expr::Lte(x, y) => {
             // TODO: make this less sketchy
             let t1 = get_initial_types_help(&x, &vars, Type::Poly(0), initial_types);
             let t2 = get_initial_types_help(&y, &vars, Type::Poly(0), initial_types);
@@ -276,7 +276,16 @@ fn get_initial_types_help(
             }
             Type::Known(annotation_ir::Type::Bool)
         }
-        annotation_ir::Expr::BVAdd(x, y) => {
+        annotation_ir::Expr::BVNeg(x) => {
+            get_initial_types_help(
+                &x,
+                &vars,
+                Type::Known(annotation_ir::Type::BitVector),
+                initial_types,
+            );
+            Type::Known(annotation_ir::Type::BitVector)
+        }
+        annotation_ir::Expr::BVAdd(x, y) | annotation_ir::Expr::BVSub(x, y) => {
             get_initial_types_help(
                 &x, 
                 &vars, 
@@ -291,17 +300,15 @@ fn get_initial_types_help(
             );
             Type::Known(annotation_ir::Type::BitVector)
         }
-        annotation_ir::Expr::Lte(x, y) => {
-            // TODO: make this less sketchy
-            let t1 = get_initial_types_help(&x, &vars, Type::Poly(0), initial_types);
-            let t2 = get_initial_types_help(&y, &vars, Type::Poly(0), initial_types);
-            if t1 != Type::Poly(0) && t2 == Type::Poly(0) {
-                get_initial_types_help(&y, &vars, t1.clone(), initial_types);
-            }
-            if t1 == Type::Poly(0) && t2 != Type::Poly(0) {
-                get_initial_types_help(&x, &vars, t2.clone(), initial_types);
-            }
-            Type::Known(annotation_ir::Type::Bool)
+        // TODO: what if some term cares about the width?
+        annotation_ir::Expr::BVConvFrom(_, x) => {
+            get_initial_types_help(
+                &x,
+                &vars,
+                Type::Known(annotation_ir::Type::BitVector),
+                initial_types,
+            );
+            Type::Known(annotation_ir::Type::BitVector)
         }
         _ => todo!()
     }

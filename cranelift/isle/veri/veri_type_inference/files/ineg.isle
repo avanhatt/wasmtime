@@ -1,0 +1,26 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;;@ (spec (sig (args ty, arg) (ret))
+;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
+(decl has_type (Type Inst) Inst)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (<= (arg) (64i128: isleType)), (= (arg) (ret))))
+(decl fits_in_64 (Type) Type)
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (-(x)) (ret))))
+(decl ineg (Value) Inst)
+
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (- (a) (b)) (r))))
+(decl sub (Type Reg Reg) Reg)
+
+;;@ (spec (sig (args) (r))
+;;@     (assertions (= (conv_from 1 (0i1:bv)) (r))))
+(decl zero_reg () Reg)
+
+(rule (lower (has_type (fits_in_64 ty) (ineg x)))
+      (sub ty (zero_reg) x))
