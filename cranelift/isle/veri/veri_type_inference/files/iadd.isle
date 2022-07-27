@@ -14,5 +14,9 @@
 ;;@       (assertions (= (+ (x) (y)) (ret))))
 (decl iadd (Value Value) Inst)
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (+ (a) (b)) (r))))
+(decl add (Type Reg Reg) Reg)
+
 (rule (lower (has_type (fits_in_64 ty) (iadd x y)))
       (add ty x y))

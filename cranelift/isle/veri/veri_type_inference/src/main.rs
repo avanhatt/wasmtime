@@ -30,7 +30,8 @@ fn main() {
             children: vec![],
         },
         type_var_map: HashMap::new(),
-        next_type_var: 1
+        next_type_var: 1,
+        term_to_type_var_map: HashMap::new(),
     };
 	for def in defs.defs {
         parse_tree = match def {
@@ -40,7 +41,6 @@ fn main() {
         println!("{:#?}", parse_tree);
 	}
 
-    // TODO: add rhs
     let mut concrete_constraints = HashSet::new();
     let mut var_constraints = HashSet::new();
     generate_constraints(
@@ -50,16 +50,26 @@ fn main() {
         &mut concrete_constraints,
         &mut var_constraints,
     );
+    generate_constraints(
+        &annotation_env,
+        &parse_tree,
+        &parse_tree.rhs,
+        &mut concrete_constraints,
+        &mut var_constraints,
+    );
     println!("{:#?}", concrete_constraints);
     println!("{:#?}", var_constraints);
 
-    let mut results = HashMap::new();
+    let mut sub = HashMap::new();
     solve_constraints(
         &concrete_constraints,
         &var_constraints,
-        &mut results,
-        7,
+        &mut sub,
+        (parse_tree.next_type_var - 1).try_into().unwrap(),
     );
+    println!("{:#?}", sub);
+
+    let results = type_annotations(&parse_tree, &sub);
     println!("{:#?}", results);
 }
 
@@ -69,6 +79,7 @@ struct RuleParseTree {
     rhs: TypeVarNode,
     type_var_map: HashMap<String, u32>,
     next_type_var: u32,
+    term_to_type_var_map: HashMap<String, Vec<u32>>,
 }
 
 #[derive(Debug)]
@@ -92,7 +103,8 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
             children: vec![],
         },
         type_var_map: HashMap::new(),
-        next_type_var: 1
+        next_type_var: 1,
+        term_to_type_var_map: HashMap::new(),
     };
 
     let lhs = create_parse_tree_pattern(rule.pattern, &mut tree);
@@ -111,8 +123,10 @@ fn create_parse_tree_pattern(
         isle::ast::Pattern::Term{ sym, args, .. } => {
             // process children first
             let mut children = vec![];
+            let mut type_vars = vec![];
             for arg in args {
                 let child = create_parse_tree_pattern(arg, tree);
+                type_vars.push(child.type_var);
                 children.push(child);
             }
 
@@ -125,8 +139,12 @@ fn create_parse_tree_pattern(
                 tree.next_type_var += 1;
             }
 
+            // even if we see the same term multiple times, the types should be the same
+            type_vars.push(type_var);
+            tree.term_to_type_var_map.insert(ident.clone(), type_vars);
+
             TypeVarNode{
-                ident: ident.clone(),
+                ident: ident,
                 type_var: type_var,
                 children: children,
             }
@@ -158,8 +176,10 @@ fn create_parse_tree_expr(
     match expr {
         isle::ast::Expr::Term{ sym, args, .. } => {
             let mut children = vec![];
+            let mut type_vars = vec![];
             for arg in args {
                 let child = create_parse_tree_expr(arg, tree);
+                type_vars.push(child.type_var);
                 children.push(child);
             }
 
@@ -170,8 +190,12 @@ fn create_parse_tree_expr(
                 tree.next_type_var += 1;
             }
 
+            // even if we see the same term multiple times, the types should be the same
+            type_vars.push(type_var);
+            tree.term_to_type_var_map.insert(ident.clone(), type_vars);
+
             TypeVarNode{
-                ident: ident.clone(),
+                ident: ident,
                 type_var: type_var,
                 children: children,
             }
@@ -300,6 +324,10 @@ fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<Type> {
     // for easy mapping to rule parse trees
     let mut result = vec![];
     for arg in annotation.sig.args {
+        // TODO: DO NOT HARDCODE THIS CASE!! Hacky fix for terms like add
+        if !init.contains_key(&arg.name) {
+            init.insert(arg.name.clone(), Type::Known(annotation_ir::Type::Int));
+        }
         result.push(init[&arg.name].clone());
     }
     result.push(init[&annotation.sig.ret.name].clone());
@@ -424,4 +452,19 @@ fn solve_constraints(
     }
 
     solve_constraints_help(concrete_constraints, var_constraints, results, num_vars);
+}
+
+fn type_annotations(
+    tree: &RuleParseTree,
+    sub: &HashMap<u32, annotation_ir::Type>,
+) -> HashMap<String, Vec<annotation_ir::Type>> {
+    let mut result = HashMap::new();
+    for (term, type_vars) in &tree.term_to_type_var_map {
+        let mut types = vec![];
+        for type_var in type_vars {
+            types.push(sub[&type_var].clone());
+        }
+        result.insert(term.clone(), types);
+    }
+    result
 }
