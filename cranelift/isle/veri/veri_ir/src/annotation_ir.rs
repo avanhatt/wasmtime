@@ -170,10 +170,18 @@ pub enum Expr {
     // A special, high level conversion to a destination width. This currently
     // assumes that the source width is the LHS values BV width.
     BVConvTo(usize, Box<Expr>),
+    // Allow the destination width to be symbolic.
+    BVConvToVarWidth(Box<Expr>, Box<Expr>),
+    // BVConvTo but sign extend instead of zero extend.
+    BVSignedConvTo(usize, Box<Expr>),
+    // BVConvToVarWidth but sign extend instead of zero extend.
+    BVSignedConvToVarWidth(Box<Expr>, Box<Expr>),
     // A special, high level conversion from a source width. This currently
     // assumes that the destination width is the LHS values BV width.
     BVConvFrom(usize, Box<Expr>),
     BVIntToBv(Box<Expr>, Box<Expr>),
+
+    Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
 
     Function(Function),
     FunctionApplication(FunctionApplication),

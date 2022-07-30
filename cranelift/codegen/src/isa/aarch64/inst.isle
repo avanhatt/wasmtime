@@ -1602,6 +1602,13 @@
         dst))
 
 ;; Helper for emitting `MInst.Extend` instructions.
+;;@ (spec (sig (args a, b, c, d) (ret))
+;;@     (assertions (if (b) {
+;;@                     (= (ret) (signed_conv_to (d) (a)))
+;;@                  } else {
+;;@                      (= (ret) (conv_to (d) (a)))}),
+;;@         (= (widthof (a)) (c))
+;;@     ))
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
       (let ((dst WritableReg (temp_writable_reg $I64))

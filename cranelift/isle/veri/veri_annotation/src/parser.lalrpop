@@ -23,7 +23,7 @@ pub Type: Type = {
 };
 
 pub BoundVar: BoundVar = {
-    <i: Ident> => BoundVar{name: i, ty: None},
+    <i:Ident> => BoundVar{name: i, ty: None},
     <i:Ident> ":" <t:Type> => BoundVar{name: i, ty: Some(t)},
 };
 
@@ -99,7 +99,17 @@ pub Expr: Box<Expr> = {
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v)),
     "(" "conv_to" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v)),
+    "(" "conv_to" <n:Expr> <v:Expr> ")" => 
+        Box::new(Expr::BVConvToVarWidth(n, v)),
+    "(" "signed_conv_to" <n:UNum> <v:Expr> ")" =>
+        Box::new(Expr::BVSignedConvTo(n, v)),
+    "(" "signed_conv_to" <n:Expr> <v:Expr> ")" =>
+        Box::new(Expr::BVSignedConvToVarWidth(n, v)),
     "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v)),
+
+    "(" "if" <c:Expr> "{" <e1:Expr> "}" "else" "{" <e2:Expr> "}" ")" =>
+        Box::new(Expr::Conditional(c, e1, e2)),
+
     "(" "int2bv" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v)),
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v)),
 
