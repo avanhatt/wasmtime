@@ -2,7 +2,7 @@
 /// the same type of structure, but for now, manually construct these annotations.
 use crate::annotation_ir::{
     BoundVar, Const, Expr, Function, FunctionApplication, FunctionType, TermAnnotation,
-    TermSignature, Type,
+    TermSignature, Type, Width,
 };
 
 pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
@@ -242,6 +242,18 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 ret: result,
             };
             Some(TermAnnotation::new(func, vec![assertion]))
+        }
+        "uextend" => {
+            let arg = BoundVar::new("arg");
+            let ret = BoundVar::new("ret");
+
+            let ext = Expr::BVConvTo(Box::new(Width::RegWidth), Box::new(arg.as_expr()));
+            let assertion = Expr::Eq(Box::new(ret.as_expr()), Box::new(ext));
+            let sig = TermSignature{
+                args: vec![arg],
+                ret: ret,
+            };
+            Some(TermAnnotation::new(sig, vec![assertion]))
         }
         _ => None,
     }

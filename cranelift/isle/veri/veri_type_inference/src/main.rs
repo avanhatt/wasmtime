@@ -5,8 +5,10 @@ use cranelift_isle as isle;
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
 
+const REG_WIDTH: usize = 64;
+
 fn main() {
-	let files = vec!["files/ineg.isle"];
+	let files = vec!["files/uextend.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
@@ -15,7 +17,7 @@ fn main() {
         let types = get_initial_types(term, &annotation_env);
         println!("{}: {:#?}", term, types);
     }
-
+    /*
 	let defs = isle::parser::parse(lexer).expect("should parse");
     // TODO: clean up
     let mut parse_tree = RuleParseTree {
@@ -70,7 +72,7 @@ fn main() {
     println!("{:#?}", sub);
 
     let results = type_annotations(&parse_tree, &sub);
-    println!("{:#?}", results);
+    println!("{:#?}", results);*/
 }
 
 #[derive(Debug)]
@@ -261,10 +263,19 @@ fn get_initial_types_help(
         annotation_ir::Expr::TyWidth => {
             Type::Known(annotation_ir::Type::Int)
         }
+        annotation_ir::Expr::WidthOf(x) => {
+            get_initial_types_help(
+                &x,
+                &vars,
+                Type::Known(annotation_ir::Type::BitVector),
+                initial_types,
+            );
+            Type::Known(annotation_ir::Type::Int)
+        }        
         annotation_ir::Expr::Eq(x, y) | annotation_ir::Expr::Lte(x, y) => {
             // TODO: make this less sketchy
-            let t1 = get_initial_types_help(&x, &vars, Type::Poly(0), initial_types);
-            let t2 = get_initial_types_help(&y, &vars, Type::Poly(0), initial_types);
+            let t1 = get_initial_types_help(&x, &vars, curr_type.clone(), initial_types);
+            let t2 = get_initial_types_help(&y, &vars, curr_type.clone(), initial_types);
             // On the way back up, if we have recovered a more specific type from going down,
             // try going back down with this more specific initial type.
             // If no specific type could be recovered, leave both subtrees polymorphic.
@@ -310,6 +321,22 @@ fn get_initial_types_help(
             );
             Type::Known(annotation_ir::Type::BitVector)
         }
+        // TODO: type with the exact width
+        annotation_ir::Expr::BVIntToBv(width, val) => {
+            get_initial_types_help(
+                &width,
+                &vars,
+                Type::Known(annotation_ir::Type::Int),
+                initial_types,
+            );
+            get_initial_types_help(
+                &val,
+                &vars,
+                Type::Known(annotation_ir::Type::Int),
+                initial_types,
+            );
+            Type::Known(annotation_ir::Type::BitVector)
+        }
         _ => todo!()
     }
 }
@@ -325,6 +352,7 @@ fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<Type> {
     let mut init = HashMap::new();
 
     for assertion in &annotation.assertions {
+        println!("POO! {:#?}", assertion);
         get_initial_types_help(assertion, &vars, Type::Poly(0), &mut init);
     }
     

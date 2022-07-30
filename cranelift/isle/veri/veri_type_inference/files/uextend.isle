@@ -1,0 +1,30 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) ValueRegs)
+
+;;@ (spec (sig (args ty, arg) (ret))
+;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
+(decl has_type (Type Inst) Inst)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+(decl fits_in_64 (Type) Type)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (ret) (conv_to (regwidth) (arg)))))
+(decl uextend (Value) Inst)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (tywidth))))
+(decl value_type (Type) Value)
+
+;;@ (spec (sig (args a, b, c, d) (ret))
+;;@     (assertions (= (a) (ret)))) 
+(decl extend (Reg bool u8 u8) Reg)
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (int2bv (widthof (ret)) (x)) (ret))))
+(decl pure ty_bits (Type) u8)
+
+(rule (lower (has_type (fits_in_64 out) (uextend x @ (value_type in))))
+      (extend x $false (ty_bits in) (ty_bits out)))
