@@ -12,13 +12,29 @@ fn main() {
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
+    let defs = isle::parser::parse(lexer).expect("should parse");
+
+    let mut term_to_isle_types = HashMap::new();
+    for def in &defs.defs {
+        match def {
+            isle::ast::Def::Decl(d) => {
+                let term = &d.term.0;
+                let mut types = vec!();
+                for t in &d.arg_tys {
+                    types.push(&t.0[..]);
+                }
+                types.push(&d.ret_ty.0[..]);
+                term_to_isle_types.insert(term, types);
+            }
+            _ => continue
+        }
+    }
 
     for (term, _) in &annotation_env.annotation_map {
-        let types = get_initial_types(term, &annotation_env);
-        println!("{}: {:#?}", term, types);
+        let types = get_initial_types(term, &annotation_env, &term_to_isle_types[term]);
+        println!("[*] Initial types for term {}: {:#?}", term, types);
     }
-    /*
-	let defs = isle::parser::parse(lexer).expect("should parse");
+    
     // TODO: clean up
     let mut parse_tree = RuleParseTree {
         lhs: TypeVarNode{
@@ -35,18 +51,19 @@ fn main() {
         next_type_var: 1,
         term_to_type_var_map: HashMap::new(),
     };
-	for def in defs.defs {
+	for def in &defs.defs {
         parse_tree = match def {
-            isle::ast::Def::Rule(r) => create_parse_tree(r),
+            isle::ast::Def::Rule(r) => create_parse_tree(r.clone()),
             _ => continue,
         };
-        println!("{:#?}", parse_tree);
+        println!("[*] Created parse tree: {:#?}", parse_tree);
 	}
-
+    
     let mut concrete_constraints = HashSet::new();
     let mut var_constraints = HashSet::new();
     generate_constraints(
         &annotation_env,
+        &term_to_isle_types,
         &parse_tree,
         &parse_tree.lhs,
         &mut concrete_constraints,
@@ -54,14 +71,15 @@ fn main() {
     );
     generate_constraints(
         &annotation_env,
+        &term_to_isle_types,
         &parse_tree,
         &parse_tree.rhs,
         &mut concrete_constraints,
         &mut var_constraints,
     );
-    println!("{:#?}", concrete_constraints);
-    println!("{:#?}", var_constraints);
-
+    println!("[*] Concrete constraints: {:#?}", concrete_constraints);
+    println!("[*] Variable constraints: {:#?}", var_constraints);
+    
     let mut sub = HashMap::new();
     solve_constraints(
         &concrete_constraints,
@@ -69,18 +87,22 @@ fn main() {
         &mut sub,
         (parse_tree.next_type_var - 1).try_into().unwrap(),
     );
-    println!("{:#?}", sub);
+    println!("[*] Found substitution: {:#?}", sub);
 
     let results = type_annotations(&parse_tree, &sub);
-    println!("{:#?}", results);*/
+    println!("[*] Final results: {:#?}", results);
 }
 
 #[derive(Debug)]
 struct RuleParseTree {
     lhs: TypeVarNode,
     rhs: TypeVarNode,
+    // a map of term or var name to type var
     type_var_map: HashMap<String, u32>,
+    // bookkeeping that tells the next unused type var
     next_type_var: u32,
+    // a map of term to array of type vars representing the
+    // args and ret var of the term's annotation
     term_to_type_var_map: HashMap<String, Vec<u32>>,
 }
 
@@ -167,7 +189,12 @@ fn create_parse_tree_pattern(
                 children: vec![],
             }
         }
-        _ => todo!()
+        isle::ast::Pattern::BindPattern{ var, subpat, .. } => {
+            let subpat_node = create_parse_tree_pattern(*subpat, tree);
+            tree.type_var_map.insert(var.0, subpat_node.type_var);
+            subpat_node
+        }
+        _ => todo!("parse tree pattern: {:#?}", pattern)
     }
 }
 
@@ -217,8 +244,22 @@ fn create_parse_tree_expr(
                 children: vec![],
             }
         }
-        // bind pattern case: assign same type var to bound var and top level subpat because we lose that info in our parse tree
-        _ => todo!()
+        isle::ast::Expr::ConstPrim{ val, .. } => {
+            let ident = val.0;
+            
+            tree.type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
+            let type_var = tree.type_var_map[&ident];
+            if type_var == tree.next_type_var {
+                tree.next_type_var += 1;
+            }
+           
+            TypeVarNode{
+                ident: ident.clone(),
+                type_var: type_var,
+                children: vec![],
+            }
+        }
+        _ => todo!("parse tree expr: {:#?}", expr)
     }
 }
 
@@ -231,6 +272,7 @@ pub enum Type {
 // TODO: what if multiple assertions affect each others' initally assigned types?
 // as in fits_in_64
 // TODO: fix polymorphism (don't hardcode Poly(0) everywhere)
+// Recursive helper to determine the types of args and ret var of an annotation.
 fn get_initial_types_help(
     expr: &Box<annotation_ir::Expr>,
     vars: &HashSet<&String>,
@@ -311,15 +353,21 @@ fn get_initial_types_help(
             );
             Type::Known(annotation_ir::Type::BitVector)
         }
-        // TODO: what if some term cares about the width?
-        annotation_ir::Expr::BVConvFrom(_, x) => {
+        annotation_ir::Expr::BVConvTo(w, x) => {
             get_initial_types_help(
                 &x,
                 &vars,
                 Type::Known(annotation_ir::Type::BitVector),
                 initial_types,
             );
-            Type::Known(annotation_ir::Type::BitVector)
+
+            let t = match **w {
+                annotation_ir::Width::Const(c) => 
+                    annotation_ir::Type::BitVectorWithWidth(c),
+                annotation_ir::Width::RegWidth => 
+                    annotation_ir::Type::BitVectorWithWidth(REG_WIDTH),
+            };            
+            Type::Known(t)
         }
         // TODO: type with the exact width
         annotation_ir::Expr::BVIntToBv(width, val) => {
@@ -337,11 +385,23 @@ fn get_initial_types_help(
             );
             Type::Known(annotation_ir::Type::BitVector)
         }
-        _ => todo!()
+        _ => todo!("initial types expr: {:#?}", expr)
     }
 }
 
-fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<Type> {
+// Return a vector containing the types of the args and ret var of the
+// annotation on the given term. The type of the ret var is the last element.
+// This function performs "type inference" using only the annotation and
+// does not use any rules.
+fn get_initial_types(
+    term: &str,
+    annotation_env: &AnnotationEnv,
+    isle_types: &Vec<&str>,
+) -> Vec<Type> {
+    // First try getting bucket types
+    let bucket_types = annotation_ir_type_for_type_id(isle_types);
+
+    // Independently try to infer more specific types
     let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
 
     let mut vars = HashSet::from([&annotation.sig.ret.name]);
@@ -352,21 +412,73 @@ fn get_initial_types(term: &str, annotation_env: &AnnotationEnv) -> Vec<Type> {
     let mut init = HashMap::new();
 
     for assertion in &annotation.assertions {
-        println!("POO! {:#?}", assertion);
         get_initial_types_help(assertion, &vars, Type::Poly(0), &mut init);
     }
     
     // for easy mapping to rule parse trees
     let mut result = vec![];
-    for arg in annotation.sig.args {
-        // TODO: DO NOT HARDCODE THIS CASE!! Hacky fix for terms like add
+    for i in 0..annotation.sig.args.len() {
+        let arg = annotation.sig.args[i].clone();
+        let bucket = bucket_types[i].clone();
+
         if !init.contains_key(&arg.name) {
-            init.insert(arg.name.clone(), Type::Known(annotation_ir::Type::Int));
+            init.insert(arg.name.clone(), Type::Poly(0));
         }
-        result.push(init[&arg.name].clone());
+        let inferred = init[&arg.name].clone();
+        result.push(more_specific_type(inferred, Type::Known(bucket)));
     }
-    result.push(init[&annotation.sig.ret.name].clone());
+
+    let bucket = bucket_types[annotation.sig.args.len()].clone();
+    if !init.contains_key(&annotation.sig.ret.name) {
+        init.insert(annotation.sig.ret.name.clone(), Type::Poly(0));
+    }
+    let inferred = init[&annotation.sig.ret.name].clone();
+    result.push(more_specific_type(inferred, Type::Known(bucket)));
+   
     result
+}
+
+fn more_specific_type(a: Type, b: Type) -> Type {
+    if a == b {
+        return a;
+    }
+
+    match (&a, &b) {
+        (Type::Poly(_), _) => b,
+        (_, Type::Poly(_)) => a,
+        (Type::Known(annotation_ir::Type::BitVectorWithWidth(_)), 
+            Type::Known(annotation_ir::Type::BitVector)) => a,
+        (Type::Known(annotation_ir::Type::BitVector), 
+            Type::Known(annotation_ir::Type::BitVectorWithWidth(_))) => b,
+        _ => unreachable!("{:#?}, {:#?}", a, b),
+    }
+}
+
+pub fn annotation_ir_type_for_type_id(
+    isle_types: &Vec<&str>,
+) -> Vec<annotation_ir::Type> {
+    let CLIF_TO_IR_TYPES = HashMap::from([
+        ("Type", annotation_ir::Type::Int),
+        ("Imm12", annotation_ir::Type::BitVectorWithWidth(12)),
+        ("Imm64", annotation_ir::Type::BitVectorWithWidth(64)),
+        ("ImmShift", annotation_ir::Type::BitVectorWithWidth(6)),
+        ("ImmLogic", annotation_ir::Type::BitVectorWithWidth(12)),
+        ("u64", annotation_ir::Type::BitVectorWithWidth(64)),
+        ("u8", annotation_ir::Type::BitVectorWithWidth(8)),
+        ("bool", annotation_ir::Type::Bool),
+        ("MoveWideConst", annotation_ir::Type::BitVectorWithWidth(16)),
+        ("OperandSize", annotation_ir::Type::BitVector),
+        ("Reg", annotation_ir::Type::BitVectorWithWidth(REG_WIDTH)),
+        ("Inst", annotation_ir::Type::BitVector),
+        ("Value", annotation_ir::Type::BitVector),
+        ("ValueRegs", annotation_ir::Type::BitVector),
+    ]);
+
+    let mut ir_types = vec!();
+    for t in isle_types {
+        ir_types.push(CLIF_TO_IR_TYPES[t].clone());
+    }
+    ir_types
 }
 
 #[derive(Debug, Eq, Hash, PartialEq)]
@@ -377,8 +489,11 @@ pub enum TypeExpr {
     Variable(u32, u32),
 }
 
+// Construct some constraints that are either of the form t_i = <concrete type>
+// or t_i = t_j.
 fn generate_constraints(
     annotations: &AnnotationEnv,
+    isle_types: &HashMap<&String, Vec<&str>>,
     tree: &RuleParseTree,
     curr: &TypeVarNode,
     concrete_constraints: &mut HashSet<TypeExpr>,
@@ -388,8 +503,9 @@ fn generate_constraints(
         return;
     }
 
+    // TODO: we already have these types in main()
     let name = &curr.ident;
-    let initial_types = get_initial_types(&name, &annotations);
+    let initial_types = get_initial_types(&name, &annotations, &isle_types[name]);
 
     // TODO: make this not burn the eyes
     let ret_index = initial_types.len() - 1;
@@ -439,7 +555,14 @@ fn generate_constraints(
     }
 
     for child in &curr.children {
-        generate_constraints(&annotations, tree, &child, concrete_constraints, var_constraints);
+        generate_constraints(
+            &annotations,
+            isle_types,
+            tree,
+            &child,
+            concrete_constraints,
+            var_constraints,
+        );
     }
 }
 
