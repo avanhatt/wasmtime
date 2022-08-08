@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::thread::current;
 
 use cranelift_isle as isle;
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
@@ -14,26 +15,10 @@ fn main() {
     let annotation_env = parse_annotations(&vec![path_buf]);
     let defs = isle::parser::parse(lexer).expect("should parse");
 
-    let mut term_to_isle_types = HashMap::new();
-    for def in &defs.defs {
-        match def {
-            isle::ast::Def::Decl(d) => {
-                let term = &d.term.0;
-                let mut types = vec!();
-                for t in &d.arg_tys {
-                    types.push(&t.0[..]);
-                }
-                types.push(&d.ret_ty.0[..]);
-                term_to_isle_types.insert(term, types);
-            }
-            _ => continue
-        }
-    }
-
-    for (term, _) in &annotation_env.annotation_map {
-        let types = get_initial_types(term, &annotation_env, &term_to_isle_types[term]);
-        println!("[*] Initial types for term {}: {:#?}", term, types);
-    }
+    // for (term, _) in &annotation_env.annotation_map {
+    //     let types = get_initial_types(term, &annotation_env, &term_to_isle_types[term]);
+    //     println!("[*] Initial types for term {}: {:#?}", term, types);
+    // }
     
     // TODO: clean up
     let mut parse_tree = RuleParseTree {
@@ -50,16 +35,34 @@ fn main() {
         type_var_map: HashMap::new(),
         next_type_var: 1,
         term_to_type_var_map: HashMap::new(),
+        term_to_isle_type_map: HashMap::new(),
     };
 	for def in &defs.defs {
         parse_tree = match def {
             isle::ast::Def::Rule(r) => create_parse_tree(r.clone()),
             _ => continue,
         };
-        println!("[*] Created parse tree: {:#?}", parse_tree);
 	}
+
+    for def in &defs.defs {
+        match def {
+            isle::ast::Def::Decl(d) => {
+                let term = &d.term.0;
+                let mut types = vec!();
+                for t in &d.arg_tys {
+                    types.push(t.0.clone());
+                }
+                types.push(d.ret_ty.0.clone());
+                parse_tree.term_to_isle_type_map.insert(term.clone(), types);
+            }
+            _ => continue
+        }
+    }
+
+    println!("[*] Created parse tree: {:#?}", parse_tree);
+    //println!("[*]Term to isle types: {:#?}", term_to_isle_types);
     
-    let mut concrete_constraints = HashSet::new();
+    /*let mut concrete_constraints = HashSet::new();
     let mut var_constraints = HashSet::new();
     generate_constraints(
         &annotation_env,
@@ -77,8 +80,8 @@ fn main() {
         &mut concrete_constraints,
         &mut var_constraints,
     );
-    println!("[*] Concrete constraints: {:#?}", concrete_constraints);
-    println!("[*] Variable constraints: {:#?}", var_constraints);
+    //println!("[*] Concrete constraints: {:#?}", concrete_constraints);
+    //println!("[*] Variable constraints: {:#?}", var_constraints);
     
     let mut sub = HashMap::new();
     solve_constraints(
@@ -87,10 +90,10 @@ fn main() {
         &mut sub,
         (parse_tree.next_type_var - 1).try_into().unwrap(),
     );
-    println!("[*] Found substitution: {:#?}", sub);
+    //println!("[*] Found substitution: {:#?}", sub);
 
     let results = type_annotations(&parse_tree, &sub);
-    println!("[*] Final results: {:#?}", results);
+    //println!("[*] Final results: {:#?}", results);*/
 }
 
 #[derive(Debug)]
@@ -104,6 +107,7 @@ struct RuleParseTree {
     // a map of term to array of type vars representing the
     // args and ret var of the term's annotation
     term_to_type_var_map: HashMap<String, Vec<u32>>,
+    term_to_isle_type_map: HashMap<String, Vec<String>>,
 }
 
 #[derive(Debug)]
@@ -129,6 +133,7 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
         type_var_map: HashMap::new(),
         next_type_var: 1,
         term_to_type_var_map: HashMap::new(),
+        term_to_isle_type_map: HashMap::new(),
     };
 
     let lhs = create_parse_tree_pattern(rule.pattern, &mut tree);
@@ -263,59 +268,51 @@ fn create_parse_tree_expr(
     }
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub enum Type {
-    Poly(u32),
-    Known(annotation_ir::Type),
+// #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+// pub enum Type {
+//     Poly(u32),
+//     Known(annotation_ir::Type),
+// }
+
+#[derive(Debug, Eq, Hash, PartialEq)]
+// Constraints either assign concrete types to type variables
+// or set them equal to other type variables
+pub enum TypeExpr {
+    Concrete(u32, annotation_ir::Type),
+    Variable(u32, u32),
 }
 
-// TODO: what if multiple assertions affect each others' initally assigned types?
-// as in fits_in_64
-// TODO: fix polymorphism (don't hardcode Poly(0) everywhere)
+// TODO: rename to generate_constraints
 // Recursive helper to determine the types of args and ret var of an annotation.
 fn get_initial_types_help(
+    rule_tree: &RuleParseTree,
     expr: &Box<annotation_ir::Expr>,
-    vars: &HashSet<&String>,
-    curr_type: Type,
-    initial_types: &mut HashMap<String, Type>,
-) -> Type {
+    curr_type: Option<annotation_ir::Type>,
+    constraints: &mut HashSet<TypeExpr>,
+) -> Option<annotation_ir::Type> {
     match &**expr {
         annotation_ir::Expr::Var(name) => {
-            // TODO: currently a hacky way to deal with fits_in_64 (see above)
-            // if we already have a non-polymorphic type from some other assertion
-            // do not overwrite it
-            // another option is that we can type each assertion independently
-            // and choose the most specific type at the end
-            // but assertions may not be independent :(
-            if initial_types.contains_key(name) && initial_types[name] != Type::Poly(0) {
-                return initial_types[name].clone();
-            }
-
-            // Original logic when I wasn't worried about multiple assertions.
             // On the way down, start with a general type and get more specific as
             // we encouter operators that enforce more strict type requirements.
-            if vars.contains(name) {
-                let _ = &initial_types.insert(name.to_string(), curr_type.clone());
-            }
+            let _ = &constraints.insert(TypeExpr::Concrete(rule_tree.type_var_map[name], curr_type?));
             curr_type
         }
         annotation_ir::Expr::Const(c) => {
-            Type::Known(c.ty.clone())
+            Some(c.ty.clone())
         }
         annotation_ir::Expr::TyWidth => {
-            Type::Known(annotation_ir::Type::Int)
+            Some(annotation_ir::Type::Int)
         }
         annotation_ir::Expr::WidthOf(x) => {
             get_initial_types_help(
-                &x,
-                &vars,
-                Type::Known(annotation_ir::Type::BitVector),
-                initial_types,
+                rule_tree,
+                expr,
+                Some(annotation_ir::Type::BitVector),
+                constraints,
             );
-            Type::Known(annotation_ir::Type::Int)
-        }        
+            Some(annotation_ir::Type::BitVector)
+        }
         annotation_ir::Expr::Eq(x, y) | annotation_ir::Expr::Lte(x, y) => {
-            // TODO: make this less sketchy
             let t1 = get_initial_types_help(&x, &vars, curr_type.clone(), initial_types);
             let t2 = get_initial_types_help(&y, &vars, curr_type.clone(), initial_types);
             // On the way back up, if we have recovered a more specific type from going down,
@@ -388,7 +385,7 @@ fn get_initial_types_help(
         _ => todo!("initial types expr: {:#?}", expr)
     }
 }
-
+/*
 // Return a vector containing the types of the args and ret var of the
 // annotation on the given term. The type of the ret var is the last element.
 // This function performs "type inference" using only the annotation and
@@ -479,14 +476,6 @@ pub fn annotation_ir_type_for_type_id(
         ir_types.push(CLIF_TO_IR_TYPES[t].clone());
     }
     ir_types
-}
-
-#[derive(Debug, Eq, Hash, PartialEq)]
-// Constraints either assign concrete types to type variables
-// or set them equal to other type variables
-pub enum TypeExpr {
-    Concrete(u32, annotation_ir::Type),
-    Variable(u32, u32),
 }
 
 // Construct some constraints that are either of the form t_i = <concrete type>
@@ -625,4 +614,4 @@ fn type_annotations(
         result.insert(term.clone(), types);
     }
     result
-}
+}*/
