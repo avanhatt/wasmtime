@@ -19,7 +19,7 @@
 (decl sub (Type Reg Reg) Reg)
 
 ;;@ (spec (sig (args) (r))
-;;@     (assertions (= (conv_from 1 (0i1:bv)) (r))))
+;;@     (assertions (= (conv_to (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 
 (rule (lower (has_type (fits_in_64 ty) (ineg x)))

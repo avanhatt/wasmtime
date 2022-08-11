@@ -199,6 +199,24 @@ fn generate_expr_constraints(
             annotation_ir::Expr::Lte(Box::new(e1), Box::new(e2), t)
         }
 
+        annotation_ir::Expr::BVNeg(x, _) => {
+            let e1 = generate_expr_constraints(*x, trees);
+            let t1 = annotation_ir::Expr::get_type_var(&e1);
+            
+            // TODO: could be bv of any width too
+            let t = trees.next_type_var;
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t, annotation_ir::Type::BitVector)
+            );
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t1, annotation_ir::Type::BitVector)
+            );        
+            trees.var_constraints.insert(TypeExpr::Variable(t, t1));
+
+            trees.next_type_var += 1;
+            annotation_ir::Expr::BVNeg(Box::new(e1), t)
+        }
+
         annotation_ir::Expr::BVAdd(x, y, _) => {
             let e1 = generate_expr_constraints(*x, trees);
             let e2 = generate_expr_constraints(*y, trees);
@@ -223,6 +241,48 @@ fn generate_expr_constraints(
 
             trees.next_type_var += 1;
             annotation_ir::Expr::BVAdd(Box::new(e1), Box::new(e2), t)
+        }
+        annotation_ir::Expr::BVSub(x, y, _) => {
+            let e1 = generate_expr_constraints(*x, trees);
+            let e2 = generate_expr_constraints(*y, trees);
+
+            let t1 = annotation_ir::Expr::get_type_var(&e1);
+            let t2 = annotation_ir::Expr::get_type_var(&e2);
+            let t = trees.next_type_var;
+
+            // TODO: could also be +: (bv8, bv8) -> bv8 for example
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t, annotation_ir::Type::BitVector)
+            );
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t1, annotation_ir::Type::BitVector)
+            );
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t2, annotation_ir::Type::BitVector)
+            );
+            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
+            trees.var_constraints.insert(TypeExpr::Variable(t, t1));
+            trees.var_constraints.insert(TypeExpr::Variable(t, t2));
+
+            trees.next_type_var += 1;
+            annotation_ir::Expr::BVSub(Box::new(e1), Box::new(e2), t)
+        }
+
+        annotation_ir::Expr::BVConvTo(w, x, _) => {
+            let e1 = generate_expr_constraints(*x, trees);
+            let t1 = annotation_ir::Expr::get_type_var(&e1);
+            let t = trees.next_type_var;
+
+            // TODO: specify widths
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t, annotation_ir::Type::BitVector)
+            );            
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t1, annotation_ir::Type::BitVector)
+            );
+
+            trees.next_type_var += 1;
+            annotation_ir::Expr::BVConvTo(w, Box::new(e1), t)            
         }
         _ => todo!("expr {:#?} not yet implemented", expr)
     }
@@ -274,7 +334,7 @@ fn solve_constraints(
                                 let g1 = union_find[&x].clone();
                                 let mut g2 = union_find[&y].clone();
                                 g2.extend(g1.iter());
-                                union_find.insert(x.clone(), g2);
+                                union_find.insert(y.clone(), g2);
                                 union_find.remove(&x);
                             }
                             // union t1 and t2, keeping t1 as the leader 
@@ -282,7 +342,7 @@ fn solve_constraints(
                                 let mut g1 = union_find[&x].clone();
                                 let g2 = union_find[&y].clone();
                                 g1.extend(g2.iter());
-                                union_find.insert(y.clone(), g1);
+                                union_find.insert(x.clone(), g1);
                                 union_find.remove(&y);
                             }
                         };
