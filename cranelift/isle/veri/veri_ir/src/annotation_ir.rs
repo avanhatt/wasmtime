@@ -103,6 +103,15 @@ pub enum Type {
     Bool,
 }
 
+impl Type {
+    pub fn is_poly(&self) -> bool {
+        match self {
+            Type::Poly(_) => true,
+            _ => false,
+        }
+    }
+}
+
 /// Type-specified constants
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Const {

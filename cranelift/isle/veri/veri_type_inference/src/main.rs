@@ -135,8 +135,8 @@ fn type_annotation(a: annotation_ir::TermAnnotation) -> HashMap<u32, annotation_
     for e in a.assertions {
         let tree = generate_expr_constraints(*e, &mut trees);
         trees.trees.push(tree);
-        println!("{:#?}", trees);
     }
+    println!("{:#?}", trees);
     solve_constraints(trees.concrete_constraints, trees.var_constraints)
 }
 
@@ -233,21 +233,30 @@ fn solve_constraints(
     concrete: HashSet<TypeExpr>,
     var: HashSet<TypeExpr>,
 ) -> HashMap<u32, annotation_ir::Type> {
+    // maintain a union find that maps types to sets of type vars that have that type
     let mut union_find = HashMap::new();
     let mut poly = 0;
 
+    // initialize union find with groups corresponding to concrete constraints
     for c in concrete {
         match c {
             TypeExpr::Concrete(v, t) => {
                 if !union_find.contains_key(&t) {
-                    union_find.insert(t, HashSet::new());
+                    union_find.insert(t.clone(), HashSet::new());
                 }
-                union_find[&t].insert(v);
+                if let Some(group) = union_find.get_mut(&t) {
+                    group.insert(v);
+                }
             }
             _ => panic!("Non-concrete constraint found in concrete constraints: {:#?}", c),
         };
     }
 
+    // process variable constraints as follows:
+    //   if t1 = t2 and only t1 has been typed, add t2 to the same set as t1
+    //   if t1 = t2 and only t2 has been typed, add t1 to the same set t2
+    //   if t1 = t2 and neither has been typed, create a new poly type and add both to the set
+    //   if t1 = t2 and both have been typed, union appropriately
     for v in var {
         match v {
             TypeExpr::Variable(v1, v2) => {
@@ -255,14 +264,46 @@ fn solve_constraints(
                 let t2 = get_var_type(v2, union_find.clone());
 
                 match (t1, t2) {
-                    (Some(x), Some(y)) => { assert!(x == y); }
-                    (Some(x), None) => { union_find[&x].insert(v2); }
-                    (None, Some(x)) => { union_find[&x].insert(v1); }
+                    (Some(x), Some(y)) => {
+                        match (x.is_poly(), y.is_poly()) {
+                            (false, false) => {
+                                assert!(x == y);
+                            }
+                            // union t1 and t2, keeping t2 as the leader
+                            (true, false) => {
+                                let g1 = union_find[&x].clone();
+                                let mut g2 = union_find[&y].clone();
+                                g2.extend(g1.iter());
+                                union_find.insert(x.clone(), g2);
+                                union_find.remove(&x);
+                            }
+                            // union t1 and t2, keeping t1 as the leader 
+                            (_, true) => {
+                                let mut g1 = union_find[&x].clone();
+                                let g2 = union_find[&y].clone();
+                                g1.extend(g2.iter());
+                                union_find.insert(y.clone(), g1);
+                                union_find.remove(&y);
+                            }
+                        };
+                    }
+                    (Some(x), None) => {
+                        if let Some(group) = union_find.get_mut(&x) {
+                            group.insert(v2);
+                        }
+                    }
+                    (None, Some(x)) => {
+                        if let Some(group) = union_find.get_mut(&x) {
+                            group.insert(v1);
+                        }
+                    }
                     (None, None) => {
                         let t = annotation_ir::Type::Poly(poly);
-                        union_find.insert(t, HashSet::new());
-                        union_find[&t].insert(v1);
-                        union_find[&t].insert(v2);
+                        union_find.insert(t.clone(), HashSet::new());
+                        if let Some(group) = union_find.get_mut(&t) {
+                            group.insert(v1);
+                            group.insert(v2);
+                        }
                         poly += 1;
                     }
                 }
@@ -271,11 +312,10 @@ fn solve_constraints(
         }
     }
 
-    // look for each type var in all the groups and return a map
     let mut result = HashMap::new();
     for (t, vars) in union_find {
         for var in vars {
-            result.insert(var, t);
+            result.insert(var, t.clone());
         }
     }
     result
