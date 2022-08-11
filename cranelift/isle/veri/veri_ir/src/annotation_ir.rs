@@ -29,7 +29,7 @@ impl BoundVar {
 
     /// An expression with the bound variable's name
     pub fn as_expr(&self) -> Expr {
-        Expr::Var(self.name.clone())
+        Expr::Var(self.name.clone(), 0)
     }
 }
 
@@ -76,6 +76,9 @@ pub struct FunctionType {
 /// Higher-level type, not including bitwidths.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Type {
+    /// Internal type used solely for type inference
+    Poly(u32),
+
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
@@ -133,57 +136,57 @@ pub struct FunctionApplication {
     pub args: Vec<Box<Expr>>,
 }
 
-/// Expressions
+/// Typed expressions (u32 is the type var)
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
     // Terminal nodes
-    Var(String),
-    Const(Const),
-    True,
-    False,
+    Var(String, u32),
+    Const(Const, u32),
+    True(u32),
+    False(u32),
 
     // Special terminal node: the current width
-    TyWidth,
+    TyWidth(u32),
 
     // Get the width of a bitvector
-    WidthOf(Box<Expr>),
+    WidthOf(Box<Expr>, u32),
 
     // Boolean operations
-    Not(Box<Expr>),
-    And(Box<Expr>, Box<Expr>),
-    Or(Box<Expr>, Box<Expr>),
-    Imp(Box<Expr>, Box<Expr>),
-    Eq(Box<Expr>, Box<Expr>),
-    Lte(Box<Expr>, Box<Expr>),
+    Not(Box<Expr>, u32),
+    And(Box<Expr>, Box<Expr>, u32),
+    Or(Box<Expr>, Box<Expr>, u32),
+    Imp(Box<Expr>, Box<Expr>, u32),
+    Eq(Box<Expr>, Box<Expr>, u32),
+    Lte(Box<Expr>, Box<Expr>, u32),
 
     // Bitvector operations
     //      Note: these follow the naming conventions of the SMT theory of bitvectors:
     //      https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     // Unary operators
-    BVNeg(Box<Expr>),
-    BVNot(Box<Expr>),
+    BVNeg(Box<Expr>, u32),
+    BVNot(Box<Expr>, u32),
 
     // Binary operators
-    BVAdd(Box<Expr>, Box<Expr>),
-    BVSub(Box<Expr>, Box<Expr>),
-    BVAnd(Box<Expr>, Box<Expr>),
-    BVOr(Box<Expr>, Box<Expr>),
-    BVRotl(Box<Expr>, Box<Expr>),
-    BVShl(Box<Expr>, Box<Expr>),
-    BVShr(Box<Expr>, Box<Expr>),
+    BVAdd(Box<Expr>, Box<Expr>, u32),
+    BVSub(Box<Expr>, Box<Expr>, u32),
+    BVAnd(Box<Expr>, Box<Expr>, u32),
+    BVOr(Box<Expr>, Box<Expr>, u32),
+    BVRotl(Box<Expr>, Box<Expr>, u32),
+    BVShl(Box<Expr>, Box<Expr>, u32),
+    BVShr(Box<Expr>, Box<Expr>, u32),
 
     // Conversions
-    BVZeroExt(usize, Box<Expr>),
-    BVSignExt(usize, Box<Expr>),
-    BVExtract(usize, usize, Box<Expr>),
+    BVZeroExt(usize, Box<Expr>, u32),
+    BVSignExt(usize, Box<Expr>, u32),
+    BVExtract(usize, usize, Box<Expr>, u32),
 
     // A special, high level conversion to a destination width. This currently
     // assumes that the source width is the LHS values BV width.
-    BVConvTo(Box<Width>, Box<Expr>),
+    BVConvTo(Box<Width>, Box<Expr>, u32),
     // A special, high level conversion from a source width. This currently
     // assumes that the destination width is the LHS values BV width.
-    BVConvFrom(usize, Box<Expr>),
-    BVIntToBv(Box<Expr>, Box<Expr>),
+    BVConvFrom(usize, Box<Expr>, u32),
+    BVIntToBv(Box<Expr>, Box<Expr>, u32),
 
     Function(Function),
     FunctionApplication(FunctionApplication),
@@ -195,14 +198,50 @@ pub enum Expr {
 
 impl Expr {
     pub fn var(s: &str) -> Expr {
-        Expr::Var(s.to_string())
+        Expr::Var(s.to_string(), 0)
     }
 
-    pub fn unary<F: Fn(Box<Expr>) -> Expr>(f: F, x: Expr) -> Expr {
-        f(Box::new(x))
+    pub fn unary<F: Fn(Box<Expr>, u32) -> Expr>(f: F, x: Expr) -> Expr {
+        f(Box::new(x), 0)
     }
 
-    pub fn binary<F: Fn(Box<Expr>, Box<Expr>) -> Expr>(f: F, x: Expr, y: Expr) -> Expr {
-        f(Box::new(x), Box::new(y))
+    pub fn binary<F: Fn(Box<Expr>, Box<Expr>, u32) -> Expr>(f: F, x: Expr, y: Expr) -> Expr {
+        f(Box::new(x), Box::new(y), 0)
+    }
+
+    pub fn get_type_var(x: &Expr) -> u32 {
+        match x {
+            Expr::True(t) |
+            Expr::False(t) |
+            Expr::TyWidth(t) |
+
+            Expr::Var(_, t) | 
+            Expr::Const(_, t) | 
+            Expr::WidthOf(_, t) | 
+            Expr::Not(_, t) |
+            Expr::BVNeg(_, t) |
+            Expr::BVNot(_, t) |
+
+            Expr::And(_, _, t) |
+            Expr::Or(_, _, t) |
+            Expr::Imp(_, _, t) |
+            Expr::Eq(_, _, t) |
+            Expr::Lte(_, _, t) |
+            Expr::BVAdd(_, _, t) |
+            Expr::BVSub(_, _, t) |
+            Expr::BVAnd(_, _, t) |
+            Expr::BVOr(_, _, t) |
+            Expr::BVRotl(_, _, t) |
+            Expr::BVShl(_, _, t) |
+            Expr::BVShr(_, _, t) |
+            Expr::BVZeroExt(_, _, t) |
+            Expr::BVSignExt(_, _, t) |
+            Expr::BVConvTo(_, _, t) |
+            Expr::BVConvFrom(_, _, t) |
+            Expr::BVIntToBv(_, _, t) |
+
+            Expr::BVExtract(_, _, _, t) => *t,
+            _ => todo!()
+        }
     }
 }

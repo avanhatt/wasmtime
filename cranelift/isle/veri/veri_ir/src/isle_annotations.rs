@@ -74,7 +74,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
         "value_type" => {
             let arg = BoundVar::new("arg");
             let result = BoundVar::new("ret");
-            let ty_eq = Expr::binary(Expr::Eq, arg.as_expr(), Expr::TyWidth);
+            let ty_eq = Expr::binary(Expr::Eq, arg.as_expr(), Expr::TyWidth(0));
             let func = TermSignature {
                 args: vec![arg],
                 ret: result,
@@ -102,7 +102,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let ty_arg = BoundVar::new("ty");
             let arg = BoundVar::new("arg");
             let result = BoundVar::new("ret");
-            let ty_eq = Expr::binary(Expr::Eq, ty_arg.as_expr(), Expr::TyWidth);
+            let ty_eq = Expr::binary(Expr::Eq, ty_arg.as_expr(), Expr::TyWidth(0));
             let identity = Expr::binary(Expr::Eq, arg.as_expr(), result.as_expr());
             let func = TermSignature {
                 args: vec![ty_arg, arg],
@@ -122,7 +122,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                     ty: Type::Int,
                     value: 64_i128,
                     width: 128,
-                }),
+                }, 0),
             );
             let func = TermSignature {
                 args: vec![arg],
@@ -215,7 +215,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let result = BoundVar::new("ret");
 
             // Negate and convert
-            let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()));
+            let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()), 0);
             let res = Expr::unary(Expr::BVNeg, as_ty);
             let eq = Expr::binary(Expr::Eq, res, result.as_expr());
             let sig = TermSignature {
@@ -234,7 +234,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let imm_arg = BoundVar::new("imm_arg");
 
             // Conversion step
-            let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()));
+            let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()), 0);
             let res = Expr::binary(Expr::BVSub, reg_arg.as_expr(), as_ty);
             let assertion = Expr::binary(Expr::Eq, res, result.as_expr());
             let func = TermSignature {
@@ -247,8 +247,8 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let arg = BoundVar::new("arg");
             let ret = BoundVar::new("ret");
 
-            let ext = Expr::BVConvTo(Box::new(Width::RegWidth), Box::new(arg.as_expr()));
-            let assertion = Expr::Eq(Box::new(ret.as_expr()), Box::new(ext));
+            let ext = Expr::BVConvTo(Box::new(Width::RegWidth), Box::new(arg.as_expr()), 0);
+            let assertion = Expr::Eq(Box::new(ret.as_expr()), Box::new(ext), 0);
             let sig = TermSignature{
                 args: vec![arg],
                 ret: ret,

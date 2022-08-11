@@ -1,5 +1,5 @@
 // auto-generated: "lalrpop 0.19.7"
-// sha3: 629fe3b1f42ec85eb25a5040988eb9672450c15e8388b796737dc0801587bb
+// sha3: 5ddb4263587e85d715c5a6e843746148829ac127a3a37cdfde2e858dd46e6f
 use std::str::FromStr;
 use veri_ir as ast;
 use ast::annotation_ir::*;
@@ -32172,7 +32172,7 @@ fn __action33<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Var(n))
+    Box::new(Expr::Var(n, 0))
 }
 
 #[allow(unused_variables)]
@@ -32185,7 +32185,7 @@ fn __action34<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Const(c))
+    Box::new(Expr::Const(c, 0))
 }
 
 #[allow(unused_variables)]
@@ -32198,7 +32198,7 @@ fn __action35<
     (_, __2, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::True)
+    Box::new(Expr::True(0))
 }
 
 #[allow(unused_variables)]
@@ -32211,7 +32211,7 @@ fn __action36<
     (_, __2, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::False)
+    Box::new(Expr::False(0))
 }
 
 #[allow(unused_variables)]
@@ -32224,7 +32224,7 @@ fn __action37<
     (_, __2, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::TyWidth)
+    Box::new(Expr::TyWidth(0))
 }
 
 #[allow(unused_variables)]
@@ -32238,7 +32238,7 @@ fn __action38<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Not(u))
+    Box::new(Expr::Not(u, 0))
 }
 
 #[allow(unused_variables)]
@@ -32253,7 +32253,7 @@ fn __action39<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::And(u, v))
+    Box::new(Expr::And(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32268,7 +32268,7 @@ fn __action40<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Or(u, v))
+    Box::new(Expr::Or(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32283,7 +32283,7 @@ fn __action41<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Imp(u, v))
+    Box::new(Expr::Imp(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32298,7 +32298,7 @@ fn __action42<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Eq(u, v))
+    Box::new(Expr::Eq(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32313,7 +32313,7 @@ fn __action43<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::Lte(u, v))
+    Box::new(Expr::Lte(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32327,7 +32327,7 @@ fn __action44<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVNeg(u))
+    Box::new(Expr::BVNeg(u, 0))
 }
 
 #[allow(unused_variables)]
@@ -32341,7 +32341,7 @@ fn __action45<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVNot(u))
+    Box::new(Expr::BVNot(u, 0))
 }
 
 #[allow(unused_variables)]
@@ -32356,7 +32356,7 @@ fn __action46<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVAdd(u, v))
+    Box::new(Expr::BVAdd(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32371,7 +32371,7 @@ fn __action47<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVSub(u, v))
+    Box::new(Expr::BVSub(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32386,7 +32386,7 @@ fn __action48<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVAnd(u, v))
+    Box::new(Expr::BVAnd(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32401,7 +32401,7 @@ fn __action49<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVOr(u, v))
+    Box::new(Expr::BVOr(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32416,7 +32416,7 @@ fn __action50<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVRotl(u, v))
+    Box::new(Expr::BVRotl(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32431,7 +32431,7 @@ fn __action51<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVShl(u, v))
+    Box::new(Expr::BVShl(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32446,7 +32446,7 @@ fn __action52<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVShr(u, v))
+    Box::new(Expr::BVShr(u, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32461,7 +32461,7 @@ fn __action53<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVZeroExt(n, v))
+    Box::new(Expr::BVZeroExt(n, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32476,7 +32476,7 @@ fn __action54<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVSignExt(n, v))
+    Box::new(Expr::BVSignExt(n, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32492,7 +32492,7 @@ fn __action55<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVExtract(s, t, v))
+    Box::new(Expr::BVExtract(s, t, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32507,7 +32507,7 @@ fn __action56<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVConvTo(Box::new(Width::Const(n)), v))
+    Box::new(Expr::BVConvTo(Box::new(Width::Const(n)), v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32522,7 +32522,7 @@ fn __action57<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVConvTo(w, v))
+    Box::new(Expr::BVConvTo(w, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32537,7 +32537,7 @@ fn __action58<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVConvFrom(n, v))
+    Box::new(Expr::BVConvFrom(n, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32552,7 +32552,7 @@ fn __action59<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVIntToBv(n, v))
+    Box::new(Expr::BVIntToBv(n, v, 0))
 }
 
 #[allow(unused_variables)]
@@ -32566,7 +32566,7 @@ fn __action60<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::WidthOf(v))
+    Box::new(Expr::WidthOf(v, 0))
 }
 
 #[allow(unused_variables)]
