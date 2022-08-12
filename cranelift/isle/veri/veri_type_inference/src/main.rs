@@ -12,7 +12,7 @@ use veri_ir::annotation_ir;
 const REG_WIDTH: usize = 64;
 
 fn main() {
-	let files = vec!["files/iadd.isle"];
+	let files = vec!["files/ineg.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
@@ -273,9 +273,13 @@ fn generate_expr_constraints(
             let t1 = annotation_ir::Expr::get_type_var(&e1);
             let t = trees.next_type_var;
 
-            // TODO: specify widths
+            let width = match *w {
+                annotation_ir::Width::Const(x) => x,
+                annotation_ir::Width::RegWidth => REG_WIDTH,
+            };
+
             trees.concrete_constraints.insert(TypeExpr::Concrete(
-                t, annotation_ir::Type::BitVector)
+                t, annotation_ir::Type::BitVectorWithWidth(width))
             );            
             trees.concrete_constraints.insert(TypeExpr::Concrete(
                 t1, annotation_ir::Type::BitVector)
@@ -327,7 +331,12 @@ fn solve_constraints(
                     (Some(x), Some(y)) => {
                         match (x.is_poly(), y.is_poly()) {
                             (false, false) => {
-                                assert!(x == y);
+                                if x != y {
+                                    panic!(
+                                        "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}",
+                                        v, v1, x, v2, y 
+                                    )
+                                }
                             }
                             // union t1 and t2, keeping t2 as the leader
                             (true, false) => {
