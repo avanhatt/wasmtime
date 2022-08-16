@@ -117,6 +117,7 @@ struct ExprTrees {
     next_type_var: u32,
     concrete_constraints: HashSet<TypeExpr>,
     var_constraints: HashSet<TypeExpr>,
+    bv_constraints: HashSet<TypeExpr>,
     var_to_type_var: HashMap<String, u32>,
 }
 
@@ -127,6 +128,7 @@ fn type_annotation(a: annotation_ir::TermAnnotation) -> HashMap<u32, annotation_
         next_type_var: 1,
         concrete_constraints: HashSet::new(),
         var_constraints: HashSet::new(),
+        bv_constraints: HashSet::new(),
         var_to_type_var: HashMap::new(),
     };
     for e in a.assertions {
@@ -134,7 +136,7 @@ fn type_annotation(a: annotation_ir::TermAnnotation) -> HashMap<u32, annotation_
         trees.trees.push(tree);
     }
     println!("{:#?}", trees);
-    solve_constraints(trees.concrete_constraints, trees.var_constraints)
+    solve_constraints(trees.concrete_constraints, trees.var_constraints, trees.bv_constraints)
 }
 
 fn generate_expr_constraints(
@@ -208,13 +210,12 @@ fn generate_expr_constraints(
             let e1 = generate_expr_constraints(*x, trees);
             let t1 = annotation_ir::Expr::get_type_var(&e1);
 
-            // TODO: could be bv of any width too
             let t = trees.next_type_var;
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             trees.var_constraints.insert(TypeExpr::Variable(t, t1));
 
@@ -230,15 +231,14 @@ fn generate_expr_constraints(
             let t2 = annotation_ir::Expr::get_type_var(&e2);
             let t = trees.next_type_var;
 
-            // TODO: could also be +: (bv8, bv8) -> bv8 for example
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
             trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
             trees.var_constraints.insert(TypeExpr::Variable(t, t1));
@@ -255,15 +255,14 @@ fn generate_expr_constraints(
             let t2 = annotation_ir::Expr::get_type_var(&e2);
             let t = trees.next_type_var;
 
-            // TODO: could also be +: (bv8, bv8) -> bv8 for example
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
             trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
             trees.var_constraints.insert(TypeExpr::Variable(t, t1));
@@ -287,7 +286,7 @@ fn generate_expr_constraints(
                 .concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(width)));            
             trees
-                .concrete_constraints
+                .bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
 
             trees.next_type_var += 1;
@@ -297,10 +296,38 @@ fn generate_expr_constraints(
     }
 }
 
-// TODO: borrow properly
+// Solve constraints as follows:
+//   - process concrete constraints first
+//   - then process variable constraints
+//   - constraints involving bv without widths are last priority
+//
+// for example:
+//   t2 = bv16
+//   t3 = bv8
+//
+//   t5 = t4
+//   t6 = t1
+//   t3 = t4
+//   t1 = t2
+//   t7 = t8
+//
+//   t4 = bv
+//   t1 = bv
+//   t7 = bv
+// 
+// would result in:
+//   bv16 -> t2, t6, t1
+//   bv8 -> t3, t5, t4
+//   poly(0) -> t5, t4 (intermediate group that gets removed)
+//   poly(1) -> t6, t1 (intermediate group that gets removed)
+//   poly(2) -> t7, t8 (intermediate group that gets removed)
+//   bv -> t7, t8
+
+// TODO: clean up
 fn solve_constraints(
     concrete: HashSet<TypeExpr>,
     var: HashSet<TypeExpr>,
+    bv: HashSet<TypeExpr>,
 ) -> HashMap<u32, annotation_ir::Type> {
     // maintain a union find that maps types to sets of type vars that have that type
     let mut union_find = HashMap::new();
@@ -355,10 +382,14 @@ fn solve_constraints(
                             }
                             // union t1 and t2, keeping t1 as the leader
                             (_, true) => {
-                                let g2 = union_find.remove(&y).expect("expected key in union find");
-                                let g1 =
-                                    union_find.get_mut(&x).expect("expected key in union find");
-                                g1.extend(g2.iter());
+                                // guard against the case where x and y have the same poly type
+                                // so we remove the key and can't find it in the next line
+                                if x != y {
+                                    let g2 = union_find.remove(&y).expect("expected key in union find");
+                                    let g1 =
+                                        union_find.get_mut(&x).expect("expected key in union find");
+                                    g1.extend(g2.iter());
+                                }
                             }
                         };
                     }
@@ -387,6 +418,46 @@ fn solve_constraints(
         }
     }
 
+    for b in bv {
+        match b {
+            TypeExpr::Concrete(v, ref t) => {
+                match t {
+                    annotation_ir::Type::BitVector => {
+                        // if there's a bv constraint and the var has already 
+                        // been typed (with a width), ignore the constraint
+                        if let Some(var_type) = get_var_type_concrete(v, &union_find) {
+                            match var_type {
+                                annotation_ir::Type::BitVectorWithWidth(_) => {
+                                    continue;
+                                }
+                                _ => panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}", var_type, b),
+                            }
+                        
+                        // otherwise add it to a generic bv bucket
+                        } else {
+                            if !union_find.contains_key(&t) {
+                                union_find.insert(t.clone(), HashSet::new());
+                            }
+                            if let Some(group) = union_find.get_mut(&t) {
+                                group.insert(v);
+                            }
+
+                            // if this type var also has a polymorphic type, union
+                            if let Some(var_type) = get_var_type_poly(v, &union_find) {
+                                let poly_bucket = union_find.remove(&var_type).expect("expected key in union find");
+                                let bv_bucket =
+                                    union_find.get_mut(&t).expect("expected key in union find");
+                                bv_bucket.extend(poly_bucket.iter());
+                            }
+                        }
+                    }
+                    _ => panic!("Non-bv constraint found in bv constraints: {:#?}", b),
+                }
+            }
+            TypeExpr::Variable(_, _) => panic!("Non-bv constraint found in bv constraints: {:#?}", b),
+        }
+    }
+
     let mut result = HashMap::new();
     for (t, vars) in union_find {
         for var in vars {
@@ -405,6 +476,44 @@ fn get_var_type(
     for (ty, vars) in u {
         if vars.contains(&t) {
             return Some(ty.clone());
+        }
+    }
+    None
+}
+
+// If the union find contains the type var and it has a non-polymorphic, specific type
+// return it. Otherwise return None.
+fn get_var_type_concrete(
+    t: u32,
+    u: &HashMap<annotation_ir::Type, HashSet<u32>>,
+) -> Option<annotation_ir::Type> {
+    for (ty, vars) in u {
+        match ty {
+            annotation_ir::Type::Poly(_) | annotation_ir::Type::BitVector => continue,
+            _ => {
+                if vars.contains(&t) {
+                    return Some(ty.clone());
+                }
+            }
+        }
+    }
+    None
+}
+
+// If the union find contains the type var and it has a polymorphic type,
+// return the polymorphic type. Otherwise return None.
+fn get_var_type_poly(
+    t: u32,
+    u: &HashMap<annotation_ir::Type, HashSet<u32>>,
+) -> Option<annotation_ir::Type> {
+    for (ty, vars) in u {
+        match ty {
+            annotation_ir::Type::Poly(_) => {
+                if vars.contains(&t) {
+                    return Some(ty.clone());
+                }
+            }
+            _ => continue
         }
     }
     None
@@ -923,3 +1032,83 @@ fn type_annotations(
     }
     result
 }*/
+
+// TODO mod tests?
+#[test] 
+fn test_solve_constraints() {
+    // simple with specific and generic bvs
+    let concrete = HashSet::from([
+        TypeExpr::Concrete(2, annotation_ir::Type::BitVectorWithWidth(16)),
+        TypeExpr::Concrete(3, annotation_ir::Type::BitVectorWithWidth(8)),
+    ]);
+    let var = HashSet::from([
+        TypeExpr::Variable(5, 4),
+        TypeExpr::Variable(6, 1),
+        TypeExpr::Variable(3, 4),
+        TypeExpr::Variable(1, 2),
+    ]);
+    let bv = HashSet::from([
+        TypeExpr::Concrete(1, annotation_ir::Type::BitVector),
+        TypeExpr::Concrete(4, annotation_ir::Type::BitVector),
+    ]);
+    let expected = HashMap::from([
+        (1, annotation_ir::Type::BitVectorWithWidth(16)),
+        (2, annotation_ir::Type::BitVectorWithWidth(16)),
+        (3, annotation_ir::Type::BitVectorWithWidth(8)),
+        (4, annotation_ir::Type::BitVectorWithWidth(8)),
+        (5, annotation_ir::Type::BitVectorWithWidth(8)),
+        (6, annotation_ir::Type::BitVectorWithWidth(16)),
+    ]);
+    assert_eq!(expected, solve_constraints(concrete, var, bv));
+
+    // slightly more complicated with specific and generic bvs
+    let concrete = HashSet::from([
+        TypeExpr::Concrete(2, annotation_ir::Type::BitVectorWithWidth(16)),
+        TypeExpr::Concrete(3, annotation_ir::Type::BitVectorWithWidth(8)),
+    ]);
+    let var = HashSet::from([
+        TypeExpr::Variable(5, 4),
+        TypeExpr::Variable(6, 1),
+        TypeExpr::Variable(3, 4),
+        TypeExpr::Variable(1, 2),
+        TypeExpr::Variable(7, 8),
+    ]);
+    let bv = HashSet::from([
+        TypeExpr::Concrete(1, annotation_ir::Type::BitVector),
+        TypeExpr::Concrete(4, annotation_ir::Type::BitVector),
+        TypeExpr::Concrete(7, annotation_ir::Type::BitVector),
+    ]);
+    let expected = HashMap::from([
+        (1, annotation_ir::Type::BitVectorWithWidth(16)),
+        (2, annotation_ir::Type::BitVectorWithWidth(16)),
+        (3, annotation_ir::Type::BitVectorWithWidth(8)),
+        (4, annotation_ir::Type::BitVectorWithWidth(8)),
+        (5, annotation_ir::Type::BitVectorWithWidth(8)),
+        (6, annotation_ir::Type::BitVectorWithWidth(16)),
+        (7, annotation_ir::Type::BitVector),
+        (8, annotation_ir::Type::BitVector),
+    ]);
+    assert_eq!(expected, solve_constraints(concrete, var, bv)); 
+}
+
+#[test]
+#[should_panic]
+fn test_solve_constraints_ill_typed() {
+    // ill-typed
+    let concrete = HashSet::from([
+        TypeExpr::Concrete(2, annotation_ir::Type::BitVectorWithWidth(16)),
+        TypeExpr::Concrete(3, annotation_ir::Type::BitVectorWithWidth(8)),
+    ]);
+    let var = HashSet::from([
+        TypeExpr::Variable(5, 4),
+        TypeExpr::Variable(6, 1),
+        TypeExpr::Variable(4, 6),
+        TypeExpr::Variable(3, 4),
+        TypeExpr::Variable(1, 2),
+    ]);
+    let bv = HashSet::from([
+        TypeExpr::Concrete(1, annotation_ir::Type::BitVector),
+        TypeExpr::Concrete(4, annotation_ir::Type::BitVector),
+    ]);
+    solve_constraints(concrete, var, bv);
+}
