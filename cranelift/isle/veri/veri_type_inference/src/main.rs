@@ -13,12 +13,19 @@ fn main() {
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
-    let _defs = isle::parser::parse(lexer).expect("should parse");
+    let defs = isle::parser::parse(lexer).expect("should parse");
 
-    for (term, annotation) in annotation_env.annotation_map {
-        println!("term {}", term);
-        let types = type_annotation(annotation);
-        println!("{:#?}", types);
+    for def in defs.defs {
+        match def {
+            isle::ast::Def::Decl(ref d) => {
+                let term = d.term.0.clone();
+                println!("term {}", &term);
+                let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
+                let types = type_annotation(annotation, def);
+                println!("{:#?}", types);
+            }
+            _ => continue
+        }        
     }
 
     // for (term, _) in &annotation_env.annotation_map {
@@ -122,7 +129,11 @@ struct ExprTrees {
 }
 
 // generate constraints for each expr and solve
-fn type_annotation(a: annotation_ir::TermAnnotation) -> HashMap<u32, annotation_ir::Type> {
+// TODO: borrow properly
+fn type_annotation(
+    a: annotation_ir::TermAnnotation,
+    d: isle::ast::Def,
+) -> HashMap<u32, annotation_ir::Type> {
     let mut trees = ExprTrees {
         trees: vec![],
         next_type_var: 1,
@@ -134,6 +145,7 @@ fn type_annotation(a: annotation_ir::TermAnnotation) -> HashMap<u32, annotation_
     for e in a.assertions {
         let tree = generate_expr_constraints(*e, &mut trees);
         trees.trees.push(tree);
+        add_isle_constraints(d.clone(), &mut trees, a.sig.clone());
     }
     println!("{:#?}", trees);
     solve_constraints(trees.concrete_constraints, trees.var_constraints, trees.bv_constraints)
@@ -293,6 +305,66 @@ fn generate_expr_constraints(
             annotation_ir::Expr::BVConvTo(w, Box::new(e1), t)
         }
         _ => todo!("expr {:#?} not yet implemented", expr),
+    }
+}
+
+fn add_isle_constraints(
+    def: isle::ast::Def,
+    trees: &mut ExprTrees,
+    annotation: annotation_ir::TermSignature,
+) {
+    let CLIF_TO_IR_TYPES = HashMap::from([
+        ("Type".to_owned(), annotation_ir::Type::Int),
+        ("Imm12".to_owned(), annotation_ir::Type::BitVectorWithWidth(12)),
+        ("Imm64".to_owned(), annotation_ir::Type::BitVectorWithWidth(64)),
+        ("ImmShift".to_owned(), annotation_ir::Type::BitVectorWithWidth(6)),
+        ("ImmLogic".to_owned(), annotation_ir::Type::BitVectorWithWidth(12)),
+        ("u64".to_owned(), annotation_ir::Type::BitVectorWithWidth(64)),
+        ("u8".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
+        ("bool".to_owned(), annotation_ir::Type::Bool),
+        ("MoveWideConst".to_owned(), annotation_ir::Type::BitVectorWithWidth(16)),
+        ("OperandSize".to_owned(), annotation_ir::Type::BitVector),
+        ("Reg".to_owned(), annotation_ir::Type::BitVector),
+        ("Inst".to_owned(), annotation_ir::Type::BitVector),
+        ("Value".to_owned(), annotation_ir::Type::BitVector),
+        ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
+        ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
+    ]);    
+    
+    let mut annotation_vars = vec!();
+    for a in annotation.args { annotation_vars.push(a.name); }
+    annotation_vars.push(annotation.ret.name);
+
+    match def {
+        isle::ast::Def::Decl(d) => {
+            let mut isle_types = vec!();
+            for t in d.arg_tys { isle_types.push(t.0); }
+            isle_types.push(d.ret_ty.0);
+            assert_eq!(annotation_vars.len(), isle_types.len());
+
+            for (isle_type, annotation_var) in isle_types.iter().zip(annotation_vars) {
+                //println!("isle type: {}, annotation_var: {}", &isle_type, &annotation_var);
+                // in case the var was not in the annotation
+                if !trees.var_to_type_var.contains_key(&annotation_var) {
+                    trees.var_to_type_var.insert(annotation_var.clone(), trees.next_type_var);
+                    trees.next_type_var += 1;
+                }
+
+                let ir_type = &CLIF_TO_IR_TYPES[isle_type];
+                let type_var = trees.var_to_type_var[&annotation_var];
+                match ir_type {
+                    annotation_ir::Type::BitVector => 
+                        trees
+                            .bv_constraints
+                            .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
+                    _ => 
+                        trees
+                            .concrete_constraints
+                            .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
+                };
+            }
+        }
+        _ => panic!("def must be decl, got: {:#?}", def)
     }
 }
 
@@ -866,33 +938,6 @@ fn more_specific_type(a: Type, b: Type) -> Type {
             Type::Known(annotation_ir::Type::BitVectorWithWidth(_))) => b,
         _ => unreachable!("{:#?}, {:#?}", a, b),
     }
-}
-
-pub fn annotation_ir_type_for_type_id(
-    isle_types: &Vec<&str>,
-) -> Vec<annotation_ir::Type> {
-    let CLIF_TO_IR_TYPES = HashMap::from([
-        ("Type", annotation_ir::Type::Int),
-        ("Imm12", annotation_ir::Type::BitVectorWithWidth(12)),
-        ("Imm64", annotation_ir::Type::BitVectorWithWidth(64)),
-        ("ImmShift", annotation_ir::Type::BitVectorWithWidth(6)),
-        ("ImmLogic", annotation_ir::Type::BitVectorWithWidth(12)),
-        ("u64", annotation_ir::Type::BitVectorWithWidth(64)),
-        ("u8", annotation_ir::Type::BitVectorWithWidth(8)),
-        ("bool", annotation_ir::Type::Bool),
-        ("MoveWideConst", annotation_ir::Type::BitVectorWithWidth(16)),
-        ("OperandSize", annotation_ir::Type::BitVector),
-        ("Reg", annotation_ir::Type::BitVectorWithWidth(REG_WIDTH)),
-        ("Inst", annotation_ir::Type::BitVector),
-        ("Value", annotation_ir::Type::BitVector),
-        ("ValueRegs", annotation_ir::Type::BitVector),
-    ]);
-
-    let mut ir_types = vec!();
-    for t in isle_types {
-        ir_types.push(CLIF_TO_IR_TYPES[t].clone());
-    }
-    ir_types
 }
 
 // Construct some constraints that are either of the form t_i = <concrete type>
