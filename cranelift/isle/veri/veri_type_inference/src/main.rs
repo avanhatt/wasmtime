@@ -3,6 +3,7 @@ use std::hash::Hash;
 use std::path::PathBuf;
 
 use cranelift_isle as isle;
+use cranelift_isle::sema::{Type, TypeEnv, TermEnv};
 use veri_annotation::parser_wrapper::parse_annotations;
 use veri_ir::annotation_ir;
 
@@ -343,7 +344,6 @@ fn add_isle_constraints(
             assert_eq!(annotation_vars.len(), isle_types.len());
 
             for (isle_type, annotation_var) in isle_types.iter().zip(annotation_vars) {
-                //println!("isle type: {}, annotation_var: {}", &isle_type, &annotation_var);
                 // in case the var was not in the annotation
                 if !trees.var_to_type_var.contains_key(&annotation_var) {
                     trees.var_to_type_var.insert(annotation_var.clone(), trees.next_type_var);
