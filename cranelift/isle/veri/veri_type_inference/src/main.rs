@@ -1,11 +1,11 @@
 use std::collections::{HashMap, HashSet};
+use std::env;
 use std::hash::Hash;
 use std::path::PathBuf;
-use std::env;
 
 use cranelift_isle as isle;
 use isle::ast::Def;
-use isle::sema::{TermEnv, TypeEnv};
+use isle::sema::{TermEnv, TermId, TypeEnv};
 // use isle::sema::{Expr, Pattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
@@ -43,7 +43,7 @@ fn main() {
                 let term = d.term.0.clone();
                 defmap.insert(term, def.clone());
             }
-            _ => continue
+            _ => continue,
         }
     }
 
@@ -62,7 +62,7 @@ enum TypeExpr {
 
 #[derive(Debug)]
 struct TypeContext<'ctx> {
-    annenv: &'ctx AnnotationEnv, 
+    annenv: &'ctx AnnotationEnv,
     termenv: &'ctx TermEnv,
     typeenv: &'ctx TypeEnv,
     trees: Vec<annotation_ir::Expr>,
@@ -74,37 +74,125 @@ struct TypeContext<'ctx> {
     var_to_type_var: HashMap<(usize, String), u32>,
 }
 
-fn type_pattern(ty_ctx: &mut TypeContext, defmap: &HashMap<String, Def>, bvpat: &isle::sema::Pattern) {
-    match bvpat {
+fn add_argument_constraints(
+    ty_ctx: &mut TypeContext,
+    defmap: &HashMap<String, Def>,
+    termid: &TermId,
+    subterms: Vec<Option<u32>>,
+) -> u32 {
+    let term = &ty_ctx.termenv.terms[termid.index()];
+    let term_name = &ty_ctx.typeenv.syms[term.name.index()];
+    let annotation = &ty_ctx
+        .annenv
+        .get_annotation_for_term(term_name)
+        .unwrap_or_else(|| panic!("expected term for {}", term_name));
+    let ann_idx = type_annotation(ty_ctx, annotation.clone(), defmap.get(term_name).unwrap());
+
+    let ret = ty_ctx
+        .var_to_type_var
+        .get(&(ann_idx, annotation.sig.ret.name.clone()))
+        .unwrap();
+
+    for (s, a) in subterms.iter().zip(&annotation.sig.args) {
+        if let Some(tyvar) = s {
+            let arg = ty_ctx
+                .var_to_type_var
+                .get(&(ann_idx, a.name.clone()))
+                .unwrap();
+            ty_ctx
+                .var_constraints
+                .insert(TypeExpr::Variable(*tyvar, *arg));
+        }
+    }
+    // The return type variable
+    *ret
+}
+
+fn type_pattern(
+    ty_ctx: &mut TypeContext,
+    defmap: &HashMap<String, Def>,
+    pat: &isle::sema::Pattern,
+) -> Option<u32> {
+    match pat {
         // If we hit a bound wildcard, no need to add constraints
-        isle::sema::Pattern::Wildcard(_) => (),
+        isle::sema::Pattern::BindPattern(_, _, subpat) => match **subpat {
+            isle::sema::Pattern::Wildcard(..) => None,
+            _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
+        },
 
         // Constants and variables should have types determined from annotations
         isle::sema::Pattern::ConstInt(_, _)
         | isle::sema::Pattern::ConstPrim(_, _)
-        | isle::sema::Pattern::Var(_, _) => (),
+        | isle::sema::Pattern::Var(_, _) => None,
 
-        isle::sema::Pattern::BindPattern(_, _, _) => todo!(),
+        // For terms, get the type variable for each argument (if it exists) and add a new constraint
+        // equating the types of the value returned by that subpattern.
         isle::sema::Pattern::Term(_, termid, subpatterns) => {
-            let term = &ty_ctx.termenv.terms[termid.index()];
-            let term_name = &ty_ctx.typeenv.syms[term.name.index()];
-            let annotation = &ty_ctx.annenv.get_annotation_for_term(term_name).unwrap();
-            type_annotation(ty_ctx, annotation.clone(), defmap.get(term_name).unwrap());
+            let subterms = subpatterns
+                .iter()
+                .map(|p| type_pattern(ty_ctx, defmap, p))
+                .collect();
+            Some(add_argument_constraints(ty_ctx, defmap, termid, subterms))
+        }
+        isle::sema::Pattern::And(_, subpatterns) => {
+            let ty_vars: Vec<Option<u32>> = subpatterns
+                .iter()
+                .map(|p| type_pattern(ty_ctx, defmap, p))
+                .collect();
 
+            // Filter to Some results
+            let ty_vars: Vec<&u32> = ty_vars.iter().filter_map(|p| p.as_ref()).collect();
+            if ty_vars.is_empty() {
+                return None;
+            }
 
-        },
-        isle::sema::Pattern::And(_, _) => todo!(),
-        // _ => unimplemented!("{:?}", bvpat),
+            // We assert all sub type constraints are equivalent to the first subexpression,
+            // then return it.
+            let first = *ty_vars[0];
+            for (i, e) in ty_vars.iter().enumerate() {
+                if i != 0 {
+                    ty_ctx
+                        .var_constraints
+                        .insert(TypeExpr::Variable(first, **e));
+                }
+            }
+            Some(first)
+        }
+        _ => unimplemented!("Unexpected Pattern {:?}", pat),
     }
 }
 
-fn type_lhs(ty_ctx: &mut TypeContext, defmap: &HashMap<String, Def>, lhs: &isle::sema::Pattern) {
-    type_pattern(ty_ctx, defmap, lhs);
+fn type_sema_expr(
+    ty_ctx: &mut TypeContext,
+    defmap: &HashMap<String, Def>,
+    expr: &isle::sema::Expr,
+) -> Option<u32> {
+    match expr {
+        isle::sema::Expr::Var(..)
+        | isle::sema::Expr::ConstInt(..)
+        | isle::sema::Expr::ConstPrim(..) => None,
+        isle::sema::Expr::Term(_, termid, subterms) => {
+            let subterms = subterms
+                .iter()
+                .map(|p| type_sema_expr(ty_ctx, defmap, p))
+                .collect();
+            Some(add_argument_constraints(ty_ctx, defmap, termid, subterms))
+        }
+        isle::sema::Expr::Let {
+            bindings: _,
+            body: _,
+            ..
+        } => todo!(),
+    }
 }
 
-fn type_rhs(ty_ctx: &mut TypeContext) {}
-
-fn type_rule(annotation_env: &AnnotationEnv, termenv: &TermEnv, typeenv: &TypeEnv, defmap: &HashMap<String, Def>, rule: &isle::sema::Rule) {
+fn type_rule(
+    annotation_env: &AnnotationEnv,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    defmap: &HashMap<String, Def>,
+    rule: &isle::sema::Rule,
+) {
     let mut ctx = TypeContext {
         annenv: annotation_env,
         termenv,
@@ -118,14 +206,16 @@ fn type_rule(annotation_env: &AnnotationEnv, termenv: &TermEnv, typeenv: &TypeEn
         var_to_type_var: HashMap::new(),
     };
 
-    type_lhs(&mut ctx, defmap, &rule.lhs);
-    type_rhs(&mut ctx);
+    type_pattern(&mut ctx, defmap, &rule.lhs);
+    type_sema_expr(&mut ctx, defmap, &rule.rhs);
 
-    let _ = solve_constraints(
+    let res = solve_constraints(
         ctx.concrete_constraints,
         ctx.var_constraints,
         ctx.bv_constraints,
     );
+
+    println!("{:#?}", res);
 }
 
 // generate constraints for each expr and solve
@@ -133,39 +223,16 @@ fn type_annotation(
     ty_ctx: &mut TypeContext,
     a: annotation_ir::TermAnnotation,
     d: &isle::ast::Def,
-    // args: Vec<TypeExpr>,
-    // ann_idx: usize,
-) {
+) -> usize {
     let ann_idx = ty_ctx.next_ann_idx;
-    ty_ctx.next_ann_idx+= 1;
+    ty_ctx.next_ann_idx += 1;
     for e in a.assertions {
         let tree = generate_expr_constraints(*e, ty_ctx, ann_idx);
         ty_ctx.trees.push(tree);
         add_isle_constraints(d.clone(), ty_ctx, a.sig.clone(), ann_idx);
     }
+    ann_idx
 }
-
-// // generate constraints for each expr and solve
-// fn type_annotation(
-//     a: annotation_ir::TermAnnotation,
-//     d: &isle::ast::Def,
-// ) -> HashMap<u32, annotation_ir::Type> {
-//     let mut trees = TypeContext {
-//         trees: vec![],
-//         next_type_var: 1,
-//         concrete_constraints: HashSet::new(),
-//         var_constraints: HashSet::new(),
-//         bv_constraints: HashSet::new(),
-//         var_to_type_var: HashMap::new(),
-//     };
-//     for e in a.assertions {
-//         let tree = generate_expr_constraints(*e, &mut trees);
-//         trees.trees.push(tree);
-//         add_isle_constraints(d.clone(), &mut trees, a.sig.clone());
-//     }
-//     println!("{:#?}", trees);
-//     solve_constraints(trees.concrete_constraints, trees.var_constraints, trees.bv_constraints)
-// }
 
 fn generate_expr_constraints(
     expr: annotation_ir::Expr,
