@@ -1,39 +1,54 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::path::PathBuf;
+use std::env;
 
 use cranelift_isle as isle;
+use isle::ast::Def;
+use isle::sema::{TermEnv, TypeEnv};
+// use isle::sema::{Expr, Pattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
 
 const REG_WIDTH: usize = 64;
 
 fn main() {
-	let files = vec!["files/ineg.isle"];
-	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+
+    // let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
+    // let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let input = cur_dir.join("files/ineg.isle");
+
+    // let files = vec![input, clif_isle, prelude_isle];
+
+    let files = vec![input];
+    let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
     let defs = isle::parser::parse(lexer).expect("should parse");
+    let mut typeenv = isle::sema::TypeEnv::from_ast(&defs).unwrap();
+    // We want to allow annotations on terms with internal extractors,
+    // so we avoid expanding them within the sema rules.
+    let termenv = isle::sema::TermEnv::from_ast(
+        &mut typeenv,
+        &defs,
+        /* expand_internal_extractors */ false,
+    )
+    .unwrap();
 
-    // for def in &defs.defs {
-    //     match def {
-    //         isle::ast::Def::Decl(ref d) => {
-    //             let term = d.term.0.clone();
-    //             println!("term {}", &term);
-    //             let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
-    //             annotations.push(annotation);
-    //             // let types = type_annotation(annotation, &def);
-    //             // println!("{:#?}", types);
-    //         }
-    //         _ => continue
-    //     }        
-    // }
-
+    let mut defmap: HashMap<String, Def> = HashMap::new();
     for def in &defs.defs {
         match def {
-            isle::ast::Def::Rule(r) => type_rule(&annotation_env, r),
-            _ => continue,
-        };
+            isle::ast::Def::Decl(ref d) => {
+                let term = d.term.0.clone();
+                defmap.insert(term, def.clone());
+            }
+            _ => continue
+        }
+    }
+
+    for rule in &termenv.rules {
+        type_rule(&annotation_env, &termenv, &typeenv, &defmap, rule)
     }
 }
 
@@ -46,84 +61,87 @@ enum TypeExpr {
 }
 
 #[derive(Debug)]
-struct TypeContext {
+struct TypeContext<'ctx> {
+    annenv: &'ctx AnnotationEnv, 
+    termenv: &'ctx TermEnv,
+    typeenv: &'ctx TypeEnv,
     trees: Vec<annotation_ir::Expr>,
     next_type_var: u32,
+    next_ann_idx: usize,
     concrete_constraints: HashSet<TypeExpr>,
     var_constraints: HashSet<TypeExpr>,
     bv_constraints: HashSet<TypeExpr>,
     var_to_type_var: HashMap<(usize, String), u32>,
 }
 
+fn type_pattern(ty_ctx: &mut TypeContext, defmap: &HashMap<String, Def>, bvpat: &isle::sema::Pattern) {
+    match bvpat {
+        // If we hit a bound wildcard, no need to add constraints
+        isle::sema::Pattern::Wildcard(_) => (),
 
-// fn type_pattern(bvpat: &Pattern) {
-//     match bvpat {
-//         // If we hit a bound wildcard, no need to add constraints
-//         Pattern::BindPattern(..) => (),
-//         Pattern::Term(_, termid, arg_patterns) => {
-//             self.type_term_with_subterms(termid, arg_patterns.to_vec(), ty)
-//         }
-//         Pattern::And(_, children) => {
-//             // The `and` construct requires all subpatterns match. For now, encode
-//             // as each subpattern producing the same equivalent expr result.
-//             let subpattern_exprs: Vec<VIRExpr> = children
-//                 .iter()
-//                 .map(|p| self.interp_pattern(p, ty))
-//                 .collect();
+        // Constants and variables should have types determined from annotations
+        isle::sema::Pattern::ConstInt(_, _)
+        | isle::sema::Pattern::ConstPrim(_, _)
+        | isle::sema::Pattern::Var(_, _) => (),
 
-//             // We assert all subexpressions are equivalent to the first subexpression,
-//             // then return it.
-//             let first = subpattern_exprs[0].clone();
-//             for (i, e) in subpattern_exprs.iter().enumerate() {
-//                 if i != 0 {
-//                     self.assumptions
-//                         .push(Assumption::new(VIRType::eq(first.clone(), e.clone())));
-//                 }
-//             }
-//             first
-//         }
-//         _ => unimplemented!("{:?}", bvpat),
-//     }
-// }
+        isle::sema::Pattern::BindPattern(_, _, _) => todo!(),
+        isle::sema::Pattern::Term(_, termid, subpatterns) => {
+            let term = &ty_ctx.termenv.terms[termid.index()];
+            let term_name = &ty_ctx.typeenv.syms[term.name.index()];
+            let annotation = &ty_ctx.annenv.get_annotation_for_term(term_name).unwrap();
+            type_annotation(ty_ctx, annotation.clone(), defmap.get(term_name).unwrap());
 
 
-fn type_lhs(ty_ctx: &mut TypeContext) {
-
+        },
+        isle::sema::Pattern::And(_, _) => todo!(),
+        // _ => unimplemented!("{:?}", bvpat),
+    }
 }
 
-fn type_rhs(ty_ctx: &mut TypeContext) {
-
+fn type_lhs(ty_ctx: &mut TypeContext, defmap: &HashMap<String, Def>, lhs: &isle::sema::Pattern) {
+    type_pattern(ty_ctx, defmap, lhs);
 }
 
-fn type_rule(annotation_env: &AnnotationEnv, rule: &isle::ast::Rule) {
+fn type_rhs(ty_ctx: &mut TypeContext) {}
+
+fn type_rule(annotation_env: &AnnotationEnv, termenv: &TermEnv, typeenv: &TypeEnv, defmap: &HashMap<String, Def>, rule: &isle::sema::Rule) {
     let mut ctx = TypeContext {
+        annenv: annotation_env,
+        termenv,
+        typeenv,
         trees: vec![],
         next_type_var: 1,
+        next_ann_idx: 1,
         concrete_constraints: HashSet::new(),
         var_constraints: HashSet::new(),
         bv_constraints: HashSet::new(),
         var_to_type_var: HashMap::new(),
     };
 
-    type_lhs(&mut ctx);
+    type_lhs(&mut ctx, defmap, &rule.lhs);
     type_rhs(&mut ctx);
 
-    let _ = solve_constraints(ctx.concrete_constraints, ctx.var_constraints, ctx.bv_constraints);
+    let _ = solve_constraints(
+        ctx.concrete_constraints,
+        ctx.var_constraints,
+        ctx.bv_constraints,
+    );
 }
 
-
 // generate constraints for each expr and solve
-fn type_annotation_with_args(
+fn type_annotation(
     ty_ctx: &mut TypeContext,
     a: annotation_ir::TermAnnotation,
     d: &isle::ast::Def,
-    args: Vec<TypeExpr>,
-    ann_idx: usize,
+    // args: Vec<TypeExpr>,
+    // ann_idx: usize,
 ) {
+    let ann_idx = ty_ctx.next_ann_idx;
+    ty_ctx.next_ann_idx+= 1;
     for e in a.assertions {
         let tree = generate_expr_constraints(*e, ty_ctx, ann_idx);
         ty_ctx.trees.push(tree);
-        add_isle_constraints(d.clone(),  ty_ctx, a.sig.clone(), ann_idx);
+        add_isle_constraints(d.clone(), ty_ctx, a.sig.clone(), ann_idx);
     }
 }
 
@@ -293,9 +311,10 @@ fn generate_expr_constraints(
                 annotation_ir::Width::RegWidth => REG_WIDTH,
             };
 
-            trees
-                .concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(width)));            
+            trees.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(width),
+            ));
             trees
                 .bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
@@ -315,56 +334,81 @@ fn add_isle_constraints(
 ) {
     let clif_to_ir_types = HashMap::from([
         ("Type".to_owned(), annotation_ir::Type::Int),
-        ("Imm12".to_owned(), annotation_ir::Type::BitVectorWithWidth(12)),
-        ("Imm64".to_owned(), annotation_ir::Type::BitVectorWithWidth(64)),
-        ("ImmShift".to_owned(), annotation_ir::Type::BitVectorWithWidth(6)),
-        ("ImmLogic".to_owned(), annotation_ir::Type::BitVectorWithWidth(12)),
-        ("u64".to_owned(), annotation_ir::Type::BitVectorWithWidth(64)),
+        (
+            "Imm12".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(12),
+        ),
+        (
+            "Imm64".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(64),
+        ),
+        (
+            "ImmShift".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(6),
+        ),
+        (
+            "ImmLogic".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(12),
+        ),
+        (
+            "u64".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(64),
+        ),
         ("u8".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
         ("bool".to_owned(), annotation_ir::Type::Bool),
-        ("MoveWideConst".to_owned(), annotation_ir::Type::BitVectorWithWidth(16)),
+        (
+            "MoveWideConst".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(16),
+        ),
         ("OperandSize".to_owned(), annotation_ir::Type::BitVector),
         ("Reg".to_owned(), annotation_ir::Type::BitVector),
         ("Inst".to_owned(), annotation_ir::Type::BitVector),
         ("Value".to_owned(), annotation_ir::Type::BitVector),
         ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
-    ]);    
-    
-    let mut annotation_vars = vec!();
-    for a in annotation.args { annotation_vars.push(a.name); }
+    ]);
+
+    let mut annotation_vars = vec![];
+    for a in annotation.args {
+        annotation_vars.push(a.name);
+    }
     annotation_vars.push(annotation.ret.name);
 
     match def {
         isle::ast::Def::Decl(d) => {
-            let mut isle_types = vec!();
-            for t in d.arg_tys { isle_types.push(t.0); }
+            let mut isle_types = vec![];
+            for t in d.arg_tys {
+                isle_types.push(t.0);
+            }
             isle_types.push(d.ret_ty.0);
             assert_eq!(annotation_vars.len(), isle_types.len());
 
             for (isle_type, annotation_var) in isle_types.iter().zip(annotation_vars) {
                 //println!("isle type: {}, annotation_var: {}", &isle_type, &annotation_var);
                 // in case the var was not in the annotation
-                if !trees.var_to_type_var.contains_key(&(ann_idx, annotation_var.clone())) {
-                    trees.var_to_type_var.insert((ann_idx, annotation_var.clone()), trees.next_type_var);
+                if !trees
+                    .var_to_type_var
+                    .contains_key(&(ann_idx, annotation_var.clone()))
+                {
+                    trees
+                        .var_to_type_var
+                        .insert((ann_idx, annotation_var.clone()), trees.next_type_var);
                     trees.next_type_var += 1;
                 }
 
                 let ir_type = &clif_to_ir_types[isle_type];
                 let type_var = trees.var_to_type_var[&(ann_idx, annotation_var)];
                 match ir_type {
-                    annotation_ir::Type::BitVector => 
-                        trees
-                            .bv_constraints
-                            .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
-                    _ => 
-                        trees
-                            .concrete_constraints
-                            .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
+                    annotation_ir::Type::BitVector => trees
+                        .bv_constraints
+                        .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
+                    _ => trees
+                        .concrete_constraints
+                        .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
                 };
             }
         }
-        _ => panic!("def must be decl, got: {:#?}", def)
+        _ => panic!("def must be decl, got: {:#?}", def),
     }
 }
 
@@ -386,7 +430,7 @@ fn add_isle_constraints(
 //   t4 = bv
 //   t1 = bv
 //   t7 = bv
-// 
+//
 // would result in:
 //   bv16 -> t2, t6, t1
 //   bv8 -> t3, t5, t4
@@ -441,7 +485,7 @@ fn solve_constraints(
                                 if x != y {
                                     panic!(
                                         "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}",
-                                        v, v1, x, v2, y 
+                                        v, v1, x, v2, y
                                     )
                                 }
                             }
@@ -457,7 +501,8 @@ fn solve_constraints(
                                 // guard against the case where x and y have the same poly type
                                 // so we remove the key and can't find it in the next line
                                 if x != y {
-                                    let g2 = union_find.remove(&y).expect("expected key in union find");
+                                    let g2 =
+                                        union_find.remove(&y).expect("expected key in union find");
                                     let g1 =
                                         union_find.get_mut(&x).expect("expected key in union find");
                                     g1.extend(g2.iter());
@@ -495,7 +540,7 @@ fn solve_constraints(
             TypeExpr::Concrete(v, ref t) => {
                 match t {
                     annotation_ir::Type::BitVector => {
-                        // if there's a bv constraint and the var has already 
+                        // if there's a bv constraint and the var has already
                         // been typed (with a width), ignore the constraint
                         if let Some(var_type) = get_var_type_concrete(v, &union_find) {
                             match var_type {
@@ -504,7 +549,7 @@ fn solve_constraints(
                                 }
                                 _ => panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}", var_type, b),
                             }
-                        
+
                         // otherwise add it to a generic bv bucket
                         } else {
                             if !union_find.contains_key(&t) {
@@ -516,7 +561,9 @@ fn solve_constraints(
 
                             // if this type var also has a polymorphic type, union
                             if let Some(var_type) = get_var_type_poly(v, &union_find) {
-                                let poly_bucket = union_find.remove(&var_type).expect("expected key in union find");
+                                let poly_bucket = union_find
+                                    .remove(&var_type)
+                                    .expect("expected key in union find");
                                 let bv_bucket =
                                     union_find.get_mut(&t).expect("expected key in union find");
                                 bv_bucket.extend(poly_bucket.iter());
@@ -526,7 +573,9 @@ fn solve_constraints(
                     _ => panic!("Non-bv constraint found in bv constraints: {:#?}", b),
                 }
             }
-            TypeExpr::Variable(_, _) => panic!("Non-bv constraint found in bv constraints: {:#?}", b),
+            TypeExpr::Variable(_, _) => {
+                panic!("Non-bv constraint found in bv constraints: {:#?}", b)
+            }
         }
     }
 
@@ -585,14 +634,14 @@ fn get_var_type_poly(
                     return Some(ty.clone());
                 }
             }
-            _ => continue
+            _ => continue,
         }
     }
     None
 }
 
 // TODO mod tests?
-#[test] 
+#[test]
 fn test_solve_constraints() {
     // simple with specific and generic bvs
     let concrete = HashSet::from([
@@ -646,7 +695,7 @@ fn test_solve_constraints() {
         (7, annotation_ir::Type::BitVector),
         (8, annotation_ir::Type::BitVector),
     ]);
-    assert_eq!(expected, solve_constraints(concrete, var, bv)); 
+    assert_eq!(expected, solve_constraints(concrete, var, bv));
 }
 
 #[test]
