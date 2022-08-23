@@ -168,10 +168,18 @@ fn generate_expr_constraints(
         }
         annotation_ir::Expr::Const(c, ..) => {
             let t = trees.next_type_var;
-            trees
-                .concrete_constraints
-                .insert(TypeExpr::Concrete(t, c.clone().ty));
-
+            match c.ty {
+                annotation_ir::Type::BitVector => {
+                    trees
+                        .bv_constraints
+                        .insert(TypeExpr::Concrete(t, c.ty.clone()));
+                }
+                _ => {
+                    trees
+                        .concrete_constraints
+                        .insert(TypeExpr::Concrete(t, c.ty.clone()));
+                }
+            }
             trees.next_type_var += 1;
             annotation_ir::Expr::Const(c, t)
         }
