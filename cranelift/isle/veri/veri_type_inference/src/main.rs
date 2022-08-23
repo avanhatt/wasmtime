@@ -18,8 +18,8 @@ fn main() {
     // let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
     // let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     // let input = cur_dir.join("files/ineg.isle");
-    let input = cur_dir.join("files/iadd.isle");
-    // let input = cur_dir.join("files/uextend.isle");
+    // let input = cur_dir.join("files/iadd.isle");
+    let input = cur_dir.join("files/uextend.isle");
 
     // let files = vec![input, clif_isle, prelude_isle];
 
@@ -213,6 +213,7 @@ fn type_rule(
     dbg!(&ctx.concrete_constraints);
     dbg!(&ctx.var_constraints);
     dbg!(&ctx.bv_constraints);
+    dbg!(&ctx.var_to_type_var);
 
     let res = solve_constraints(
         ctx.concrete_constraints,
@@ -369,9 +370,6 @@ fn generate_expr_constraints(
                 .concrete_constraints
                 .insert(TypeExpr::Concrete(tw, annotation_ir::Type::Int));
             trees
-                .concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
-            trees
                 .bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
@@ -383,14 +381,11 @@ fn generate_expr_constraints(
             let t = trees.next_type_var;
             trees.next_type_var += 1;
             trees
-                .concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
-            trees
                 .bv_constraints
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::BitVector));
             trees
-                .bv_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
             annotation_ir::Expr::WidthOf(x, t)
         }
         _ => todo!("expr {:#?} not yet implemented", expr),
@@ -553,6 +548,35 @@ fn solve_constraints(
                     (Some(x), Some(y)) => {
                         match (x.is_poly(), y.is_poly()) {
                             (false, false) => {
+                                match (&x, &y) {
+                                    (
+                                        annotation_ir::Type::BitVector,
+                                        annotation_ir::Type::BitVectorWithWidth(..),
+                                    ) => {
+                                        let g2 = union_find
+                                            .remove(&y)
+                                            .expect("expected key in union find");
+                                        let g1 = union_find
+                                            .get_mut(&x)
+                                            .expect("expected key in union find");
+                                        g1.extend(g2.iter());
+                                        continue;
+                                    }
+                                    (
+                                        annotation_ir::Type::BitVectorWithWidth(..),
+                                        annotation_ir::Type::BitVector,
+                                    ) => {
+                                        let g1 = union_find
+                                            .remove(&x)
+                                            .expect("expected key in union find");
+                                        let g2 = union_find
+                                            .get_mut(&y)
+                                            .expect("expected key in union find");
+                                        g2.extend(g1.iter());
+                                        continue;
+                                    }
+                                    _ => (),
+                                }
                                 if x != y {
                                     panic!(
                                         "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}",
