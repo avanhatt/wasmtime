@@ -22,7 +22,7 @@
 ;;@     (assertions (= (a) (ret)))) 
 (decl extend (Reg bool u8 u8) Reg)
 
-// TODO: what does widthof return? what's the first arg of int2bv?
+;; TODO: what does widthof return? what's the first arg of int2bv?
 ;;@ (spec (sig (args x) (ret))
 ;;@     (assertions (= (int2bv (widthof (ret)) (x)) (ret))))
 (decl pure ty_bits (Type) u8)

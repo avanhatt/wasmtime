@@ -10,13 +10,13 @@ use veri_ir::annotation_ir;
 const REG_WIDTH: usize = 64;
 
 fn main() {
-	let files = vec!["files/ineg.isle"];
+	let files = vec!["files/uextend.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
     let defs = isle::parser::parse(lexer).expect("should parse");
 
-    for def in defs.defs {
+    /*for def in defs.defs {
         match def {
             isle::ast::Def::Decl(ref d) => {
                 let term = d.term.0.clone();
@@ -27,7 +27,7 @@ fn main() {
             }
             _ => continue
         }        
-    }
+    }*/
 
     // for (term, _) in &annotation_env.annotation_map {
     //     let types = get_initial_types(term, &annotation_env, &term_to_isle_types[term]);
@@ -35,7 +35,6 @@ fn main() {
     // }
 
     // TODO: clean up
-    /*
     let mut parse_tree = RuleParseTree {
         lhs: TypeVarNode{
             ident: "".to_string(),
@@ -49,7 +48,7 @@ fn main() {
         },
         type_var_map: HashMap::new(),
         next_type_var: 1,
-        term_to_type_var_map: HashMap::new(),
+        // term_to_type_var_map: HashMap::new(), <---- REMEMBER TO DELETE THIS!!!
         term_to_isle_type_map: HashMap::new(),
     };
     for def in &defs.defs {
@@ -76,7 +75,7 @@ fn main() {
 
     println!("[*] Created parse tree: {:#?}", parse_tree);
     //println!("[*]Term to isle types: {:#?}", term_to_isle_types);
-
+    /*
     let mut concrete_constraints = HashSet::new();
     let mut var_constraints = HashSet::new();
     generate_constraints(
@@ -162,8 +161,8 @@ fn generate_expr_constraints(
             if trees.var_to_type_var.contains_key(&x) {
                 t = trees.var_to_type_var[&x];
             } else {
-                trees.var_to_type_var.insert(x.clone(), t);
-                trees.next_type_var += 1;
+                trees.var_to_type_var.insert(x.clone(), t); // clear this per term
+                trees.next_type_var += 1; // do not clear this
             }
             annotation_ir::Expr::Var(x, t)
         }
@@ -591,18 +590,18 @@ fn get_var_type_poly(
     None
 }
 
-/*
 #[derive(Debug)]
 struct RuleParseTree {
     lhs: TypeVarNode,
     rhs: TypeVarNode,
-    // a map of term or var name to type var
+    // a map of var name to type variable, where var could be
+    // Pattern::Var or var used in Pattern::BindPattern
     type_var_map: HashMap<String, u32>,
     // bookkeeping that tells the next unused type var
     next_type_var: u32,
     // a map of term to array of type vars representing the
     // args and ret var of the term's annotation
-    term_to_type_var_map: HashMap<String, Vec<u32>>,
+    //term_to_type_var_map: HashMap<String, Vec<u32>>, <----- REMEMBER TO DELETE!!!
     term_to_isle_type_map: HashMap<String, Vec<String>>,
 }
 
@@ -628,7 +627,7 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
         },
         type_var_map: HashMap::new(),
         next_type_var: 1,
-        term_to_type_var_map: HashMap::new(),
+        //term_to_type_var_map: HashMap::new(), <----- REMEMBER TO DELETE!!!
         term_to_isle_type_map: HashMap::new(),
     };
 
@@ -648,28 +647,15 @@ fn create_parse_tree_pattern(
         isle::ast::Pattern::Term{ sym, args, .. } => {
             // process children first
             let mut children = vec![];
-            let mut type_vars = vec![];
             for arg in args {
                 let child = create_parse_tree_pattern(arg, tree);
-                type_vars.push(child.type_var);
                 children.push(child);
             }
-
-            // if we've already typed this term use the same type
-            // otherwise use a fresh type and increment the global counter
-            let ident = sym.0;
-            tree.type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
-            let type_var = tree.type_var_map[&ident];
-            if type_var == tree.next_type_var {
-                tree.next_type_var += 1;
-            }
-
-            // even if we see the same term multiple times, the types should be the same
-            type_vars.push(type_var);
-            tree.term_to_type_var_map.insert(ident.clone(), type_vars);
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
 
             TypeVarNode{
-                ident: ident,
+                ident: sym.0,
                 type_var: type_var,
                 children: children,
             }
@@ -705,40 +691,30 @@ fn create_parse_tree_expr(
 ) -> TypeVarNode {
     match expr {
         isle::ast::Expr::Term{ sym, args, .. } => {
+            // process children first
             let mut children = vec![];
-            let mut type_vars = vec![];
             for arg in args {
                 let child = create_parse_tree_expr(arg, tree);
-                type_vars.push(child.type_var);
                 children.push(child);
             }
-
-            let ident = sym.0;
-            tree.type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
-            let type_var = tree.type_var_map[&ident];
-            if type_var == tree.next_type_var {
-                tree.next_type_var += 1;
-            }
-
-            // even if we see the same term multiple times, the types should be the same
-            type_vars.push(type_var);
-            tree.term_to_type_var_map.insert(ident.clone(), type_vars);
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
 
             TypeVarNode{
-                ident: ident,
+                ident: sym.0,
                 type_var: type_var,
                 children: children,
             }
         }
         isle::ast::Expr::Var{ name, .. } => {
+            // This case doesn't really change anything since we should
+            // have already typed vars in the LHS, but it does check
+            // that we aren't using a variable that wasn't declared.
             let ident = name.0;
-
-            tree.type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
-            let type_var = tree.type_var_map[&ident];
-            if type_var == tree.next_type_var {
-                tree.next_type_var += 1;
+            if !tree.type_var_map.contains_key(&ident) {
+                panic!("var {} used in RHS that was not declared in LHS", &ident);
             }
-
+            let type_var = tree.type_var_map[&ident];
             TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
@@ -746,16 +722,10 @@ fn create_parse_tree_expr(
             }
         }
         isle::ast::Expr::ConstPrim{ val, .. } => {
-            let ident = val.0;
-
-            tree.type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
-            let type_var = tree.type_var_map[&ident];
-            if type_var == tree.next_type_var {
-                tree.next_type_var += 1;
-            }
-
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
             TypeVarNode{
-                ident: ident.clone(),
+                ident: val.0,
                 type_var: type_var,
                 children: vec![],
             }
@@ -763,7 +733,7 @@ fn create_parse_tree_expr(
         _ => todo!("parse tree expr: {:#?}", expr)
     }
 }
-
+/*
 // #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 // pub enum Type {
 //     Poly(u32),
