@@ -17,7 +17,9 @@ fn main() {
 
     // let clif_isle = cur_dir.join("../../../codegen/src").join("clif.isle");
     // let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let input = cur_dir.join("files/ineg.isle");
+    // let input = cur_dir.join("files/ineg.isle");
+    let input = cur_dir.join("files/iadd.isle");
+    // let input = cur_dir.join("files/uextend.isle");
 
     // let files = vec![input, clif_isle, prelude_isle];
 
@@ -115,10 +117,10 @@ fn type_pattern(
 ) -> Option<u32> {
     match pat {
         // If we hit a bound wildcard, no need to add constraints
-        isle::sema::Pattern::BindPattern(_, _, subpat) => match **subpat {
-            isle::sema::Pattern::Wildcard(..) => None,
-            _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
-        },
+        isle::sema::Pattern::Wildcard(..) => None,
+
+        // TODO: this should have logic to set the types equal
+        isle::sema::Pattern::BindPattern(_, _, subpat) => type_pattern(ty_ctx, defmap, &subpat),
 
         // Constants and variables should have types determined from annotations
         isle::sema::Pattern::ConstInt(_, _)
@@ -158,7 +160,6 @@ fn type_pattern(
             }
             Some(first)
         }
-        _ => unimplemented!("Unexpected Pattern {:?}", pat),
     }
 }
 
@@ -208,6 +209,10 @@ fn type_rule(
 
     type_pattern(&mut ctx, defmap, &rule.lhs);
     type_sema_expr(&mut ctx, defmap, &rule.rhs);
+
+    dbg!(&ctx.concrete_constraints);
+    dbg!(&ctx.var_constraints);
+    dbg!(&ctx.bv_constraints);
 
     let res = solve_constraints(
         ctx.concrete_constraints,
@@ -269,7 +274,7 @@ fn generate_expr_constraints(
             annotation_ir::Expr::TyWidth(t)
         }
 
-        annotation_ir::Expr::Eq(x, y, _) => {
+        annotation_ir::Expr::Eq(x, y, _) | annotation_ir::Expr::Lte(x, y, _) => {
             let e1 = generate_expr_constraints(*x, trees, ann_idx);
             let e2 = generate_expr_constraints(*y, trees, ann_idx);
 
@@ -285,23 +290,6 @@ fn generate_expr_constraints(
             trees.next_type_var += 1;
             annotation_ir::Expr::Eq(Box::new(e1), Box::new(e2), t)
         }
-        annotation_ir::Expr::Lte(x, y, _) => {
-            let e1 = generate_expr_constraints(*x, trees, ann_idx);
-            let e2 = generate_expr_constraints(*y, trees, ann_idx);
-
-            let t1 = annotation_ir::Expr::get_type_var(&e1);
-            let t2 = annotation_ir::Expr::get_type_var(&e2);
-            let t = trees.next_type_var;
-
-            trees
-                .concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
-            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
-
-            trees.next_type_var += 1;
-            annotation_ir::Expr::Lte(Box::new(e1), Box::new(e2), t)
-        }
-
         annotation_ir::Expr::BVNeg(x, _) => {
             let e1 = generate_expr_constraints(*x, trees, ann_idx);
             let t1 = annotation_ir::Expr::get_type_var(&e1);
@@ -319,7 +307,7 @@ fn generate_expr_constraints(
             annotation_ir::Expr::BVNeg(Box::new(e1), t)
         }
 
-        annotation_ir::Expr::BVAdd(x, y, _) => {
+        annotation_ir::Expr::BVAdd(x, y, _) | annotation_ir::Expr::BVSub(x, y, _) => {
             let e1 = generate_expr_constraints(*x, trees, ann_idx);
             let e2 = generate_expr_constraints(*y, trees, ann_idx);
 
@@ -343,31 +331,6 @@ fn generate_expr_constraints(
             trees.next_type_var += 1;
             annotation_ir::Expr::BVAdd(Box::new(e1), Box::new(e2), t)
         }
-        annotation_ir::Expr::BVSub(x, y, _) => {
-            let e1 = generate_expr_constraints(*x, trees, ann_idx);
-            let e2 = generate_expr_constraints(*y, trees, ann_idx);
-
-            let t1 = annotation_ir::Expr::get_type_var(&e1);
-            let t2 = annotation_ir::Expr::get_type_var(&e2);
-            let t = trees.next_type_var;
-
-            trees
-                .bv_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
-                .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
-            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t1));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t2));
-
-            trees.next_type_var += 1;
-            annotation_ir::Expr::BVSub(Box::new(e1), Box::new(e2), t)
-        }
-
         annotation_ir::Expr::BVConvTo(w, x, _) => {
             let e1 = generate_expr_constraints(*x, trees, ann_idx);
             let t1 = annotation_ir::Expr::get_type_var(&e1);
@@ -388,6 +351,47 @@ fn generate_expr_constraints(
 
             trees.next_type_var += 1;
             annotation_ir::Expr::BVConvTo(w, Box::new(e1), t)
+        }
+        annotation_ir::Expr::BVIntToBv(x, w, _) => {
+            let ex = generate_expr_constraints(*x.clone(), trees, ann_idx);
+            let ew = generate_expr_constraints(*w.clone(), trees, ann_idx);
+
+            let tx = annotation_ir::Expr::get_type_var(&ex);
+            let tw = annotation_ir::Expr::get_type_var(&ew);
+
+            let t = trees.next_type_var;
+            trees.next_type_var += 1;
+
+            trees
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));
+            trees
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(tw, annotation_ir::Type::Int));
+            trees
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            trees
+                .bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+
+            annotation_ir::Expr::BVIntToBv(x, w, t)
+        }
+        annotation_ir::Expr::WidthOf(x, _) => {
+            let ex = generate_expr_constraints(*x.clone(), trees, ann_idx);
+            let tx = annotation_ir::Expr::get_type_var(&ex);
+            let t = trees.next_type_var;
+            trees.next_type_var += 1;
+            trees
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
+            trees
+                .bv_constraints
+                .insert(TypeExpr::Concrete(tx, annotation_ir::Type::BitVector));
+            trees
+                .bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            annotation_ir::Expr::WidthOf(x, t)
         }
         _ => todo!("expr {:#?} not yet implemented", expr),
     }
