@@ -548,35 +548,6 @@ fn solve_constraints(
                     (Some(x), Some(y)) => {
                         match (x.is_poly(), y.is_poly()) {
                             (false, false) => {
-                                match (&x, &y) {
-                                    (
-                                        annotation_ir::Type::BitVector,
-                                        annotation_ir::Type::BitVectorWithWidth(..),
-                                    ) => {
-                                        let g2 = union_find
-                                            .remove(&y)
-                                            .expect("expected key in union find");
-                                        let g1 = union_find
-                                            .get_mut(&x)
-                                            .expect("expected key in union find");
-                                        g1.extend(g2.iter());
-                                        continue;
-                                    }
-                                    (
-                                        annotation_ir::Type::BitVectorWithWidth(..),
-                                        annotation_ir::Type::BitVector,
-                                    ) => {
-                                        let g1 = union_find
-                                            .remove(&x)
-                                            .expect("expected key in union find");
-                                        let g2 = union_find
-                                            .get_mut(&y)
-                                            .expect("expected key in union find");
-                                        g2.extend(g1.iter());
-                                        continue;
-                                    }
-                                    _ => (),
-                                }
                                 if x != y {
                                     panic!(
                                         "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}",
