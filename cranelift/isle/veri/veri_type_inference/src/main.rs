@@ -3,31 +3,17 @@ use std::hash::Hash;
 use std::path::PathBuf;
 
 use cranelift_isle as isle;
-use cranelift_isle::sema::{Type, TypeEnv, TermEnv};
-use veri_annotation::parser_wrapper::parse_annotations;
+use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
 
 const REG_WIDTH: usize = 64;
 
 fn main() {
-	let files = vec!["files/uextend.isle"];
+	let files = vec!["files/ineg.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
     let defs = isle::parser::parse(lexer).expect("should parse");
-
-    /*for def in defs.defs {
-        match def {
-            isle::ast::Def::Decl(ref d) => {
-                let term = d.term.0.clone();
-                println!("term {}", &term);
-                let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
-                let types = type_annotation(annotation, def);
-                println!("{:#?}", types);
-            }
-            _ => continue
-        }        
-    }*/
 
     // for (term, _) in &annotation_env.annotation_map {
     //     let types = get_initial_types(term, &annotation_env, &term_to_isle_types[term]);
@@ -46,10 +32,12 @@ fn main() {
             type_var: 0,
             children: vec![],
         },
-        type_var_map: HashMap::new(),
+        var_to_type_var_map: HashMap::new(),
         next_type_var: 1,
-        // term_to_type_var_map: HashMap::new(), <---- REMEMBER TO DELETE THIS!!!
-        term_to_isle_type_map: HashMap::new(),
+        concrete_constraints: HashSet::new(),
+        var_constraints: HashSet::new(),
+        bv_constraints: HashSet::new(),
+        decls: HashMap::new(),
     };
     for def in &defs.defs {
         parse_tree = match def {
@@ -58,6 +46,38 @@ fn main() {
         };
     }
 
+    for def in defs.defs {
+        match def {
+            isle::ast::Def::Decl(d) => {
+                parse_tree.decls.insert(d.term.0.clone(), d);
+                /*let term = d.term.0.clone();
+                println!("term {}", &term);
+                let annotation = annotation_env.get_annotation_for_term(&term).unwrap();
+                let types = type_annotation(annotation, def);
+                println!("{:#?}", types);*/
+            }
+            _ => continue
+        }        
+    }
+    //println!("[*] Created parse tree: {:#?}", parse_tree);
+    
+    // TODO: fix borrowing everywhere but this is the worst offender
+    let copy = parse_tree.clone();
+    add_rule_constraints(&mut parse_tree, &copy.lhs, &annotation_env);
+    add_rule_constraints(&mut parse_tree, &copy.rhs, &annotation_env);
+    parse_tree.var_constraints.insert(TypeExpr::Variable(
+        parse_tree.lhs.type_var,
+        parse_tree.rhs.type_var,
+    ));
+    //println!("{:#?}", &parse_tree);
+    let types = solve_constraints(
+        parse_tree.concrete_constraints,
+        parse_tree.var_constraints,
+        parse_tree.bv_constraints,
+    );
+    println!("{:#?}", types);
+
+    /*
     for def in &defs.defs {
         match def {
             isle::ast::Def::Decl(d) => {
@@ -72,8 +92,9 @@ fn main() {
             _ => continue
         }
     }
+    */
 
-    println!("[*] Created parse tree: {:#?}", parse_tree);
+
     //println!("[*]Term to isle types: {:#?}", term_to_isle_types);
     /*
     let mut concrete_constraints = HashSet::new();
@@ -110,7 +131,31 @@ fn main() {
     //println!("[*] Final results: {:#?}", results);*/
 }
 
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug)]
+struct RuleParseTree {
+    lhs: TypeVarNode,
+    rhs: TypeVarNode,
+    // a map of var name to type variable, where var could be
+    // Pattern::Var or var used in Pattern::BindPattern
+    var_to_type_var_map: HashMap<String, u32>,
+    // bookkeeping that tells the next unused type var
+    next_type_var: u32,
+    // combined constraints from all nodes
+    concrete_constraints: HashSet<TypeExpr>,
+    var_constraints: HashSet<TypeExpr>,
+    bv_constraints: HashSet<TypeExpr>,
+    // a map of terms in the rule to their isle ast decl
+    decls: HashMap<String, isle::ast::Decl>,
+}
+
+#[derive(Clone, Debug)]
+struct TypeVarNode {
+    ident: String,
+    type_var: u32,
+    children: Vec<TypeVarNode>,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 // Constraints either assign concrete types to type variables
 // or set them equal to other type variables
 enum TypeExpr {
@@ -119,27 +164,18 @@ enum TypeExpr {
 }
 
 #[derive(Debug)]
-struct ExprTrees {
-    trees: Vec<annotation_ir::Expr>,
-    next_type_var: u32,
-    concrete_constraints: HashSet<TypeExpr>,
-    var_constraints: HashSet<TypeExpr>,
-    bv_constraints: HashSet<TypeExpr>,
+struct AnnotationTypeInfo {
+    // map of annotation variable to assigned type var
     var_to_type_var: HashMap<String, u32>,
 }
 
-// generate constraints for each expr and solve
 // TODO: borrow properly
+/*
 fn type_annotation(
     a: annotation_ir::TermAnnotation,
     d: isle::ast::Def,
 ) -> HashMap<u32, annotation_ir::Type> {
-    let mut trees = ExprTrees {
-        trees: vec![],
-        next_type_var: 1,
-        concrete_constraints: HashSet::new(),
-        var_constraints: HashSet::new(),
-        bv_constraints: HashSet::new(),
+    let mut trees = AnnotationTypeInfo {
         var_to_type_var: HashMap::new(),
     };
     for e in a.assertions {
@@ -150,166 +186,153 @@ fn type_annotation(
     println!("{:#?}", trees);
     solve_constraints(trees.concrete_constraints, trees.var_constraints, trees.bv_constraints)
 }
-
-fn generate_expr_constraints(
+*/
+// USE A FRESH ANNOTATION_INFO PER TERM (KEEP SAME PER ASSUMPTION)
+fn add_annotation_constraints(
     expr: annotation_ir::Expr,
-    trees: &mut ExprTrees,
+    tree: &mut RuleParseTree,
+    annotation_info: &mut AnnotationTypeInfo,
 ) -> annotation_ir::Expr {
     match expr {
         annotation_ir::Expr::Var(x, ..) => {
-            let mut t = trees.next_type_var;
-            if trees.var_to_type_var.contains_key(&x) {
-                t = trees.var_to_type_var[&x];
+            let mut t = tree.next_type_var;
+            if annotation_info.var_to_type_var.contains_key(&x) {
+                t = annotation_info.var_to_type_var[&x];
             } else {
-                trees.var_to_type_var.insert(x.clone(), t); // clear this per term
-                trees.next_type_var += 1; // do not clear this
+                annotation_info.var_to_type_var.insert(x.clone(), t);
+                tree.next_type_var += 1;
             }
             annotation_ir::Expr::Var(x, t)
         }
         annotation_ir::Expr::Const(c, ..) => {
-            let t = trees.next_type_var;
+            let t = tree.next_type_var;
             match c.ty {
                 annotation_ir::Type::BitVector => {
-                    trees
-                        .bv_constraints
+                    tree.bv_constraints
                         .insert(TypeExpr::Concrete(t, c.ty.clone()));
                 }
                 _ => {
-                    trees
-                        .concrete_constraints
+                    tree.concrete_constraints
                         .insert(TypeExpr::Concrete(t, c.ty.clone()));
                 }
             }
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::Const(c, t)
         }
         annotation_ir::Expr::TyWidth(_) => {
-            let t = trees.next_type_var;
-            trees
-                .concrete_constraints
+            let t = tree.next_type_var;
+            tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::TyWidth(t)
         }
 
         annotation_ir::Expr::Eq(x, y, _) => {
-            let e1 = generate_expr_constraints(*x, trees);
-            let e2 = generate_expr_constraints(*y, trees);
+            let e1 = add_annotation_constraints(*x, tree, annotation_info);
+            let e2 = add_annotation_constraints(*y, tree, annotation_info);
 
             let t1 = annotation_ir::Expr::get_type_var(&e1);
             let t2 = annotation_ir::Expr::get_type_var(&e2);
-            let t = trees.next_type_var;
+            let t = tree.next_type_var;
 
-            trees
-                .concrete_constraints
+            tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
-            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::Eq(Box::new(e1), Box::new(e2), t)
         }
         annotation_ir::Expr::Lte(x, y, _) => {
-            let e1 = generate_expr_constraints(*x, trees);
-            let e2 = generate_expr_constraints(*y, trees);
+            let e1 = add_annotation_constraints(*x, tree, annotation_info);
+            let e2 = add_annotation_constraints(*y, tree, annotation_info);
 
             let t1 = annotation_ir::Expr::get_type_var(&e1);
             let t2 = annotation_ir::Expr::get_type_var(&e2);
-            let t = trees.next_type_var;
+            let t = tree.next_type_var;
 
-            trees
-                .concrete_constraints
+            tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
-            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::Lte(Box::new(e1), Box::new(e2), t)
         }
 
         annotation_ir::Expr::BVNeg(x, _) => {
-            let e1 = generate_expr_constraints(*x, trees);
+            let e1 = add_annotation_constraints(*x, tree, annotation_info);
             let t1 = annotation_ir::Expr::get_type_var(&e1);
 
-            let t = trees.next_type_var;
-            trees
-                .bv_constraints
+            let t = tree.next_type_var;
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t1));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t1));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::BVNeg(Box::new(e1), t)
         }
 
         annotation_ir::Expr::BVAdd(x, y, _) => {
-            let e1 = generate_expr_constraints(*x, trees);
-            let e2 = generate_expr_constraints(*y, trees);
+            let e1 = add_annotation_constraints(*x, tree, annotation_info);
+            let e2 = add_annotation_constraints(*y, tree, annotation_info);
 
             let t1 = annotation_ir::Expr::get_type_var(&e1);
             let t2 = annotation_ir::Expr::get_type_var(&e2);
-            let t = trees.next_type_var;
+            let t = tree.next_type_var;
 
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
-            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t1));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t1));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t2));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::BVAdd(Box::new(e1), Box::new(e2), t)
         }
         annotation_ir::Expr::BVSub(x, y, _) => {
-            let e1 = generate_expr_constraints(*x, trees);
-            let e2 = generate_expr_constraints(*y, trees);
+            let e1 = add_annotation_constraints(*x, tree, annotation_info);
+            let e2 = add_annotation_constraints(*y, tree, annotation_info);
 
             let t1 = annotation_ir::Expr::get_type_var(&e1);
             let t2 = annotation_ir::Expr::get_type_var(&e2);
-            let t = trees.next_type_var;
+            let t = tree.next_type_var;
 
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
-            trees.var_constraints.insert(TypeExpr::Variable(t1, t2));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t1));
-            trees.var_constraints.insert(TypeExpr::Variable(t, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t1));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t2));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::BVSub(Box::new(e1), Box::new(e2), t)
         }
 
         annotation_ir::Expr::BVConvTo(w, x, _) => {
-            let e1 = generate_expr_constraints(*x, trees);
+            let e1 = add_annotation_constraints(*x, tree, annotation_info);
             let t1 = annotation_ir::Expr::get_type_var(&e1);
-            let t = trees.next_type_var;
+            let t = tree.next_type_var;
 
             let width = match *w {
                 annotation_ir::Width::Const(x) => x,
                 annotation_ir::Width::RegWidth => REG_WIDTH,
             };
 
-            trees
-                .concrete_constraints
+            tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(width)));            
-            trees
-                .bv_constraints
+            tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
 
-            trees.next_type_var += 1;
+            tree.next_type_var += 1;
             annotation_ir::Expr::BVConvTo(w, Box::new(e1), t)
         }
         _ => todo!("expr {:#?} not yet implemented", expr),
@@ -318,7 +341,8 @@ fn generate_expr_constraints(
 
 fn add_isle_constraints(
     def: isle::ast::Def,
-    trees: &mut ExprTrees,
+    tree: &mut RuleParseTree,
+    annotation_info: &mut AnnotationTypeInfo,
     annotation: annotation_ir::TermSignature,
 ) {
     let CLIF_TO_IR_TYPES = HashMap::from([
@@ -352,26 +376,78 @@ fn add_isle_constraints(
 
             for (isle_type, annotation_var) in isle_types.iter().zip(annotation_vars) {
                 // in case the var was not in the annotation
-                if !trees.var_to_type_var.contains_key(&annotation_var) {
-                    trees.var_to_type_var.insert(annotation_var.clone(), trees.next_type_var);
-                    trees.next_type_var += 1;
+                if !annotation_info.var_to_type_var.contains_key(&annotation_var) {
+                    annotation_info.var_to_type_var.insert(
+                        annotation_var.clone(), 
+                        tree.next_type_var,
+                    );
+                    tree.next_type_var += 1;
                 }
 
                 let ir_type = &CLIF_TO_IR_TYPES[isle_type];
-                let type_var = trees.var_to_type_var[&annotation_var];
+                let type_var = annotation_info.var_to_type_var[&annotation_var];
                 match ir_type {
                     annotation_ir::Type::BitVector => 
-                        trees
-                            .bv_constraints
+                        tree.bv_constraints
                             .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
                     _ => 
-                        trees
-                            .concrete_constraints
+                        tree.concrete_constraints
                             .insert(TypeExpr::Concrete(type_var, ir_type.clone())),
                 };
             }
         }
         _ => panic!("def must be decl, got: {:#?}", def)
+    }
+}
+
+fn add_rule_constraints(
+    tree: &mut RuleParseTree,
+    curr: &TypeVarNode,
+    annotation_env: &AnnotationEnv,
+) {
+    // only process terms, and exclude vars
+    if !tree.decls.contains_key(&curr.ident) {
+        return;
+    }
+
+    let annotation = annotation_env.get_annotation_for_term(&curr.ident).unwrap();
+
+    // use a fresh mapping for each term
+    // keep the same mapping between assertions in the same annotation
+    let mut annotation_info = AnnotationTypeInfo {
+        var_to_type_var: HashMap::new(),
+    };
+    for expr in annotation.assertions {
+        add_annotation_constraints(*expr, tree, &mut annotation_info);
+        add_isle_constraints(
+            cranelift_isle::ast::Def::Decl(tree.decls[&curr.ident].clone()),
+            tree,
+            &mut annotation_info,
+            annotation.sig.clone(),
+        );
+    }
+
+    println!("{}: {:#?}", &curr.ident, &annotation_info.var_to_type_var);
+
+    // set args in rule equal to args in annotation
+    for (i, child) in curr.children.iter().enumerate() {
+        let rule_type_var = child.type_var;
+        let annotation_type_var = 
+            annotation_info.var_to_type_var[&annotation.sig.args[i].name];
+        tree.var_constraints.insert(TypeExpr::Variable(
+            rule_type_var,
+            annotation_type_var,
+        ));
+    }
+    // set term ret var equal to annotation ret var
+    tree.var_constraints
+        .insert(TypeExpr::Variable(
+            curr.type_var, 
+            annotation_info.var_to_type_var[&annotation.sig.ret.name],
+        ));
+
+    for child in &curr.children {
+        add_rule_constraints(tree, child, annotation_env);
     }
 }
 
@@ -598,31 +674,9 @@ fn get_var_type_poly(
     None
 }
 
-#[derive(Debug)]
-struct RuleParseTree {
-    lhs: TypeVarNode,
-    rhs: TypeVarNode,
-    // a map of var name to type variable, where var could be
-    // Pattern::Var or var used in Pattern::BindPattern
-    type_var_map: HashMap<String, u32>,
-    // bookkeeping that tells the next unused type var
-    next_type_var: u32,
-    // a map of term to array of type vars representing the
-    // args and ret var of the term's annotation
-    //term_to_type_var_map: HashMap<String, Vec<u32>>, <----- REMEMBER TO DELETE!!!
-    term_to_isle_type_map: HashMap<String, Vec<String>>,
-}
-
-#[derive(Debug)]
-struct TypeVarNode {
-    ident: String,
-    type_var: u32,
-    children: Vec<TypeVarNode>,
-}
-
 fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
     // TODO: clean up
-    let mut tree = RuleParseTree{
+    let mut tree = RuleParseTree {
         lhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
@@ -633,10 +687,12 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
             type_var: 0,
             children: vec![],
         },
-        type_var_map: HashMap::new(),
+        var_to_type_var_map: HashMap::new(),
         next_type_var: 1,
-        //term_to_type_var_map: HashMap::new(), <----- REMEMBER TO DELETE!!!
-        term_to_isle_type_map: HashMap::new(),
+        concrete_constraints: HashSet::new(),
+        var_constraints: HashSet::new(),
+        bv_constraints: HashSet::new(),
+        decls: HashMap::new(),
     };
 
     let lhs = create_parse_tree_pattern(rule.pattern, &mut tree);
@@ -671,8 +727,8 @@ fn create_parse_tree_pattern(
         isle::ast::Pattern::Var{ var, .. } => {
             let ident = var.0;
 
-            tree.type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
-            let type_var = tree.type_var_map[&ident];
+            tree.var_to_type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
+            let type_var = tree.var_to_type_var_map[&ident];
             if type_var == tree.next_type_var {
                 tree.next_type_var += 1;
             }
@@ -686,7 +742,7 @@ fn create_parse_tree_pattern(
         }
         isle::ast::Pattern::BindPattern{ var, subpat, .. } => {
             let subpat_node = create_parse_tree_pattern(*subpat, tree);
-            tree.type_var_map.insert(var.0, subpat_node.type_var);
+            tree.var_to_type_var_map.insert(var.0, subpat_node.type_var);
             subpat_node
         }
         _ => todo!("parse tree pattern: {:#?}", pattern)
@@ -719,10 +775,10 @@ fn create_parse_tree_expr(
             // have already typed vars in the LHS, but it does check
             // that we aren't using a variable that wasn't declared.
             let ident = name.0;
-            if !tree.type_var_map.contains_key(&ident) {
+            if !tree.var_to_type_var_map.contains_key(&ident) {
                 panic!("var {} used in RHS that was not declared in LHS", &ident);
             }
-            let type_var = tree.type_var_map[&ident];
+            let type_var = tree.var_to_type_var_map[&ident];
             TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
