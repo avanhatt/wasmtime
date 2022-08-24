@@ -14,7 +14,7 @@ fn main() {
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
     let defs = isle::parser::parse(lexer).expect("should parse");
-    println!("{:#?}", type_annotation(&annotation_env, defs.defs));
+    println!("{:#?}", type_annotations_using_rule(&annotation_env, defs.defs));
 }
 
 #[derive(Clone, Debug)]
@@ -39,6 +39,7 @@ struct TypeVarNode {
     ident: String,
     type_var: u32,
     children: Vec<TypeVarNode>,
+    assertions: Vec<annotation_ir::Expr>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -56,32 +57,23 @@ struct AnnotationTypeInfo {
 }
 
 // TODO: borrow properly
-fn type_annotation(
+fn type_annotations_using_rule(
     annotation_env: &AnnotationEnv,
     defs: Vec<isle::ast::Def>,
 ) -> HashMap<u32, annotation_ir::Type> {
-    /*let mut trees = AnnotationTypeInfo {
-        var_to_type_var: HashMap::new(),
-    };
-    for e in a.assertions {
-        let tree = generate_expr_constraints(*e, &mut trees);
-        trees.trees.push(tree);
-        add_isle_constraints(d.clone(), &mut trees, a.sig.clone());
-    }
-    println!("{:#?}", trees);
-    solve_constraints(trees.concrete_constraints, trees.var_constraints, trees.bv_constraints)
-*/
-    // TODO: clean up
+    // TODO: create cleaner constructor
     let mut parse_tree = RuleParseTree {
         lhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
+            assertions: vec![],
         },
         rhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
+            assertions: vec![],
         },
         var_to_type_var_map: HashMap::new(),
         next_type_var: 1,
@@ -107,14 +99,15 @@ fn type_annotation(
         }        
     }
     
-    // TODO: fix borrowing everywhere but this is the worst offender
-    let copy = parse_tree.clone();
-    add_rule_constraints(&mut parse_tree, &copy.lhs, &annotation_env);
-    add_rule_constraints(&mut parse_tree, &copy.rhs, &annotation_env);
+    // TODO: fix janky borrowing
+    let mut copy = parse_tree.clone();
+    add_rule_constraints(&mut parse_tree, &mut copy.lhs, &annotation_env);
+    add_rule_constraints(&mut parse_tree, &mut copy.rhs, &annotation_env);
     parse_tree.var_constraints.insert(TypeExpr::Variable(
         parse_tree.lhs.type_var,
         parse_tree.rhs.type_var,
     ));
+
     solve_constraints(
         parse_tree.concrete_constraints,
         parse_tree.var_constraints,
@@ -336,7 +329,7 @@ fn add_isle_constraints(
 
 fn add_rule_constraints(
     tree: &mut RuleParseTree,
-    curr: &TypeVarNode,
+    curr: &mut TypeVarNode,
     annotation_env: &AnnotationEnv,
 ) {
     // only process terms, and exclude vars
@@ -352,7 +345,8 @@ fn add_rule_constraints(
         var_to_type_var: HashMap::new(),
     };
     for expr in annotation.assertions {
-        add_annotation_constraints(*expr, tree, &mut annotation_info);
+        let typed_expr = add_annotation_constraints(*expr, tree, &mut annotation_info);
+        curr.assertions.push(typed_expr);
         add_isle_constraints(
             cranelift_isle::ast::Def::Decl(tree.decls[&curr.ident].clone()),
             tree,
@@ -360,8 +354,6 @@ fn add_rule_constraints(
             annotation.sig.clone(),
         );
     }
-
-    println!("{}: {:#?}", &curr.ident, &annotation_info.var_to_type_var);
 
     // set args in rule equal to args in annotation
     for (i, child) in curr.children.iter().enumerate() {
@@ -380,9 +372,11 @@ fn add_rule_constraints(
             annotation_info.var_to_type_var[&annotation.sig.ret.name],
         ));
 
-    for child in &curr.children {
+    for child in &mut curr.children {
         add_rule_constraints(tree, child, annotation_env);
     }
+
+    println!("{}: {:#?}", &curr.ident, annotation_info.var_to_type_var);
 }
 
 // Solve constraints as follows:
@@ -615,11 +609,13 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
+            assertions: vec![],
         },
         rhs: TypeVarNode{
             ident: "".to_string(),
             type_var: 0,
             children: vec![],
+            assertions: vec![],
         },
         var_to_type_var_map: HashMap::new(),
         next_type_var: 1,
@@ -656,6 +652,7 @@ fn create_parse_tree_pattern(
                 ident: sym.0,
                 type_var: type_var,
                 children: children,
+                assertions: vec![],
             }
         }
         isle::ast::Pattern::Var{ var, .. } => {
@@ -672,6 +669,7 @@ fn create_parse_tree_pattern(
                 ident: ident.clone(),
                 type_var: type_var,
                 children: vec![],
+                assertions: vec![],
             }
         }
         isle::ast::Pattern::BindPattern{ var, subpat, .. } => {
@@ -702,6 +700,7 @@ fn create_parse_tree_expr(
                 ident: sym.0,
                 type_var: type_var,
                 children: children,
+                assertions: vec![],
             }
         }
         isle::ast::Expr::Var{ name, .. } => {
@@ -717,6 +716,7 @@ fn create_parse_tree_expr(
                 ident: ident.clone(),
                 type_var: type_var,
                 children: vec![],
+                assertions: vec![],
             }
         }
         isle::ast::Expr::ConstPrim{ val, .. } => {
@@ -726,6 +726,7 @@ fn create_parse_tree_expr(
                 ident: val.0,
                 type_var: type_var,
                 children: vec![],
+                assertions: vec![],
             }
         }
         _ => todo!("parse tree expr: {:#?}", expr)
