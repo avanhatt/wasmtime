@@ -15,6 +15,7 @@ pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     }
 }
 
+// (ite {} {} {})
 pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
     let unary = |op, x: Box<VIRExpr>| format!("({} {})", op, vir_expr_to_rsmt2_str(*x));
     let binary = |op, x: Box<VIRExpr>, y: Box<VIRExpr>| {
@@ -23,6 +24,15 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             op,
             vir_expr_to_rsmt2_str(*x),
             vir_expr_to_rsmt2_str(*y)
+        )
+    };
+    let ternary = |op: &str, x: Box<VIRExpr>, y: Box<VIRExpr>, z: Box<VIRExpr>| {
+        format!(
+            "({} {} {} {})",
+            op,
+            vir_expr_to_rsmt2_str(*x),
+            vir_expr_to_rsmt2_str(*y),
+            vir_expr_to_rsmt2_str(*z),
         )
     };
     let ext = |op, i, x: Box<VIRExpr>| format!("((_ {} {}) {})", op, i, vir_expr_to_rsmt2_str(*x));
@@ -95,6 +105,8 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVIntToBV(ty, x) => {
             format!("((_ int2bv {}) {})", ty.width(), vir_expr_to_rsmt2_str(*x))
         }
+        VIRExpr::Conditional(_, x, y, z) => 
+            ternary("ite", x, y, z),
         VIRExpr::FunctionApplication(app) => {
             let func_name = vir_expr_to_rsmt2_str(*app.func);
             let args: Vec<String> = app

@@ -54,6 +54,7 @@ where
         VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
         VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),
         VIRExpr::BVIntToBV(ty, x) => VIRExpr::BVIntToBV(ty, f(x)),
+        VIRExpr::Conditional(ty, x, y, z) => VIRExpr::Conditional(ty, f(x), f(y), f(z)),
         VIRExpr::FunctionApplication(app) => VIRExpr::FunctionApplication(FunctionApplication {
             ty: app.ty,
             func: f(app.func),

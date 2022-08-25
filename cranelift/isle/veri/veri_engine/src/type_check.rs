@@ -290,6 +290,13 @@ impl<'ctx> TypeContext<'ctx> {
                 let vx = expect_boxed_int(x, self);
                 VIRExpr::BVIntToBV(width.ty().clone(), vx)
             }
+            annotation_ir::Expr::Conditional(x, y, z) => {
+                let tx = self.type_expr(x);
+                let ty = self.type_expr(y);
+                let tz = self.type_expr(z);
+                // to be deprecated anyway
+                VIRExpr::Conditional(VIRType::Bool, Box::new(tx), Box::new(ty), Box::new(tz))
+            }
             annotation_ir::Expr::Function(f) => {
                 let func_ty = self.concretize_type(&f.ty);
                 let args = f
@@ -336,6 +343,9 @@ impl<'ctx> TypeContext<'ctx> {
                 assert!(matches!(v.ty(), VIRType::BitVectorList(..)));
                 VIRExpr::GetElement(v.ty().element_ty(), Box::new(v), *i)
             }
+            annotation_ir::Expr::BVConvToVarWidth(_, _)
+            | annotation_ir::Expr::BVSignedConvTo(_, _) 
+            | annotation_ir::Expr::BVSignedConvToVarWidth(_, _) => todo!()
         }
     }
 

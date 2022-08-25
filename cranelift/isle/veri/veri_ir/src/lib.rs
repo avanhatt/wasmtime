@@ -180,6 +180,8 @@ pub enum VIRExpr {
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
     BVIntToBV(VIRType, Box<VIRExpr>),
 
+    Conditional(VIRType, Box<VIRExpr>, Box<VIRExpr>, Box<VIRExpr>),
+
     // Functions
     Function(Function),
     FunctionApplication(FunctionApplication),
@@ -210,6 +212,7 @@ impl VIRExpr {
             | VIRExpr::BVSignExt(t, _, _)
             | VIRExpr::BVExtract(t, _, _, _)
             | VIRExpr::BVIntToBV(t, _)
+            | VIRExpr::Conditional(t, _, _, _)
             | VIRExpr::List(t, _)
             | VIRExpr::GetElement(t, _, _) => t,
             VIRExpr::Function(func) => &func.ty,
@@ -254,6 +257,11 @@ impl VIRExpr {
             | VIRExpr::BVShr(_, x, y)=> {
                 (*x).for_each_subexpr(func);
                 (*y).for_each_subexpr(func)
+            }
+            VIRExpr::Conditional(_, x, y, z) => {
+                (*x).for_each_subexpr(func);
+                (*y).for_each_subexpr(func);
+                (*z).for_each_subexpr(func)
             }
             VIRExpr::Function(f) => {
                 f.body.for_each_subexpr(func)
