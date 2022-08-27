@@ -220,6 +220,11 @@ impl<'ctx> AssumptionContext<'ctx> {
                     self.var_map.insert(*varid, var.clone());
                     VIRExpr::Var(var)
                 }
+                Pattern::Term(..) => {
+                    let var = self.new_var("x", ty);
+                    self.var_map.insert(*varid, var.clone());
+                    self.interp_pattern(&subpat, ty)
+                }
                 _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
             },
             Pattern::Term(_, termid, arg_patterns) => {

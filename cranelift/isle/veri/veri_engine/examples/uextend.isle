@@ -1,0 +1,53 @@
+;;@ (spec (sig (args arg: bv) (ret: bv))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;; Instruction formats.
+(type MInst
+  (enum
+    ;; A sign- or zero-extend operation.
+    (Extend
+      (rd WritableReg)
+      (rn Reg)
+      (signed bool)
+      (from_bits u8)
+      (to_bits u8))
+))
+
+;; An ALU operation. This can be paired with several instruction formats
+;; below (see `Inst`) in any combination.
+;;(type ALUOp
+;;  (enum
+;;    (Add)
+;;    (Sub)
+;;    (Orr)
+;;    (OrrNot)
+;;    (And)))
+
+;;(type OperandSize extern
+;;      (enum Size32
+;;            Size64))
+
+;; Helper for calculating the `OperandSize` corresponding to a type
+;;(decl operand_size (Type) OperandSize)
+;;(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+;;(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+;; Helper for emitting `MInst.Extend` instructions.
+;;@ (spec (sig (args a, b, c, d) (ret))
+;;@      (assertions (if (b) {
+;;@                      (= (ret) (signed_conv_to (d) (a)))
+;;@               } else {
+;;@                   (= (ret) (conv_to (d) (a)))}),
+;;@      (= (widthof (a)) (c))
+;;@ ))
+(decl extend (Reg bool u8 u8) Reg)
+(rule (extend rn signed from_bits to_bits)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.Extend dst rn signed from_bits to_bits))))
+        dst))
+
+;; General rule for extending input to an output which fits in a single
+;; register.
+(rule (lower (has_type (fits_in_64 out) (uextend x @ (value_type in))))
+      (extend x $false (ty_bits in) (ty_bits out)))

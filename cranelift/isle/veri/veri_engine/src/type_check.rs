@@ -49,6 +49,7 @@ impl<'ctx> TypeContext<'ctx> {
             "ImmLogic" => VIRType::BitVector(12),
             "u64" => VIRType::BitVector(64),
             "u8" => VIRType::BitVector(8),
+            "bool" => VIRType::Bool,
             "MoveWideConst" => VIRType::BitVector(16),
             "OperandSize" => self.ty.clone(),
             // TODO: should probably update this logic to use an actual
@@ -270,6 +271,25 @@ impl<'ctx> TypeContext<'ctx> {
                     _ => unreachable!("{:?}", vx.ty())
                 }
             }
+            annotation_ir::Expr::BVSignedConvTo(dest, x) => {
+                let vx = expect_boxed_bv(x, self);
+                assert!(vx.ty().is_bv() || vx.ty().is_int());
+                assert!(self.ty.is_bv());
+                let new_ty = VIRType::BitVector(*dest);
+                match vx.ty() {
+                    VIRType::BitVector(w) => {
+                        let width_diff = (*dest as i128) - (*w as i128);
+                        match width_diff.cmp(&0) {
+                            Ordering::Less => VIRExpr::BVExtract(new_ty, 0, *dest - 1, vx),
+                            Ordering::Greater => {
+                                VIRExpr::BVSignExt(new_ty, width_diff.try_into().unwrap(), vx)
+                            }
+                            Ordering::Equal => *vx,
+                        }
+                    }
+                    _ => unreachable!("{:?}", vx.ty())
+                }                
+            }
             annotation_ir::Expr::BVConvFrom(src, x) => {
                 let vx = expect_boxed_bv(x, self);
                 assert!(vx.ty().is_bv());
@@ -344,7 +364,6 @@ impl<'ctx> TypeContext<'ctx> {
                 VIRExpr::GetElement(v.ty().element_ty(), Box::new(v), *i)
             }
             annotation_ir::Expr::BVConvToVarWidth(_, _)
-            | annotation_ir::Expr::BVSignedConvTo(_, _) 
             | annotation_ir::Expr::BVSignedConvToVarWidth(_, _) => todo!()
         }
     }
