@@ -118,7 +118,7 @@ pub enum VIRType {
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
     /// (type Value (primitive Value))
-    BitVector(usize),
+    BitVector(Option<usize>),
 
     // The expression is a list of bitvectors (see above)
     // BitVectorList(length, width)
