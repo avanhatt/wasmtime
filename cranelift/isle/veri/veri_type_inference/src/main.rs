@@ -18,18 +18,22 @@ fn main() {
     let defs = isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
 
-    let r = termenv.rules[0].clone();
-    let tree = create_parse_tree(&r, &typeenv, &termenv);
-    println!("{:#?}", tree);
-    /*for r in &termenv.rules {
-        println!("{:#?}", type_annotations_using_rule(
+    for r in &termenv.rules {
+        let s = type_annotations_using_rule(
             r,
             &annotation_env,
             defs.defs.clone(),
             &typeenv,
             &termenv,
-        ));
-    }*/
+        );
+        for a in s.annotation_infos {
+            println!("{}", a.term);
+            for (var, type_var) in a.var_to_type_var {
+                println!("{}: {:#?}", var, s.type_var_to_type[&type_var]);
+            }
+            println!("");
+        }
+    }
 }
 
 // for debugging and printing purposes
@@ -77,7 +81,15 @@ enum TypeExpr {
 #[derive(Debug)]
 struct AnnotationTypeInfo {
     // map of annotation variable to assigned type var
+    term: String,
     var_to_type_var: HashMap<String, u32>,
+}
+
+#[derive(Debug)]
+struct Solution {
+    annotation_infos: Vec<AnnotationTypeInfo>,
+    // map of type var to solved type
+    type_var_to_type: HashMap<u32, annotation_ir::Type>,
 }
 
 // TODO: borrow properly
@@ -87,7 +99,7 @@ fn type_annotations_using_rule(
     defs: Vec<isle::ast::Def>,
     typeenv: &TypeEnv,
     termenv: &TermEnv,
-) -> HashMap<u32, annotation_ir::Type> {
+) -> Solution {
     let mut parse_tree = create_parse_tree(rule, &typeenv, &termenv);
     for def in defs {
         match def {
@@ -100,18 +112,34 @@ fn type_annotations_using_rule(
     
     // TODO: fix janky borrowing
     let mut copy = parse_tree.clone();
-    add_rule_constraints(&mut parse_tree, &mut copy.lhs, &annotation_env);
-    add_rule_constraints(&mut parse_tree, &mut copy.rhs, &annotation_env);
+    let mut annotation_infos = vec![];
+    add_rule_constraints(
+        &mut parse_tree, 
+        &mut copy.lhs, 
+        &annotation_env,
+        &mut annotation_infos,
+    );
+    add_rule_constraints(
+        &mut parse_tree, 
+        &mut copy.rhs,
+        &annotation_env,
+        &mut annotation_infos,
+    );
     parse_tree.var_constraints.insert(TypeExpr::Variable(
         parse_tree.lhs.type_var,
         parse_tree.rhs.type_var,
     ));
 
-    solve_constraints(
+    let solution = solve_constraints(
         parse_tree.concrete_constraints,
         parse_tree.var_constraints,
         parse_tree.bv_constraints,
-    )
+    );
+
+    Solution {
+        annotation_infos,
+        type_var_to_type: solution,
+    }
 }
 
 fn add_annotation_constraints(
@@ -153,6 +181,19 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             annotation_ir::Expr::TyWidth(t)
         }
+        annotation_ir::Expr::WidthOf(x, _) => {
+            let ex = add_annotation_constraints(*x.clone(), tree, annotation_info);
+            let tx = annotation_ir::Expr::get_type_var(&ex);
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+            tree
+                .bv_constraints
+                .insert(TypeExpr::Concrete(tx, annotation_ir::Type::BitVector));
+            tree
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
+            annotation_ir::Expr::WidthOf(x, t)
+        }        
 
         annotation_ir::Expr::Eq(x, y, _) => {
             let e1 = add_annotation_constraints(*x, tree, annotation_info);
@@ -261,6 +302,28 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             annotation_ir::Expr::BVConvTo(w, Box::new(e1), t)
         }
+        annotation_ir::Expr::BVIntToBv(x, w, _) => {
+            let ex = add_annotation_constraints(*x.clone(), tree, annotation_info);
+            let ew = add_annotation_constraints(*w.clone(), tree, annotation_info);
+
+            let tx = annotation_ir::Expr::get_type_var(&ex);
+            let tw = annotation_ir::Expr::get_type_var(&ew);
+
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            tree
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));
+            tree
+                .concrete_constraints
+                .insert(TypeExpr::Concrete(tw, annotation_ir::Type::Int));
+            tree
+                .bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+
+            annotation_ir::Expr::BVIntToBv(x, w, t)
+        }
         _ => todo!("expr {:#?} not yet implemented", expr),
     }
 }
@@ -330,6 +393,7 @@ fn add_rule_constraints(
     tree: &mut RuleParseTree,
     curr: &mut TypeVarNode,
     annotation_env: &AnnotationEnv,
+    annotation_infos: &mut Vec<AnnotationTypeInfo>,
 ) {
     // only process terms, and exclude vars
     if !tree.decls.contains_key(&curr.ident) {
@@ -341,6 +405,7 @@ fn add_rule_constraints(
     // use a fresh mapping for each term
     // keep the same mapping between assertions in the same annotation
     let mut annotation_info = AnnotationTypeInfo {
+        term: curr.ident.clone(),
         var_to_type_var: HashMap::new(),
     };
     for expr in annotation.assertions {
@@ -371,11 +436,11 @@ fn add_rule_constraints(
             annotation_info.var_to_type_var[&annotation.sig.ret.name],
         ));
 
-    for child in &mut curr.children {
-        add_rule_constraints(tree, child, annotation_env);
-    }
+    annotation_infos.push(annotation_info);
 
-    println!("{}: {:#?}", &curr.ident, annotation_info.var_to_type_var);
+    for child in &mut curr.children {
+        add_rule_constraints(tree, child, annotation_env, annotation_infos);
+    }
 }
 
 // Solve constraints as follows:
@@ -707,7 +772,50 @@ fn create_parse_tree_pattern(
                 assertions: vec![],
             }
         }
-        _ => todo!("parse tree pattern: {:#?}", pattern)
+        isle::sema::Pattern::ConstPrim(_, sym) => {
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
+            TypeVarNode{
+                ident: typeenv.syms[sym.index()].clone(),
+                type_var: type_var,
+                children: vec![],
+                assertions: vec![],
+            }
+        }
+        isle::sema::Pattern::ConstInt(_, num) => {
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
+            TypeVarNode{
+                ident: num.to_string(),
+                type_var: type_var,
+                children: vec![],
+                assertions: vec![],
+            }
+        }
+        isle::sema::Pattern::And(_, subpats) => {
+            let mut children = vec![];
+            let mut ty_vars = vec![];
+            for p in subpats {
+                let child = create_parse_tree_pattern(p, tree, var_map, typeenv, termenv);
+                ty_vars.push(child.type_var.clone());
+                children.push(child);
+            }
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            // Assert all sub type constraints are equivalent to the first subexpression
+            let first = ty_vars[0];
+            for e in &ty_vars[1..] {
+                tree.var_constraints.insert(TypeExpr::Variable(first, e.to_owned()));
+            }
+
+            TypeVarNode{
+                ident: String::from("and"),
+                type_var: type_var,
+                children: children,
+                assertions: vec![],
+            }
+        }     
     }
 }
 
@@ -740,9 +848,9 @@ fn create_parse_tree_expr(
             }
         }
         isle::sema::Expr::Var(_, var_id) => {
-            let mut ident = String::from("dummy_var");
+            let mut ident = var_id.0.to_string();
             if !var_map.contains_key(var_id) {
-                println!("var {:#?} not found, using placeholder name instead", var_id);
+                println!("var {} not found, using var id instead", var_id.0);
             } else {
                 let sym = var_map[&var_id];
                 ident = typeenv.syms[sym.index()].clone();
@@ -772,6 +880,16 @@ fn create_parse_tree_expr(
                 assertions: vec![],
             }
         }
+        isle::sema::Expr::ConstInt(_, num) => {
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
+            TypeVarNode{
+                ident: num.to_string(),
+                type_var: type_var,
+                children: vec![],
+                assertions: vec![],
+            }
+        }   
         _ => todo!("parse tree expr: {:#?}", expr)
     }
 }

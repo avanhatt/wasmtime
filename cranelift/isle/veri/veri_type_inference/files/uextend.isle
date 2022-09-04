@@ -88,7 +88,6 @@
 (decl extend (Reg bool u8 u8) Reg)
 (extern constructor extend extend)
 
-;; TODO: what does widthof return? what's the first arg of int2bv?
 ;;@ (spec (sig (args x) (ret))
 ;;@     (assertions (= (int2bv (widthof (ret)) (x)) (ret))))
 (decl pure ty_bits (Type) u8)
