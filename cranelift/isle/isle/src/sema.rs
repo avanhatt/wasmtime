@@ -464,10 +464,41 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
-    Wildcard(TypeId),
+    /// Optionally include a reference to the the bound var the wildcard is capturing   
+    Wildcard(TypeId, Option<Sym>),
 
     /// Match all of the following patterns of the given type.
     And(TypeId, Vec<Pattern>),
+}
+
+impl Pattern {  
+    /// Build associations between var ids and syms.    
+    /// Why do this after the fact instead of keeping a mapping of VarIds to Syms in    
+    /// the Termenv/Typeenv? Because that's a lot of VarIds, and this is really only    
+    /// import for debugging in the verification infrastructure.    
+    /// MLFB: May change key to var id index.   
+    pub fn build_var_map(&self, syms: &mut BTreeMap<VarId, Sym>) -> () {    
+        match self {    
+            Pattern::BindPattern(_, vid, pat) => match **pat {  
+                Pattern::Wildcard(_, Some(sym)) => {    
+                    syms.insert(*vid, sym); 
+                }   
+                Pattern::Wildcard(_, None) => panic!("Unexpected bind pattern: {:?}", pat), 
+                _ => pat.build_var_map(syms),   
+            },  
+            Pattern::Term(_, _, pats) => {  
+                for pat in pats {   
+                    pat.build_var_map(syms) 
+                }   
+            }   
+            Pattern::And(_, pats) => {  
+                for pat in pats {   
+                    pat.build_var_map(syms) 
+                }   
+            }   
+            _ => return,    
+        }   
+    }
 }
 
 /// A right-hand side expression of some rule.
@@ -515,6 +546,32 @@ impl Pattern {
             _ => None,
         }
     }
+
+    /// Given a var ID, find its matching sym in the pattern (if it exists) 
+    pub fn get_sym(&self, vid: &VarId) -> Option<Sym> { 
+        match self {    
+            Self::BindPattern(_, var_id, pat) => {  
+                if var_id == vid {  
+                    pat.get_sym(vid)    
+                } else {    
+                    None    
+                }   
+            }   
+            Self::Term(_, _, pats) => { 
+                let sym = pats  
+                    .iter() 
+                    .filter_map(|pat| pat.get_sym(vid)) 
+                    .collect::<Vec<Sym>>(); 
+                if sym.is_empty() { 
+                    return None;    
+                }   
+                assert!(sym.len() == 1);    
+                return Some(sym[0]);    
+            }   
+            Self::Wildcard(_, Some(sym)) => Some(*sym), 
+            _ => return None,   
+        }   
+    }    
 }
 
 impl Expr {
@@ -527,7 +584,7 @@ impl Expr {
             &Self::ConstPrim(t, ..) => t,
             &Self::Let { ty: t, .. } => t,
         }
-    }
+    } 
 }
 
 /// Given an `Option<T>`, unwrap the inner `T` value, or `continue` if it is
@@ -1508,7 +1565,7 @@ impl TermEnv {
                         return None;
                     }
                 };
-                Some((Pattern::Wildcard(ty), ty))
+                Some((Pattern::Wildcard(ty, None), ty))
             }
             &ast::Pattern::And { ref subpats, pos } => {
                 let mut expected_ty = expected_ty;
@@ -1559,8 +1616,14 @@ impl TermEnv {
                 bindings.next_var += 1;
                 log!("binding var {:?}", var.0);
                 bindings.vars.push(BoundVar { name, id, ty });
-
-                Some((Pattern::BindPattern(ty, id, Box::new(subpat)), ty))
+                Some((  
+                    Pattern::BindPattern(   
+                        ty, 
+                        id, 
+                        Box::new(Pattern::Wildcard(ty, Some(name))),    
+                    ),  
+                    ty, 
+                ))
             }
             &ast::Pattern::Var { ref var, pos } => {
                 // Look up the variable; if it has already been bound,
@@ -1585,9 +1648,13 @@ impl TermEnv {
                         bindings.next_var += 1;
                         log!("binding var {:?}", var.0);
                         bindings.vars.push(BoundVar { name, id, ty });
-                        Some((
-                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty))),
-                            ty,
+                        Some((  
+                            Pattern::BindPattern(   
+                                ty, 
+                                id, 
+                                Box::new(Pattern::Wildcard(ty, Some(name))),    
+                            ),  
+                            ty, 
                         ))
                     }
                     Some(bv) => {

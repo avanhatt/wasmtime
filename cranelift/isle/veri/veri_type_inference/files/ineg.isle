@@ -1,3 +1,59 @@
+;; Mock decls
+(type Inst (primitive Inst))
+(type InstOutput (primitive InstOutput))
+(type Type (primitive Type))
+(type Reg (primitive Reg))
+(type Value (primitive Value))
+(type ValueRegs (primitive ValueRegs))
+
+;; Implicit converters
+(convert Inst Value def_inst)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl def_inst (Inst) Value)
+(extern extractor def_inst def_inst)
+
+(convert Reg ValueRegs value_reg)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl value_reg (Reg) ValueRegs)
+(extern constructor value_reg value_reg)
+
+(convert Value Reg put_in_reg)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl put_in_reg (Value) Reg)
+(extern constructor put_in_reg put_in_reg)
+
+(convert Value ValueRegs put_in_regs)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl put_in_regs (Value) ValueRegs)
+(extern constructor put_in_regs put_in_regs)
+
+;; (convert WritableReg Reg writable_reg_to_reg)
+
+(convert ValueRegs InstOutput output)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl output (ValueRegs) InstOutput)
+(extern extractor output output)
+
+(convert Reg InstOutput output_reg)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl output_reg (Reg) InstOutput)
+(extern extractor output_reg output_reg)
+(extern constructor output_reg output_reg)
+
+(convert Value InstOutput output_value)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl output_value (Value) InstOutput)
+(extern extractor output_value output_value)
+;; (convert Offset32 u32 offset32_to_u32)
+
+
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
@@ -5,22 +61,27 @@
 ;;@ (spec (sig (args ty, arg) (ret))
 ;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
+(extern extractor has_type has_type)
 
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (<= (arg) (64i128: isleType)), (= (arg) (ret))))
 (decl fits_in_64 (Type) Type)
+(extern extractor fits_in_64 fits_in_64)
 
 ;;@ (spec (sig (args x) (ret))
 ;;@     (assertions (= (-(x)) (ret))))
 (decl ineg (Value) Inst)
+(extern extractor ineg ineg)
 
 ;;@ (spec (sig (args ty, a, b) (r))
 ;;@     (assertions (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
+(extern constructor sub sub)
 
 ;;@ (spec (sig (args) (r))
 ;;@     (assertions (= (conv_to (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
+(extern constructor zero_reg zero_reg)
 
 (rule (lower (has_type (fits_in_64 ty) (ineg x)))
       (sub ty (zero_reg) x))

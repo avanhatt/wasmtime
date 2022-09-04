@@ -496,7 +496,7 @@ impl PatternSequence {
                     self.gen_pattern(input, typeenv, termenv, child, vars);
                 }
             }
-            &Pattern::Wildcard(_ty) => {
+            &Pattern::Wildcard(_ty, _) => {
                 // Nothing!
             }
         }

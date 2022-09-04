@@ -1,21 +1,45 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, BTreeMap};
 use std::hash::Hash;
 use std::path::PathBuf;
 
 use cranelift_isle as isle;
+use isle::compile::create_envs;
+use isle::sema::{VarId, Sym, TermEnv, TypeEnv, Rule, self};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
 
 const REG_WIDTH: usize = 64;
 
 fn main() {
-	let files = vec!["files/ineg.isle"];
+	let files = vec!["files/uextend.isle"];
 	let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     let path_buf = PathBuf::from(&files[0]);
     let annotation_env = parse_annotations(&vec![path_buf]);
     let defs = isle::parser::parse(lexer).expect("should parse");
-    println!("{:#?}", type_annotations_using_rule(&annotation_env, defs.defs));
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+
+    let r = termenv.rules[0].clone();
+    let tree = create_parse_tree(&r, &typeenv, &termenv);
+    println!("{:#?}", tree);
+    /*for r in &termenv.rules {
+        println!("{:#?}", type_annotations_using_rule(
+            r,
+            &annotation_env,
+            defs.defs.clone(),
+            &typeenv,
+            &termenv,
+        ));
+    }*/
 }
+
+// for debugging and printing purposes
+/*fn main() {
+    let files = vec!["files/uextend.isle"];
+    let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
+    let defs = isle::parser::parse(lexer).expect("should parse");
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+    println!("{:#?}", termenv);
+}*/
 
 #[derive(Clone, Debug)]
 struct RuleParseTree {
@@ -58,38 +82,13 @@ struct AnnotationTypeInfo {
 
 // TODO: borrow properly
 fn type_annotations_using_rule(
+    rule: &isle::sema::Rule,
     annotation_env: &AnnotationEnv,
     defs: Vec<isle::ast::Def>,
+    typeenv: &TypeEnv,
+    termenv: &TermEnv,
 ) -> HashMap<u32, annotation_ir::Type> {
-    // TODO: create cleaner constructor
-    let mut parse_tree = RuleParseTree {
-        lhs: TypeVarNode{
-            ident: "".to_string(),
-            type_var: 0,
-            children: vec![],
-            assertions: vec![],
-        },
-        rhs: TypeVarNode{
-            ident: "".to_string(),
-            type_var: 0,
-            children: vec![],
-            assertions: vec![],
-        },
-        var_to_type_var_map: HashMap::new(),
-        next_type_var: 1,
-        concrete_constraints: HashSet::new(),
-        var_constraints: HashSet::new(),
-        bv_constraints: HashSet::new(),
-        decls: HashMap::new(),
-    };
-
-    // TODO: merge loops
-    for def in &defs {
-        parse_tree = match def {
-            isle::ast::Def::Rule(r) => create_parse_tree(r.clone()),
-            _ => continue,
-        };
-    }
+    let mut parse_tree = create_parse_tree(rule, &typeenv, &termenv);
     for def in defs {
         match def {
             isle::ast::Def::Decl(d) => {
@@ -602,7 +601,11 @@ fn get_var_type_poly(
     None
 }
 
-fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
+fn create_parse_tree(
+    rule: &isle::sema::Rule,
+    typeenv: &TypeEnv,
+    termenv: &TermEnv,
+) -> RuleParseTree {
     // TODO: clean up
     let mut tree = RuleParseTree {
         lhs: TypeVarNode{
@@ -624,9 +627,13 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
         bv_constraints: HashSet::new(),
         decls: HashMap::new(),
     };
+    let mut var_map = &mut BTreeMap::new();
+    rule.lhs.build_var_map(var_map);
+    // TODO: add vars
+    // rule.rhs.build_var_map(var_map);
 
-    let lhs = create_parse_tree_pattern(rule.pattern, &mut tree);
-    let rhs = create_parse_tree_expr(rule.expr, &mut tree);
+    let lhs = create_parse_tree_pattern(&rule.lhs, &mut tree, &mut var_map, typeenv, termenv);
+    let rhs = create_parse_tree_expr(&rule.rhs, &mut tree, &mut var_map, typeenv, termenv);
 
     tree.lhs = lhs;
     tree.rhs = rhs;
@@ -634,29 +641,36 @@ fn create_parse_tree(rule: isle::ast::Rule) -> RuleParseTree {
 }
 
 fn create_parse_tree_pattern(
-    pattern: isle::ast::Pattern,
+    pattern: &isle::sema::Pattern,
     tree: &mut RuleParseTree,
+    var_map: &mut BTreeMap<VarId, Sym>,
+    typeenv: &TypeEnv,
+    termenv: &TermEnv,
 ) -> TypeVarNode {
     match pattern {
-        isle::ast::Pattern::Term{ sym, args, .. } => {
+        isle::sema::Pattern::Term(_, term_id, args) => {
+            let sym = termenv.terms[term_id.index()].name;
+            let name = typeenv.syms[sym.index()].clone();
+
             // process children first
             let mut children = vec![];
             for arg in args {
-                let child = create_parse_tree_pattern(arg, tree);
+                let child = create_parse_tree_pattern(arg, tree, var_map, typeenv, termenv);
                 children.push(child);
             }
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
 
             TypeVarNode{
-                ident: sym.0,
+                ident: name,
                 type_var: type_var,
                 children: children,
                 assertions: vec![],
             }
         }
-        isle::ast::Pattern::Var{ var, .. } => {
-            let ident = var.0;
+        isle::sema::Pattern::Var(_, var_id) => {
+            let sym = var_map[&var_id];
+            let ident = typeenv.syms[sym.index()].clone();
 
             tree.var_to_type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
             let type_var = tree.var_to_type_var_map[&ident];
@@ -672,46 +686,75 @@ fn create_parse_tree_pattern(
                 assertions: vec![],
             }
         }
-        isle::ast::Pattern::BindPattern{ var, subpat, .. } => {
-            let subpat_node = create_parse_tree_pattern(*subpat, tree);
-            tree.var_to_type_var_map.insert(var.0, subpat_node.type_var);
+        isle::sema::Pattern::BindPattern(_, var_id, subpat) => {
+            let sym = var_map[&var_id];
+            let var = typeenv.syms[sym.index()].clone();
+            let subpat_node = create_parse_tree_pattern(subpat, tree, var_map, typeenv, termenv);
+            tree.var_to_type_var_map.insert(var, subpat_node.type_var);
             subpat_node
+        }
+        isle::sema::Pattern::Wildcard(_, s) => {
+            let mut name = String::from("wildcard");
+            if let Some(sym) = s {
+                name = typeenv.syms[sym.index()].clone();
+            }
+            let type_var = tree.next_type_var;
+            tree.next_type_var += 1;
+            TypeVarNode{
+                ident: name,
+                type_var: type_var,
+                children: vec![],
+                assertions: vec![],
+            }
         }
         _ => todo!("parse tree pattern: {:#?}", pattern)
     }
 }
 
 fn create_parse_tree_expr(
-    expr: isle::ast::Expr,
+    expr: &isle::sema::Expr,
     tree: &mut RuleParseTree,
+    var_map: &mut BTreeMap<VarId, Sym>,
+    typeenv: &TypeEnv,
+    termenv: &TermEnv,
 ) -> TypeVarNode {
     match expr {
-        isle::ast::Expr::Term{ sym, args, .. } => {
+        isle::sema::Expr::Term(_, term_id, args) => {
+            let sym = termenv.terms[term_id.index()].name;
+            let name = typeenv.syms[sym.index()].clone();
+
             // process children first
             let mut children = vec![];
             for arg in args {
-                let child = create_parse_tree_expr(arg, tree);
+                let child = create_parse_tree_expr(arg, tree, var_map, typeenv, termenv);
                 children.push(child);
             }
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
 
             TypeVarNode{
-                ident: sym.0,
+                ident: name,
                 type_var: type_var,
                 children: children,
                 assertions: vec![],
             }
         }
-        isle::ast::Expr::Var{ name, .. } => {
-            // This case doesn't really change anything since we should
-            // have already typed vars in the LHS, but it does check
-            // that we aren't using a variable that wasn't declared.
-            let ident = name.0;
-            if !tree.var_to_type_var_map.contains_key(&ident) {
-                panic!("var {} used in RHS that was not declared in LHS", &ident);
+        isle::sema::Expr::Var(_, var_id) => {
+            let mut ident = String::from("dummy_var");
+            if !var_map.contains_key(var_id) {
+                println!("var {:#?} not found, using placeholder name instead", var_id);
+            } else {
+                let sym = var_map[&var_id];
+                ident = typeenv.syms[sym.index()].clone();
             }
+
+            tree.var_to_type_var_map.entry(ident.clone()).or_insert(tree.next_type_var);
             let type_var = tree.var_to_type_var_map[&ident];
+            if type_var == tree.next_type_var {
+                tree.next_type_var += 1;
+            }
+
+            // this is a base case so there are no children
             TypeVarNode{
                 ident: ident.clone(),
                 type_var: type_var,
@@ -719,11 +762,11 @@ fn create_parse_tree_expr(
                 assertions: vec![],
             }
         }
-        isle::ast::Expr::ConstPrim{ val, .. } => {
+        isle::sema::Expr::ConstPrim(_, sym) => {
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
             TypeVarNode{
-                ident: val.0,
+                ident: typeenv.syms[sym.index()].clone(),
                 type_var: type_var,
                 children: vec![],
                 assertions: vec![],
