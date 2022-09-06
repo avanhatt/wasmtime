@@ -3,7 +3,7 @@ use std::hash::Hash;
 use std::path::PathBuf;
 
 use cranelift_isle as isle;
-use isle::ast::{Defs, Decl};
+use isle::ast::{Decl, Defs};
 use isle::compile::create_envs;
 use isle::sema::{Sym, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
@@ -22,8 +22,7 @@ fn main() {
     let decls = build_decl_map(defs);
 
     for r in &termenv.rules {
-        let s =
-            type_annotations_using_rule(r, &annotation_env, &decls, &typeenv, &termenv);
+        let s = type_annotations_using_rule(r, &annotation_env, &decls, &typeenv, &termenv);
         for a in s.annotation_infos {
             println!("{}", a.term);
             for (var, type_var) in a.var_to_type_var {
@@ -43,7 +42,7 @@ fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
             }
             _ => continue,
         }
-    };
+    }
     decls
 }
 
@@ -115,7 +114,7 @@ fn type_annotations_using_rule(
         concrete_constraints: HashSet::new(),
         var_constraints: HashSet::new(),
         bv_constraints: HashSet::new(),
-        decls: decls,
+        decls,
     };
 
     let var_map = &mut BTreeMap::new();
@@ -124,22 +123,11 @@ fn type_annotations_using_rule(
     let rhs = &mut create_parse_tree_expr(&rule.rhs, &mut parse_tree, var_map, typeenv, termenv);
 
     let mut annotation_infos = vec![];
-    add_rule_constraints(
-        &mut parse_tree,
-        lhs,
-        annotation_env,
-        &mut annotation_infos,
-    );
-    add_rule_constraints(
-        &mut parse_tree,
-        rhs,
-        annotation_env,
-        &mut annotation_infos,
-    );
-    parse_tree.var_constraints.insert(TypeExpr::Variable(
-        lhs.type_var,
-        rhs.type_var,
-    ));
+    add_rule_constraints(&mut parse_tree, lhs, annotation_env, &mut annotation_infos);
+    add_rule_constraints(&mut parse_tree, rhs, annotation_env, &mut annotation_infos);
+    parse_tree
+        .var_constraints
+        .insert(TypeExpr::Variable(lhs.type_var, rhs.type_var));
 
     let solution = solve_constraints(
         parse_tree.concrete_constraints,
@@ -452,9 +440,9 @@ fn add_rule_constraints(
     }
 
     // set args in rule equal to args in annotation
-    for (i, child) in curr.children.iter().enumerate() {
+    for (child, arg) in curr.children.iter().zip(&annotation.sig.args) {
         let rule_type_var = child.type_var;
-        let annotation_type_var = annotation_info.var_to_type_var[&annotation.sig.args[i].name];
+        let annotation_type_var = annotation_info.var_to_type_var[&arg.name];
         tree.var_constraints
             .insert(TypeExpr::Variable(rule_type_var, annotation_type_var));
     }
