@@ -3,6 +3,7 @@ use std::hash::Hash;
 use std::path::PathBuf;
 
 use cranelift_isle as isle;
+use isle::ast::{Defs, Decl};
 use isle::compile::create_envs;
 use isle::sema::{Sym, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
@@ -18,9 +19,11 @@ fn main() {
     let defs = isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
 
+    let decls = build_decl_map(defs);
+
     for r in &termenv.rules {
         let s =
-            type_annotations_using_rule(r, &annotation_env, defs.defs.clone(), &typeenv, &termenv);
+            type_annotations_using_rule(r, &annotation_env, &decls, &typeenv, &termenv);
         for a in s.annotation_infos {
             println!("{}", a.term);
             for (var, type_var) in a.var_to_type_var {
@@ -29,6 +32,19 @@ fn main() {
             println!();
         }
     }
+}
+
+fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
+    let mut decls = HashMap::new();
+    for def in defs.defs {
+        match def {
+            isle::ast::Def::Decl(d) => {
+                decls.insert(d.term.0.clone(), d);
+            }
+            _ => continue,
+        }
+    };
+    decls
 }
 
 // for debugging and printing purposes
@@ -41,7 +57,7 @@ fn main() {
 }*/
 
 #[derive(Clone, Debug)]
-struct RuleParseTree {
+struct RuleParseTree<'a> {
     // a map of var name to type variable, where var could be
     // Pattern::Var or var used in Pattern::BindPattern
     var_to_type_var_map: HashMap<String, u32>,
@@ -52,7 +68,7 @@ struct RuleParseTree {
     var_constraints: HashSet<TypeExpr>,
     bv_constraints: HashSet<TypeExpr>,
     // a map of terms in the rule to their isle ast decl
-    decls: HashMap<String, isle::ast::Decl>,
+    decls: &'a HashMap<String, isle::ast::Decl>,
 }
 
 #[derive(Clone, Debug)]
@@ -89,7 +105,7 @@ struct Solution {
 fn type_annotations_using_rule(
     rule: &isle::sema::Rule,
     annotation_env: &AnnotationEnv,
-    defs: Vec<isle::ast::Def>,
+    decls: &HashMap<String, isle::ast::Decl>,
     typeenv: &TypeEnv,
     termenv: &TermEnv,
 ) -> Solution {
@@ -99,16 +115,8 @@ fn type_annotations_using_rule(
         concrete_constraints: HashSet::new(),
         var_constraints: HashSet::new(),
         bv_constraints: HashSet::new(),
-        decls: HashMap::new(),
+        decls: decls,
     };
-    for def in defs {
-        match def {
-            isle::ast::Def::Decl(d) => {
-                parse_tree.decls.insert(d.term.0.clone(), d);
-            }
-            _ => continue,
-        }
-    }
 
     let var_map = &mut BTreeMap::new();
     rule.lhs.build_var_map(var_map);
