@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use veri_ir::{annotation_ir, Function, FunctionApplication};
+use veri_ir::{annotation_ir};
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
 use cranelift_isle as isle;
@@ -71,16 +71,6 @@ impl<'ctx> TypeContext<'ctx> {
             (Some(annotation_ir::Type::Bool), VIRType::Bool) => true,
             (Some(annotation_ir::Type::Int), VIRType::Int) => true,
             (Some(annotation_ir::Type::BitVector), VIRType::BitVector(..)) => true,
-            (Some(annotation_ir::Type::BitVectorList(l1)), VIRType::BitVectorList(l2, _)) => {
-                *l1 == *l2
-            }
-            (Some(annotation_ir::Type::Function(func)), VIRType::Function(args, ret)) => {
-                func.args
-                    .iter()
-                    .zip(args)
-                    .all(|(a1, a2)| Self::compatible_types(&Some(a1.clone()), a2))
-                    && Self::compatible_types(&Some(*func.ret.clone()), &*ret)
-            }
             _ => false,
         }
     }
@@ -96,24 +86,6 @@ impl<'ctx> TypeContext<'ctx> {
         BoundVar {
             name: v.name.clone(),
             ty,
-        }
-    }
-
-    fn concretize_type(&self, ty: &annotation_ir::Type) -> VIRType {
-        match ty {
-            annotation_ir::Type::BitVector => VIRType::BitVector(self.ty.width()),
-            annotation_ir::Type::BitVectorWithWidth(w) => VIRType::BitVector(*w),
-            annotation_ir::Type::BitVectorList(len) => {
-                VIRType::BitVectorList(*len, self.ty.width())
-            }
-            annotation_ir::Type::Int => VIRType::Int,
-            annotation_ir::Type::Function(func) => VIRType::Function(
-                func.args.iter().map(|a| self.concretize_type(a)).collect(),
-                Box::new(self.concretize_type(&*func.ret)),
-            ),
-            annotation_ir::Type::Bool => VIRType::Bool,
-            annotation_ir::Type::Poly(..) => panic!("unexpected outside of inference"),
-
         }
     }
 
@@ -297,52 +269,6 @@ impl<'ctx> TypeContext<'ctx> {
                 let width = expect_boxed_bv(width, self);
                 let vx = expect_boxed_int(x, self);
                 VIRExpr::BVIntToBV(width.ty().clone(), vx)
-            }
-            annotation_ir::Expr::Function(f) => {
-                let func_ty = self.concretize_type(&f.ty);
-                let args = f
-                    .args
-                    .iter()
-                    .enumerate()
-                    .map(|(i, a)| self.type_bound_var(a, func_ty.function_arg_types()[i].clone()))
-                    .collect();
-                let body = Box::new(self.type_expr(&f.body));
-                VIRExpr::Function(Function {
-                    name: f.name.clone(),
-                    ty: func_ty,
-                    args,
-                    body,
-                })
-            }
-            annotation_ir::Expr::FunctionApplication(app) => {
-                let func = expect_boxed(&app.func, self);
-                let args: Vec<VIRExpr> = app.args.iter().map(|a| self.type_expr(a)).collect();
-                for (i, a) in args.iter().enumerate() {
-                    assert_eq!(*a.ty(), func.ty().function_arg_types()[i]);
-                }
-                VIRExpr::FunctionApplication(FunctionApplication {
-                    ty: func.ty().function_ret_type().clone(),
-                    func,
-                    args,
-                })
-            }
-            annotation_ir::Expr::List(xs) => {
-                let vs: Vec<VIRExpr> = xs.iter().map(|a| self.type_expr(a)).collect();
-                // Enforce homogenous list types
-                if let Some(first) = vs.first() {
-                    for rest in &vs[1..] {
-                        assert_eq!(first.ty(), rest.ty());
-                    }
-                }
-                VIRExpr::List(
-                    VIRType::BitVectorList(vs.len(), vs.first().unwrap().ty().width()),
-                    vs,
-                )
-            }
-            annotation_ir::Expr::GetElement(x, i) => {
-                let v = self.type_expr(&*x);
-                assert!(matches!(v.ty(), VIRType::BitVectorList(..)));
-                VIRExpr::GetElement(v.ty().element_ty(), Box::new(v), *i)
             }
         }
     }

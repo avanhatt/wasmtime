@@ -19,9 +19,7 @@ Ident: String = {
 pub Type: Type = {
     "bv" => Type::BitVector,
     "bv" <n:UNum> => Type::BitVectorWithWidth(n),
-    "bvlist" "(" <length:UNum> ")" => Type::BitVectorList(length),
     "isleType" => Type::Int,
-    <f:FunctionType> => Type::Function(f),
     "bool" => Type::Bool,
 };
 
@@ -111,11 +109,6 @@ pub Expr: Box<Expr> = {
     "(" "conv_from" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVConvFrom(n, v, 0)),
     "(" "int2bv" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v, 0)),
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v, 0)),
-
-    "(" <f:Function> ")" => Box::new(Expr::Function(f)),
-    "(" <a:FunctionApplication> ")" => Box::new(Expr::FunctionApplication(a)),
-    "(" <e:ExprList> ")" => Box::new(Expr::List(e)),
-    "(" "get" <u:Expr> <n:UNum> ")" => Box::new(Expr::GetElement(u, n)),
 };
 
 pub TermAnnotation: TermAnnotation = {
