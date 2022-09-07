@@ -3273,15 +3273,6 @@ name = "veri_ir"
 version = "0.1.0"
 
 [[package]]
-name = "veri_type_inference"
-version = "0.1.0"
-dependencies = [
- "cranelift-isle",
- "veri_annotation",
- "veri_ir",
-]
-
-[[package]]
 name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
