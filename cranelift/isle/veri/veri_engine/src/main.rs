@@ -33,7 +33,7 @@ fn main() {
     let (typeenv, termenv) = isle_files_to_terms(&inputs);
     let annotation_env = parse_annotations(&inputs);
 
-    let files = vec!["examples/src/main.rsuextend.isle"];
+    let files = vec!["examples/uextend.isle"];
     let lexer = isle::lexer::Lexer::from_files(&files).unwrap();
     
     let defs = isle::parser::parse(lexer).expect("should parse");
