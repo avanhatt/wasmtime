@@ -88,16 +88,9 @@ pub enum Type {
     /// Use if the width is known
     BitVectorWithWidth(usize),
 
-    // The expression is a list of bitvectors (see above)
-    // BitVectorList(length)
-    BitVectorList(usize),
-
     /// The expression is an integer (currently used for ISLE type,
     /// representing bitwidth)
     Int,
-
-    /// The expression is a function definition.
-    Function(FunctionType),
 
     /// The expression is a boolean.
     Bool,
@@ -196,13 +189,6 @@ pub enum Expr {
     // assumes that the destination width is the LHS values BV width.
     BVConvFrom(usize, Box<Expr>, u32),
     BVIntToBv(Box<Expr>, Box<Expr>, u32),
-
-    Function(Function),
-    FunctionApplication(FunctionApplication),
-    // Note: extra Box for now for ease of parsing
-    #[allow(clippy::vec_box)]
-    List(Vec<Box<Expr>>),
-    GetElement(Box<Expr>, usize),
 }
 
 impl Expr {
@@ -250,7 +236,6 @@ impl Expr {
             Expr::BVIntToBv(_, _, t) |
 
             Expr::BVExtract(_, _, _, t) => *t,
-            _ => todo!()
         }
     }
 }

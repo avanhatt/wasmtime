@@ -1,7 +1,7 @@
 /// This file will be replaced by a parser that consumes annotations and produces
 /// the same type of structure, but for now, manually construct these annotations.
 use crate::annotation_ir::{
-    BoundVar, Const, Expr, Function, FunctionApplication, FunctionType, TermAnnotation,
+    BoundVar, Const, Expr, TermAnnotation,
     TermSignature, Type, Width,
 };
 
@@ -19,58 +19,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 ret: result,
             };
             Some(TermAnnotation::new(func, vec![identity]))
-        }
-        "InstructionData.Binary" => {
-            // List must have length 2 since it's a Binary
-            let list_ty = Type::BitVectorList(2);
-            let arg_list = BoundVar::new("arg_list");
-            let result = BoundVar::new("ret");
-
-            let opcode = BoundVar::new_with_ty(
-                "opcode",
-                &Type::Function(FunctionType {
-                    args: vec![list_ty],
-                    ret: Box::new(Type::BitVector),
-                }),
-            );
-
-            let app = Expr::FunctionApplication(FunctionApplication {
-                func: Box::new(opcode.as_expr()),
-                args: vec![Box::new(arg_list.as_expr())],
-            });
-            let eq = Expr::binary(Expr::Eq, app, result.as_expr());
-
-            let func = TermSignature {
-                args: vec![opcode, arg_list],
-                ret: result,
-            };
-            Some(TermAnnotation::new(func, vec![eq]))
-        }
-        "alu_rrr" => {
-            let t = BoundVar::new("ty");
-            let a = BoundVar::new("a");
-            let b = BoundVar::new("b");
-            let r = BoundVar::new("r");
-            let opcode = BoundVar::new_with_ty(
-                "opcode",
-                &Type::Function(FunctionType {
-                    args: vec![Type::Int, Type::BitVector, Type::BitVector],
-                    ret: Box::new(Type::BitVector),
-                }),
-            );
-
-            let app = Expr::FunctionApplication(FunctionApplication {
-                func: Box::new(opcode.as_expr()),
-                args: vec![Box::new(t.as_expr()), Box::new(a.as_expr()), Box::new(b.as_expr())],
-            });
-            let eq = Expr::binary(Expr::Eq, app, r.as_expr());
-
-            let func = TermSignature {
-                args: vec![opcode, t, a, b],
-                ret: r,
-            };
-            Some(TermAnnotation::new(func, vec![eq]))
-        }
+        },
         "value_type" => {
             let arg = BoundVar::new("arg");
             let result = BoundVar::new("ret");
@@ -80,20 +29,6 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 ret: result,
             };
             Some(TermAnnotation::new(func, vec![ty_eq]))
-        }
-        "value_array_2" => {
-            let arg1 = BoundVar::new("arg1");
-            let arg2 = BoundVar::new("arg2");
-            let result = BoundVar::new("ret");
-
-            let ls = Expr::List(vec![Box::new(arg1.as_expr()), Box::new(arg2.as_expr())]);
-            let eq = Expr::binary(Expr::Eq, ls, result.as_expr());
-
-            let func = TermSignature {
-                args: vec![arg1, arg2],
-                ret: result,
-            };
-            Some(TermAnnotation::new(func, vec![eq]))
         }
         // (spec (sig (args x: bvX) (ret: bvX))
         //       (assumptions (= x ret)))
@@ -141,68 +76,6 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             );
             let func = TermSignature {
                 args: vec![a, b],
-                ret: r,
-            };
-            Some(TermAnnotation::new(func, vec![sem]))
-        }
-        "Opcode.Iadd" => {
-            let value_list = BoundVar::new("xs");
-            let r = BoundVar::new("r");
-            let x = Expr::GetElement(Box::new(value_list.as_expr()), 0);
-            let y = Expr::GetElement(Box::new(value_list.as_expr()), 1);
-            let body = Expr::binary(Expr::BVAdd, x, y);
-            let func_expr = Expr::Function(Function {
-                name: "Opcode.Iadd".to_string(),
-                args: vec![value_list],
-                ty: Type::Function(FunctionType {
-                    args: vec![Type::BitVectorList(2)],
-                    ret: Box::new(Type::BitVector),
-                }),
-                body: Box::new(body),
-            });
-            let body_semantics = Expr::binary(Expr::Eq, r.as_expr(), func_expr);
-            // The opcode itself takes no arguments
-            let func = TermSignature {
-                args: vec![],
-                ret: r,
-            };
-            Some(TermAnnotation::new(func, vec![body_semantics]))
-        }
-        "ALUOp.Add" => {
-            let t = BoundVar::new("ty");
-            let a = BoundVar::new("a");
-            let b = BoundVar::new("b");
-            let r = BoundVar::new("r");
-            let body = Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr());
-            let func_expr = Expr::Function(Function {
-                name: "ALUOp.Add".to_string(),
-                args: vec![t, a, b],
-                ty: Type::Function(FunctionType {
-                    args: vec![Type::Int, Type::BitVector, Type::BitVector],
-                    ret: Box::new(Type::BitVector),
-                }),
-                body: Box::new(body),
-            });
-            let body_semantics = Expr::binary(Expr::Eq, r.as_expr(), func_expr);
-            // The opcode itself takes no arguments
-            let func = TermSignature {
-                args: vec![],
-                ret: r,
-            };
-            Some(TermAnnotation::new(func, vec![body_semantics]))
-        }
-        "add" => {
-            let t = BoundVar::new("ty");
-            let a = BoundVar::new("a");
-            let b = BoundVar::new("b");
-            let r = BoundVar::new("r");
-            let sem = Expr::binary(
-                Expr::Eq,
-                Expr::binary(Expr::BVAdd, a.as_expr(), b.as_expr()),
-                r.as_expr(),
-            );
-            let func = TermSignature {
-                args: vec![t, a, b],
                 ret: r,
             };
             Some(TermAnnotation::new(func, vec![sem]))

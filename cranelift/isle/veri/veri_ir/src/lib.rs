@@ -120,13 +120,6 @@ pub enum VIRType {
     /// (type Value (primitive Value))
     BitVector(usize),
 
-    // The expression is a list of bitvectors (see above)
-    // BitVectorList(length, width)
-    BitVectorList(usize, usize),
-
-    /// The expression is a function definition.
-    Function(Vec<VIRType>, Box<VIRType>),
-
     /// The expression is a boolean. This does not directly correspond
     /// to a specific Cranelift Isle type, rather, we use it for the
     /// language of assertions.
@@ -293,41 +286,9 @@ impl VIRType {
         })
     }
 
-    pub fn apply(&self, func: VIRExpr, args: Vec<VIRExpr>) -> VIRExpr {
-        assert!(matches!(func.ty(), Self::Function(..)));
-        VIRExpr::FunctionApplication(FunctionApplication {
-            ty: self.clone(),
-            func: Box::new(func),
-            args,
-        })
-    }
-
-    pub fn get_element(&self, ls: VIRExpr, i: usize) -> VIRExpr {
-        assert!(i < self.list_len());
-        VIRExpr::GetElement(self.element_ty(), Box::new(ls), i)
-    }
-
-    pub fn element_ty(&self) -> VIRType {
-        assert!(self.is_bv_list());
-        Self::BitVector(self.width())
-    }
-
-    pub fn list_ty(&self, length: usize) -> VIRType {
-        assert!(self.is_bv());
-        Self::BitVectorList(length, self.width())
-    }
-
-    pub fn list_len(&self) -> usize {
-        match *self {
-            Self::BitVectorList(l, _) => l,
-            _ => unreachable!("Unexpected type: {:?}", self),
-        }
-    }
-
     pub fn width(&self) -> usize {
         match *self {
             Self::BitVector(s) => s,
-            Self::BitVectorList(_, s) => s,
             _ => unreachable!("Unexpected type: {:?}", self),
         }
     }
@@ -336,30 +297,8 @@ impl VIRType {
         matches!(*self, Self::BitVector(..))
     }
 
-    pub fn is_bv_list(&self) -> bool {
-        matches!(*self, Self::BitVectorList(..))
-    }
-
     pub fn is_bool(&self) -> bool {
         matches!(*self, Self::Bool)
-    }
-
-    pub fn is_function(&self) -> bool {
-        matches!(*self, Self::Function(..))
-    }
-
-    pub fn function_arg_types(&self) -> Vec<VIRType> {
-        match self {
-            VIRType::Function(args, _) => args.clone(),
-            _ => unreachable!("Expected function type, got {:?}", self),
-        }
-    }
-
-    pub fn function_ret_type(&self) -> &VIRType {
-        match self {
-            VIRType::Function(_, ret) => &*ret,
-            _ => unreachable!("Expected function type, got {:?}", self),
-        }
     }
 
     pub fn is_int(&self) -> bool {

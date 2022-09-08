@@ -3,15 +3,13 @@
 ///
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
-use std::collections::HashSet;
 use veri_ir::{Counterexample, RulePath, VIRExpr, VIRType, VerificationResult};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
         VIRType::BitVector(width) => format!("(_ BitVec {})", width),
-        VIRType::BitVectorList(len, width) => format!("(_ BitVec {})", len * width),
         VIRType::Int => "Int".to_string(),
-        VIRType::Bool | VIRType::Function(..) => unreachable!(),
+        VIRType::Bool => unreachable!(),
     }
 }
 
@@ -31,8 +29,6 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             VIRType::BitVector(width) => format!("(_ bv{} {})", i, width),
             VIRType::Int => i.to_string(),
             VIRType::Bool => (if i == 0 { "false" } else { "true" }).to_string(),
-            VIRType::Function(..) => unimplemented!(),
-            VIRType::BitVectorList(_length, _width) => unimplemented!(),
         },
         VIRExpr::Var(bound_var) => bound_var.name,
         VIRExpr::True => "true".to_string(),
@@ -42,30 +38,30 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::Or(x, y) => binary("or", x, y),
         VIRExpr::Imp(x, y) => binary("=>", x, y),
         // If the assertion is an equality on function types, we need quantification
-        VIRExpr::Eq(x, y) if x.ty().is_function() => {
-            let x_str = vir_expr_to_rsmt2_str(*x.clone());
-            let y_str = vir_expr_to_rsmt2_str(*y);
-            let args = x
-                .ty()
-                .function_arg_types()
-                .iter()
-                .enumerate()
-                .map(|(i, t)| format!("(x{} {})", i, vir_to_rsmt2_constant_ty(t)))
-                .collect::<Vec<String>>()
-                .join(" ");
-            let arg_names = x
-                .ty()
-                .function_arg_types()
-                .iter()
-                .enumerate()
-                .map(|(i, _)| format!("x{}", i,))
-                .collect::<Vec<String>>()
-                .join(" ");
-            format!(
-                "(forall ({}) (= ({} {}) ({} {})))",
-                args, x_str, arg_names, y_str, arg_names
-            )
-        }
+        // VIRExpr::Eq(x, y) if x.ty().is_function() => {
+        //     let x_str = vir_expr_to_rsmt2_str(*x.clone());
+        //     let y_str = vir_expr_to_rsmt2_str(*y);
+        //     let args = x
+        //         .ty()
+        //         .function_arg_types()
+        //         .iter()
+        //         .enumerate()
+        //         .map(|(i, t)| format!("(x{} {})", i, vir_to_rsmt2_constant_ty(t)))
+        //         .collect::<Vec<String>>()
+        //         .join(" ");
+        //     let arg_names = x
+        //         .ty()
+        //         .function_arg_types()
+        //         .iter()
+        //         .enumerate()
+        //         .map(|(i, _)| format!("x{}", i,))
+        //         .collect::<Vec<String>>()
+        //         .join(" ");
+        //     format!(
+        //         "(forall ({}) (= ({} {}) ({} {})))",
+        //         args, x_str, arg_names, y_str, arg_names
+        //     )
+        // }
         VIRExpr::Eq(x, y) => binary("=", x, y),
         VIRExpr::Lte(x, y) => binary("<=", x, y),
         VIRExpr::BVNeg(_, x) => unary("bvneg", x),
@@ -150,56 +146,7 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
     res
 }
 
-fn declare_uninterp_functions(expr: VIRExpr, solver: &mut Solver<()>) {
-    let mut fns = HashSet::new();
-    let mut f = |e: &VIRExpr| {
-        if let VIRExpr::Function(func) = e {
-            if fns.contains(&func.name) {
-                // Skip functions we've already seen (the solver will catch
-                // mismatched types)
-                return;
-            } else {
-                fns.insert(func.name.clone())
-            };
-            let arg_tys: Vec<String> = func
-                .args
-                .iter()
-                .map(|a| vir_to_rsmt2_constant_ty(&a.ty))
-                .collect();
-            solver
-                .declare_fun(
-                    func.name.clone(),
-                    arg_tys,
-                    vir_to_rsmt2_constant_ty(func.ty.function_ret_type()),
-                )
-                .unwrap();
-
-            let args = func
-                .args
-                .iter()
-                .map(|var| format!("({} {})", var.name, vir_to_rsmt2_constant_ty(&var.ty)))
-                .collect::<Vec<String>>()
-                .join(" ");
-            let arg_names = func
-                .args
-                .iter()
-                .map(|v| v.name.to_string())
-                .collect::<Vec<String>>()
-                .join(" ");
-            let defn = format!(
-                "(forall ({}) (= ({} {}) {}))",
-                args,
-                func.name,
-                arg_names,
-                vir_expr_to_rsmt2_str(*func.body.clone())
-            );
-
-            println!("\t{} : {:?}\n\t\t{}", func.name, func.ty, defn);
-            solver.assert(defn).unwrap();
-        }
-    };
-    expr.for_each_subexpr(&mut f);
-}
+// 
 
 /// Overall query:
 /// <declare vars>
@@ -214,13 +161,6 @@ pub fn run_solver_single_rule(
         let name = v.name.clone();
         let ty = &v.ty;
         match ty.clone() {
-            VIRType::Function(args, ret) => {
-                println!("\tFUNCTION {} : {:?}", name, ty);
-                let arg_tys: Vec<String> = args.iter().map(vir_to_rsmt2_constant_ty).collect();
-                solver
-                    .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
-                    .unwrap();
-            }
             _ => {
                 let var_ty = vir_to_rsmt2_constant_ty(ty);
                 println!("\t{} : {:?}", name, ty);
@@ -229,10 +169,10 @@ pub fn run_solver_single_rule(
         }
     }
 
-    println!("Declaring uninterpreted functions:");
-    for a in &rule_sem.assumptions {
-        declare_uninterp_functions(a.clone(), &mut solver);
-    }
+    // println!("Declaring uninterpreted functions:");
+    // for a in &rule_sem.assumptions {
+    //     declare_uninterp_functions(a.clone(), &mut solver);
+    // }
 
     println!("Adding assumptions:");
     let assumptions: Vec<String> = rule_sem
@@ -308,13 +248,6 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
             let name = v.name.clone();
             let ty = &v.ty;
             match ty.clone() {
-                VIRType::Function(args, ret) => {
-                    println!("\tFUNCTION {} : {:?}", name, ty);
-                    let arg_tys: Vec<String> = args.iter().map(vir_to_rsmt2_constant_ty).collect();
-                    solver
-                        .declare_fun(name, arg_tys, vir_to_rsmt2_constant_ty(&*ret))
-                        .unwrap();
-                }
                 _ => {
                     let var_ty = vir_to_rsmt2_constant_ty(ty);
                     println!("\t{} : {:?}", name, ty);
@@ -322,10 +255,10 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
                 }
             }
         }
-        println!("Declaring uninterpreted functions:");
-        for a in &rule_sem.assumptions {
-            declare_uninterp_functions(a.clone(), &mut solver);
-        }
+        // println!("Declaring uninterpreted functions:");
+        // for a in &rule_sem.assumptions {
+        //     declare_uninterp_functions(a.clone(), &mut solver);
+        // }
 
         println!("Adding assumptions:");
         for a in &rule_sem.assumptions {
