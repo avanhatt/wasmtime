@@ -1,82 +1,55 @@
-;; Mock decls
-(type Inst (primitive Inst))
-(type InstOutput (primitive InstOutput))
-(type Type (primitive Type))
-(type Reg (primitive Reg))
-(type Value (primitive Value))
-(type ValueRegs (primitive ValueRegs))
-
-;; Implicit converters
-(convert Inst Value def_inst)
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (= (arg) (ret))))
-(decl def_inst (Inst) Value)
-(extern extractor def_inst def_inst)
+(decl lower (Inst) ValueRegs)
 
-(convert Reg ValueRegs value_reg)
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl value_reg (Reg) ValueRegs)
-(extern constructor value_reg value_reg)
+;; Instruction formats.
+(type MInst
+  (enum
+    ;; A no-op of zero size.
+    (Nop0)
 
-(convert Value Reg put_in_reg)
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl put_in_reg (Value) Reg)
-(extern constructor put_in_reg put_in_reg)
+    ;; A no-op that is one instruction large.
+    (Nop4)
 
-(convert Value ValueRegs put_in_regs)
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl put_in_regs (Value) ValueRegs)
-(extern constructor put_in_regs put_in_regs)
+    ;; An ALU operation with two register sources and a register destination.
+    (AluRRR
+      (alu_op ALUOp)
+      (size OperandSize)
+      (rd WritableReg)
+      (rn Reg)
+      (rm Reg))
+))
 
-;; (convert WritableReg Reg writable_reg_to_reg)
+;; An ALU operation. This can be paired with several instruction formats
+;; below (see `Inst`) in any combination.
+(type ALUOp
+  (enum
+    (Add)
+    (Sub)
+    (Orr)
+    (OrrNot)
+    (And)))
 
-(convert ValueRegs InstOutput output)
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl output (ValueRegs) InstOutput)
-(extern extractor output output)
+(type OperandSize extern
+      (enum Size32
+            Size64))
 
-(convert Reg InstOutput output_reg)
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl output_reg (Reg) InstOutput)
-(extern extractor output_reg output_reg)
-(extern constructor output_reg output_reg)
+;; Helper for calculating the `OperandSize` corresponding to a type
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
-(convert Value InstOutput output_value)
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl output_value (Value) InstOutput)
-(extern extractor output_value output_value)
-;; (convert Offset32 u32 offset32_to_u32)
-
-
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
-(decl lower (Inst) InstOutput)
-
-;;@ (spec (sig (args ty, arg) (ret))
-;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
-(decl has_type (Type Inst) Inst)
-(extern extractor has_type has_type)
-
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (<= (arg) (64i128: isleType)), (= (arg) (ret))))
-(decl fits_in_64 (Type) Type)
-(extern extractor fits_in_64 fits_in_64)
-
-;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (+ (x) (y)) (ret))))
-(decl iadd (Value Value) Inst)
-(extern extractor iadd iadd)
+(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
+      (add ty x y))
 
 ;;@ (spec (sig (args ty, a, b) (r))
 ;;@     (assertions (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
-(extern constructor add add)
+(rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
 
-(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
-      (add ty x y))
+(decl alu_rrr (ALUOp Type Reg Reg) Reg)
+(extern constructor alu_rrr alu_rrr)
+;; (rule (alu_rrr op ty src1 src2)
+;;       (let ((dst WritableReg (temp_writable_reg $I64))
+;;             (_ Unit (emit (MInst.AluRRR op (operand_size ty) dst src1 src2))))
+;;         dst))

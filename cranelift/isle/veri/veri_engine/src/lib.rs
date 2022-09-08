@@ -9,6 +9,7 @@ pub mod rule_tree;
 pub mod solver;
 pub mod termname;
 pub mod type_check;
+pub mod type_inference;
 
 /// Given a file, lexes and parses the file to an ISLE term and type environment tuple
 pub fn isle_files_to_terms(files: &Vec<PathBuf>) -> (TypeEnv, TermEnv) {
