@@ -146,7 +146,7 @@ fn check_assumptions_feasibility<Parser>(solver: &mut Solver<Parser>, assumption
     res
 }
 
-// 
+//
 
 /// Overall query:
 /// <declare vars>

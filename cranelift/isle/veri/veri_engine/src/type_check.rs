@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use veri_ir::{annotation_ir};
+use veri_ir::annotation_ir;
 use veri_ir::{BoundVar, VIRExpr, VIRTermAnnotation, VIRTermSignature, VIRType};
 
 use cranelift_isle as isle;
@@ -123,10 +123,10 @@ impl<'ctx> TypeContext<'ctx> {
             },
             annotation_ir::Expr::True(_) => VIRExpr::True,
             annotation_ir::Expr::False(_) => VIRExpr::False,
-            annotation_ir::Expr::TyWidth(_) => VIRExpr::Const(VIRType::Int, self.ty.width() as i128),
-            annotation_ir::Expr::WidthOf(x, _) => {
-                VIRExpr::WidthOf(Box::new(self.type_expr(&*x)))
+            annotation_ir::Expr::TyWidth(_) => {
+                VIRExpr::Const(VIRType::Int, self.ty.width() as i128)
             }
+            annotation_ir::Expr::WidthOf(x, _) => VIRExpr::WidthOf(Box::new(self.type_expr(&*x))),
             annotation_ir::Expr::Not(e, _) => VIRExpr::Not(expect_boxed_bool(e, self)),
             annotation_ir::Expr::And(x, y, _) => {
                 VIRExpr::And(expect_boxed_bool(x, self), expect_boxed_bool(y, self))
@@ -247,7 +247,7 @@ impl<'ctx> TypeContext<'ctx> {
                             Ordering::Equal => *vx,
                         }
                     }
-                    _ => unreachable!("{:?}", vx.ty())
+                    _ => unreachable!("{:?}", vx.ty()),
                 }
             }
             annotation_ir::Expr::BVConvFrom(src, x, _) => {
