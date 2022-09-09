@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use cranelift_isle as isle;
-use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
+use isle::sema::{Pattern, Rule, RuleId, TermEnv, TypeEnv};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{
@@ -11,6 +11,7 @@ use veri_ir::{
 
 use crate::interp::AssumptionContext;
 use crate::solver::run_solver_rule_path;
+use crate::type_inference::Solution;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
 /// terms on the left hand sides (LHS) and right hand sides (RHS).
@@ -166,9 +167,10 @@ pub fn build_rule_tree_from_root(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotationenv: &AnnotationEnv,
+    typesols: &HashMap<RuleId, Solution>,
     ty: &VIRType,
 ) -> RuleTree {
-    let mut ctx = AssumptionContext::new(termenv, typeenv, annotationenv, ty);
+    let mut ctx = AssumptionContext::new(termenv, typeenv, annotationenv, typesols, ty);
     build_rule_tree_rec(&mut ctx, rule, termenv, typeenv, 0, 20)
 }
 
@@ -191,10 +193,17 @@ pub fn verify_rules_with_lhs_root(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotationenv: &AnnotationEnv,
+    typesols: &HashMap<RuleId, Solution>,
 ) -> VerificationResult {
     for ty in all_starting_bitvectors() {
-        let result =
-            verify_rules_for_type_with_lhs_root(root, termenv, typeenv, annotationenv, &ty);
+        let result = verify_rules_for_type_with_lhs_root(
+            root,
+            termenv,
+            typeenv,
+            annotationenv,
+            typesols,
+            &ty,
+        );
         if result != VerificationResult::Success {
             return result;
         }
@@ -207,12 +216,14 @@ pub fn verify_rules_for_type_with_lhs_root(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotationenv: &AnnotationEnv,
+    typesols: &HashMap<RuleId, Solution>,
     ty: &VIRType,
 ) -> VerificationResult {
     verify_rules_for_type_wih_rule_filter(
         termenv,
         typeenv,
         annotationenv,
+        typesols,
         ty,
         |rule, termenv, typeenv| pattern_term_name(rule.lhs.clone(), termenv, typeenv) == root,
     )
@@ -222,6 +233,7 @@ pub fn verify_rules_for_type_wih_rule_filter(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotationenv: &AnnotationEnv,
+    typesols: &HashMap<RuleId, Solution>,
     ty: &VIRType,
     filter: impl Fn(&Rule, &TermEnv, &TypeEnv) -> bool,
 ) -> VerificationResult {
@@ -229,7 +241,8 @@ pub fn verify_rules_for_type_wih_rule_filter(
         if !filter(&rule, termenv, typeenv) {
             continue;
         }
-        let rule_tree = build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, ty);
+        let rule_tree =
+            build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, typesols, ty);
         let paths = enumerate_paths_to_leaves(&rule_tree);
         for rule_path in paths {
             let result = run_solver_rule_path(rule_path);

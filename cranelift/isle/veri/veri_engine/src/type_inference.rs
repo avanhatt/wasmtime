@@ -4,25 +4,11 @@ use std::path::PathBuf;
 
 use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
-use isle::compile::create_envs;
 use isle::sema::{Sym, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::annotation_ir;
 
 const REG_WIDTH: usize = 64;
-
-fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
-    let mut decls = HashMap::new();
-    for def in defs.defs {
-        match def {
-            isle::ast::Def::Decl(d) => {
-                decls.insert(d.term.0.clone(), d);
-            }
-            _ => continue,
-        }
-    }
-    decls
-}
 
 #[derive(Clone, Debug)]
 struct RuleParseTree<'a> {
@@ -56,20 +42,55 @@ enum TypeExpr {
 }
 
 #[derive(Debug)]
-struct AnnotationTypeInfo {
+pub struct AnnotationTypeInfo {
     // map of annotation variable to assigned type var
-    term: String,
-    var_to_type_var: HashMap<String, u32>,
+    pub term: String,
+    pub var_to_type_var: HashMap<String, u32>,
 }
 
 #[derive(Debug)]
-struct Solution {
-    annotation_infos: Vec<AnnotationTypeInfo>,
+pub struct Solution {
+    pub annotation_infos: Vec<AnnotationTypeInfo>,
     // map of type var to solved type
-    type_var_to_type: HashMap<u32, annotation_ir::Type>,
+    pub type_var_to_type: HashMap<u32, annotation_ir::Type>,
 }
 
-// TODO: borrow properly
+pub fn type_all_rules(
+    defs: Defs,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    annotation_env: &AnnotationEnv,
+) -> HashMap<isle::sema::RuleId, Solution> {
+    let decls = build_decl_map(defs);
+
+    let mut solutions = HashMap::new();
+    for r in &termenv.rules {
+        let s = type_annotations_using_rule(r, annotation_env, &decls, typeenv, termenv);
+        for a in &s.annotation_infos {
+            println!("{}", a.term);
+            for (var, type_var) in &a.var_to_type_var {
+                println!("{}: {:#?}", var, s.type_var_to_type[&type_var]);
+            }
+            println!();
+        }
+        solutions.insert(r.id, s);
+    }
+    solutions
+}
+
+fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
+    let mut decls = HashMap::new();
+    for def in defs.defs {
+        match def {
+            isle::ast::Def::Decl(d) => {
+                decls.insert(d.term.0.clone(), d);
+            }
+            _ => continue,
+        }
+    }
+    decls
+}
+
 fn type_annotations_using_rule(
     rule: &isle::sema::Rule,
     annotation_env: &AnnotationEnv,
@@ -124,6 +145,8 @@ fn add_annotation_constraints(
                 annotation_info.var_to_type_var.insert(x.clone(), t);
                 tree.next_type_var += 1;
             }
+            // *x = t;
+            // expr
             annotation_ir::Expr::Var(x, t)
         }
         annotation_ir::Expr::Const(c, ..) => {
@@ -389,7 +412,12 @@ fn add_rule_constraints(
         return;
     }
 
-    let annotation = annotation_env.get_annotation_for_term(&curr.ident).unwrap();
+    let a = annotation_env.get_annotation_for_term(&curr.ident);
+    if a.is_none() {
+        println!("SKIPPING RULE with unannotated term: {}", &curr.ident);
+        return;
+    }
+    let annotation = a.unwrap();
 
     // use a fresh mapping for each term
     // keep the same mapping between assertions in the same annotation
@@ -846,7 +874,15 @@ fn create_parse_tree_expr(
                 assertions: vec![],
             }
         }
-        _ => todo!("parse tree expr: {:#?}", expr),
+        isle::sema::Expr::Let { bindings, body, .. } => {
+            // TODO: this is hacky
+            for (varid, _, expr) in bindings {
+                let var = format!("let{:?}", varid);
+                let subpat_node = create_parse_tree_expr(expr, tree, var_map, typeenv, termenv);
+                tree.var_to_type_var_map.insert(var, subpat_node.type_var);
+            }
+            create_parse_tree_expr(body, tree, var_map, typeenv, termenv)
+        }
     }
 }
 

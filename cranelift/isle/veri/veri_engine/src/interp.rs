@@ -1,6 +1,7 @@
 use crate::renaming::rename_annotation_vars;
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_check::TypeContext;
+use crate::type_inference::Solution;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{BoundVar, RuleSemantics, UndefinedTerm, VIRExpr, VIRTermAnnotation, VIRType};
 
@@ -8,7 +9,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
-use isle::sema::{Expr, Pattern, TermEnv, TermId, TypeEnv, TypeId, VarId};
+use isle::sema::{Expr, Pattern, RuleId, TermEnv, TermId, TypeEnv, TypeId, VarId};
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
@@ -97,6 +98,9 @@ pub struct AssumptionContext<'ctx> {
 
     // For type checking
     type_ctx: TypeContext<'ctx>,
+
+    // Current rule ID
+    ruleid: Option<RuleId>,
 }
 
 impl<'ctx> AssumptionContext<'ctx> {
@@ -143,7 +147,7 @@ impl<'ctx> AssumptionContext<'ctx> {
     ) -> Option<VIRTermAnnotation> {
         if let Some(initial_annotation) =
             self.type_ctx
-                .typed_isle_annotation_for_term(term, subterm_typeids, ty)
+                .typed_isle_annotation_for_term(self.ruleid.unwrap(), term, subterm_typeids, ty)
         {
             // Build renaming map from bound vars in the signature
             let read_renames = self.build_annotation_remapping(&initial_annotation, term);
@@ -288,6 +292,7 @@ impl<'ctx> AssumptionContext<'ctx> {
         termenv: &'ctx TermEnv,
         typeenv: &'ctx TypeEnv,
         annotation_env: &'ctx AnnotationEnv,
+        typesols: &'ctx HashMap<RuleId, Solution>,
         ty: &VIRType,
     ) -> AssumptionContext<'ctx> {
         AssumptionContext {
@@ -299,11 +304,13 @@ impl<'ctx> AssumptionContext<'ctx> {
             ident_map: HashMap::new(),
             lhs_undefined_terms: HashMap::new(),
             rhs_undefined_terms: HashMap::new(),
-            type_ctx: TypeContext::new(typeenv, annotation_env, ty.clone()),
+            type_ctx: TypeContext::new(typeenv, annotation_env, typesols, ty.clone()),
+            ruleid: None,
         }
     }
 
     pub fn interp_rule(&mut self, rule: &isle::sema::Rule) -> RuleSemantics {
+        self.ruleid = Some(rule.id);
         let ty = self.type_ctx.ty.clone();
         let lhs = self.lhs_to_assumptions(&rule.lhs, &ty);
         let rhs = self.interp_sema_expr(&rule.rhs, &ty);

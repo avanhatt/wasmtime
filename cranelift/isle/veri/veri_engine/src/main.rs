@@ -1,11 +1,13 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
 use clap::{Arg, Command};
+use cranelift_isle as isle;
+use isle::compile::create_envs;
 use std::env;
 use std::path::PathBuf;
 use veri_annotation::parser_wrapper::parse_annotations;
-use veri_engine_lib::isle_files_to_terms;
 use veri_engine_lib::rule_tree::verify_rules_with_lhs_root;
+use veri_engine_lib::type_inference::type_all_rules;
 
 fn main() {
     let cur_dir = env::current_dir().expect("Can't access current working directory");
@@ -28,10 +30,18 @@ fn main() {
     let input = PathBuf::from(matches.value_of("INPUT").unwrap());
 
     let inputs = vec![clif_isle, prelude_isle, input];
+    let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
+    // Parses to an AST, as a list of definitions
+    let defs = isle::parser::parse(lexer).expect("should parse");
 
-    let (typeenv, termenv) = isle_files_to_terms(&inputs);
+    // Produces environments including terms, rules, and maps from symbols and
+    // names to types
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+
     let annotation_env = parse_annotations(&inputs);
 
+    let type_sols = type_all_rules(defs, &termenv, &typeenv, &annotation_env);
+
     // For now, verify rules rooted in `lower`
-    verify_rules_with_lhs_root("lower", &termenv, &typeenv, &annotation_env);
+    verify_rules_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &type_sols);
 }
