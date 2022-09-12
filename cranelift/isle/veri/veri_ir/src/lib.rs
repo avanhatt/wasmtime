@@ -12,11 +12,11 @@ use std::collections::HashMap;
 /// are not yet defined.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RuleSemantics {
-    pub lhs: VIRExpr,
-    pub rhs: VIRExpr,
+    pub lhs: Expr,
+    pub rhs: Expr,
 
     pub quantified_vars: Vec<BoundVar>,
-    pub assumptions: Vec<VIRExpr>,
+    pub assumptions: Vec<Expr>,
     //  TODO: sanity check uniqueness
     pub lhs_undefined_terms: Vec<UndefinedTerm>,
     pub rhs_undefined_terms: Vec<UndefinedTerm>,
@@ -44,13 +44,13 @@ pub struct RuleTree {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VIRTermAnnotation {
     pub sig: VIRTermSignature,
-    pub assertions: Vec<VIRExpr>,
+    pub assertions: Vec<Expr>,
 }
 
 impl VIRTermAnnotation {
     /// New annotation, ensuring that each assertions is a bool.
-    pub fn new(sig: VIRTermSignature, assertions: Vec<VIRExpr>) -> Self {
-        assert!(assertions.iter().all(|a| a.ty().is_bool()));
+    pub fn new(sig: VIRTermSignature, assertions: Vec<Expr>) -> Self {
+        // assert!(assertions.iter().all(|a| a.ty().is_bool()));
         VIRTermAnnotation { sig, assertions }
     }
 
@@ -58,7 +58,7 @@ impl VIRTermAnnotation {
         &self.sig
     }
 
-    pub fn assertions(&self) -> &Vec<VIRExpr> {
+    pub fn assertions(&self) -> &Vec<Expr> {
         &self.assertions
     }
 }
@@ -73,28 +73,28 @@ pub struct VIRTermSignature {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Function {
     pub name: String,
-    pub ty: VIRType,
+    pub ty: Type,
     pub args: Vec<BoundVar>,
-    pub body: Box<VIRExpr>,
+    pub body: Box<Expr>,
 }
 
 /// Application of a function expression to arguments
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FunctionApplication {
-    pub ty: VIRType,
-    pub func: Box<VIRExpr>,
-    pub args: Vec<VIRExpr>,
+    pub ty: Type,
+    pub func: Box<Expr>,
+    pub args: Vec<Expr>,
 }
 /// A bound variable, including the VIR type
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct BoundVar {
     pub name: String,
-    pub ty: VIRType,
+    pub ty: Type,
 }
 
 impl BoundVar {
     /// Construct a new bound variable, cloning from references
-    pub fn new(name: &str, ty: &VIRType) -> Self {
+    pub fn new(name: &str, ty: &Type) -> Self {
         BoundVar {
             name: name.to_string(),
             ty: ty.clone(),
@@ -104,21 +104,21 @@ impl BoundVar {
 
 /// An ISLE term that does not yet have a defined semantics (that is, a
 /// term that has no annotation). 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct UndefinedTerm {
     pub name: String,
     pub ret: BoundVar,
-    pub args: Vec<VIRExpr>,
+    pub args: Vec<Expr>,
 }
 
 /// Verification type
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum VIRType {
+pub enum Type {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
     /// (type Value (primitive Value))
-    BitVector(usize),
+    BitVector,
 
     /// The expression is a boolean. This does not directly correspond
     /// to a specific Cranelift Isle type, rather, we use it for the
@@ -133,193 +133,115 @@ pub enum VIRType {
     Int,
 }
 
-/// Expressions (combined across all types).
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum VIRExpr {
-    // Terminal nodes
-    Var(BoundVar),
-    Const(VIRType, i128),
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Terminal {
+    Var(String),
+    Const(i128),
     True,
     False,
+}
 
-    // Special width
-    WidthOf(Box<VIRExpr>),
-
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum UnaryOp {
     // Boolean operations
-    Not(Box<VIRExpr>),
-    And(Box<VIRExpr>, Box<VIRExpr>),
-    Or(Box<VIRExpr>, Box<VIRExpr>),
-    Imp(Box<VIRExpr>, Box<VIRExpr>),
-    Eq(Box<VIRExpr>, Box<VIRExpr>),
-    Lte(Box<VIRExpr>, Box<VIRExpr>),
+    Not, 
 
     // Bitvector operations
-    // Unary operators
-    BVNeg(VIRType, Box<VIRExpr>),
-    BVNot(VIRType, Box<VIRExpr>),
+    BVNeg,
+    BVNot,
+}
 
-    // Binary operators
-    BVAdd(VIRType, Box<VIRExpr>, Box<VIRExpr>),
-    BVSub(VIRType, Box<VIRExpr>, Box<VIRExpr>),
-    BVAnd(VIRType, Box<VIRExpr>, Box<VIRExpr>),
-    BVOr(VIRType, Box<VIRExpr>, Box<VIRExpr>),
-    BVRotl(VIRType, Box<VIRExpr>, Box<VIRExpr>),
-    BVShl(VIRType, Box<VIRExpr>, Box<VIRExpr>),
-    BVShr(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum BinaryOp {
+    // Boolean operations
+    And,
+    Or,
+    Imp, 
+    Eq, 
+    Lte,
+
+    // Bitvector operations
+    BVAdd,
+    BVSub,
+    BVAnd,
+    BVOr,
+    BVRotl,
+    BVShl,
+    BVShr,
+}
+
+
+/// Expressions (combined across all types).
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Expr {
+    // Terminal nodes
+    Terminal(Terminal),
+
+    // Opcode nodes
+    Unary(UnaryOp, Box<Expr>),
+    Binary(BinaryOp, Box<Expr>, Box<Expr>),
 
     // Conversions
-    BVZeroExt(VIRType, usize, Box<VIRExpr>),
-    BVSignExt(VIRType, usize, Box<VIRExpr>),
-    BVExtract(VIRType, usize, usize, Box<VIRExpr>),
-    BVIntToBV(VIRType, Box<VIRExpr>),
-
-    // Functions
-    Function(Function),
-    FunctionApplication(FunctionApplication),
-
-    // Lists
-    List(VIRType, Vec<VIRExpr>),
-    GetElement(VIRType, Box<VIRExpr>, usize),
+    BVZeroExt(usize, Box<Expr>),
+    BVSignExt(usize, Box<Expr>),
+    BVExtract(usize, usize, Box<Expr>),
+    BVIntToBV(Box<Expr>),
 
     // Undefined terms
     UndefinedTerm(UndefinedTerm)
 }
 
-impl VIRExpr {
-    pub fn ty(&self) -> &VIRType {
-        match &self {
-            VIRExpr::Var(bv) => &bv.ty,
-            VIRExpr::Const(t, _)
-            | VIRExpr::BVNeg(t, _)
-            | VIRExpr::BVNot(t, _)
-            | VIRExpr::BVAdd(t, _, _)
-            | VIRExpr::BVSub(t, _, _)
-            | VIRExpr::BVAnd(t, _, _)
-            | VIRExpr::BVOr(t, _, _)
-            | VIRExpr::BVRotl(t, _, _)
-            | VIRExpr::BVShl(t, _, _)
-            | VIRExpr::BVShr(t, _, _)
-            | VIRExpr::BVZeroExt(t, _, _)
-            | VIRExpr::BVSignExt(t, _, _)
-            | VIRExpr::BVExtract(t, _, _, _)
-            | VIRExpr::BVIntToBV(t, _)
-            | VIRExpr::List(t, _)
-            | VIRExpr::GetElement(t, _, _) => t,
-            VIRExpr::Function(func) => &func.ty,
-            VIRExpr::UndefinedTerm(term) => &term.ret.ty,
-            VIRExpr::FunctionApplication(app) => &app.ty,
-            VIRExpr::True
-            | VIRExpr::False
-            | VIRExpr::Not(..)
-            | VIRExpr::And(..)
-            | VIRExpr::Or(..)
-            | VIRExpr::Imp(..)
-            | VIRExpr::Eq(..)
-            | VIRExpr::Lte(..) => &VIRType::Bool,
-            VIRExpr::WidthOf(x) => x.ty(),
-        }
-    }
+// impl VIRType {
+//     pub fn eq(x: Expr, y: Expr) -> Expr {
+//         assert_eq!(x.ty(), y.ty(), "(= {:?} {:?})", x, y);
+//         Expr::Eq(Box::new(x), Box::new(y))
+//     }
 
-    pub fn for_each_subexpr(&self, func: &mut dyn FnMut(&Self)) {
-        func(self);
-        match self {
-            VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False | VIRExpr::Var(..) => (),
-            VIRExpr::Not(x)
-            | VIRExpr::BVNeg(_, x)
-            | VIRExpr::BVNot(_, x)
-            | VIRExpr::BVZeroExt(_, _, x)
-            | VIRExpr::BVSignExt(_, _, x)
-            | VIRExpr::BVExtract(_, _, _, x)
-            | VIRExpr::BVIntToBV(_, x)
-            | VIRExpr::GetElement(_, x, _)
-            | VIRExpr::WidthOf(x) => (*x).for_each_subexpr(func),
-            VIRExpr::And(x, y)
-            | VIRExpr::Or(x, y)
-            | VIRExpr::Imp(x, y)
-            | VIRExpr::Eq(x, y)
-            | VIRExpr::Lte(x, y)
-            | VIRExpr::BVAdd(_, x, y)
-            | VIRExpr::BVSub(_, x, y)
-            | VIRExpr::BVAnd(_, x, y)
-            | VIRExpr::BVOr(_, x, y)
-            | VIRExpr::BVRotl(_, x, y) 
-            | VIRExpr::BVShl(_, x, y)
-            | VIRExpr::BVShr(_, x, y)=> {
-                (*x).for_each_subexpr(func);
-                (*y).for_each_subexpr(func)
-            }
-            VIRExpr::Function(f) => {
-                f.body.for_each_subexpr(func)
-            }
-            VIRExpr::UndefinedTerm(t) => {
-                for arg in &t.args {
-                    arg.for_each_subexpr(func)
-                }
-            }
-            VIRExpr::FunctionApplication(app) => {
-                (*app.func).for_each_subexpr(func);
-                for arg in &app.args {
-                    arg.for_each_subexpr(func)
-                }
-            }
-            VIRExpr::List(_, xs) => {
-                xs.iter().for_each(|x| x.for_each_subexpr(func))
-            }
-        }
-    }
-}
+//     pub fn bv_const(&self, x: i128) -> Expr {
+//         Expr::Const(self.clone(), x)
+//     }
 
-impl VIRType {
-    pub fn eq(x: VIRExpr, y: VIRExpr) -> VIRExpr {
-        assert_eq!(x.ty(), y.ty(), "(= {:?} {:?})", x, y);
-        VIRExpr::Eq(Box::new(x), Box::new(y))
-    }
+//     pub fn bv_var(&self, s: String) -> Expr {
+//         Expr::Var(BoundVar {
+//             name: s,
+//             ty: self.clone(),
+//         })
+//     }
 
-    pub fn bv_const(&self, x: i128) -> VIRExpr {
-        VIRExpr::Const(self.clone(), x)
-    }
+//     pub fn width(&self) -> usize {
+//         match *self {
+//             Self::BitVector(s) => s,
+//             _ => unreachable!("Unexpected type: {:?}", self),
+//         }
+//     }
 
-    pub fn bv_var(&self, s: String) -> VIRExpr {
-        VIRExpr::Var(BoundVar {
-            name: s,
-            ty: self.clone(),
-        })
-    }
+//     pub fn is_bv(&self) -> bool {
+//         matches!(*self, Self::BitVector(..))
+//     }
 
-    pub fn width(&self) -> usize {
-        match *self {
-            Self::BitVector(s) => s,
-            _ => unreachable!("Unexpected type: {:?}", self),
-        }
-    }
+//     pub fn is_bool(&self) -> bool {
+//         matches!(*self, Self::Bool)
+//     }
 
-    pub fn is_bv(&self) -> bool {
-        matches!(*self, Self::BitVector(..))
-    }
+//     pub fn is_int(&self) -> bool {
+//         matches!(*self, Self::Int)
+//     }
+// }
 
-    pub fn is_bool(&self) -> bool {
-        matches!(*self, Self::Bool)
-    }
-
-    pub fn is_int(&self) -> bool {
-        matches!(*self, Self::Int)
-    }
-}
-
-pub fn all_starting_bitvectors() -> Vec<VIRType> {
+pub fn all_starting_bitvectors() -> Vec<usize> {
     vec![
-        VIRType::BitVector(1),
-        VIRType::BitVector(8),
-        VIRType::BitVector(16),
-        VIRType::BitVector(32),
-        VIRType::BitVector(64),
-        VIRType::BitVector(128),
+        // VIRType::BitVector(1),
+        // VIRType::BitVector(8),
+        // VIRType::BitVector(16),
+        // VIRType::BitVector(32),
+        // VIRType::BitVector(64),
+        // VIRType::BitVector(128),
     ]
 }
 
 impl BoundVar {
-    pub fn as_expr(&self) -> VIRExpr {
-        VIRExpr::Var(self.clone())
+    pub fn as_expr(&self) -> Expr {
+        Expr::Terminal(Terminal::Var(self.name.clone()))
     }
 }
 

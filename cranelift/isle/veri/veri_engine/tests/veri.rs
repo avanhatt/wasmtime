@@ -40,13 +40,14 @@ fn test_iadd_from_file() {
     test_from_file("./examples/iadd.isle", lte_64_success_result())
 }
 
-#[test]
-fn test_chained_iadd_from_file() {
-    test_from_file(
-        "./examples/iadd-two-rule-chain.isle",
-        lte_64_success_result(),
-    )
-}
+// DISABLED for now while ruin chaining is on hold
+// #[test]
+// fn test_chained_iadd_from_file() {
+//     test_from_file(
+//         "./examples/iadd-two-rule-chain.isle",
+//         lte_64_success_result(),
+//     )
+// }
 
 #[test]
 fn test_ineg() {

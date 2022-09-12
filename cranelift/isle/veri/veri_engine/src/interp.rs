@@ -3,18 +3,18 @@ use crate::renaming::rename_annotation_vars;
 use crate::type_check::TypeContext;
 use crate::type_inference::Solution;
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::{BoundVar, RuleSemantics, UndefinedTerm, VIRExpr, VIRTermAnnotation, VIRType};
+use veri_ir::{BoundVar, Expr, RuleSemantics, Type, UndefinedTerm, VIRTermAnnotation};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
-use isle::sema::{Expr, Pattern, RuleId, TermEnv, TermId, TypeEnv, TypeId, VarId};
+use isle::sema::{Pattern, RuleId, TermEnv, TermId, TypeEnv, TypeId, VarId};
 
 /// Trait defining how to produce an verification IR expression from an
 /// ISLE term, used to recursively interpret terms on both the LHS and RHS.
 trait ToVIRExpr {
-    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr;
+    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &Type) -> Expr;
 
     fn type_id(&self) -> TypeId;
 
@@ -23,7 +23,7 @@ trait ToVIRExpr {
 
 /// Type for term arguments for ISLE LHS terms.
 impl ToVIRExpr for Pattern {
-    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
+    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &Type) -> Expr {
         ctx.interp_pattern(self, ty)
     }
 
@@ -43,7 +43,7 @@ impl ToVIRExpr for Pattern {
 
 /// Type for term arguments for ISLE RHS terms.
 impl ToVIRExpr for isle::sema::Expr {
-    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &VIRType) -> VIRExpr {
+    fn to_expr(&self, ctx: &mut AssumptionContext, ty: &Type) -> Expr {
         ctx.interp_sema_expr(self, ty)
     }
 
@@ -65,18 +65,18 @@ impl ToVIRExpr for isle::sema::Expr {
 /// boolean type.
 #[derive(Clone, Debug)]
 pub struct Assumption {
-    assume: VIRExpr,
+    assume: Expr,
 }
 
 impl Assumption {
     /// Create a new assumption, checking type.
-    pub fn new(assume: VIRExpr) -> Self {
-        assert!(assume.ty().is_bool());
+    pub fn new(assume: Expr) -> Self {
+        // assert!(assume.ty().is_bool());
         Self { assume }
     }
 
     /// Get the assumption as an expression.
-    pub fn assume(&self) -> &VIRExpr {
+    pub fn assume(&self) -> &Expr {
         &self.assume
     }
 }
@@ -112,7 +112,7 @@ impl<'ctx> AssumptionContext<'ctx> {
     }
 
     /// Produce a new bound variable with unique name, and add it to our quantified variables
-    fn new_var(&mut self, root: &str, ty: &VIRType) -> BoundVar {
+    fn new_var(&mut self, root: &str, ty: &Type) -> BoundVar {
         let ident = self.new_ident(root);
         let var = BoundVar::new(&ident, ty);
         // self.var_map.insert(*varid, var.clone());
@@ -143,12 +143,14 @@ impl<'ctx> AssumptionContext<'ctx> {
         &mut self,
         term: &str,
         subterm_typeids: Vec<TypeId>,
-        ty: &VIRType,
+        ty: &Type,
     ) -> Option<VIRTermAnnotation> {
-        if let Some(initial_annotation) =
-            self.type_ctx
-                .typed_isle_annotation_for_term(self.ruleid.unwrap(), term, subterm_typeids, ty)
-        {
+        if let Some(initial_annotation) = self.type_ctx.typed_isle_annotation_for_term(
+            self.ruleid.unwrap(),
+            term,
+            subterm_typeids,
+            ty,
+        ) {
             // Build renaming map from bound vars in the signature
             let read_renames = self.build_annotation_remapping(&initial_annotation, term);
             // Read-only renaming map closure
@@ -156,7 +158,7 @@ impl<'ctx> AssumptionContext<'ctx> {
                 let id = read_renames.get(&v.name.clone()).unwrap();
                 BoundVar {
                     name: id.to_string(),
-                    ty: v.ty.clone(),
+                    ty: ty.clone(),
                 }
             };
             Some(rename_annotation_vars(initial_annotation, rename))
@@ -169,122 +171,125 @@ impl<'ctx> AssumptionContext<'ctx> {
         &mut self,
         termid: &TermId,
         subterms: Vec<T>,
-        ty: &VIRType,
-    ) -> VIRExpr {
-        let term = &self.termenv.terms[termid.index()];
-        let term_name = &self.typeenv.syms[term.name.index()];
-        println!("Interpreting term: {}", term_name);
-        let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
-        if let Some(annotation) = self.get_annotation_for_term(term_name, subterm_typeids, ty) {
-            // The annotation should have the same number of arguments as given here
-            assert_eq!(subterms.len(), annotation.func().args.len());
+        ty: &Type,
+    ) -> Expr {
+        todo!()
+        // let term = &self.termenv.terms[termid.index()];
+        // let term_name = &self.typeenv.syms[term.name.index()];
+        // println!("Interpreting term: {}", term_name);
+        // let subterm_typeids: Vec<TypeId> = subterms.iter().map(|t| t.type_id()).collect();
+        // if let Some(annotation) = self.get_annotation_for_term(term_name, subterm_typeids, ty) {
+        //     // The annotation should have the same number of arguments as given here
+        //     assert_eq!(subterms.len(), annotation.func().args.len());
 
-            for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
-                let subexpr = subterm.to_expr(self, &arg.ty);
-                self.assumptions.push(Assumption::new(VIRType::eq(
-                    subexpr,
-                    VIRExpr::Var(arg.clone()),
-                )));
-                self.quantified_vars.push(arg.clone());
-            }
-            for a in annotation.assertions() {
-                self.assumptions.push(Assumption::new(a.clone()));
-            }
-            self.quantified_vars.push(annotation.func().ret.clone());
-            annotation.func().ret.as_expr()
-        } else {
-            // If we don't have an annotation for the term, treat it as an uninterpreted
-            // function
-            // NOTE: for now, we get subterm types based on matching on ISLE type names.
-            let mut args = vec![];
-            for subterm in subterms.iter() {
-                let vir_ty = self.type_ctx.vir_type_for_type_id(subterm.type_id());
-                let subexpr = subterm.to_expr(self, &vir_ty);
-                args.push(subexpr);
-            }
+        //     for (arg, subterm) in annotation.func().args.iter().zip(subterms) {
+        //         let subexpr = subterm.to_expr(self, &arg.ty);
+        //         self.assumptions.push(Assumption::new(VIRType::eq(
+        //             subexpr,
+        //             Expr::Var(arg.clone()),
+        //         )));
+        //         self.quantified_vars.push(arg.clone());
+        //     }
+        //     for a in annotation.assertions() {
+        //         self.assumptions.push(Assumption::new(a.clone()));
+        //     }
+        //     self.quantified_vars.push(annotation.func().ret.clone());
+        //     annotation.func().ret.as_expr()
+        // } else {
+        //     // If we don't have an annotation for the term, treat it as an uninterpreted
+        //     // function
+        //     // NOTE: for now, we get subterm types based on matching on ISLE type names.
+        //     let mut args = vec![];
+        //     for subterm in subterms.iter() {
+        //         let vir_ty = self.type_ctx.vir_type_for_type_id(subterm.type_id());
+        //         let subexpr = subterm.to_expr(self, &vir_ty);
+        //         args.push(subexpr);
+        //     }
 
-            let ret = self.new_var(term_name, ty);
-            let undef = UndefinedTerm {
-                name: term_name.to_string(),
-                ret,
-                args,
-            };
-            // Add to our list of undefined terms for this side
-            T::add_undefined_term(undef.clone(), self);
-            VIRExpr::UndefinedTerm(undef)
-        }
+        //     let ret = self.new_var(term_name, ty);
+        //     let undef = UndefinedTerm {
+        //         name: term_name.to_string(),
+        //         ret,
+        //         args,
+        //     };
+        //     // Add to our list of undefined terms for this side
+        //     T::add_undefined_term(undef.clone(), self);
+        //     Expr::UndefinedTerm(undef)
+        // }
     }
 
-    fn interp_pattern(&mut self, bvpat: &Pattern, ty: &VIRType) -> VIRExpr {
-        match bvpat {
-            // If we hit a bound wildcard, then the bound variable has no assumptions
-            Pattern::BindPattern(_, varid, subpat) => match **subpat {
-                Pattern::Wildcard(..) => {
-                    let var = self.new_var("x", ty);
-                    self.var_map.insert(*varid, var.clone());
-                    VIRExpr::Var(var)
-                }
-                _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
-            },
-            Pattern::Term(_, termid, arg_patterns) => {
-                self.interp_term_with_subexprs(termid, arg_patterns.to_vec(), ty)
-            }
-            Pattern::And(_, children) => {
-                // The `and` construct requires all subpatterns match. For now, encode
-                // as each subpattern producing the same equivalent expr result.
-                let subpattern_exprs: Vec<VIRExpr> = children
-                    .iter()
-                    .map(|p| self.interp_pattern(p, ty))
-                    .collect();
+    fn interp_pattern(&mut self, bvpat: &Pattern, ty: &Type) -> Expr {
+        todo!()
+        // match bvpat {
+        //     // If we hit a bound wildcard, then the bound variable has no assumptions
+        //     Pattern::BindPattern(_, varid, subpat) => match **subpat {
+        //         Pattern::Wildcard(..) => {
+        //             let var = self.new_var("x", ty);
+        //             self.var_map.insert(*varid, var.clone());
+        //             Expr::Var(var)
+        //         }
+        //         _ => unimplemented!("Unexpected BindPattern {:?}", subpat),
+        //     },
+        //     Pattern::Term(_, termid, arg_patterns) => {
+        //         self.interp_term_with_subexprs(termid, arg_patterns.to_vec(), ty)
+        //     }
+        //     Pattern::And(_, children) => {
+        //         // The `and` construct requires all subpatterns match. For now, encode
+        //         // as each subpattern producing the same equivalent expr result.
+        //         let subpattern_exprs: Vec<Expr> = children
+        //             .iter()
+        //             .map(|p| self.interp_pattern(p, ty))
+        //             .collect();
 
-                // We assert all subexpressions are equivalent to the first subexpression,
-                // then return it.
-                let first = subpattern_exprs[0].clone();
-                for (i, e) in subpattern_exprs.iter().enumerate() {
-                    if i != 0 {
-                        self.assumptions
-                            .push(Assumption::new(VIRType::eq(first.clone(), e.clone())));
-                    }
-                }
-                first
-            }
-            _ => unimplemented!("{:?}", bvpat),
-        }
+        //         // We assert all subexpressions are equivalent to the first subexpression,
+        //         // then return it.
+        //         let first = subpattern_exprs[0].clone();
+        //         for (i, e) in subpattern_exprs.iter().enumerate() {
+        //             if i != 0 {
+        //                 self.assumptions
+        //                     .push(Assumption::new(VIRType::eq(first.clone(), e.clone())));
+        //             }
+        //         }
+        //         first
+        //     }
+        //     _ => unimplemented!("{:?}", bvpat),
+        // }
     }
 
-    pub fn interp_sema_expr(&mut self, expr: &isle::sema::Expr, ty: &VIRType) -> VIRExpr {
-        match expr {
-            Expr::Term(_, termid, subterms) => {
-                self.interp_term_with_subexprs(termid, subterms.to_vec(), ty)
-            }
-            Expr::Var(_, varid) => {
-                let bound_var = self.var_map.get(varid).unwrap();
-                bound_var.ty.bv_var(bound_var.name.clone())
-            }
-            Expr::ConstInt(_, v) => VIRExpr::Const(ty.clone(), *v as i128),
-            Expr::ConstPrim(_, sym) => {
-                let name = &self.typeenv.syms[sym.index()];
-                match name.as_str() {
-                    "I64" => VIRExpr::Const(VIRType::Int, 64),
-                    "I32" => VIRExpr::Const(VIRType::Int, 64),
-                    _ => todo!("{:?}", &name),
-                }
-            }
-            Expr::Let { bindings, body, .. } => {
-                for (varid, _tyid, expr) in bindings {
-                    let to_bind = self.interp_sema_expr(expr, ty);
-                    let var = self.new_var("let", to_bind.ty());
-                    self.var_map.insert(*varid, var.clone());
-                    self.assumptions
-                        .push(Assumption::new(VIRType::eq(var.as_expr(), to_bind)));
-                }
-                self.interp_sema_expr(body, ty)
-            }
-        }
+    pub fn interp_sema_expr(&mut self, expr: &isle::sema::Expr, ty: &Type) -> Expr {
+        // match expr {
+        todo!()
+        // Expr::Term(_, termid, subterms) => {
+        //     self.interp_term_with_subexprs(termid, subterms.to_vec(), ty)
+        // }
+        // Expr::Var(_, varid) => {
+        //     let bound_var = self.var_map.get(varid).unwrap();
+        //     bound_var.ty.bv_var(bound_var.name.clone())
+        // }
+        // Expr::ConstInt(_, v) => Expr::Const(ty.clone(), *v as i128),
+        // Expr::ConstPrim(_, sym) => {
+        //     let name = &self.typeenv.syms[sym.index()];
+        //     match name.as_str() {
+        //         "I64" => Expr::Const(VIRType::Int, 64),
+        //         "I32" => Expr::Const(VIRType::Int, 64),
+        //         _ => todo!("{:?}", &name),
+        //     }
+        // }
+        // Expr::Let { bindings, body, .. } => {
+        //     for (varid, _tyid, expr) in bindings {
+        //         let to_bind = self.interp_sema_expr(expr, ty);
+        //         let var = self.new_var("let", to_bind.ty());
+        //         self.var_map.insert(*varid, var.clone());
+        //         self.assumptions
+        //             .push(Assumption::new(VIRType::eq(var.as_expr(), to_bind)));
+        //     }
+        //     self.interp_sema_expr(body, ty)
+        // }
+        // }
     }
 
     /// Takes in LHS definitions, ty map, produces SMTLIB list
-    fn lhs_to_assumptions(&mut self, pattern: &Pattern, ty: &VIRType) -> VIRExpr {
+    fn lhs_to_assumptions(&mut self, pattern: &Pattern, ty: &Type) -> Expr {
         self.interp_pattern(pattern, ty)
     }
 
@@ -293,7 +298,7 @@ impl<'ctx> AssumptionContext<'ctx> {
         typeenv: &'ctx TypeEnv,
         annotation_env: &'ctx AnnotationEnv,
         typesols: &'ctx HashMap<RuleId, Solution>,
-        ty: &VIRType,
+        width: usize,
     ) -> AssumptionContext<'ctx> {
         AssumptionContext {
             quantified_vars: vec![],
@@ -304,16 +309,17 @@ impl<'ctx> AssumptionContext<'ctx> {
             ident_map: HashMap::new(),
             lhs_undefined_terms: HashMap::new(),
             rhs_undefined_terms: HashMap::new(),
-            type_ctx: TypeContext::new(typeenv, annotation_env, typesols, ty.clone()),
+            type_ctx: TypeContext::new(typeenv, annotation_env, typesols, width),
             ruleid: None,
         }
     }
 
     pub fn interp_rule(&mut self, rule: &isle::sema::Rule) -> RuleSemantics {
         self.ruleid = Some(rule.id);
-        let ty = self.type_ctx.ty.clone();
-        let lhs = self.lhs_to_assumptions(&rule.lhs, &ty);
-        let rhs = self.interp_sema_expr(&rule.rhs, &ty);
+        let width = self.type_ctx.width;
+        let ty = todo!();
+        let lhs = self.lhs_to_assumptions(&rule.lhs, ty);
+        let rhs = self.interp_sema_expr(&rule.rhs, ty);
 
         // Drain rule-specific fields (TODO: make this cleaner)
         let assumptions = self

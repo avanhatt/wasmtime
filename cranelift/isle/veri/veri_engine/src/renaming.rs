@@ -1,7 +1,7 @@
 /// This file handles renaming bound variables in assumption expressions,
 /// which is necessary to use annotations that might share variable names.
 use veri_ir::{
-    BoundVar, FunctionApplication, UndefinedTerm, VIRExpr, VIRTermAnnotation, VIRTermSignature,
+    BoundVar, Expr, FunctionApplication, UndefinedTerm, VIRTermAnnotation, VIRTermSignature,
 };
 
 pub fn rename_annotation_vars<F>(a: VIRTermAnnotation, rename: F) -> VIRTermAnnotation
@@ -19,52 +19,53 @@ where
     )
 }
 
-fn rename_vir_expr<F>(expr: VIRExpr, rename: F) -> VIRExpr
+fn rename_vir_expr<F>(expr: Expr, rename: F) -> Expr
 where
     F: Fn(&BoundVar) -> BoundVar + Copy,
 {
-    let f = |x: Box<VIRExpr>| Box::new(rename_vir_expr(*x, rename));
-    let map_f = |xs: Vec<VIRExpr>| {
-        xs.iter()
-            .map(|x| rename_vir_expr(x.clone(), rename))
-            .collect()
-    };
-    match expr {
-        VIRExpr::Const(..) | VIRExpr::True | VIRExpr::False => expr,
-        // TODO: handle nested scope?
-        VIRExpr::Function(..) => expr,
-        VIRExpr::Var(v) => VIRExpr::Var(rename(&v)),
-        VIRExpr::Not(x) => VIRExpr::Not(f(x)),
-        VIRExpr::WidthOf(x) => VIRExpr::WidthOf(f(x)),
-        VIRExpr::And(x, y) => VIRExpr::And(f(x), f(y)),
-        VIRExpr::Or(x, y) => VIRExpr::Or(f(x), f(y)),
-        VIRExpr::Imp(x, y) => VIRExpr::Imp(f(x), f(y)),
-        VIRExpr::Eq(x, y) => VIRExpr::Eq(f(x), f(y)),
-        VIRExpr::Lte(x, y) => VIRExpr::Lte(f(x), f(y)),
-        VIRExpr::BVNeg(ty, x) => VIRExpr::BVNeg(ty, f(x)),
-        VIRExpr::BVNot(ty, x) => VIRExpr::BVNot(ty, f(x)),
-        VIRExpr::BVAdd(ty, x, y) => VIRExpr::BVAdd(ty, f(x), f(y)),
-        VIRExpr::BVSub(ty, x, y) => VIRExpr::BVSub(ty, f(x), f(y)),
-        VIRExpr::BVAnd(ty, x, y) => VIRExpr::BVAnd(ty, f(x), f(y)),
-        VIRExpr::BVOr(ty, x, y) => VIRExpr::BVOr(ty, f(x), f(y)),
-        VIRExpr::BVRotl(ty, x, y) => VIRExpr::BVRotl(ty, f(x), f(y)),
-        VIRExpr::BVShl(ty, x, y) => VIRExpr::BVShl(ty, f(x), f(y)),
-        VIRExpr::BVShr(ty, x, y) => VIRExpr::BVShr(ty, f(x), f(y)),
-        VIRExpr::BVZeroExt(ty, i, x) => VIRExpr::BVZeroExt(ty, i, f(x)),
-        VIRExpr::BVSignExt(ty, i, x) => VIRExpr::BVSignExt(ty, i, f(x)),
-        VIRExpr::BVExtract(ty, l, h, x) => VIRExpr::BVExtract(ty, l, h, f(x)),
-        VIRExpr::BVIntToBV(ty, x) => VIRExpr::BVIntToBV(ty, f(x)),
-        VIRExpr::FunctionApplication(app) => VIRExpr::FunctionApplication(FunctionApplication {
-            ty: app.ty,
-            func: f(app.func),
-            args: map_f(app.args),
-        }),
-        VIRExpr::UndefinedTerm(term) => VIRExpr::UndefinedTerm(UndefinedTerm {
-            name: term.name,
-            ret: term.ret,
-            args: map_f(term.args),
-        }),
-        VIRExpr::List(ty, xs) => VIRExpr::List(ty, map_f(xs)),
-        VIRExpr::GetElement(ty, ls, i) => VIRExpr::GetElement(ty, f(ls), i),
-    }
+    todo!()
+    // let f = |x: Box<Expr>| Box::new(rename_vir_expr(*x, rename));
+    // let map_f = |xs: Vec<Expr>| {
+    //     xs.iter()
+    //         .map(|x| rename_vir_expr(x.clone(), rename))
+    //         .collect()
+    // };
+    // match expr {
+    //     Expr::Const(..) | Expr::True | Expr::False => expr,
+    //     // TODO: handle nested scope?
+    //     Expr::Function(..) => expr,
+    //     Expr::Var(v) => Expr::Var(rename(&v)),
+    //     Expr::Not(x) => Expr::Not(f(x)),
+    //     Expr::WidthOf(x) => Expr::WidthOf(f(x)),
+    //     Expr::And(x, y) => Expr::And(f(x), f(y)),
+    //     Expr::Or(x, y) => Expr::Or(f(x), f(y)),
+    //     Expr::Imp(x, y) => Expr::Imp(f(x), f(y)),
+    //     Expr::Eq(x, y) => Expr::Eq(f(x), f(y)),
+    //     Expr::Lte(x, y) => Expr::Lte(f(x), f(y)),
+    //     Expr::BVNeg(ty, x) => Expr::BVNeg(ty, f(x)),
+    //     Expr::BVNot(ty, x) => Expr::BVNot(ty, f(x)),
+    //     Expr::BVAdd(ty, x, y) => Expr::BVAdd(ty, f(x), f(y)),
+    //     Expr::BVSub(ty, x, y) => Expr::BVSub(ty, f(x), f(y)),
+    //     Expr::BVAnd(ty, x, y) => Expr::BVAnd(ty, f(x), f(y)),
+    //     Expr::BVOr(ty, x, y) => Expr::BVOr(ty, f(x), f(y)),
+    //     Expr::BVRotl(ty, x, y) => Expr::BVRotl(ty, f(x), f(y)),
+    //     Expr::BVShl(ty, x, y) => Expr::BVShl(ty, f(x), f(y)),
+    //     Expr::BVShr(ty, x, y) => Expr::BVShr(ty, f(x), f(y)),
+    //     Expr::BVZeroExt(ty, i, x) => Expr::BVZeroExt(ty, i, f(x)),
+    //     Expr::BVSignExt(ty, i, x) => Expr::BVSignExt(ty, i, f(x)),
+    //     Expr::BVExtract(ty, l, h, x) => Expr::BVExtract(ty, l, h, f(x)),
+    //     Expr::BVIntToBV(ty, x) => Expr::BVIntToBV(ty, f(x)),
+    //     Expr::FunctionApplication(app) => Expr::FunctionApplication(FunctionApplication {
+    //         ty: app.ty,
+    //         func: f(app.func),
+    //         args: map_f(app.args),
+    //     }),
+    //     Expr::UndefinedTerm(term) => Expr::UndefinedTerm(UndefinedTerm {
+    //         name: term.name,
+    //         ret: term.ret,
+    //         args: map_f(term.args),
+    //     }),
+    //     Expr::List(ty, xs) => Expr::List(ty, map_f(xs)),
+    //     Expr::GetElement(ty, ls, i) => Expr::GetElement(ty, f(ls), i),
+    // }
 }

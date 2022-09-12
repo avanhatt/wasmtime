@@ -1,3 +1,5 @@
+use cranelift_isle::compile::create_envs;
+use cranelift_isle::lexer::Lexer;
 use cranelift_isle::sema::{Rule, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
@@ -6,8 +8,9 @@ use strum_macros::EnumIter;
 use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
 use veri_engine_lib::termname::pattern_contains_termname;
+use veri_engine_lib::type_inference::type_all_rules;
 use veri_engine_lib::{isle_files_to_terms, rule_tree::verify_rules_for_type_wih_rule_filter}; // parse_isle_to_terms};
-use veri_ir::{VIRType, VerificationResult};
+use veri_ir::{Type, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -83,7 +86,11 @@ pub fn custom_result(f: &TestResultBuilder) -> TestResult {
 
 // TODO: waiting on output thoughts. re do previous?
 fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
-    let (typeenv, termenv) = isle_files_to_terms(&inputs);
+    let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
+    let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+    let annotation_env = parse_annotations(&inputs);
+    let type_sols = type_all_rules(defs, &termenv, &typeenv, &annotation_env);
     let annotation_env = parse_annotations(&inputs);
 
     // For now, verify rules rooted in `lower`
@@ -93,7 +100,8 @@ fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
             &termenv,
             &typeenv,
             &annotation_env,
-            &VIRType::BitVector(bw as usize),
+            &type_sols,
+            bw as usize,
         );
         assert_eq!(result, expected_result);
     }
@@ -104,14 +112,19 @@ fn test_with_rule_filter(
     tr: TestResult,
     filter: impl Fn(&Rule, &TermEnv, &TypeEnv) -> bool,
 ) -> () {
-    let (typeenv, termenv) = isle_files_to_terms(&inputs);
+    let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
+    let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+    let annotation_env = parse_annotations(&inputs);
+    let type_sols = type_all_rules(defs, &termenv, &typeenv, &annotation_env);
     let annotation_env = parse_annotations(&inputs);
     for (bw, expected_result) in tr {
         let result = verify_rules_for_type_wih_rule_filter(
             &termenv,
             &typeenv,
             &annotation_env,
-            &VIRType::BitVector(bw as usize),
+            &type_sols,
+            bw as usize,
             &filter,
         );
         assert_eq!(result, expected_result);
