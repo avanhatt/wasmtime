@@ -872,6 +872,7 @@ fn create_parse_tree_pattern(
             for e in &ty_vars[1..] {
                 tree.var_constraints
                     .insert(TypeExpr::Variable(first, e.to_owned()));
+                // tree.assumptions.push(veri_ir::Expr::Binary(veri_ir::BinaryOp::Eq, (), ()))
             }
 
             TypeVarNode {
