@@ -4,18 +4,38 @@
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
 use std::collections::HashSet;
-use veri_ir::{Counterexample, RulePath, VIRExpr, VIRType, VerificationResult};
+use veri_ir::{BoundVar, Counterexample, RulePath, VIRExpr, VIRType, VerificationResult};
 
 pub fn vir_to_rsmt2_constant_ty(ty: &VIRType) -> String {
     match ty {
         VIRType::BitVector(width) => format!("(_ BitVec {})", width),
         VIRType::BitVectorList(len, width) => format!("(_ BitVec {})", len * width),
         VIRType::Int => "Int".to_string(),
-        VIRType::Bool | VIRType::Function(..) => unreachable!(),
+        VIRType::Bool | VIRType::Function(..) | VIRType::BitVectorSymbolic => unreachable!(),
     }
 }
 
-// (ite {} {} {})
+fn ext_sym(
+    shifts: Vec<usize>,
+    dest_width: &str,
+    source: &BoundVar,
+    source_width: &usize,
+    op: String,
+) -> String {
+    if shifts.len() == 0 {
+        return String::from("");
+    }
+    let shift = shifts[0];
+    let amount = shift - source_width;
+
+    let ext = format!("((_ {} {}) {})", op, amount, source.name);
+    let rec = ext_sym(shifts[1..].to_vec(), dest_width, source, source_width, op);
+    if rec.len() == 0 {
+        return format!("ite (= {} {}) ({})", shift, dest_width, ext);
+    }
+    format!("ite (= {} {}) ({}) ({})", shift, dest_width, ext, rec)
+}
+
 pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
     let unary = |op, x: Box<VIRExpr>| format!("({} {})", op, vir_expr_to_rsmt2_str(*x));
     let binary = |op, x: Box<VIRExpr>, y: Box<VIRExpr>| {
@@ -43,6 +63,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
             VIRType::Bool => (if i == 0 { "false" } else { "true" }).to_string(),
             VIRType::Function(..) => unimplemented!(),
             VIRType::BitVectorList(_length, _width) => unimplemented!(),
+            VIRType::BitVectorSymbolic => unreachable!(),
         },
         VIRExpr::Var(bound_var) => bound_var.name,
         VIRExpr::True => "true".to_string(),
@@ -97,6 +118,24 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         }
         VIRExpr::BVShl(_, x, y) => binary("bvshl", x, y),
         VIRExpr::BVShr(_, x, y) => binary("bvlshr", x, y),
+        VIRExpr::BVConvTo(_, x, y) => {
+            let shifts = vec![1, 2, 4, 8, 16, 32, 63];
+            match (*x, y.ty(), *y.clone()) {
+                (VIRExpr::Var(dest), VIRType::BitVector(source_width), VIRExpr::Var(source)) => {
+                    ext_sym(shifts, &dest.name, &source, &source_width, String::from("zero_extend"))
+                }
+                _ => unreachable!("mistyped arg to symbolic conv_to"),
+            }
+        }
+        VIRExpr::BVConvToSigned(_, x, y) => {
+            let shifts = vec![1, 2, 4, 8, 16, 32, 63];
+            match (*x, y.ty(), *y.clone()) {
+                (VIRExpr::Var(dest), VIRType::BitVector(source_width), VIRExpr::Var(source)) => {
+                    ext_sym(shifts, &dest.name, &source, &source_width, String::from("sign_extend"))
+                }
+                _ => unreachable!("mistyped arg to symbolic conv_to_signed"),
+            }
+        }        
         VIRExpr::BVZeroExt(_, i, x) => ext("zero_extend", i, x),
         VIRExpr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
         VIRExpr::BVExtract(_, l, h, x) => {
@@ -105,8 +144,7 @@ pub fn vir_expr_to_rsmt2_str(e: VIRExpr) -> String {
         VIRExpr::BVIntToBV(ty, x) => {
             format!("((_ int2bv {}) {})", ty.width(), vir_expr_to_rsmt2_str(*x))
         }
-        VIRExpr::Conditional(_, x, y, z) => 
-            ternary("ite", x, y, z),
+        VIRExpr::Conditional(_, x, y, z) => ternary("ite", x, y, z),
         VIRExpr::FunctionApplication(app) => {
             let func_name = vir_expr_to_rsmt2_str(*app.func);
             let args: Vec<String> = app

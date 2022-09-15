@@ -114,6 +114,10 @@ pub struct UndefinedTerm {
 /// Verification type
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum VIRType {
+    // To be used only when the width of the vector is specified by
+    // a variable rather than a constant
+    BitVectorSymbolic,
+
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
@@ -175,6 +179,8 @@ pub enum VIRExpr {
     BVShr(VIRType, Box<VIRExpr>, Box<VIRExpr>),
 
     // Conversions
+    BVConvTo(VIRType, Box<VIRExpr>, Box<VIRExpr>),
+    BVConvToSigned(VIRType, Box<VIRExpr>, Box<VIRExpr>),
     BVZeroExt(VIRType, usize, Box<VIRExpr>),
     BVSignExt(VIRType, usize, Box<VIRExpr>),
     BVExtract(VIRType, usize, usize, Box<VIRExpr>),
@@ -214,7 +220,9 @@ impl VIRExpr {
             | VIRExpr::BVIntToBV(t, _)
             | VIRExpr::Conditional(t, _, _, _)
             | VIRExpr::List(t, _)
-            | VIRExpr::GetElement(t, _, _) => t,
+            | VIRExpr::GetElement(t, _, _)
+            | VIRExpr::BVConvTo(t, _, _) 
+            | VIRExpr::BVConvToSigned(t, _, _) => t,
             VIRExpr::Function(func) => &func.ty,
             VIRExpr::UndefinedTerm(term) => &term.ret.ty,
             VIRExpr::FunctionApplication(app) => &app.ty,
@@ -252,7 +260,9 @@ impl VIRExpr {
             | VIRExpr::BVSub(_, x, y)
             | VIRExpr::BVAnd(_, x, y)
             | VIRExpr::BVOr(_, x, y)
-            | VIRExpr::BVRotl(_, x, y) 
+            | VIRExpr::BVRotl(_, x, y)
+            | VIRExpr::BVConvTo(_, x, y)
+            | VIRExpr::BVConvToSigned(_, x, y)
             | VIRExpr::BVShl(_, x, y)
             | VIRExpr::BVShr(_, x, y)=> {
                 (*x).for_each_subexpr(func);

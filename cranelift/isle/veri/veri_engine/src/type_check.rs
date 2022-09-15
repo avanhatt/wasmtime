@@ -149,9 +149,7 @@ impl<'ctx> TypeContext<'ctx> {
             annotation_ir::Expr::True => VIRExpr::True,
             annotation_ir::Expr::False => VIRExpr::False,
             annotation_ir::Expr::TyWidth => VIRExpr::Const(VIRType::Int, self.ty.width() as i128),
-            annotation_ir::Expr::WidthOf(x) => {
-                VIRExpr::WidthOf(Box::new(self.type_expr(&*x)))
-            }
+            annotation_ir::Expr::WidthOf(x) => VIRExpr::WidthOf(Box::new(self.type_expr(&*x))),
             annotation_ir::Expr::Not(e) => VIRExpr::Not(expect_boxed_bool(e, self)),
             annotation_ir::Expr::And(x, y) => {
                 VIRExpr::And(expect_boxed_bool(x, self), expect_boxed_bool(y, self))
@@ -268,7 +266,7 @@ impl<'ctx> TypeContext<'ctx> {
                             Ordering::Equal => *vx,
                         }
                     }
-                    _ => unreachable!("{:?}", vx.ty())
+                    _ => unreachable!("{:?}", vx.ty()),
                 }
             }
             annotation_ir::Expr::BVSignedConvTo(dest, x) => {
@@ -287,8 +285,30 @@ impl<'ctx> TypeContext<'ctx> {
                             Ordering::Equal => *vx,
                         }
                     }
-                    _ => unreachable!("{:?}", vx.ty())
-                }                
+                    _ => unreachable!("{:?}", vx.ty()),
+                }
+            }
+            annotation_ir::Expr::BVConvToVarWidth(dest, x) => {
+                let vdest = expect_boxed(dest, self);
+                let vx = expect_boxed_bv(x, self);
+                assert!(vdest.ty().is_bv() || vdest.ty().is_int());
+                assert!(self.ty.is_bv());
+
+                // since we can't use variable dest until solve time
+                // we need to do width checks in the solver
+                let new_type = VIRType::BitVectorSymbolic;
+                VIRExpr::BVConvTo(new_type, vdest, vx)
+            }
+            annotation_ir::Expr::BVSignedConvToVarWidth(dest, x) => {
+                let vdest = expect_boxed(dest, self);
+                let vx = expect_boxed_bv(x, self);
+                assert!(vdest.ty().is_bv() || vdest.ty().is_int());
+                assert!(self.ty.is_bv());
+
+                // since we can't use variable dest until solve time
+                // we need to do width checks in the solver
+                let new_type = VIRType::BitVectorSymbolic;
+                VIRExpr::BVConvToSigned(new_type, vdest, vx)
             }
             annotation_ir::Expr::BVConvFrom(src, x) => {
                 let vx = expect_boxed_bv(x, self);
@@ -363,8 +383,6 @@ impl<'ctx> TypeContext<'ctx> {
                 assert!(matches!(v.ty(), VIRType::BitVectorList(..)));
                 VIRExpr::GetElement(v.ty().element_ty(), Box::new(v), *i)
             }
-            annotation_ir::Expr::BVConvToVarWidth(_, _)
-            | annotation_ir::Expr::BVSignedConvToVarWidth(_, _) => todo!()
         }
     }
 
