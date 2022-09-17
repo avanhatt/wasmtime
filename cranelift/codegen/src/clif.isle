@@ -1467,6 +1467,8 @@
     (inst_data (InstructionData.Binary (Opcode.WideningPairwiseDotProductS) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (ret) (conv_to 64 (arg)))))
 (decl uextend (Value) Inst)
 (extractor
     (uextend x)

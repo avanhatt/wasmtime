@@ -268,6 +268,7 @@ impl<'ctx> AssumptionContext<'ctx> {
                 match name.as_str() {
                     "I64" => VIRExpr::Const(VIRType::Int, 64),
                     "I32" => VIRExpr::Const(VIRType::Int, 64),
+                    "false" => VIRExpr::Const(VIRType::Bool, 0),
                     _ => todo!("{:?}", &name),
                 }
             }
