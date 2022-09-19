@@ -78,7 +78,7 @@ pub struct Solution {
     pub assumptions: Vec<Expr>,
     pub widths: HashMap<veri_ir::Expr, String>,
     pub width_assumptions: HashMap<String, Expr>,
-    pub types: HashMap<veri_ir::Expr, veri_ir::Type>
+    pub types: HashMap<veri_ir::Expr, veri_ir::Type>,
 }
 
 pub fn type_all_rules(
@@ -119,10 +119,10 @@ fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
 }
 
 fn convert_type(aty: &annotation_ir::Type) -> veri_ir::Type {
-    match aty {
+    match dbg!(aty) {
         annotation_ir::Type::BitVector => veri_ir::Type::BitVector,
         // AVH TODO
-        annotation_ir::Type::BitVectorWithWidth(_) => veri_ir::Type::BitVector,
+        annotation_ir::Type::BitVectorWithWidth(w) => veri_ir::Type::BitVector,
         annotation_ir::Type::Int => veri_ir::Type::Int,
         annotation_ir::Type::Bool => veri_ir::Type::Bool,
         annotation_ir::Type::Poly(_) => unreachable!(),
@@ -187,7 +187,7 @@ fn type_annotations_using_rule<'a>(
                 if let Some(ty) = solution.get(&t) {
                     let ty = convert_type(ty);
                     types.insert(expr, ty.clone());
-                    quantified_vars.push(veri_ir::BoundVar{name: s, ty });
+                    quantified_vars.push(veri_ir::BoundVar { name: s, ty });
                 } else {
                     panic!("missing type variable {} in solution for: {:?}", t, expr);
                 }
@@ -504,7 +504,8 @@ fn add_rule_constraints(
     annotation_env: &AnnotationEnv,
     annotation_infos: &mut Vec<AnnotationTypeInfo>,
 ) -> Option<veri_ir::Expr> {
-    tree.quantified_vars.insert((curr.ident.clone(), curr.type_var));
+    tree.quantified_vars
+        .insert((curr.ident.clone(), curr.type_var));
     // Only relate args to annotations for terms. For leaves, return immediately, for
     // recursive definitions without annotations (like And and Let), recur.
     let e = match &curr.construct {
@@ -553,7 +554,8 @@ fn add_rule_constraints(
                 tree.var_constraints
                     .insert(TypeExpr::Variable(rule_type_var, annotation_type_var));
                 let arg_name = format!("{}__{}", arg.name, annotation_type_var);
-                tree.quantified_vars.insert((arg_name.clone(), annotation_type_var));
+                tree.quantified_vars
+                    .insert((arg_name.clone(), annotation_type_var));
                 tree.assumptions.push(veri_ir::Expr::Binary(
                     veri_ir::BinaryOp::Eq,
                     Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
