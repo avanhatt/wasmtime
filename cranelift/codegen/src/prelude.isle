@@ -141,6 +141,8 @@
 (extern constructor temp_writable_reg temp_writable_reg)
 
 ;; Get a temporary register for reading.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl temp_reg (Type) Reg)
 (rule (temp_reg ty)
       (writable_reg_to_reg (temp_writable_reg ty)))

@@ -20,7 +20,7 @@ pub struct TypeContext<'ctx> {
     // Isle annotations
     annotation_env: &'ctx AnnotationEnv,
 
-    typesols: &'ctx HashMap<RuleId, Solution>,
+    pub typesols: &'ctx HashMap<RuleId, Solution>,
 
     // Map of bound variables to types
     var_types: HashMap<String, Type>,
@@ -275,13 +275,13 @@ impl<'ctx> TypeContext<'ctx> {
         let initial_term = self.annotation_env.get_annotation_for_term(term);
         let mut tymap = HashMap::new();
         let sol = &self.typesols[&ruleid];
-        for a in &sol.annotation_infos {
-            if term == a.term {
-                for (var, type_var) in &a.var_to_type_var {
-                    tymap.insert(var, sol.type_var_to_type[type_var].clone());
-                }
-            }
-        }
+        // for a in &sol.annotation_infos {
+        //     if term == a.term {
+        //         for (var, type_var) in &a.var_to_type_var {
+        //             tymap.insert(var, sol.type_var_to_type[type_var.].clone());
+        //         }
+        //     }
+        // }
         initial_term.map(|a| {
             VIRTermAnnotation::new(
                 VIRTermSignature {

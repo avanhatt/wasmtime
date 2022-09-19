@@ -315,29 +315,30 @@ impl<'ctx> AssumptionContext<'ctx> {
     }
 
     pub fn interp_rule(&mut self, rule: &isle::sema::Rule) -> RuleSemantics {
-        self.ruleid = Some(rule.id);
-        let width = self.type_ctx.width;
-        let ty = todo!();
-        let lhs = self.lhs_to_assumptions(&rule.lhs, ty);
-        let rhs = self.interp_sema_expr(&rule.rhs, ty);
+        // self.ruleid = Some(rule.id);
+        // let width = self.type_ctx.width;
+        // let ty = todo!();
+        // let lhs = self.lhs_to_assumptions(&rule.lhs, ty);
+        // let rhs = self.interp_sema_expr(&rule.rhs, ty);
 
-        // Drain rule-specific fields (TODO: make this cleaner)
-        let assumptions = self
-            .assumptions
-            .drain(..)
-            .map(|a| a.assume().clone())
-            .collect();
-        let quantified_vars = self.quantified_vars.drain(..).collect();
-        let lhs_undefined_terms = self.lhs_undefined_terms.drain().map(|(_, t)| t).collect();
-        let rhs_undefined_terms = self.rhs_undefined_terms.drain().map(|(_, t)| t).collect();
+        // // Drain rule-specific fields (TODO: make this cleaner)
+        // let assumptions = self
+        //     .assumptions
+        //     .drain(..)
+        //     .map(|a| a.assume().clone())
+        //     .collect();
+        // let quantified_vars = self.quantified_vars.drain(..).collect();
+        // let lhs_undefined_terms = self.lhs_undefined_terms.drain().map(|(_, t)| t).collect();
+        // let rhs_undefined_terms = self.rhs_undefined_terms.drain().map(|(_, t)| t).collect();
 
+        let sol = &self.type_ctx.typesols[&rule.id];
         RuleSemantics {
-            lhs,
-            rhs,
-            assumptions,
-            quantified_vars,
-            lhs_undefined_terms,
-            rhs_undefined_terms,
+            lhs: sol.lhs.clone(),
+            rhs: sol.rhs.clone(),
+            assumptions: sol.assumptions.clone(),
+            quantified_vars: sol.quantified_vars.clone(),
+            lhs_undefined_terms: vec![],
+            rhs_undefined_terms: vec![],
         }
     }
 }

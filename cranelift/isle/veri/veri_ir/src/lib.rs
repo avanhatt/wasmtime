@@ -15,7 +15,7 @@ pub struct RuleSemantics {
     pub lhs: Expr,
     pub rhs: Expr,
 
-    pub quantified_vars: Vec<BoundVar>,
+    pub quantified_vars: Vec<String>,
     pub assumptions: Vec<Expr>,
     //  TODO: sanity check uniqueness
     pub lhs_undefined_terms: Vec<UndefinedTerm>,

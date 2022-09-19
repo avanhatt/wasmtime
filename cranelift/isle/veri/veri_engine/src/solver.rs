@@ -3,7 +3,9 @@
 ///
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
-use veri_ir::{Counterexample, Expr, RulePath, Type, VerificationResult};
+use veri_ir::{
+    BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, UnaryOp, VerificationResult,
+};
 
 const BITWIDTH: usize = 64;
 
@@ -22,68 +24,64 @@ pub fn vir_to_rsmt2_constant_ty(ty: &Type) -> String {
 }
 
 pub fn vir_expr_to_rsmt2_str(e: Expr) -> String {
-    todo!()
-    // let unary = |op, x: Box<Expr>| format!("({} {})", op, vir_expr_to_rsmt2_str(*x));
-    // let binary = |op, x: Box<Expr>, y: Box<Expr>| {
-    //     format!(
-    //         "({} {} {})",
-    //         op,
-    //         vir_expr_to_rsmt2_str(*x),
-    //         vir_expr_to_rsmt2_str(*y)
-    //     )
-    // };
-    // let ext = |op, i, x: Box<Expr>| format!("((_ {} {}) {})", op, i, vir_expr_to_rsmt2_str(*x));
-    // match e {
-    //     Expr::Const(ty, i) => match ty {
-    //         VIRType::BitVector(width) => format!("(_ bv{} {})", i, BITWIDTH),
-    //         VIRType::Int => i.to_string(),
-    //         VIRType::Bool => (if i == 0 { "false" } else { "true" }).to_string(),
-    //     },
-    //     Expr::Var(bound_var) => bound_var.name,
-    //     Expr::True => "true".to_string(),
-    //     Expr::False => "false".to_string(),
-    //     Expr::Not(x) => unary("not", x),
-    //     Expr::And(x, y) => binary("and", x, y),
-    //     Expr::Or(x, y) => binary("or", x, y),
-    //     Expr::Imp(x, y) => binary("=>", x, y),
-    //     Expr::Eq(x, y) => binary("=", x, y),
-    //     Expr::Lte(x, y) => binary("<=", x, y),
-    //     Expr::BVNeg(_, x) => unary("bvneg", x),
-    //     Expr::BVNot(_, x) => unary("bvnot", x),
-    //     Expr::BVAdd(_, x, y) => binary("bvadd", x, y),
-    //     Expr::BVSub(_, x, y) => binary("bvsub", x, y),
-    //     Expr::BVAnd(_, x, y) => binary("bvand", x, y),
-    //     Expr::BVOr(_, x, y) => binary("bvor", x, y),
-    //     Expr::BVRotl(ty, x, i) => {
-    //         // SMT bitvector rotate_left requires that the rotate amount be
-    //         // statically specified. Instead, to use a dynamic amount, desugar
-    //         // to shifts and bit arithmetic.
-    //         format!(
-    //             "(bvor (bvshl {x} {i}) (bvlshr {x} (bvsub {width} {i})))",
-    //             x = vir_expr_to_rsmt2_str(*x),
-    //             i = vir_expr_to_rsmt2_str(*i.clone()),
-    //             width = format!("(_ bv{} {})", ty.width(), BITWIDTH)
-    //         )
-    //     }
-    //     Expr::BVShl(_, x, y) => binary("bvshl", x, y),
-    //     Expr::BVShr(_, x, y) => binary("bvlshr", x, y),
-    //     Expr::BVZeroExt(_, i, x) =>
-    //     // ext("zero_extend", i, x),
-    //     {
-    //         format!("{}", vir_expr_to_rsmt2_str(*x))
-    //     }
-
-    //     Expr::BVSignExt(_, i, x) => ext("sign_extend", i, x),
-    //     Expr::BVExtract(_, l, h, x) => {
-    //         // format!("((_ extract {} {}) {})", h, l, vir_expr_to_rsmt2_str(*x))
-    //         format!("{}", vir_expr_to_rsmt2_str(*x))
-    //     }
-    //     Expr::BVIntToBV(ty, x) => {
-    //         format!("((_ int2bv {}) {})", BITWIDTH, vir_expr_to_rsmt2_str(*x))
-    //     }
-    //     Expr::UndefinedTerm(term) => term.ret.name,
-    //     Expr::WidthOf(x) => x.ty().width().to_string(),
-    //}
+    match e {
+        Expr::Terminal(t) => match t {
+            Terminal::Var(v) => v,
+            Terminal::Const(i) => format!("(_ bv{} {})", i, BITWIDTH), // AVH todo non bitwidth
+            Terminal::True => "true".to_string(),
+            Terminal::False => "false".to_string(),
+        },
+        Expr::Unary(op, arg) => {
+            let op = match op {
+                UnaryOp::Not => "not",
+                UnaryOp::BVNeg => "bvneg",
+                UnaryOp::BVNot => "bvnot",
+            };
+            format!("({} {})", op, vir_expr_to_rsmt2_str(*arg))
+        }
+        Expr::Binary(op, x, y) => {
+            match op {
+                BinaryOp::BVRotl => {
+                    // SMT bitvector rotate_left requires that the rotate amount be
+                    // statically specified. Instead, to use a dynamic amount, desugar
+                    // to shifts and bit arithmetic.
+                    return format!(
+                        "(bvor (bvshl {x} {y}) (bvlshr {x} (bvsub {width} {y})))",
+                        x = vir_expr_to_rsmt2_str(*x),
+                        y = vir_expr_to_rsmt2_str(*y),
+                        width = format!("(_ bv{} {})", BITWIDTH, BITWIDTH)
+                    )
+                }
+                _ => (),
+            };
+            let op = match op {
+                BinaryOp::And => "and",
+                BinaryOp::Or => "or",
+                BinaryOp::Imp => "=>",
+                BinaryOp::Eq => "=",
+                BinaryOp::Lte => "<=",
+                BinaryOp::BVAdd => "bvadd",
+                BinaryOp::BVSub => "bvsub",
+                BinaryOp::BVAnd => "bvand",
+                BinaryOp::BVOr => "bvor",
+                BinaryOp::BVShl => "bvshl",
+                BinaryOp::BVShr => "bvlshr",
+                _ => unreachable!(),
+            };
+            format!(
+                "({} {} {})",
+                op,
+                vir_expr_to_rsmt2_str(*x),
+                vir_expr_to_rsmt2_str(*y)
+            )
+        }
+        Expr::BVIntToBV(x) => format!("((_ int2bv {}) {})", BITWIDTH, vir_expr_to_rsmt2_str(*x)),
+        // AVH TODO: handle widths here
+        Expr::BVZeroExt(_i, x) => vir_expr_to_rsmt2_str(*x),
+        Expr::BVSignExt(_i, x) => vir_expr_to_rsmt2_str(*x),
+        Expr::BVExtract(_i, _j, x) => vir_expr_to_rsmt2_str(*x),
+        Expr::UndefinedTerm(term) => term.ret.name,
+    }
 }
 
 // Checks whether the assumption list is always false
@@ -204,13 +202,12 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
     for rule_sem in &rule_path.rules {
         println!("Declaring constants:");
         for v in &rule_sem.quantified_vars {
-            let name = v.name.clone();
-            todo!()
+            let name = v;
             // match &v.ty {
             //     VIRType::BitVector => {
-            //         let var_ty = vir_to_rsmt2_constant_ty(&v.ty);
-            //         println!("\t{} : {:?}", name, &var_ty);
-            //         solver.declare_const(name, var_ty).unwrap();
+                    let var_ty = vir_to_rsmt2_constant_ty(&veri_ir::Type::BitVector);
+                    println!("\t{} : {:?}", name, &var_ty);
+                    solver.declare_const(name, var_ty).unwrap();
             //     }
             //     _ => {
             //         let var_ty = vir_to_rsmt2_constant_ty(&v.ty);
