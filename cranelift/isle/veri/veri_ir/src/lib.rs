@@ -15,11 +15,12 @@ pub struct RuleSemantics {
     pub lhs: Expr,
     pub rhs: Expr,
 
-    pub quantified_vars: Vec<String>,
+    pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Expr>,
     //  TODO: sanity check uniqueness
     pub lhs_undefined_terms: Vec<UndefinedTerm>,
     pub rhs_undefined_terms: Vec<UndefinedTerm>,
+    pub types: HashMap<Expr, Type>
 }
 // TODO: can nuke this
 #[derive(Clone, Debug, PartialEq, Eq)]

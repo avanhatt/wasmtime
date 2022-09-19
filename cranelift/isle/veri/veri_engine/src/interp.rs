@@ -337,6 +337,7 @@ impl<'ctx> AssumptionContext<'ctx> {
             rhs: sol.rhs.clone(),
             assumptions: sol.assumptions.clone(),
             quantified_vars: sol.quantified_vars.clone(),
+            types: sol.types.clone(),
             lhs_undefined_terms: vec![],
             rhs_undefined_terms: vec![],
         }

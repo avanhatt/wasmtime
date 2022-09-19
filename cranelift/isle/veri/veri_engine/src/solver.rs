@@ -202,19 +202,20 @@ pub fn run_solver_rule_path(rule_path: RulePath) -> VerificationResult {
     for rule_sem in &rule_path.rules {
         println!("Declaring constants:");
         for v in &rule_sem.quantified_vars {
-            let name = v;
-            // match &v.ty {
-            //     VIRType::BitVector => {
+            let name = &v.name;
+            match &v.ty {
+                Type::BitVector => {
+                    // AVH TODO
                     let var_ty = vir_to_rsmt2_constant_ty(&veri_ir::Type::BitVector);
                     println!("\t{} : {:?}", name, &var_ty);
                     solver.declare_const(name, var_ty).unwrap();
-            //     }
-            //     _ => {
-            //         let var_ty = vir_to_rsmt2_constant_ty(&v.ty);
-            //         println!("\t{} : {:?}", name);
-            //         solver.declare_const(name, var_ty).unwrap();
-            //     }
-            // }
+                }
+                _ => {
+                    let var_ty = vir_to_rsmt2_constant_ty(&v.ty);
+                    println!("\t{} : {:?}", name, &var_ty);
+                    solver.declare_const(name, var_ty).unwrap();
+                }
+            }
         }
 
         println!("Adding assumptions:");
