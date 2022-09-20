@@ -119,7 +119,7 @@ fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
 }
 
 fn convert_type(aty: &annotation_ir::Type) -> veri_ir::Type {
-    match dbg!(aty) {
+    match aty {
         annotation_ir::Type::BitVector => veri_ir::Type::BitVector,
         // AVH TODO
         annotation_ir::Type::BitVectorWithWidth(w) => veri_ir::Type::BitVector,
@@ -224,8 +224,6 @@ fn add_annotation_constraints(
                 tree.next_type_var += 1;
             }
             let name = format!("{}__{}", x, t);
-            dbg!(&name);
-            dbg!(&t);
             (veri_ir::Expr::Terminal(veri_ir::Terminal::Var(name)), t)
         }
         annotation_ir::Expr::Const(c, ..) => {
@@ -264,7 +262,6 @@ fn add_annotation_constraints(
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
             // AVH TODO
             (veri_ir::Expr::WidthOf(Box::new(ex)), t)
-            // (veri_ir::Expr::Terminal(veri_ir::Terminal::Const(64)), 100)
         }
 
         annotation_ir::Expr::Eq(x, y, _) => {
@@ -556,7 +553,6 @@ fn add_rule_constraints(
                 term: curr.ident.clone(),
                 var_to_type_var: HashMap::new(),
             };
-            dbg!(&t);
             for expr in annotation.assertions {
                 let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
                 curr.assertions.push(typed_expr.clone());

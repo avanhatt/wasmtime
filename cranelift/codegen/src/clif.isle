@@ -731,8 +731,6 @@
     (inst_data (InstructionData.TableAddr (Opcode.TableAddr) p T Offset))
 )
 
-;;@ (spec (sig (args x) (ret))
-;;@     (assertions (= (conv_to (widthof (ret)) 64 (x)) (ret))))
 (decl iconst (Imm64) Inst)
 (extractor
     (iconst N)

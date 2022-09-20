@@ -438,7 +438,7 @@
 ;; Extract the type of the instruction's first result and pass along the
 ;; instruction as well.
 ;;@ (spec (sig (args ty, arg) (ret))
-;;@ (assertions (= (ty) (int2bv (widthof (arg)))), (= (arg) (ret))))
+;;@ (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extractor (has_type ty inst)
            (and (result_type ty)
