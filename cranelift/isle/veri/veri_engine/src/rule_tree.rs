@@ -245,7 +245,7 @@ pub fn verify_rules_for_type_wih_rule_filter(
         let paths = enumerate_paths_to_leaves(&rule_tree);
         for rule_path in paths {
             let tymap = rule_path.rules[0].types.clone();
-            let result = run_solver_rule_path(rule_path, tymap);
+            let result = run_solver_rule_path(rule_path, tymap, width);
             if result != VerificationResult::Success {
                 return result;
             }

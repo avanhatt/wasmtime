@@ -19,6 +19,7 @@ struct Query {
 struct SolverCtx {
     tymap: HashMap<Expr, Type>,
     bitwidth: usize,
+    query_width: usize, 
 }
 
 impl SolverCtx {
@@ -97,6 +98,10 @@ impl SolverCtx {
             Expr::BVSignExt(_i, x) => self.vir_expr_to_rsmt2_str(*x),
             Expr::BVExtract(_i, _j, x) => self.vir_expr_to_rsmt2_str(*x),
             Expr::UndefinedTerm(term) => term.ret.name,
+            Expr::WidthOf(x) => {
+                // AVH TODO
+                self.query_width.to_string()
+            }
         }
     }
 
@@ -204,7 +209,7 @@ pub fn run_solver_single_rule(rule_sem: veri_ir::RuleSemantics, _ty: &Type) -> V
 ///             <between rule assumptions>
 ///             <all but first rule's <LHS> = <RHS>>)
 ///          (= <first rule LHS> <first rule RHS>))))))
-pub fn run_solver_rule_path(rule_path: RulePath, tymap: HashMap<Expr, Type>) -> VerificationResult {
+pub fn run_solver_rule_path(rule_path: RulePath, tymap: HashMap<Expr, Type>, query_width: usize) -> VerificationResult {
     let mut solver = Solver::default_z3(()).unwrap();
 
     let mut assumptions: Vec<String> = vec![];
@@ -213,6 +218,7 @@ pub fn run_solver_rule_path(rule_path: RulePath, tymap: HashMap<Expr, Type>) -> 
     let ctx = SolverCtx {
         tymap,
         bitwidth: BITWIDTH,
+        query_width,
     };
 
     for (v1, v2) in rule_path.undefined_term_pairs {

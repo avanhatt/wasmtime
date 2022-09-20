@@ -187,6 +187,8 @@ pub enum Expr {
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
     BVIntToBV(Box<Expr>),
+    
+    WidthOf(Box<Expr>),
 
     // Undefined terms
     UndefinedTerm(UndefinedTerm)

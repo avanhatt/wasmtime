@@ -141,8 +141,6 @@
 (extern constructor temp_writable_reg temp_writable_reg)
 
 ;; Get a temporary register for reading.
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
 (decl temp_reg (Type) Reg)
 (rule (temp_reg ty)
       (writable_reg_to_reg (temp_writable_reg ty)))
@@ -428,7 +426,7 @@
 
 ;; Extract the type of a `Value`.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (tywidth))))
+;;@     (assertions (= (arg) (widthof (ret)))))
 (decl value_type (Type) Value)
 (extern extractor infallible value_type value_type)
 
@@ -440,7 +438,7 @@
 ;; Extract the type of the instruction's first result and pass along the
 ;; instruction as well.
 ;;@ (spec (sig (args ty, arg) (ret))
-;;@     (assertions (= (ty) (tywidth)), (= (arg) (ret))))
+;;@ (assertions (= (ty) (int2bv (widthof (arg)))), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extractor (has_type ty inst)
            (and (result_type ty)

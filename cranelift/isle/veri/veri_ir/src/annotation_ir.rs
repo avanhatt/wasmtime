@@ -185,9 +185,7 @@ pub enum Expr {
     // A special, high level conversion to a destination width. This currently
     // assumes that the source width is the LHS values BV width.
     BVConvTo(Box<Width>, Box<Expr>, u32),
-    // A special, high level conversion from a source width. This currently
-    // assumes that the destination width is the LHS values BV width.
-    BVConvFrom(usize, Box<Expr>, u32),
+    BVDynConvTo(Box<Expr>, Box<Expr>, u32),
     BVIntToBv(Box<Expr>, Box<Expr>, u32),
 }
 
@@ -232,7 +230,7 @@ impl Expr {
             Expr::BVZeroExt(_, _, t) |
             Expr::BVSignExt(_, _, t) |
             Expr::BVConvTo(_, _, t) |
-            Expr::BVConvFrom(_, _, t) |
+            Expr::BVDynConvTo(_, _, t) |
             Expr::BVIntToBv(_, _, t) |
 
             Expr::BVExtract(_, _, _, t) => *t,

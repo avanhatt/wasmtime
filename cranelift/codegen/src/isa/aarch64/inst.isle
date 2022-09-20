@@ -1369,7 +1369,7 @@
 
 ;; Helper for creating the zero register.
 ;;@ (spec (sig (args) (r))
-;;@     (assertions (= (conv_from 1 (0i1:bv)) (r))))
+;;@     (assertions (= (conv_to (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
@@ -1665,7 +1665,7 @@
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 
 ;;@ (spec (sig (args ty, reg, imm_arg) (ret))
-;;@     (assertions (= (-(reg) (conv_from 12 (imm_arg))) (ret))))
+;;@     (assertions (= (- (reg) (conv_to (widthof (ret)) (imm_arg))) (ret))))
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 
@@ -1827,7 +1827,7 @@
 
 ;; Helpers for generating `and` instructions.
 ;;@ (spec (sig (args ty, reg, imm_arg) (ret))
-;;@     (assertions (= (& (reg) (conv_from 12 (imm_arg))) (ret))))
+;;@     (assertions (= (& (reg) (conv_to (widthof (ret)) (imm_arg))) (ret))))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (rule (and_imm ty x y) (alu_rr_imm_logic (ALUOp.And) ty x y))
 
@@ -1885,7 +1885,7 @@
 
 ;; Immediate value helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;@ (spec (sig (args x) (r))
-;;@     (assertions (= (conv_from 64 (x)) (r))))
+;;@     (assertions (= (conv_to (widthof (r))) (x)) (r))))
 (decl imm (Type u64) Reg)
 
 ;; 16-bit immediate (shifted by 0, 16, 32 or 48 bits) in MOVZ

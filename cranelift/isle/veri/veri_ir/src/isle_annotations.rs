@@ -80,42 +80,44 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             };
             Some(TermAnnotation::new(func, vec![sem]))
         }
-        "imm12_from_negated_value" => {
-            // Width: bv12
-            let imm_arg = BoundVar::new("imm_arg");
+        // "imm12_from_negated_value" => {
+        //     // Width: bv12
+        //     let imm_arg = BoundVar::new("imm_arg");
 
-            // Width: bvX
-            let result = BoundVar::new("ret");
+        //     // Width: bvX
+        //     let result = BoundVar::new("ret");
 
-            // Negate and convert
-            let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()), 0);
-            let res = Expr::unary(Expr::BVNeg, as_ty);
-            let eq = Expr::binary(Expr::Eq, res, result.as_expr());
-            let sig = TermSignature {
-                args: vec![imm_arg],
-                ret: result,
-            };
-            Some(TermAnnotation::new(sig, vec![eq]))
-        }
-        "sub_imm" => {
-            // Declare bound variables
-            let ty_arg = BoundVar::new("ty");
-            let reg_arg = BoundVar::new("reg");
-            let result = BoundVar::new("ret");
+        //     // Negate and convert
+        //     let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()), 0);
+        //     let res = Expr::unary(Expr::BVNeg, as_ty);
+        //     let eq = Expr::binary(Expr::Eq, res, result.as_expr());
+        //     let sig = TermSignature {
+        //         args: vec![imm_arg],
+        //         ret: result,
+        //     };
+        //     Some(TermAnnotation::new(sig, vec![eq]))
+        // }
+        // AVH TODO
+        // "sub_imm" => {
+        //     // Declare bound variables
+        //     let ty_arg = BoundVar::new("ty");
+        //     let reg_arg = BoundVar::new("reg");
+        //     let result = BoundVar::new("ret");
 
-            // Width: bv12
-            let imm_arg = BoundVar::new("imm_arg");
+        //     // Width: bv12
+        //     let imm_arg = BoundVar::new("imm_arg");
 
-            // Conversion step
-            let as_ty = Expr::BVConvFrom(12, Box::new(imm_arg.as_expr()), 0);
-            let res = Expr::binary(Expr::BVSub, reg_arg.as_expr(), as_ty);
-            let assertion = Expr::binary(Expr::Eq, res, result.as_expr());
-            let func = TermSignature {
-                args: vec![ty_arg, reg_arg, imm_arg],
-                ret: result,
-            };
-            Some(TermAnnotation::new(func, vec![assertion]))
-        }
+        //     // Conversion step
+        //     // AVH
+        //     let as_ty = Expr::BVConvTo(64, Box::new(imm_arg.as_expr()), 0);
+        //     let res = Expr::binary(Expr::BVSub, reg_arg.as_expr(), as_ty);
+        //     let assertion = Expr::binary(Expr::Eq, res, result.as_expr());
+        //     let func = TermSignature {
+        //         args: vec![ty_arg, reg_arg, imm_arg],
+        //         ret: result,
+        //     };
+        //     Some(TermAnnotation::new(func, vec![assertion]))
+        //}
         "uextend" => {
             let arg = BoundVar::new("arg");
             let ret = BoundVar::new("ret");

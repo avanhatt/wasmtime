@@ -224,6 +224,8 @@ fn add_annotation_constraints(
                 tree.next_type_var += 1;
             }
             let name = format!("{}__{}", x, t);
+            dbg!(&name);
+            dbg!(&t);
             (veri_ir::Expr::Terminal(veri_ir::Terminal::Var(name)), t)
         }
         annotation_ir::Expr::Const(c, ..) => {
@@ -243,13 +245,14 @@ fn add_annotation_constraints(
             (e, t)
         }
         annotation_ir::Expr::TyWidth(_) => {
-            let t = tree.next_type_var;
-            tree.concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
+            todo!("to be removed")
+            // let t = tree.next_type_var;
+            // tree.concrete_constraints
+            //     .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
 
-            tree.next_type_var += 1;
-            // AVH TODO
-            (veri_ir::Expr::Terminal(veri_ir::Terminal::Const(64)), t)
+            // tree.next_type_var += 1;
+            // // AVH TODO
+            // (veri_ir::Expr::Terminal(veri_ir::Terminal::Const(64)), t)
         }
         annotation_ir::Expr::WidthOf(x, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
@@ -260,7 +263,8 @@ fn add_annotation_constraints(
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
             // AVH TODO
-            (ex, tx)
+            (veri_ir::Expr::WidthOf(Box::new(ex)), t)
+            // (veri_ir::Expr::Terminal(veri_ir::Terminal::Const(64)), 100)
         }
 
         annotation_ir::Expr::Eq(x, y, _) => {
@@ -379,13 +383,30 @@ fn add_annotation_constraints(
             );
             (e1, t)
         }
-        annotation_ir::Expr::BVConvFrom(src, x, _) => {
+        annotation_ir::Expr::BVDynConvTo(w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
 
+            // let width = match *w {
+            //     annotation_ir::Width::Const(x) => x,
+            //     annotation_ir::Width::RegWidth => REG_WIDTH,
+            // };
+
+            // tree.concrete_constraints.insert(TypeExpr::Concrete(
+            //     t,
+            //     annotation_ir::Type::BitVectorWithWidth(width),
+            // ));
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
             tree.next_type_var += 1;
+
+            // let width_name = format! {"width{}", t};
+            // tree.width_assumptions.insert(
+            //     width_name,
+            //     veri_ir::Expr::Terminal(veri_ir::Terminal::Const(width as i128)),
+            // );
+            // AVH TODO
             (e1, t)
         }
         annotation_ir::Expr::BVIntToBv(x, w, _) => {
@@ -535,6 +556,7 @@ fn add_rule_constraints(
                 term: curr.ident.clone(),
                 var_to_type_var: HashMap::new(),
             };
+            dbg!(&t);
             for expr in annotation.assertions {
                 let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
                 curr.assertions.push(typed_expr.clone());
