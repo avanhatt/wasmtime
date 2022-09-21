@@ -584,7 +584,7 @@ impl ExprSequence {
                 ref body,
             } => {
                 let mut vars = vars.clone();
-                for &(var, _var_ty, ref var_expr) in bindings {
+                for &(var, _var_ty, _,  ref var_expr) in bindings {
                     let var_value = self.gen_expr(typeenv, termenv, &*var_expr, &vars);
                     vars.insert(var, var_value);
                 }

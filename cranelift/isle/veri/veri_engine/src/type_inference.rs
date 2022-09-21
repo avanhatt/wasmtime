@@ -37,8 +37,8 @@ pub enum TypeVarConstruct {
     Var,
     Term(String),
     Const(i128),
-    // Not a term itself, but need to recur on children. Used for Let and And.
-    Recur,
+    Let(Vec<String>),
+    And,
 }
 
 #[derive(Clone, Debug)]
@@ -92,15 +92,15 @@ pub fn type_all_rules(
     let mut solutions = HashMap::new();
     for r in &termenv.rules {
         if let Some(s) = type_annotations_using_rule(r, annotation_env, &decls, typeenv, termenv) {
+            // for a in &s.annotation_infos {
+            //     println!("{}", a.term);
+            //     for (var, type_var) in &a.var_to_type_var {
+            //         println!("{}: {:#?}", var, s.type_var_to_type[type_var]);
+            //     }
+            //     println!();
+            // }
             solutions.insert(r.id, s);
         }
-        // for a in &s.annotation_infos {
-        //     println!("{}", a.term);
-        //     for (var, type_var) in &a.var_to_type_var {
-        //         println!("{}: {:#?}", var, s.type_var_to_type[type_var]);
-        //     }
-        //     println!();
-        // }
     }
     solutions
 }
@@ -120,9 +120,8 @@ fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
 
 fn convert_type(aty: &annotation_ir::Type) -> veri_ir::Type {
     match aty {
-        annotation_ir::Type::BitVector => veri_ir::Type::BitVector,
-        // AVH TODO
-        annotation_ir::Type::BitVectorWithWidth(w) => veri_ir::Type::BitVector,
+        annotation_ir::Type::BitVector => veri_ir::Type::BitVector(None),
+        annotation_ir::Type::BitVectorWithWidth(w) => veri_ir::Type::BitVector(Some(*w)),
         annotation_ir::Type::Int => veri_ir::Type::Int,
         annotation_ir::Type::Bool => veri_ir::Type::Bool,
         annotation_ir::Type::Poly(_) => unreachable!(),
@@ -223,7 +222,7 @@ fn add_annotation_constraints(
                 annotation_info.var_to_type_var.insert(x.clone(), t);
                 tree.next_type_var += 1;
             }
-            let name = format!("{}__{}", x, t);
+            let name = format!("{}__{}__{}", annotation_info.term, x, t);
             (veri_ir::Expr::Terminal(veri_ir::Terminal::Var(name)), t)
         }
         annotation_ir::Expr::Const(c, ..) => {
@@ -242,16 +241,7 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (e, t)
         }
-        annotation_ir::Expr::TyWidth(_) => {
-            todo!("to be removed")
-            // let t = tree.next_type_var;
-            // tree.concrete_constraints
-            //     .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
 
-            // tree.next_type_var += 1;
-            // // AVH TODO
-            // (veri_ir::Expr::Terminal(veri_ir::Terminal::Const(64)), t)
-        }
         annotation_ir::Expr::WidthOf(x, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
             let t = tree.next_type_var;
@@ -260,7 +250,6 @@ fn add_annotation_constraints(
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::BitVector));
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
-            // AVH TODO
             (veri_ir::Expr::WidthOf(Box::new(ex)), t)
         }
 
@@ -358,6 +347,7 @@ fn add_annotation_constraints(
         annotation_ir::Expr::BVConvTo(w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
+            tree.next_type_var += 1;
 
             let width = match *w {
                 annotation_ir::Width::Const(x) => x,
@@ -371,40 +361,23 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
 
-            tree.next_type_var += 1;
-
-            let width_name = format! {"width{}", t};
-            tree.width_assumptions.insert(
-                width_name,
-                veri_ir::Expr::Terminal(veri_ir::Terminal::Const(width as i128)),
-            );
-            (e1, t)
+            (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
         }
         annotation_ir::Expr::BVDynConvTo(w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
 
-            // let width = match *w {
-            //     annotation_ir::Width::Const(x) => x,
-            //     annotation_ir::Width::RegWidth => REG_WIDTH,
-            // };
-
-            // tree.concrete_constraints.insert(TypeExpr::Concrete(
-            //     t,
-            //     annotation_ir::Type::BitVectorWithWidth(width),
-            // ));
+            // In the dynamic case, we don't know the width at this point
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
 
             tree.next_type_var += 1;
 
-            // let width_name = format! {"width{}", t};
-            // tree.width_assumptions.insert(
-            //     width_name,
-            //     veri_ir::Expr::Terminal(veri_ir::Terminal::Const(width as i128)),
-            // );
-            // AVH TODO
-            (e1, t)
+            let width_name = format!("width__{}", t);
+            tree.width_assumptions.insert(width_name, e1.clone());
+            (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
         }
         annotation_ir::Expr::BVIntToBv(x, w, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
@@ -424,7 +397,7 @@ fn add_annotation_constraints(
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
-    let width_name = format! {"width{}", t};
+    let width_name = format! {"width__{}", t};
     tree.widths.insert(e.clone(), width_name.clone());
     (e, t)
 }
@@ -522,24 +495,56 @@ fn add_rule_constraints(
     annotation_env: &AnnotationEnv,
     annotation_infos: &mut Vec<AnnotationTypeInfo>,
 ) -> Option<veri_ir::Expr> {
-    tree.quantified_vars
-        .insert((curr.ident.clone(), curr.type_var));
     // Only relate args to annotations for terms. For leaves, return immediately, for
     // recursive definitions without annotations (like And and Let), recur.
+    let mut children = vec![];
+    for child in &mut curr.children {
+        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos)
+        {
+            children.push(e);
+        } else {
+            return None;
+        }
+    }
     let e = match &curr.construct {
-        TypeVarConstruct::Var => Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
-            curr.ident.clone(),
-        ))),
+        TypeVarConstruct::Var => {
+            tree.quantified_vars
+                .insert((curr.ident.clone(), curr.type_var));
+            Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
+                curr.ident.clone(),
+            )))
+        }
         TypeVarConstruct::Const(i) => Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Const(*i))),
-        TypeVarConstruct::Recur => {
-            // For now, just return the last
-            let mut last = Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Const(0)));
-            for child in &mut curr.children {
-                last = add_rule_constraints(tree, child, annotation_env, annotation_infos);
+        TypeVarConstruct::And => {
+            tree.quantified_vars
+                .insert((curr.ident.clone(), curr.type_var));
+            let first = &children[0];
+            for (i, e) in children.iter().enumerate() {
+                if i != 0 {
+                    tree.assumptions.push(veri_ir::Expr::Binary(
+                        veri_ir::BinaryOp::Eq,
+                        Box::new(first.clone()),
+                        Box::new(e.clone()),
+                    ))
+                }
             }
-            last
+            Some(first.to_owned())
+        }
+        TypeVarConstruct::Let(bound) => {
+            tree.quantified_vars
+                .insert((curr.ident.clone(), curr.type_var));
+            for (e, s) in children.iter().zip(bound) {
+                tree.assumptions.push(veri_ir::Expr::Binary(
+                    veri_ir::BinaryOp::Eq,
+                    Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(s.to_owned()))),
+                    Box::new(e.to_owned()),
+                ))
+            };
+            children.last().cloned()
         }
         TypeVarConstruct::Term(t) => {
+            tree.quantified_vars
+                .insert((curr.ident.clone(), curr.type_var));
             let a = annotation_env.get_annotation_for_term(t);
             if a.is_none() {
                 println!("SKIPPING RULE with unannotated term: {}", t);
@@ -571,14 +576,19 @@ fn add_rule_constraints(
                 let annotation_type_var = annotation_info.var_to_type_var[&arg.name];
                 tree.var_constraints
                     .insert(TypeExpr::Variable(rule_type_var, annotation_type_var));
-                let arg_name = format!("{}__{}", arg.name, annotation_type_var);
+            }
+
+            for (child, arg) in children.iter().zip(&annotation.sig.args) {
+                let annotation_type_var = annotation_info.var_to_type_var[&arg.name];
+                let arg_name = format!(
+                    "{}__{}__{}",
+                    annotation_info.term, arg.name, annotation_type_var
+                );
                 tree.quantified_vars
                     .insert((arg_name.clone(), annotation_type_var));
                 tree.assumptions.push(veri_ir::Expr::Binary(
                     veri_ir::BinaryOp::Eq,
-                    Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
-                        child.ident.clone(),
-                    ))),
+                    Box::new(child.clone()),
                     Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(arg_name))),
                 ))
             }
@@ -586,7 +596,10 @@ fn add_rule_constraints(
             let ret_var = annotation_info.var_to_type_var[&annotation.sig.ret.name];
             tree.var_constraints
                 .insert(TypeExpr::Variable(curr.type_var, ret_var));
-            let ret_name = format!("{}__{}", annotation.sig.ret.name, ret_var);
+            let ret_name = format!(
+                "{}__{}__{}",
+                annotation_info.term, annotation.sig.ret.name, ret_var
+            );
             tree.quantified_vars.insert((ret_name.clone(), ret_var));
             tree.assumptions.push(veri_ir::Expr::Binary(
                 veri_ir::BinaryOp::Eq,
@@ -598,9 +611,6 @@ fn add_rule_constraints(
 
             annotation_infos.push(annotation_info);
 
-            for child in &mut curr.children {
-                add_rule_constraints(tree, child, annotation_env, annotation_infos);
-            }
             Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
                 curr.ident.clone(),
             )))
@@ -608,7 +618,7 @@ fn add_rule_constraints(
     };
     if let Some(e) = e {
         tree.ty_vars.insert(e.clone(), curr.type_var);
-        let width_name = format! {"width{}", curr.type_var};
+        let width_name = format! {"width__{}", curr.type_var};
         tree.widths.insert(e.clone(), width_name.clone());
         Some(e)
     } else {
@@ -939,8 +949,9 @@ fn create_parse_tree_pattern(
         isle::sema::Pattern::ConstInt(_, num) => {
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
+            let name = format!("{}__{}", num, type_var);
             TypeVarNode {
-                ident: num.to_string(),
+                ident: name,
                 construct: TypeVarConstruct::Const(*num as i128),
                 type_var,
                 children: vec![],
@@ -967,7 +978,7 @@ fn create_parse_tree_pattern(
 
             TypeVarNode {
                 ident: String::from("and"),
-                construct: TypeVarConstruct::Recur,
+                construct: TypeVarConstruct::And,
                 type_var,
                 children,
                 assertions: vec![],
@@ -1022,7 +1033,6 @@ fn create_parse_tree_expr(
                 tree.next_type_var += 1;
             }
             let ident = format!("{}__{}", ident, type_var);
-
             // this is a base case so there are no children
             TypeVarNode {
                 ident,
@@ -1053,8 +1063,9 @@ fn create_parse_tree_expr(
         isle::sema::Expr::ConstInt(_, num) => {
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
+            let name = format!("{}__{}", num, type_var);
             TypeVarNode {
-                ident: num.to_string(),
+                ident: name,
                 construct: TypeVarConstruct::Const(*num as i128),
                 type_var,
                 children: vec![],
@@ -1063,11 +1074,17 @@ fn create_parse_tree_expr(
         }
         isle::sema::Expr::Let { bindings, body, .. } => {
             let mut children = vec![];
-            for (varid, _, expr) in bindings {
-                let var = format!("let__vid{:?}", varid);
+            let mut bound = vec![];
+            for (varid, _, sym, expr) in bindings {
+                let var = typeenv.syms[sym.index()].clone();
                 let subpat_node = create_parse_tree_expr(expr, tree, var_map, typeenv, termenv);
-                tree.var_to_type_var_map.insert(var, subpat_node.type_var);
+                let ty_var = subpat_node.type_var;
+                tree.var_to_type_var_map.insert(var.clone(), ty_var);
+                var_map.insert(*varid, *sym);
                 children.push(subpat_node);
+                let var = format!("{}__{}", var, ty_var);
+                tree.quantified_vars.insert((var.clone(), ty_var));
+                bound.push(var);
             }
             let body = create_parse_tree_expr(body, tree, var_map, typeenv, termenv);
             let body_var = body.type_var;
@@ -1084,7 +1101,7 @@ fn create_parse_tree_expr(
 
             TypeVarNode {
                 ident: name.to_string(),
-                construct: TypeVarConstruct::Recur,
+                construct: TypeVarConstruct::Let(bound),
                 type_var,
                 children,
                 assertions: vec![],

@@ -5,7 +5,8 @@ use isle::sema::{Pattern, Rule, RuleId, TermEnv, TypeEnv};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{
-    all_starting_bitvectors, BoundVar, RulePath, RuleTree, Type, UndefinedTerm, VerificationResult,
+    all_starting_bitvectors, BoundVar, RulePath, RuleSemantics, RuleTree, Type, UndefinedTerm,
+    VerificationResult,
 };
 
 use crate::interp::AssumptionContext;
@@ -27,7 +28,16 @@ pub fn build_rule_tree_rec(
     assert!(depth <= max_depth, "Exceeded maximum rule tree depth!");
 
     // Get the semantics for this specific rule
-    let rule_sem = ctx.interp_rule(rule);
+    let sol = &ctx.typesols[&rule.id];
+    let rule_sem = RuleSemantics {
+        lhs: sol.lhs.clone(),
+        rhs: sol.rhs.clone(),
+        assumptions: sol.assumptions.clone(),
+        quantified_vars: sol.quantified_vars.clone(),
+        types: sol.types.clone(),
+        lhs_undefined_terms: vec![],
+        rhs_undefined_terms: vec![],
+    };
 
     // If we are at the root of the tree, we should not have any undefined
     // terms on the left hand side
@@ -73,7 +83,7 @@ pub fn build_rule_tree_rec(
             t.name
         );
         let mut subtrees = vec![];
-        for next_rule in rules_with_lhs_root(dbg!(&t.name), termenv, typeenv) {
+        for next_rule in rules_with_lhs_root(&t.name, termenv, typeenv) {
             let child =
                 build_rule_tree_rec(ctx, &next_rule, termenv, typeenv, depth + 1, max_depth);
             if child.height > max_height {

@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
 (decl lower (Inst) ValueRegs)
 
 ;; Instruction formats.
@@ -49,7 +49,3 @@
 
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
-;; (rule (alu_rrr op ty src1 src2)
-;;       (let ((dst WritableReg (temp_writable_reg $I64))
-;;             (_ Unit (emit (MInst.AluRRR op (operand_size ty) dst src1 src2))))
-;;         dst))

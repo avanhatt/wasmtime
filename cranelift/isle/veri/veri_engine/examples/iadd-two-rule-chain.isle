@@ -3,7 +3,7 @@
 ;; for now
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
 (decl lower (Inst) ValueRegs)
 
 ;; Instruction formats.

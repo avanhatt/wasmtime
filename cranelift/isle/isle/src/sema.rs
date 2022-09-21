@@ -518,7 +518,7 @@ pub enum Expr {
         /// The type of the result of this let expression.
         ty: TypeId,
         /// The expressions that are evaluated and bound to the given variables.
-        bindings: Vec<(VarId, TypeId, Box<Expr>)>,
+        bindings: Vec<(VarId, TypeId, Sym, Box<Expr>)>,
         /// The body expression that is evaluated after the bindings.
         body: Box<Expr>,
     },
@@ -2070,7 +2070,7 @@ impl TermEnv {
                     bindings.next_var += 1;
                     bindings.vars.push(BoundVar { name, id, ty: tid });
 
-                    let_defs.push((id, tid, val));
+                    let_defs.push((id, tid, name, val));
                 }
 
                 // Evaluate the body, expecting the type of the overall let-expr.

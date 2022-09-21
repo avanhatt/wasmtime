@@ -17,10 +17,13 @@ pub struct RuleSemantics {
 
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Expr>,
+
+    pub types: HashMap<Expr, Type>,
+
+
     //  TODO: sanity check uniqueness
     pub lhs_undefined_terms: Vec<UndefinedTerm>,
     pub rhs_undefined_terms: Vec<UndefinedTerm>,
-    pub types: HashMap<Expr, Type>
 }
 // TODO: can nuke this
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -119,7 +122,7 @@ pub enum Type {
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
     /// (type Value (primitive Value))
-    BitVector,
+    BitVector(Option<usize>),
 
     /// The expression is a boolean. This does not directly correspond
     /// to a specific Cranelift Isle type, rather, we use it for the
@@ -187,59 +190,16 @@ pub enum Expr {
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
     BVIntToBV(Box<Expr>),
-    
+    BVConvTo(Box<Expr>),
+
     WidthOf(Box<Expr>),
 
     // Undefined terms
     UndefinedTerm(UndefinedTerm)
 }
 
-// impl VIRType {
-//     pub fn eq(x: Expr, y: Expr) -> Expr {
-//         assert_eq!(x.ty(), y.ty(), "(= {:?} {:?})", x, y);
-//         Expr::Eq(Box::new(x), Box::new(y))
-//     }
-
-//     pub fn bv_const(&self, x: i128) -> Expr {
-//         Expr::Const(self.clone(), x)
-//     }
-
-//     pub fn bv_var(&self, s: String) -> Expr {
-//         Expr::Var(BoundVar {
-//             name: s,
-//             ty: self.clone(),
-//         })
-//     }
-
-//     pub fn width(&self) -> usize {
-//         match *self {
-//             Self::BitVector(s) => s,
-//             _ => unreachable!("Unexpected type: {:?}", self),
-//         }
-//     }
-
-//     pub fn is_bv(&self) -> bool {
-//         matches!(*self, Self::BitVector(..))
-//     }
-
-//     pub fn is_bool(&self) -> bool {
-//         matches!(*self, Self::Bool)
-//     }
-
-//     pub fn is_int(&self) -> bool {
-//         matches!(*self, Self::Int)
-//     }
-// }
-
 pub fn all_starting_bitvectors() -> Vec<usize> {
-    vec![
-        // VIRType::BitVector(1),
-        // VIRType::BitVector(8),
-        // VIRType::BitVector(16),
-        // VIRType::BitVector(32),
-        // VIRType::BitVector(64),
-        // VIRType::BitVector(128),
-    ]
+    vec![1, 8, 16, 32, 64, 128]
 }
 
 impl BoundVar {

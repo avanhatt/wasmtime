@@ -12,14 +12,11 @@
     
         ;; EXTRACTORS
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assertions (= (arg) (ret))))
+        ;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
         (decl lower (Inst) ValueRegs)
-    
-            ;; (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))
-
 
         ;;@ (spec (sig (args ty, arg) (ret))
-        ;;@ (assertions (= (arg) (ret))))
+        ;;@ (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))
         (decl has_type (Type Inst) Inst)
         (extern extractor has_type has_type)
     
@@ -57,7 +54,7 @@
         (extern constructor add add)
     
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assertions (= (arg) (ret))))
+        ;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
         (decl put_in_reg (Value) Reg)
         (extern constructor put_in_reg put_in_reg)
     

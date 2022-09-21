@@ -16,7 +16,7 @@
 
 ;; EXTRACTORS
 ;;@ (spec (sig (args arg) (ret))
-;;@(assertions (= (arg) (ret))))
+;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
 (decl lower (Inst) ValueRegs)
 
 ;;@ (spec (sig (args ty, arg) (ret))
