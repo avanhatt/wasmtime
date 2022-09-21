@@ -363,7 +363,7 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
         }
-        annotation_ir::Expr::BVDynConvTo(w, x, _) => {
+        annotation_ir::Expr::BVDynConvTo(_w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
 
@@ -375,6 +375,8 @@ fn add_annotation_constraints(
 
             tree.next_type_var += 1;
 
+            // AVH TODO use width
+
             let width_name = format!("width__{}", t);
             tree.width_assumptions.insert(width_name, e1.clone());
             (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
@@ -385,6 +387,9 @@ fn add_annotation_constraints(
 
             let t = tree.next_type_var;
             tree.next_type_var += 1;
+
+            // AVH TODO use width
+
 
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));

@@ -8,15 +8,14 @@ use veri_ir::{
     all_starting_bitvectors, BoundVar, RulePath, RuleSemantics, RuleTree, Type, UndefinedTerm,
     VerificationResult,
 };
-
-use crate::interp::AssumptionContext;
 use crate::solver::run_solver_rule_path;
 use crate::type_inference::Solution;
+use crate::interp::Context;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
 /// terms on the left hand sides (LHS) and right hand sides (RHS).
 pub fn build_rule_tree_rec(
-    ctx: &mut AssumptionContext<'_>,
+    ctx: &mut Context<'_>,
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
@@ -179,7 +178,7 @@ pub fn build_rule_tree_from_root(
     typesols: &HashMap<RuleId, Solution>,
     width: usize,
 ) -> RuleTree {
-    let mut ctx = AssumptionContext::new(termenv, typeenv, annotationenv, typesols, width);
+    let mut ctx = Context::new(termenv, typeenv, annotationenv, typesols, width);
     build_rule_tree_rec(&mut ctx, rule, termenv, typeenv, 0, 20)
 }
 

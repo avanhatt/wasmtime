@@ -10,16 +10,9 @@ use veri_ir::{
 
 const BITWIDTH: usize = 64;
 
-struct Query {
-    bv_names: Vec<String>,
-    bvwidth_names: Vec<String>,
-    bv_decl_idx: usize,
-}
-
 struct SolverCtx {
     tymap: HashMap<Expr, Type>,
     bitwidth: usize,
-    query_width: usize,
 }
 
 impl SolverCtx {
@@ -36,7 +29,7 @@ impl SolverCtx {
 
     pub fn vir_to_rsmt2_constant_ty(&self, ty: &Type) -> String {
         match ty {
-            Type::BitVector(w) => format!("(_ BitVec {})", BITWIDTH),
+            Type::BitVector(_) => format!("(_ BitVec {})", self.bitwidth),
             Type::Int => "Int".to_string(),
             Type::Bool => unreachable!(),
         }
@@ -63,7 +56,7 @@ impl SolverCtx {
             Expr::Terminal(t) => match t {
                 Terminal::Var(v) => v,
                 Terminal::Const(i) => match ty.unwrap() {
-                    Type::BitVector(w) => format!("(_ bv{} {})", i, BITWIDTH),
+                    Type::BitVector(_) => format!("(_ bv{} {})", i, self.bitwidth),
                     Type::Int => i.to_string(),
                     Type::Bool => unreachable!(),
                 },
@@ -79,7 +72,6 @@ impl SolverCtx {
                 format!("({} {})", op, self.vir_expr_to_rsmt2_str(*arg))
             }
             Expr::Binary(op, x, y) => {
-                dbg!(&op);
                 self.check_comparable_types(&*x, &*y);
                 match op {
                     BinaryOp::BVRotl => {
@@ -90,7 +82,7 @@ impl SolverCtx {
                             "(bvor (bvshl {x} {y}) (bvlshr {x} (bvsub {width} {y})))",
                             x = self.vir_expr_to_rsmt2_str(*x),
                             y = self.vir_expr_to_rsmt2_str(*y),
-                            width = format!("(_ bv{} {})", BITWIDTH, BITWIDTH)
+                            width = format!("(_ bv{} {})", self.bitwidth, self.bitwidth)
                         );
                     }
                     _ => (),
@@ -189,7 +181,6 @@ pub fn run_solver_rule_path(
     let mut ctx = SolverCtx {
         tymap,
         bitwidth: BITWIDTH,
-        query_width,
     };
 
     for (v1, v2) in rule_path.undefined_term_pairs {

@@ -13,27 +13,15 @@ use crate::type_inference::Solution;
 pub struct TypeContext<'ctx> {
     // Default bitvector type
     pub width: usize,
-
-    // Pointers to ISLE environments
-    typeenv: &'ctx TypeEnv,
-
-    // Isle annotations
-    annotation_env: &'ctx AnnotationEnv,
-
     pub typesols: &'ctx HashMap<RuleId, Solution>,
 }
 
 impl<'ctx> TypeContext<'ctx> {
     pub fn new(
-        typeenv: &'ctx TypeEnv,
-        annotation_env: &'ctx AnnotationEnv,
         typesols: &'ctx HashMap<RuleId, Solution>,
         width: usize,
     ) -> Self {
-        // assert!(ty.is_bv());
         TypeContext {
-            typeenv,
-            annotation_env,
             typesols,
             width,
         }
