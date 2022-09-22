@@ -8,6 +8,12 @@ pub mod isle_annotations;
 
 use std::collections::HashMap;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TypeContext {
+    pub tyvars: HashMap<Expr, u32>,
+    pub tymap: HashMap<u32, Type>,
+}
+
 /// Packaged semantics for a single rule, included metadata on which terms
 /// are not yet defined.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -18,10 +24,9 @@ pub struct RuleSemantics {
     pub quantified_vars: Vec<BoundVar>,
     pub assumptions: Vec<Expr>,
 
-    pub types: HashMap<Expr, Type>,
+    pub tyctx: TypeContext,
 
-
-    //  TODO: sanity check uniqueness
+    //  TODO: remove
     pub lhs_undefined_terms: Vec<UndefinedTerm>,
     pub rhs_undefined_terms: Vec<UndefinedTerm>,
 }
@@ -191,6 +196,7 @@ pub enum Expr {
     BVExtract(usize, usize, Box<Expr>),
     BVIntToBV(Box<Expr>),
     BVConvTo(Box<Expr>),
+    BVDynConvTo(Box<Expr>, Box<Expr>),
 
     WidthOf(Box<Expr>),
 

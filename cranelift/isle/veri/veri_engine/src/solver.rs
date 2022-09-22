@@ -5,13 +5,13 @@
 use rsmt2::Solver;
 use std::collections::HashMap;
 use veri_ir::{
-    BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, UnaryOp, VerificationResult,
+    BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, UnaryOp, VerificationResult, TypeContext
 };
 
 const BITWIDTH: usize = 64;
 
 struct SolverCtx {
-    tymap: HashMap<Expr, Type>,
+    tyctx: TypeContext,
     bitwidth: usize,
 }
 
@@ -35,8 +35,12 @@ impl SolverCtx {
         }
     }
 
+    pub fn get_type(&self, x: &Expr) -> Option<&Type> {
+        self.tyctx.tymap.get(self.tyctx.tyvars.get(x)?)
+    }
+
     pub fn check_comparable_types(&self, x: &Expr, y: &Expr) {
-        match (self.tymap.get(x), self.tymap.get(y)) {
+        match (self.get_type(x), self.get_type(y)) {
             (None, _) | (_, None) => panic!("Missing type(s) {:?} {:?}", x, y),
             (Some(Type::Bool), Some(Type::Bool))
             | (Some(Type::Int), Some(Type::Int))
@@ -44,14 +48,14 @@ impl SolverCtx {
             | (Some(Type::BitVector(None)), Some(Type::BitVector(Some(_))))
             | (Some(Type::BitVector(Some(_))), Some(Type::BitVector(None))) => (),
             (Some(Type::BitVector(Some(xw))), Some(Type::BitVector(Some(yw)))) => {
-                assert_eq!(*xw, *yw, "incompatible {:?} {:?}", x, y)
+                assert_eq!(xw, yw, "incompatible {:?} {:?}", x, y)
             }
             (x, y) => panic!("Incompatible type(s) {:?} {:?}", x, y),
         }
     }
 
     pub fn vir_expr_to_rsmt2_str(&self, e: Expr) -> String {
-        let ty = &self.tymap.get(&e);
+        let ty = &self.get_type(&e);
         match e {
             Expr::Terminal(t) => match t {
                 Terminal::Var(v) => v,
@@ -122,6 +126,7 @@ impl SolverCtx {
             Expr::UndefinedTerm(term) => term.ret.name,
             Expr::WidthOf(x) => self.get_expr_width_var(*x),
             Expr::BVConvTo(y) => self.vir_expr_to_rsmt2_str(*y),
+            Expr::BVDynConvTo(_x, y) => self.vir_expr_to_rsmt2_str(*y),
         }
     }
 
@@ -169,7 +174,7 @@ pub fn run_solver_single_rule(rule_sem: veri_ir::RuleSemantics, _ty: &Type) -> V
 ///          (= <first rule LHS> <first rule RHS>))))))
 pub fn run_solver_rule_path(
     rule_path: RulePath,
-    tymap: HashMap<Expr, Type>,
+    tyctx: TypeContext,
     query_width: usize,
 ) -> VerificationResult {
     println!("Verifying with query width: {}", query_width);
@@ -179,7 +184,7 @@ pub fn run_solver_rule_path(
     let mut between_rule_assumptions: Vec<String> = vec![];
 
     let mut ctx = SolverCtx {
-        tymap,
+        tyctx,
         bitwidth: BITWIDTH,
     };
 
@@ -210,10 +215,12 @@ pub fn run_solver_rule_path(
                         Some(bitwidth) => *bitwidth,
                         None => {
                             query_width_used = true;
-                            ctx.tymap.insert(
+                            let tyvar = std::u32::MAX;
+                            ctx.tyctx.tyvars.insert(
                                 Expr::Terminal(Terminal::Var(name.clone())),
-                                Type::BitVector(Some(query_width)),
+                                tyvar
                             );
+                            ctx.tyctx.tymap.insert(tyvar, Type::BitVector(Some(query_width)));
                             query_width
                         }
                     };

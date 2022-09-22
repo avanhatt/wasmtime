@@ -33,7 +33,7 @@ pub fn build_rule_tree_rec(
         rhs: sol.rhs.clone(),
         assumptions: sol.assumptions.clone(),
         quantified_vars: sol.quantified_vars.clone(),
-        types: sol.types.clone(),
+        tyctx: sol.tyctx.to_owned(),
         lhs_undefined_terms: vec![],
         rhs_undefined_terms: vec![],
     };
@@ -253,8 +253,8 @@ pub fn verify_rules_for_type_wih_rule_filter(
             build_rule_tree_from_root(&rule, termenv, typeenv, annotationenv, typesols, width);
         let paths = enumerate_paths_to_leaves(&rule_tree);
         for rule_path in paths {
-            let tymap = rule_path.rules[0].types.clone();
-            let result = run_solver_rule_path(rule_path, tymap, width);
+            let tyctx = rule_path.rules[0].tyctx.clone();
+            let result = run_solver_rule_path(rule_path, tyctx, width);
             if result != VerificationResult::Success {
                 return result;
             }

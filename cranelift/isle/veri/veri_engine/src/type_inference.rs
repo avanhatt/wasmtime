@@ -6,7 +6,7 @@ use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{Sym, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
-use veri_ir::annotation_ir;
+use veri_ir::{annotation_ir, TypeContext};
 use veri_ir::Expr;
 
 const REG_WIDTH: usize = 64;
@@ -28,8 +28,6 @@ struct RuleParseTree<'a> {
     ty_vars: HashMap<veri_ir::Expr, u32>,
     quantified_vars: HashSet<(String, u32)>,
     assumptions: Vec<Expr>,
-    widths: HashMap<veri_ir::Expr, String>,
-    width_assumptions: HashMap<String, Expr>,
 }
 
 #[derive(Clone, Debug)]
@@ -76,9 +74,7 @@ pub struct Solution {
     pub rhs: veri_ir::Expr,
     pub quantified_vars: Vec<veri_ir::BoundVar>,
     pub assumptions: Vec<Expr>,
-    pub widths: HashMap<veri_ir::Expr, String>,
-    pub width_assumptions: HashMap<String, Expr>,
-    pub types: HashMap<veri_ir::Expr, veri_ir::Type>,
+    pub tyctx: TypeContext,
 }
 
 pub fn type_all_rules(
@@ -145,8 +141,6 @@ fn type_annotations_using_rule<'a>(
         ty_vars: HashMap::new(),
         quantified_vars: HashSet::new(),
         assumptions: vec![],
-        widths: HashMap::new(),
-        width_assumptions: HashMap::new(),
     };
 
     let var_map = &mut BTreeMap::new();
@@ -171,11 +165,11 @@ fn type_annotations_using_rule<'a>(
                 parse_tree.bv_constraints,
             );
 
-            let mut types = HashMap::new();
+            let mut tymap = HashMap::new();
 
-            for (expr, t) in parse_tree.ty_vars {
+            for (expr, t) in &parse_tree.ty_vars {
                 if let Some(ty) = solution.get(&t) {
-                    types.insert(expr, convert_type(ty));
+                    tymap.insert(*t, convert_type(ty));
                 } else {
                     panic!("missing type variable {} in solution for: {:?}", t, expr);
                 }
@@ -185,7 +179,8 @@ fn type_annotations_using_rule<'a>(
                 let expr = veri_ir::Expr::Terminal(veri_ir::Terminal::Var(s.clone()));
                 if let Some(ty) = solution.get(&t) {
                     let ty = convert_type(ty);
-                    types.insert(expr, ty.clone());
+                    parse_tree.ty_vars.insert(expr, t);
+                    tymap.insert(t, ty.clone());
                     quantified_vars.push(veri_ir::BoundVar { name: s, ty });
                 } else {
                     panic!("missing type variable {} in solution for: {:?}", t, expr);
@@ -199,9 +194,7 @@ fn type_annotations_using_rule<'a>(
                 rhs: rhs_expr,
                 assumptions: parse_tree.assumptions,
                 quantified_vars,
-                widths: parse_tree.widths,
-                width_assumptions: parse_tree.width_assumptions,
-                types,
+                tyctx: TypeContext { tyvars: parse_tree.ty_vars.clone(), tymap, },
             })
         }
         _ => None,
@@ -363,11 +356,14 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
         }
-        annotation_ir::Expr::BVDynConvTo(_w, x, _) => {
+        annotation_ir::Expr::BVDynConvTo(w, x, _) => {
+            let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
 
             // In the dynamic case, we don't know the width at this point
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(wt, annotation_ir::Type::Int));
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.bv_constraints
@@ -376,10 +372,7 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
 
             // AVH TODO use width
-
-            let width_name = format!("width__{}", t);
-            tree.width_assumptions.insert(width_name, e1.clone());
-            (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
+            (veri_ir::Expr::BVDynConvTo(Box::new(we), Box::new(e1)), t)
         }
         annotation_ir::Expr::BVIntToBv(x, w, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
@@ -402,8 +395,6 @@ fn add_annotation_constraints(
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
-    let width_name = format! {"width__{}", t};
-    tree.widths.insert(e.clone(), width_name.clone());
     (e, t)
 }
 
@@ -623,8 +614,6 @@ fn add_rule_constraints(
     };
     if let Some(e) = e {
         tree.ty_vars.insert(e.clone(), curr.type_var);
-        let width_name = format! {"width__{}", curr.type_var};
-        tree.widths.insert(e.clone(), width_name.clone());
         Some(e)
     } else {
         None
