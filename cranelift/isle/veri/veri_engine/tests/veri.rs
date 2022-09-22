@@ -54,15 +54,15 @@ fn test_ineg() {
     test_from_file("./examples/ineg.isle", lte_64_success_result())
 }
 
-#[test]
-fn test_rotl_from_file() {
-    let files = vec![
-        "../../../codegen/src/isa/aarch64/inst.isle",
-        "../../../codegen/src/isa/aarch64/lower.isle",
-    ];
-    // TODO: enable once this works
-    // test_from_files_with_lhs_termname(files, "rotl", just_8_result());
-}
+// #[test]
+// fn test_rotl_from_file() {
+//     let files = vec![
+//         "../../../codegen/src/isa/aarch64/inst.isle",
+//         "../../../codegen/src/isa/aarch64/lower.isle",
+//     ];
+//     // TODO: enable once this works
+//     test_from_files_with_lhs_termname(files, "rotl", just_8_result());
+// }
 
 #[test]
 fn test_let() {

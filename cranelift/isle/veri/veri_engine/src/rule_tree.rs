@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use crate::interp::Context;
+use crate::solver::run_solver_rule_path;
+use crate::type_inference::Solution;
 use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, RuleId, TermEnv, TypeEnv};
 use itertools::Itertools;
@@ -8,9 +11,6 @@ use veri_ir::{
     all_starting_bitvectors, BoundVar, RulePath, RuleSemantics, RuleTree, Type, UndefinedTerm,
     VerificationResult,
 };
-use crate::solver::run_solver_rule_path;
-use crate::type_inference::Solution;
-use crate::interp::Context;
 
 /// Recursively build a rule tree of possible rewrites, connected by undefined
 /// terms on the left hand sides (LHS) and right hand sides (RHS).

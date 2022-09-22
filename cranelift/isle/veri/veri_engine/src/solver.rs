@@ -2,10 +2,11 @@
 /// queries to that solver.
 ///
 /// Right now, this uses the rsmt2 crate.
-use rsmt2::Solver;
-use std::collections::HashMap;
+use rsmt2::{print, Solver};
+use std::{collections::HashMap, hash::Hash};
 use veri_ir::{
-    BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, UnaryOp, VerificationResult, TypeContext
+    BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, TypeContext, UnaryOp,
+    VerificationResult,
 };
 
 const BITWIDTH: usize = 64;
@@ -13,17 +14,17 @@ const BITWIDTH: usize = 64;
 struct SolverCtx {
     tyctx: TypeContext,
     bitwidth: usize,
+    width_vars: HashMap<u32, String>,
+    width_assumptions: Vec<String>,
 }
 
 impl SolverCtx {
-    pub fn width_name(&self, expr_name: &str) -> String {
-        format!("width__{}", expr_name)
-    }
-
-    pub fn get_expr_width_var(&self, e: Expr) -> String {
-        match e {
-            Expr::Terminal(Terminal::Var(s)) => self.width_name(&s),
-            _ => todo!(),
+    pub fn get_expr_width_var(&self, e: &Expr) -> Option<&String> {
+        if let Some(tyvar) = self.tyctx.tyvars.get(e) {
+            self.width_vars.get(tyvar)
+        } else {
+            println!("Missing type variable for {:?}", e);
+            None
         }
     }
 
@@ -44,9 +45,7 @@ impl SolverCtx {
             (None, _) | (_, None) => panic!("Missing type(s) {:?} {:?}", x, y),
             (Some(Type::Bool), Some(Type::Bool))
             | (Some(Type::Int), Some(Type::Int))
-            | (Some(Type::BitVector(None)), Some(Type::BitVector(None)))
-            | (Some(Type::BitVector(None)), Some(Type::BitVector(Some(_))))
-            | (Some(Type::BitVector(Some(_))), Some(Type::BitVector(None))) => (),
+             => (),
             (Some(Type::BitVector(Some(xw))), Some(Type::BitVector(Some(yw)))) => {
                 assert_eq!(xw, yw, "incompatible {:?} {:?}", x, y)
             }
@@ -54,8 +53,9 @@ impl SolverCtx {
         }
     }
 
-    pub fn vir_expr_to_rsmt2_str(&self, e: Expr) -> String {
+    pub fn vir_expr_to_rsmt2_str(&mut self, e: Expr) -> String {
         let ty = &self.get_type(&e);
+        let width = self.get_expr_width_var(&e);
         match e {
             Expr::Terminal(t) => match t {
                 Terminal::Var(v) => v,
@@ -119,14 +119,29 @@ impl SolverCtx {
                     self.vir_expr_to_rsmt2_str(*x)
                 )
             }
-            // AVH TODO: handle widths here
-            Expr::BVZeroExt(_i, x) => self.vir_expr_to_rsmt2_str(*x),
-            Expr::BVSignExt(_i, x) => self.vir_expr_to_rsmt2_str(*x),
-            Expr::BVExtract(_i, _j, x) => self.vir_expr_to_rsmt2_str(*x),
-            Expr::UndefinedTerm(term) => term.ret.name,
-            Expr::WidthOf(x) => self.get_expr_width_var(*x),
             Expr::BVConvTo(y) => self.vir_expr_to_rsmt2_str(*y),
-            Expr::BVDynConvTo(_x, y) => self.vir_expr_to_rsmt2_str(*y),
+            Expr::BVZeroExt(i, x) => {
+                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                let expr_width = width.unwrap().clone();
+                self.width_assumptions.push(format!("(= {} (+ {} {}))", expr_width, arg_width, i));
+                self.vir_expr_to_rsmt2_str(*x)
+            }
+            Expr::BVDynConvTo(x, y) => {
+                let expr_width = width.unwrap().clone();
+                let dyn_width = self.vir_expr_to_rsmt2_str(*x);
+                self.width_assumptions.push(format!("(= {} {})", expr_width, dyn_width));
+                self.vir_expr_to_rsmt2_str(*y)
+            }
+            Expr::UndefinedTerm(term) => term.ret.name,
+            Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
+
+            // AVH TODO: handle widths here
+            Expr::BVSignExt(_i, x) => {
+                self.vir_expr_to_rsmt2_str(*x)
+            }
+            Expr::BVExtract(i, j, x) => {
+                self.vir_expr_to_rsmt2_str(*x)
+            }
         }
     }
 
@@ -186,6 +201,8 @@ pub fn run_solver_rule_path(
     let mut ctx = SolverCtx {
         tyctx,
         bitwidth: BITWIDTH,
+        width_vars: HashMap::new(),
+        width_assumptions: vec![],
     };
 
     for (v1, v2) in rule_path.undefined_term_pairs {
@@ -199,44 +216,39 @@ pub fn run_solver_rule_path(
             between_rule_assumptions.push(equality)
         }
     }
+    // Use the query width for any unspecified bitwidths
     let mut query_width_used = false;
+    for (e, t) in &ctx.tyctx.tyvars {
+        let ty = &ctx.tyctx.tymap[&t];
+        match ty {
+            Type::BitVector(w) => {
+                let width_name = format!("width__{}", t);
+                solver.declare_const(width_name.clone(), "Int").unwrap();
+                let width = match w {
+                    Some(bitwidth) => *bitwidth,
+                    None => {
+                        query_width_used = true;
+                        &ctx.tyctx.tymap.insert(*t, Type::BitVector(Some(query_width))); 
+                        query_width
+                    }
+                };
+                println!("\t{} : Int", width_name);
+                ctx.width_vars.insert(*t, width_name.clone());
+                assumptions.push(format!("(= {} {})", width_name, width));
+            }
+            _ => (),
+        }
+    }
+    if !query_width_used {
+        panic!("Query width unused, check rule!");
+    }
     for rule_sem in &rule_path.rules {
         println!("Declaring constants:");
         for v in &rule_sem.quantified_vars {
             let name = &v.name;
-            match &v.ty {
-                Type::BitVector(w) => {
-                    let var_ty = ctx.vir_to_rsmt2_constant_ty(&v.ty);
-                    println!("\t{} : {:?}", name, &var_ty);
-                    solver.declare_const(name, var_ty).unwrap();
-                    let width_name = ctx.width_name(name);
-                    solver.declare_const(width_name.clone(), "Int").unwrap();
-                    let width = match w {
-                        Some(bitwidth) => *bitwidth,
-                        None => {
-                            query_width_used = true;
-                            let tyvar = std::u32::MAX;
-                            ctx.tyctx.tyvars.insert(
-                                Expr::Terminal(Terminal::Var(name.clone())),
-                                tyvar
-                            );
-                            ctx.tyctx.tymap.insert(tyvar, Type::BitVector(Some(query_width)));
-                            query_width
-                        }
-                    };
-                    println!("\t{} : Int", width_name);
-                    assumptions.push(format!("(= {} {})", width_name, width));
-                }
-                _ => {
-                    let var_ty = ctx.vir_to_rsmt2_constant_ty(&v.ty);
-                    println!("\t{} : {:?}", name, &var_ty);
-                    solver.declare_const(name, var_ty).unwrap();
-                }
-            }
-        }
-
-        if !query_width_used {
-            panic!("Query width unused, check rule!");
+            let var_ty = ctx.vir_to_rsmt2_constant_ty(&v.ty);
+            println!("\t{} : {:?}", name, &var_ty);
+            solver.declare_const(name, var_ty).unwrap();
         }
 
         println!("Adding assumptions:");
@@ -244,6 +256,9 @@ pub fn run_solver_rule_path(
             let p = ctx.vir_expr_to_rsmt2_str(a.clone());
             println!("\t{}", p);
             assumptions.push(p)
+        }
+        for a in &ctx.width_assumptions {
+            assumptions.push(a.clone());
         }
 
         let assumption_str = format!("(and {})", assumptions.join(" "));

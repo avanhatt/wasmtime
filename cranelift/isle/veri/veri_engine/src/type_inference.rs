@@ -6,8 +6,8 @@ use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{Sym, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
-use veri_ir::{annotation_ir, TypeContext};
 use veri_ir::Expr;
+use veri_ir::{annotation_ir, TypeContext};
 
 const REG_WIDTH: usize = 64;
 
@@ -194,7 +194,10 @@ fn type_annotations_using_rule<'a>(
                 rhs: rhs_expr,
                 assumptions: parse_tree.assumptions,
                 quantified_vars,
-                tyctx: TypeContext { tyvars: parse_tree.ty_vars.clone(), tymap, },
+                tyctx: TypeContext {
+                    tyvars: parse_tree.ty_vars.clone(),
+                    tymap,
+                },
             })
         }
         _ => None,
@@ -383,7 +386,6 @@ fn add_annotation_constraints(
 
             // AVH TODO use width
 
-
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));
             tree.concrete_constraints
@@ -495,8 +497,7 @@ fn add_rule_constraints(
     // recursive definitions without annotations (like And and Let), recur.
     let mut children = vec![];
     for child in &mut curr.children {
-        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos)
-        {
+        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos) {
             children.push(e);
         } else {
             return None;
@@ -532,10 +533,12 @@ fn add_rule_constraints(
             for (e, s) in children.iter().zip(bound) {
                 tree.assumptions.push(veri_ir::Expr::Binary(
                     veri_ir::BinaryOp::Eq,
-                    Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(s.to_owned()))),
+                    Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
+                        s.to_owned(),
+                    ))),
                     Box::new(e.to_owned()),
                 ))
-            };
+            }
             children.last().cloned()
         }
         TypeVarConstruct::Term(t) => {
@@ -1072,7 +1075,10 @@ fn create_parse_tree_expr(
             for (varid, _, sym, expr) in bindings {
                 let var = typeenv.syms[sym.index()].clone();
                 let subpat_node = create_parse_tree_expr(expr, tree, var_map, typeenv, termenv);
-                let ty_var = subpat_node.type_var;
+                
+                let ty_var = tree.next_type_var;
+                tree.next_type_var += 1;
+
                 tree.var_to_type_var_map.insert(var.clone(), ty_var);
                 var_map.insert(*varid, *sym);
                 children.push(subpat_node);
