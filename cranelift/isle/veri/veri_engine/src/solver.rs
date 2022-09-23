@@ -45,7 +45,7 @@ impl SolverCtx {
     pub fn static_width(&self, x: &Expr) -> usize {
         match self.get_type(x).unwrap() {
             Type::BitVector(Some(w)) => *w,
-            _=> unreachable!("static width error")
+            _ => unreachable!("static width error"),
         }
     }
 
@@ -77,11 +77,20 @@ impl SolverCtx {
                         let narrow_name = format!("narrow__{}", var);
                         let wide_name = format!("wide__{}", var);
                         let narrow_decl = format!("(_ bv{} {})", i, width);
-                        self.additional_assumptions.push(format!("(= {} {})", narrow_name, narrow_decl));
-                        self.additional_decls.push((narrow_name.clone(), format!("(_ BitVec {})", width)));
-                        self.additional_decls.push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
+                        self.additional_assumptions
+                            .push(format!("(= {} {})", narrow_name, narrow_decl));
+                        self.additional_decls
+                            .push((narrow_name.clone(), format!("(_ BitVec {})", width)));
+                        self.additional_decls
+                            .push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
 
-                        let constraint = format!("(= ((_ extract {} {}) {}) {})", width - 1, 0, wide_name, narrow_name);
+                        let constraint = format!(
+                            "(= ((_ extract {} {}) {}) {})",
+                            width - 1,
+                            0,
+                            wide_name,
+                            narrow_name
+                        );
                         self.additional_assumptions.push(constraint);
 
                         wide_name
@@ -276,7 +285,10 @@ pub fn run_solver_rule_path(
                 ctx.additional_decls
                     .push((width_name.clone(), "Int".to_string()));
                 let width = match w {
-                    Some(bitwidth) => *bitwidth,
+                    Some(bitwidth) => {
+                        assumptions.push(format!("(= {} {})", width_name, bitwidth));
+                        *bitwidth
+                    }
                     None => {
                         query_width_used = true;
                         ctx.tyctx
@@ -286,7 +298,6 @@ pub fn run_solver_rule_path(
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
-                assumptions.push(format!("(= {} {})", width_name, width));
             }
             _ => (),
         }
@@ -363,16 +374,13 @@ pub fn run_solver_rule_path(
     let first_lhs = ctx.vir_expr_to_rsmt2_str(first.lhs);
     let first_rhs = ctx.vir_expr_to_rsmt2_str(first.rhs);
 
-    let lhs_care_bits =  format!("((_ extract {} {}) {})", lhs_width - 1, 0, &first_lhs);
+    let lhs_care_bits = format!("((_ extract {} {}) {})", lhs_width - 1, 0, &first_lhs);
     let rhs_care_bits = format!("((_ extract {} {}) {})", rhs_width - 1, 0, &first_rhs);
-    
-    let side_equality = format!("(= {} {})", lhs_care_bits, rhs_care_bits); 
+
+    let side_equality = format!("(= {} {})", lhs_care_bits, rhs_care_bits);
     println!("LHS and RHS equality condition:\n\t{}\n", side_equality);
 
-    let query = format!(
-        "(not (=> {} {}))",
-        assumption_str, side_equality
-    );
+    let query = format!("(not (=> {} {}))", assumption_str, side_equality);
     println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 

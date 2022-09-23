@@ -203,6 +203,7 @@ pub fn verify_rules_with_lhs_root(
     annotationenv: &AnnotationEnv,
     typesols: &HashMap<RuleId, Solution>,
 ) -> VerificationResult {
+    let mut total_result = VerificationResult::Success;
     for width in all_starting_bitvectors() {
         let result = verify_rules_for_type_with_lhs_root(
             root,
@@ -213,10 +214,10 @@ pub fn verify_rules_with_lhs_root(
             width,
         );
         if result != VerificationResult::Success {
-            return result;
+            total_result = result;
         }
     }
-    VerificationResult::Success
+    return total_result;
 }
 
 pub fn verify_rules_for_type_with_lhs_root(

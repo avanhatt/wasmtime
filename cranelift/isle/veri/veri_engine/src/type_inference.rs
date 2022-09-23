@@ -467,7 +467,7 @@ fn add_isle_constraints(
             "u64".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(64),
         ),
-        ("u8".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
+        ("u8".to_owned(), annotation_ir::Type::Int),
         ("bool".to_owned(), annotation_ir::Type::Bool),
         (
             "MoveWideConst".to_owned(),
@@ -996,7 +996,7 @@ fn create_parse_tree_pattern(
         }
         isle::sema::Pattern::And(_, subpats) => {
             let mut children = vec![];
-            let mut ty_vars = vec![];
+            let mut ty_vars = vec![]; 
             for p in subpats {
                 let child = create_parse_tree_pattern(p, tree, var_map, typeenv, termenv);
                 ty_vars.push(child.type_var);
@@ -1056,6 +1056,7 @@ fn create_parse_tree_expr(
             let mut ident = var_id.0.to_string();
             if !var_map.contains_key(var_id) {
                 println!("var {} not found, using var id instead", var_id.0);
+                ident = format!("v{}", ident);
             } else {
                 let sym = var_map[var_id];
                 ident = typeenv.syms[sym.index()].clone();
