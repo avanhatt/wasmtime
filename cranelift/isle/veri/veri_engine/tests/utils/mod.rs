@@ -25,7 +25,6 @@ pub enum Bitwidth {
     I16 = 16,
     I32 = 32,
     I64 = 64,
-    I128 = 128,
 }
 
 type Result = (Bitwidth, VerificationResult);
@@ -51,11 +50,6 @@ pub fn just_32_result() -> TestResult {
 #[allow(dead_code)]
 pub fn just_64_result() -> TestResult {
     vec![(Bitwidth::I64, VerificationResult::Success)]
-}
-
-#[allow(dead_code)]
-pub fn just_128_result() -> TestResult {
-    vec![(Bitwidth::I128, VerificationResult::Success)]
 }
 
 /// All bitwidths verify

@@ -114,7 +114,7 @@
 
 ;; Construct a single-element `InstOutput` from a single register.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (arg) (conv_to (widthof (arg)) (ret)))))
 (decl output_reg (Reg) InstOutput)
 (rule (output_reg reg) (output (value_reg reg)))
 
@@ -269,7 +269,7 @@
 
 ;; Get the bit width of a given type.
 ;;@ (spec (sig (args x) (ret))
-;;@     (assertions (= (int2bv (widthof (ret)) (x)) (ret))))
+;;@     (assertions (= (x) (ret))))
 (decl pure ty_bits (Type) u8)
 (extern constructor ty_bits ty_bits)
 

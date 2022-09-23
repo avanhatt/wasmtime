@@ -11,6 +11,8 @@
         (type Imm12 (primitive Imm12))
     
         ;; EXTRACTORS
+        ;;     AVH todo: leave the upper bits undefined
+
         ;;@ (spec (sig (args arg) (ret))
         ;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
         (decl lower (Inst) ValueRegs)
@@ -50,6 +52,7 @@
         (decl add (Type Reg Reg) Reg)
         (extern constructor add add)
     
+;;     AVH todo: leave the upper bits undefined
         ;;@ (spec (sig (args arg) (ret))
         ;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
         (decl put_in_reg (Value) Reg)

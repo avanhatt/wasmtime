@@ -119,16 +119,45 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
         //     Some(TermAnnotation::new(func, vec![assertion]))
         //}
         "uextend" => {
-            let arg = BoundVar::new("arg");
-            let ret = BoundVar::new("ret");
+            // let arg = BoundVar::new("arg");
+            // let ret = BoundVar::new("ret");
 
-            let ext = Expr::BVConvTo(Box::new(Width::RegWidth), Box::new(arg.as_expr()), 0);
-            let assertion = Expr::Eq(Box::new(ret.as_expr()), Box::new(ext), 0);
-            let sig = TermSignature{
-                args: vec![arg],
-                ret: ret,
-            };
-            Some(TermAnnotation::new(sig, vec![assertion]))
+            // let ext = Expr::BVConvTo(Box::new(Width::RegWidth), Box::new(arg.as_expr()), 0);
+            // let assertion = Expr::Eq(Box::new(ret.as_expr()), Box::new(ext), 0);
+            // let sig = TermSignature{
+            //     args: vec![arg],
+            //     ret: ret,
+            // };
+            // Some(TermAnnotation::new(sig, vec![assertion]))
+            todo!()
+        }
+        "extend" => {
+            // let a = BoundVar::new("a");
+            // let b = BoundVar::new("b");
+            // let c = BoundVar::new("c");
+            // let d = BoundVar::new("d");
+            // let ret = BoundVar::new("ret");
+
+            // let extend_stuff = Expr::Conditional(
+            //     Box::new(b.as_expr()),
+            //     Box::new(Expr::binary(
+            //         Expr::Eq, ret.as_expr(), Expr::binary(
+            //             Expr::BVSignedConvToVarWidth, d.as_expr(), a.as_expr()),
+            //     )),
+            //     Box::new(Expr::binary(
+            //         Expr::Eq, ret.as_expr(), Expr::binary(
+            //             Expr::BVConvToVarWidth, d.as_expr(), a.as_expr()),
+            //     )),
+            // );
+            // let pre = Expr::binary(Expr::Eq, Expr::unary(
+            //     Expr::WidthOf, a.as_expr()), c.as_expr());
+
+            // let func = TermSignature {
+            //     args: vec![a, b, c, d],
+            //     ret: ret,
+            // };
+            // Some(TermAnnotation::new(func, vec![extend_stuff, pre]))
+            todo!()
         }
         _ => None,
     }

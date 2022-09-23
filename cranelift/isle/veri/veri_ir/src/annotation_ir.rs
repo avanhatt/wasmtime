@@ -182,11 +182,20 @@ pub enum Expr {
     BVSignExt(usize, Box<Expr>, u32),
     BVExtract(usize, usize, Box<Expr>, u32),
 
+    // Convert integer to bitvector 
+    BVIntToBv(Box<Expr>, Box<Expr>, u32),
+
     // A special, high level conversion to a destination width. This currently
     // assumes that the source width is the LHS values BV width.
     BVConvTo(Box<Width>, Box<Expr>, u32),
-    BVDynConvTo(Box<Expr>, Box<Expr>, u32),
-    BVIntToBv(Box<Expr>, Box<Expr>, u32),
+    // Allow the destination width to be symbolic.
+    BVConvToVarWidth(Box<Expr>, Box<Expr>, u32),
+    // BVConvTo but sign extend instead of zero extend.
+    BVSignedConvTo(usize, Box<Expr>, u32),
+    // BVConvToVarWidth but sign extend instead of zero extend.
+    BVSignedConvToVarWidth(Box<Expr>, Box<Expr>, u32),
+
+    Conditional(Box<Expr>, Box<Expr>, Box<Expr>, u32),
 }
 
 impl Expr {
@@ -229,10 +238,12 @@ impl Expr {
             Expr::BVShr(_, _, t) |
             Expr::BVZeroExt(_, _, t) |
             Expr::BVSignExt(_, _, t) |
-            Expr::BVConvTo(_, _, t) |
-            Expr::BVDynConvTo(_, _, t) |
             Expr::BVIntToBv(_, _, t) |
-
+            Expr::BVConvTo(_, _, t) |
+            Expr::BVConvToVarWidth(_, _, t) |
+            Expr::BVSignedConvTo(_, _, t) |
+            Expr::BVSignedConvToVarWidth(_, _, t) |
+            Expr::Conditional(_, _, _, t) |
             Expr::BVExtract(_, _, _, t) => *t,
         }
     }

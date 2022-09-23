@@ -100,7 +100,14 @@ fn test_expr() {
     assert!(parser::ExprParser::new().parse("(sign_ext 2 (-12i4: bv))").is_ok());
     assert!(parser::ExprParser::new().parse("(extract 0 8 (a))").is_ok());
     assert!(parser::ExprParser::new().parse("(conv_to 6 (b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(conv_to (a) (b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(signed_conv_to 6 (b))").is_ok());
+    assert!(parser::ExprParser::new().parse("(signed_conv_to (a) (b))").is_ok());
     assert!(parser::ExprParser::new().parse("(conv_from 16 (8i128: bv))").is_ok());
+
+    // conditional
+    assert!(parser::ExprParser::new()
+        .parse("(if (a) {(+ (b) (c))} else {(d)})").is_ok());
 
     // functions
     assert!(parser::ExprParser::new()
@@ -213,11 +220,16 @@ fn test_real_annotations() {
     let expected = isle_annotation_for_term("sub_imm").unwrap();
     assert_eq!(parsed, expected);
 
-    // uextend
+    // extend
     let parsed = parser::TermAnnotationParser::new().parse(
-        "(spec (sig (args arg) (ret))
-            (assertions (= (ret) (conv_to (regwidth) (arg)))))"
+        "(spec (sig (args a, b, c, d) (ret))
+             (assertions (if (b) {
+                             (= (ret) (signed_conv_to (d) (a)))
+                      } else {
+                          (= (ret) (conv_to (d) (a)))}),
+             (= (widthof (a)) (c))
+         ))"
     ).unwrap();
-    let expected = isle_annotation_for_term("uextend").unwrap();
+    let expected = isle_annotation_for_term("extend").unwrap();
     assert_eq!(parsed, expected);
 }

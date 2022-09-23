@@ -24,7 +24,7 @@ pub Type: Type = {
 };
 
 pub BoundVar: BoundVar = {
-    <i: Ident> => BoundVar{name: i, ty: None},
+    <i:Ident> => BoundVar{name: i, ty: None},
     <i:Ident> ":" <t:Type> => BoundVar{name: i, ty: Some(t)},
 };
 
@@ -102,10 +102,17 @@ pub Expr: Box<Expr> = {
     "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v, 0)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v, 0)),
-    "(" "conv_to" <n:UNum> <v:Expr> ")" => 
-        Box::new(Expr::BVConvTo(Box::new(Width::Const(n)), v, 0)),
-    "(" "conv_to" <w:Width> <v:Expr> ")" => Box::new(Expr::BVConvTo(w, v, 0)), 
-    "(" "conv_to" <w:Expr> <v:Expr> ")" => Box::new(Expr::BVDynConvTo(w, v, 0)), 
+    "(" "conv_to" <n:Width> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v, 0)),
+    "(" "conv_to" <n:Expr> <v:Expr> ")" => 
+        Box::new(Expr::BVConvToVarWidth(n, v, 0)),
+    "(" "signed_conv_to" <n:UNum> <v:Expr> ")" =>
+        Box::new(Expr::BVSignedConvTo(n, v, 0)),
+    "(" "signed_conv_to" <n:Expr> <v:Expr> ")" =>
+        Box::new(Expr::BVSignedConvToVarWidth(n, v, 0)),
+
+    "(" "if" <c:Expr> "{" <e1:Expr> "}" "else" "{" <e2:Expr> "}" ")" =>
+        Box::new(Expr::Conditional(c, e1, e2, 0)),
+
     "(" "int2bv" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v, 0)),
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v, 0)),
 };

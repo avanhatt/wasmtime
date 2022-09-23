@@ -881,6 +881,7 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.IfcmpImm) x Y))
 )
 
+;; x, y [1, 8, 16...64] AVH todo look at the DSL. Also true for non-width types.
 ;;@ (spec (sig (args x, y) (ret))
 ;;@       (assertions (= (+ (x) (y)) (ret))))
 (decl iadd (Value Value) Inst)

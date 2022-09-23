@@ -4,7 +4,7 @@
 ;; register(s) within which the lowered instruction's result values live.
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
+;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;;;; Rules for `iconst` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -497,12 +497,14 @@
 
 ;; Atomic loads will also automatically zero their upper bits so the `uextend`
 ;; instruction can effectively get skipped here.
+;; (rule (lower (uextend x)) // side condiiton: (uextend x).ty <= 64
 (rule (lower (has_type (fits_in_64 out)
                        (uextend (and (value_type in) (sinkable_atomic_load addr)))))
       (load_acquire in (sink_atomic_load addr)))
 
 ;; Conversion to 128-bit needs a zero-extension of the lower bits and the upper
 ;; bits are all zero.
+;; (rule (lower (uextend x)) // side condiiton: (uextend x).ty == $I128
 (rule (lower (has_type $I128 (uextend x)))
       (value_regs (put_in_reg_zext64 x) (imm $I64 0)))
 

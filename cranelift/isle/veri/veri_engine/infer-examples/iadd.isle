@@ -41,7 +41,7 @@
 
 (convert Reg InstOutput output_reg)
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (arg) (conv_to (widthof (arg)) (ret)))))
 (decl output_reg (Reg) InstOutput)
 (extern extractor output_reg output_reg)
 (extern constructor output_reg output_reg)
@@ -55,8 +55,8 @@
 
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
-(decl lower (Inst) InstOutput)
+;;@     (assertions (= (arg) (ret))))
+(decl lower(Inst) InstOutput)
 
 ;;@ (spec (sig (args ty, arg) (ret))
 ;;@ (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))

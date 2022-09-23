@@ -359,7 +359,7 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
         }
-        annotation_ir::Expr::BVDynConvTo(w, x, _) => {
+        annotation_ir::Expr::BVConvToVarWidth(w, x, _) => {
             let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
@@ -374,8 +374,30 @@ fn add_annotation_constraints(
 
             tree.next_type_var += 1;
 
-            // AVH TODO use width
-            (veri_ir::Expr::BVDynConvTo(Box::new(we), Box::new(e1)), t)
+            (
+                veri_ir::Expr::BVConvToVarWidth(Box::new(we), Box::new(e1)),
+                t,
+            )
+        }
+        annotation_ir::Expr::BVSignedConvToVarWidth(w, x, _) => {
+            let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            // In the dynamic case, we don't know the width at this point
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(wt, annotation_ir::Type::Int));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+
+            (
+                veri_ir::Expr::BVSignedConvToVarWidth(Box::new(we), Box::new(e1)),
+                t,
+            )
         }
         annotation_ir::Expr::BVIntToBv(x, w, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
@@ -384,15 +406,32 @@ fn add_annotation_constraints(
             let t = tree.next_type_var;
             tree.next_type_var += 1;
 
-            // AVH TODO use width
-
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(tw, annotation_ir::Type::Int));
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+
+            //  AVH TODO use width
             (veri_ir::Expr::BVIntToBV(Box::new(ex)), t)
+        }
+        annotation_ir::Expr::Conditional(c, t, e, _) => {
+            let (e1, t1) = add_annotation_constraints(*c, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*t, tree, annotation_info);
+            let (e3, t3) = add_annotation_constraints(*e, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t2, t3));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Conditional(Box::new(e1), Box::new(e2), Box::new(e3)),
+                t,
+            )
         }
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
@@ -1046,6 +1085,7 @@ fn create_parse_tree_expr(
             let val = match name.as_str() {
                 "I64" => 64,
                 "I32" => 32,
+                "false" => 0,
                 _ => todo!("{:?}", &name),
             };
             let name = format!("{}__{}", name, type_var);
@@ -1075,7 +1115,7 @@ fn create_parse_tree_expr(
             for (varid, _, sym, expr) in bindings {
                 let var = typeenv.syms[sym.index()].clone();
                 let subpat_node = create_parse_tree_expr(expr, tree, var_map, typeenv, termenv);
-                
+
                 let ty_var = tree.next_type_var;
                 tree.next_type_var += 1;
 

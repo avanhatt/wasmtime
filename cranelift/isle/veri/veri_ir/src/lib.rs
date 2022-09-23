@@ -190,13 +190,18 @@ pub enum Expr {
     Unary(UnaryOp, Box<Expr>),
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
 
+    // ITE
+    Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+
     // Conversions
     BVZeroExt(usize, Box<Expr>),
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
     BVIntToBV(Box<Expr>),
     BVConvTo(Box<Expr>),
-    BVDynConvTo(Box<Expr>, Box<Expr>),
+    BVConvToVarWidth(Box<Expr>, Box<Expr>),
+    BVSignedConvTo(Box<Expr>),
+    BVSignedConvToVarWidth(Box<Expr>, Box<Expr>),
 
     WidthOf(Box<Expr>),
 
@@ -205,7 +210,7 @@ pub enum Expr {
 }
 
 pub fn all_starting_bitvectors() -> Vec<usize> {
-    vec![1, 8, 16, 32, 64, 128]
+    vec![1, 8, 16, 32, 64]
 }
 
 impl BoundVar {

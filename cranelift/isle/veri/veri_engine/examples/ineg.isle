@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
+;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
