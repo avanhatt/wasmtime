@@ -1,6 +1,6 @@
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (= (arg) (ret))))
-(decl lower(Inst) ValueRegs)
+(decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
 (type MInst

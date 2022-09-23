@@ -82,7 +82,6 @@ impl SolverCtx {
                         self.additional_decls.push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
 
                         let constraint = format!("(= ((_ extract {} {}) {}) {})", width - 1, 0, wide_name, narrow_name);
-                        dbg!(&constraint);
                         self.additional_assumptions.push(constraint);
 
                         wide_name

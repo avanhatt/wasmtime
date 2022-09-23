@@ -4,7 +4,7 @@
 
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (= (arg) (ret))))
-(decl lower(Inst) ValueRegs)
+(decl lower (Inst) ValueRegs)
 
 ;; Instruction formats.
 (type MInst

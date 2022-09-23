@@ -56,7 +56,7 @@
 
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (= (arg) (ret))))
-(decl lower(Inst) InstOutput)
+(decl lower (Inst) InstOutput)
 
 ;;@ (spec (sig (args ty, arg) (ret))
 ;;@ (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))
