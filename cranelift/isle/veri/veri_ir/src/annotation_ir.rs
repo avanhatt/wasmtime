@@ -183,7 +183,7 @@ pub enum Expr {
     BVExtract(usize, usize, Box<Expr>, u32),
 
     // Convert integer to bitvector 
-    BVIntToBv(Box<Expr>, Box<Expr>, u32),
+    BVIntToBv(usize, Box<Expr>, u32),
 
     // A special, high level conversion to a destination width. This currently
     // assumes that the source width is the LHS values BV width.

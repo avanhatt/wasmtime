@@ -1,5 +1,5 @@
 // auto-generated: "lalrpop 0.19.7"
-// sha3: b146f9d091da399a4f3b1dd7af6069a5fe974d6a4da1cf61b68a60581fbb228b
+// sha3: d996202375515fbf56fb33ab2fdb226eec76e2c2d49c9961d46bbf87ae11
 use std::str::FromStr;
 use veri_ir as ast;
 use ast::annotation_ir::*;
@@ -2149,11 +2149,11 @@ mod __parse__BoundVar {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -4873,11 +4873,11 @@ mod __parse__Const {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -5530,7 +5530,7 @@ mod __parse__Expr {
         // State 13
         0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 14
-        0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0,
         // State 15
         0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 16
@@ -6022,7 +6022,6 @@ mod __parse__Expr {
                 9 => 30,
                 10 => 31,
                 11 => 32,
-                14 => 36,
                 15 => 37,
                 16 => 38,
                 17 => 39,
@@ -6062,6 +6061,7 @@ mod __parse__Expr {
             24 => 2,
             27 => 94,
             30 => match state {
+                14 => 36,
                 18 => 40,
                 19 => 42,
                 21 => 43,
@@ -8104,11 +8104,11 @@ mod __parse__Expr {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -8773,7 +8773,7 @@ mod __parse__Function {
         // State 19
         0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 20
-        0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 0,
         // State 21
         0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 22
@@ -9336,7 +9336,6 @@ mod __parse__Function {
                 15 => 36,
                 16 => 37,
                 17 => 38,
-                20 => 42,
                 21 => 43,
                 22 => 44,
                 23 => 45,
@@ -9385,6 +9384,7 @@ mod __parse__Function {
                 _ => 69,
             },
             30 => match state {
+                20 => 42,
                 24 => 46,
                 25 => 48,
                 27 => 49,
@@ -11427,11 +11427,11 @@ mod __parse__Function {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -12086,7 +12086,7 @@ mod __parse__FunctionApplication {
         // State 14
         0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 15
-        0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 70, 0, 0, 0,
         // State 16
         0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 17
@@ -12618,7 +12618,6 @@ mod __parse__FunctionApplication {
                 10 => 32,
                 11 => 33,
                 12 => 34,
-                15 => 38,
                 16 => 39,
                 17 => 40,
                 18 => 41,
@@ -12662,6 +12661,7 @@ mod __parse__FunctionApplication {
             24 => 3,
             27 => 104,
             30 => match state {
+                15 => 38,
                 19 => 42,
                 20 => 44,
                 22 => 45,
@@ -14704,11 +14704,11 @@ mod __parse__FunctionApplication {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -17463,11 +17463,11 @@ mod __parse__FunctionType {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -18134,7 +18134,7 @@ mod __parse__TermAnnotation {
         // State 20
         0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 21
-        0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 0, 0, 0,
         // State 22
         0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         // State 23
@@ -18755,7 +18755,6 @@ mod __parse__TermAnnotation {
                 16 => 38,
                 17 => 39,
                 18 => 40,
-                21 => 44,
                 22 => 45,
                 23 => 46,
                 24 => 47,
@@ -18805,6 +18804,7 @@ mod __parse__TermAnnotation {
                 _ => 101,
             },
             30 => match state {
+                21 => 44,
                 25 => 48,
                 26 => 50,
                 28 => 51,
@@ -20847,11 +20847,11 @@ mod __parse__TermAnnotation {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -23645,11 +23645,11 @@ mod __parse__TermSignature {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -26344,11 +26344,11 @@ mod __parse__Type {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -29034,11 +29034,11 @@ mod __parse__Width {
         _: core::marker::PhantomData<(&'input ())>,
     ) -> (usize, usize)
     {
-        // Expr = "(", "int2bv", Expr, Expr, ")" => ActionFn(58);
+        // Expr = "(", "int2bv", UNum, Expr, ")" => ActionFn(58);
         assert!(__symbols.len() >= 5);
         let __sym4 = __pop_Variant0(__symbols);
         let __sym3 = __pop_Variant3(__symbols);
-        let __sym2 = __pop_Variant3(__symbols);
+        let __sym2 = __pop_Variant21(__symbols);
         let __sym1 = __pop_Variant0(__symbols);
         let __sym0 = __pop_Variant0(__symbols);
         let __start = __sym0.0.clone();
@@ -30468,7 +30468,7 @@ fn __action58<
     input: &'input str,
     (_, _, _): (usize, &'input str, usize),
     (_, _, _): (usize, &'input str, usize),
-    (_, n, _): (usize, Box<Expr>, usize),
+    (_, n, _): (usize, usize, usize),
     (_, v, _): (usize, Box<Expr>, usize),
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>

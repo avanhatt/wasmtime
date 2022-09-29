@@ -12,6 +12,8 @@ use std::collections::HashMap;
 pub struct TypeContext {
     pub tyvars: HashMap<Expr, u32>,
     pub tymap: HashMap<u32, Type>,
+    // map of type var to set index
+    pub bv_unknown_width_sets: HashMap<u32, u32>,
 }
 
 /// Packaged semantics for a single rule, included metadata on which terms
@@ -98,17 +100,7 @@ pub struct FunctionApplication {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct BoundVar {
     pub name: String,
-    pub ty: Type,
-}
-
-impl BoundVar {
-    /// Construct a new bound variable, cloning from references
-    pub fn new(name: &str, ty: &Type) -> Self {
-        BoundVar {
-            name: name.to_string(),
-            ty: ty.clone(),
-        }
-    }
+    pub tyvar: u32,
 }
 
 /// An ISLE term that does not yet have a defined semantics (that is, a
@@ -197,7 +189,7 @@ pub enum Expr {
     BVZeroExt(usize, Box<Expr>),
     BVSignExt(usize, Box<Expr>),
     BVExtract(usize, usize, Box<Expr>),
-    BVIntToBV(Box<Expr>),
+    BVIntToBV(usize, Box<Expr>),
     BVConvTo(Box<Expr>),
     BVConvToVarWidth(Box<Expr>, Box<Expr>),
     BVSignedConvTo(Box<Expr>),
