@@ -76,7 +76,7 @@ impl SolverCtx {
                 let extract = format!("((_ extract {} 0) {})", possible_source.wrapping_sub(1), source);
                 let extend = format!("((_ {} {}) {})", op, possible_shift, extract);
                 let unconstrained_bits = self.bitwidth.wrapping_sub(possible_shift).wrapping_sub(possible_source);
-                let padding = self.new_fresh_bits(unconstrained_bits);
+                let padding = format!("((_ extract {} 0) {})", self.bitwidth.wrapping_sub(1), self.bitwidth.wrapping_sub(unconstrained_bits), source);
                 let padded = format!("(concat {} {})", padding, extend);
                 ite_str = format!(
                     "(ite (and (= {} {}) (= {} {})) {} {})", 
