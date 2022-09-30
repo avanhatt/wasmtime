@@ -98,17 +98,15 @@ pub Expr: Box<Expr> = {
     "(" "shl" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVShl(u, v, 0)),
     "(" "shr" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVShr(u, v, 0)),
 
-    "(" "zero_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVZeroExt(n, v, 0)),
-    "(" "sign_ext" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v, 0)),
+    "(" "zero_ext" <n:Width> <v:Expr> ")" => Box::new(Expr::BVZeroExtTo(n, v, 0)),
+    "(" "zero_ext" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVZeroExtToVarWidth(n, v, 0)),
+    "(" "sign_ext" <n:Width> <v:Expr> ")" => Box::new(Expr::BVSignExt(n, v, 0)),
+    "(" "sign_ext" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVSignExtToVarWidth(n, v, 0)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v, 0)),
     "(" "conv_to" <n:Width> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v, 0)),
     "(" "conv_to" <n:Expr> <v:Expr> ")" => 
         Box::new(Expr::BVConvToVarWidth(n, v, 0)),
-    "(" "signed_conv_to" <n:UNum> <v:Expr> ")" =>
-        Box::new(Expr::BVSignedConvTo(n, v, 0)),
-    "(" "signed_conv_to" <n:Expr> <v:Expr> ")" =>
-        Box::new(Expr::BVSignedConvToVarWidth(n, v, 0)),
 
     "(" "if" <c:Expr> "{" <e1:Expr> "}" "else" "{" <e2:Expr> "}" ")" =>
         Box::new(Expr::Conditional(c, e1, e2, 0)),

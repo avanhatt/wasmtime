@@ -178,23 +178,26 @@ pub enum Expr {
     BVShr(Box<Expr>, Box<Expr>, u32),
 
     // Conversions
-    BVZeroExt(usize, Box<Expr>, u32),
-    BVSignExt(usize, Box<Expr>, u32),
+    // Zero extend, static and dynamic width
+    BVZeroExtTo(Box<Width>, Box<Expr>, u32),
+    BVZeroExtToVarWidth(Box<Expr>, Box<Expr>, u32),
+
+    // Sign extend, static and dynamic width
+    BVSignExt(Box<Width>, Box<Expr>, u32),
+    BVSignExtToVarWidth(Box<Expr>, Box<Expr>, u32),
+
+    // Extract specified bits
     BVExtract(usize, usize, Box<Expr>, u32),
 
     // Convert integer to bitvector 
     BVIntToBv(usize, Box<Expr>, u32),
 
-    // A special, high level conversion to a destination width. This currently
-    // assumes that the source width is the LHS values BV width.
+    // Conversion to wider/narrower bits, without an explicit extend
     BVConvTo(Box<Width>, Box<Expr>, u32),
     // Allow the destination width to be symbolic.
     BVConvToVarWidth(Box<Expr>, Box<Expr>, u32),
-    // BVConvTo but sign extend instead of zero extend.
-    BVSignedConvTo(usize, Box<Expr>, u32),
-    // BVConvToVarWidth but sign extend instead of zero extend.
-    BVSignedConvToVarWidth(Box<Expr>, Box<Expr>, u32),
 
+    // Conditional if-then-else
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>, u32),
 }
 
@@ -236,13 +239,13 @@ impl Expr {
             Expr::BVRotl(_, _, t) |
             Expr::BVShl(_, _, t) |
             Expr::BVShr(_, _, t) |
-            Expr::BVZeroExt(_, _, t) |
+            Expr::BVZeroExtTo(_, _, t) |
+            Expr::BVZeroExtToVarWidth(_, _, t) |
             Expr::BVSignExt(_, _, t) |
+            Expr::BVSignExtToVarWidth(_, _, t) |
             Expr::BVIntToBv(_, _, t) |
             Expr::BVConvTo(_, _, t) |
             Expr::BVConvToVarWidth(_, _, t) |
-            Expr::BVSignedConvTo(_, _, t) |
-            Expr::BVSignedConvToVarWidth(_, _, t) |
             Expr::Conditional(_, _, _, t) |
             Expr::BVExtract(_, _, _, t) => *t,
         }

@@ -1,11 +1,11 @@
+use itertools::Itertools;
 /// Convert our internal Verification IR to an external SMT AST and pass
 /// queries to that solver.
 ///
 /// Right now, this uses the rsmt2 crate.
-use rsmt2::{print, Solver};
+use rsmt2::Solver;
 use std::{
     collections::{HashMap, HashSet},
-    hash::Hash,
 };
 use veri_ir::{
     BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, TypeContext, UnaryOp,
@@ -22,9 +22,101 @@ struct SolverCtx {
     width_assumptions: Vec<String>,
     additional_decls: Vec<(String, String)>,
     additional_assumptions: Vec<String>,
+    fresh_bits_idx: usize,
 }
 
 impl SolverCtx {
+
+    fn extract_symbolic(
+        &mut self,
+        source: &String,
+        width: &String,
+    ) -> String {
+        let possible_widths = 1..2;
+        // let possible_widths = 0..self.bitwidth;
+        let some_width_matches = format!(
+            "(or {})",
+            possible_widths.clone().map(|s| format!("(= {} {})", s, width)).join(" ") 
+        );
+        self.additional_assumptions.push(some_width_matches);
+        let mut ite_str = source.clone();
+        for possible_width in possible_widths {
+            let extract = format!("((_ extract {} 0) {})", possible_width - 1, source);
+            ite_str = format!("(ite (= {} {}) {} {})", possible_width, width, extract, ite_str);
+        }
+        ite_str
+    }
+
+    fn new_fresh_bits(&mut self, width: usize) -> String {
+        let name = format!("fresh{}", self.fresh_bits_idx);
+        self.fresh_bits_idx += 1;
+        self.additional_decls
+            .push((name.clone(), format!("(_ BitVec {})", width)));
+        name
+    }
+
+    fn extend_symbolic(
+        &mut self,
+        dest_width: &String,
+        source: &String,
+        source_width: &String,
+        op: &str,
+    ) -> String {
+        let shift = format!("(- {} {})", dest_width, source_width);
+        let possible_shifts = 0..self.bitwidth;
+        let some_shift_matches = format!(
+            "(or {})",
+            possible_shifts.clone().map(|s| format!("(= {} {})", s, shift)).join(" ") 
+        );
+        self.additional_assumptions.push(some_shift_matches);
+        let mut ite_str = source.clone();
+        for possible_shift in possible_shifts {
+            for possible_source in 1..self.bitwidth {
+                if possible_source + possible_shift >= self.bitwidth {continue;}
+                let extract = format!("((_ extract {} 0) {})", possible_source.wrapping_sub(1), source);
+                let extend = format!("((_ {} {}) {})", op, possible_shift, extract);
+                let unconstrained_bits = self.bitwidth.wrapping_sub(possible_shift).wrapping_sub(possible_source);
+                let padding = self.new_fresh_bits(unconstrained_bits);
+                let padded = format!("(concat {} {})", padding, extend);
+                ite_str = format!(
+                    "(ite (and (= {} {}) (= {} {})) {} {})", 
+                    possible_shift, 
+                    shift, 
+                    possible_source,
+                    source_width,
+                    padded, 
+                    ite_str);
+            }
+        }
+        ite_str
+    }
+
+    pub fn widen_to_query_width(
+        &mut self,
+        tyvar: u32,
+        narrow_width: usize,
+        narrow_decl: String,
+    ) -> String {
+        let narrow_name = format!("narrow__{}", tyvar);
+        let wide_name = format!("wide__{}", tyvar);
+        self.additional_assumptions
+            .push(format!("(= {} {})", narrow_name, narrow_decl));
+        self.additional_decls
+            .push((narrow_name.clone(), format!("(_ BitVec {})", narrow_width)));
+        self.additional_decls
+            .push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
+
+        let constraint = format!(
+            "(= ((_ extract {} {}) {}) {})",
+            narrow_width - 1,
+            0,
+            wide_name,
+            narrow_name
+        );
+        self.additional_assumptions.push(constraint);
+        wide_name
+    }
+
     pub fn get_expr_width_var(&self, e: &Expr) -> Option<&String> {
         if let Some(tyvar) = self.tyctx.tyvars.get(e) {
             self.width_vars.get(tyvar)
@@ -76,34 +168,7 @@ impl SolverCtx {
         }
     }
 
-    pub fn widen_to_query_width(
-        &mut self,
-        tyvar: u32,
-        narrow_width: usize,
-        narrow_decl: String,
-    ) -> String {
-        let narrow_name = format!("narrow__{}", tyvar);
-        let wide_name = format!("wide__{}", tyvar);
-        self.additional_assumptions
-            .push(format!("(= {} {})", narrow_name, narrow_decl));
-        self.additional_decls
-            .push((narrow_name.clone(), format!("(_ BitVec {})", narrow_width)));
-        self.additional_decls
-            .push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
-
-        let constraint = format!(
-            "(= ((_ extract {} {}) {}) {})",
-            narrow_width - 1,
-            0,
-            wide_name,
-            narrow_name
-        );
-        self.additional_assumptions.push(constraint);
-        wide_name
-    }
-
     pub fn vir_expr_to_rsmt2_str(&mut self, e: Expr) -> String {
-        dbg!(&e);
         let tyvar = self.tyctx.tyvars.get(&e);
         let ty = &self.get_type(&e);
         let width = self.get_expr_width_var(&e).map(|s| s.clone());
@@ -206,14 +271,25 @@ impl SolverCtx {
                 // For static convto, width constraints are handling during inference
                 self.vir_expr_to_rsmt2_str(*y)
             }
-            Expr::BVZeroExt(i, x) => {
-                // TODO: may not handle all cases
+            Expr::BVZeroExtTo(i, x) => {
                 let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                 let expr_width = width.unwrap().clone();
                 self.width_assumptions
-                    .push(format!("(= {} (+ {} {}))", expr_width, arg_width, i));
+                    .push(format!("(= {} {})", expr_width, i));
                 let xs = self.vir_expr_to_rsmt2_str(*x);
-                format!("((_ zero_extend {}) {})", i, xs)
+                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
+                let is = i.to_string();
+                self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
+            }
+            Expr::BVZeroExtToVarWidth(i, x) => {
+                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                let expr_width = width.unwrap().clone();
+                let is = self.vir_expr_to_rsmt2_str(*i);
+                let xs = self.vir_expr_to_rsmt2_str(*x);
+                self.width_assumptions
+                    .push(format!("(= {} {})", expr_width, is));
+                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
+                self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
             }
             Expr::BVConvToVarWidth(x, y) => {
                 let expr_width = width.unwrap().clone();
@@ -222,21 +298,28 @@ impl SolverCtx {
                     .push(format!("(= {} {})", expr_width, dyn_width));
                 self.vir_expr_to_rsmt2_str(*y)
             }
-            // TODO fix sign
-            Expr::BVSignedConvToVarWidth(x, y) => {
-                let expr_width = width.unwrap().clone();
-                let dyn_width = self.vir_expr_to_rsmt2_str(*x);
-                self.width_assumptions
-                    .push(format!("(= {} {})", expr_width, dyn_width));
-                self.vir_expr_to_rsmt2_str(*y)
-            }
             Expr::UndefinedTerm(term) => term.ret.name,
             Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
-
-            // AVH TODO: handle widths here
-            Expr::BVSignedConvTo(y) => self.vir_expr_to_rsmt2_str(*y),
-
-            Expr::BVSignExt(_i, x) => self.vir_expr_to_rsmt2_str(*x),
+            Expr::BVSignExt(i, x) => {
+                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                let expr_width = width.unwrap().clone();
+                self.width_assumptions
+                    .push(format!("(= {} {})", expr_width, i));
+                let xs = self.vir_expr_to_rsmt2_str(*x);
+                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
+                let is = i.to_string();
+                self.extend_symbolic(&is, &xs, &arg_width, &"sign_extend")
+            }
+            Expr::BVSignExtToVarWidth(i, x) => {
+                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                let expr_width = width.unwrap().clone();
+                let is = self.vir_expr_to_rsmt2_str(*i);
+                let xs = self.vir_expr_to_rsmt2_str(*x);
+                self.width_assumptions
+                    .push(format!("(= {} {})", expr_width, is));
+                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
+                self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
+            }
             Expr::BVExtract(i, j, x) => self.vir_expr_to_rsmt2_str(*x),
             Expr::Conditional(c, t, e) => {
                 format!(
@@ -253,10 +336,30 @@ impl SolverCtx {
     fn check_assumptions_feasibility<Parser>(
         &self,
         solver: &mut Solver<Parser>,
-        assumptions: String,
+        assumptions: Vec<String>,
     ) -> bool {
         solver.push(1).unwrap();
-        solver.assert(assumptions).unwrap();
+        for a in assumptions {
+            println!("{}", a);
+            solver.assert(a).unwrap();
+            solver.push(2).unwrap();
+
+            let _ = match solver.check_sat() {
+                Ok(true) => {
+                    println!("Assertion list is feasible");
+                    true
+                }
+                Ok(false) => {
+                    println!("Assertion list is infeasible!");
+                    false
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+
+            solver.pop(2).unwrap();
+        }
         let res = match solver.check_sat() {
             Ok(true) => {
                 println!("Assertion list is feasible");
@@ -310,6 +413,7 @@ pub fn run_solver_rule_path(
         width_assumptions: vec![],
         additional_decls: vec![],
         additional_assumptions: vec![],
+        fresh_bits_idx: 0,
     };
 
     for (v1, v2) in rule_path.undefined_term_pairs {
@@ -410,28 +514,28 @@ pub fn run_solver_rule_path(
     let assumption_str = format!("(and {})", assumptions.join(" "));
 
     // Check whether the assumptions are possible
-    if !ctx.check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
+    if !ctx.check_assumptions_feasibility(&mut solver, assumptions) {
         println!("Rule not applicable as written for rule assumptions, skipping full query");
         return VerificationResult::InapplicableRule;
     }
 
-    println!("Adding assumptions on relationship between rules");
-    assumptions.append(&mut between_rule_assumptions);
+    // println!("Adding assumptions on relationship between rules");
+    // assumptions.append(&mut between_rule_assumptions);
 
     let mut rules = rule_path.rules;
     let first = rules.remove(0);
 
-    for other_rule in rules {
-        let lhs = ctx.vir_expr_to_rsmt2_str(other_rule.lhs.clone());
-        let rhs = ctx.vir_expr_to_rsmt2_str(other_rule.rhs.clone());
-        assumptions.push(format!("(= {} {})", lhs, rhs));
-    }
+    // for other_rule in rules {
+    //     let lhs = ctx.vir_expr_to_rsmt2_str(other_rule.lhs.clone());
+    //     let rhs = ctx.vir_expr_to_rsmt2_str(other_rule.rhs.clone());
+    //     assumptions.push(format!("(= {} {})", lhs, rhs));
+    // }
 
-    let assumption_str = format!("(and {})", assumptions.join(" "));
-    if !ctx.check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
-        println!("Rule not applicable as written for PATH assumptions, skipping full query");
-        return VerificationResult::InapplicableRule;
-    }
+    // let assumption_str = format!("(and {})", assumptions.join(" "));
+    // if !ctx.check_assumptions_feasibility(&mut solver, assumption_str.clone()) {
+    //     println!("Rule not applicable as written for PATH assumptions, skipping full query");
+    //     return VerificationResult::InapplicableRule;
+    // }
 
     // Correctness query
     // Verification condition: first rule's LHS and RHS are equal

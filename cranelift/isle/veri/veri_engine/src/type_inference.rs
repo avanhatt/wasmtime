@@ -1,6 +1,5 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::hash::Hash;
-use std::path::PathBuf;
 
 use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
@@ -380,7 +379,7 @@ fn add_annotation_constraints(
                 t,
             )
         }
-        annotation_ir::Expr::BVSignedConvToVarWidth(w, x, _) => {
+        annotation_ir::Expr::BVSignExtToVarWidth(w, x, _) => {
             let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
@@ -396,7 +395,49 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
 
             (
-                veri_ir::Expr::BVSignedConvToVarWidth(Box::new(we), Box::new(e1)),
+                veri_ir::Expr::BVSignExtToVarWidth(Box::new(we), Box::new(e1)),
+                t,
+            )
+        }
+        annotation_ir::Expr::BVZeroExtTo(w, x, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            let width = match *w {
+                veri_ir::annotation_ir::Width::Const(c) => c,
+                veri_ir::annotation_ir::Width::RegWidth => REG_WIDTH,
+            };
+
+            // In the dynamic case, we don't know the width at this point
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVectorWithWidth(width)));
+
+            tree.next_type_var += 1;
+
+            (
+                veri_ir::Expr::BVZeroExtTo(width, Box::new(e1)),
+                t,
+            )
+        }
+        annotation_ir::Expr::BVZeroExtToVarWidth(w, x, _) => {
+            let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            // In the dynamic case, we don't know the width at this point
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(wt, annotation_ir::Type::Int));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+
+            (
+                veri_ir::Expr::BVZeroExtToVarWidth(Box::new(we), Box::new(e1)),
                 t,
             )
         }
@@ -409,7 +450,7 @@ fn add_annotation_constraints(
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));
 
-            tree.bv_constraints
+            tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(w)));
 
             (veri_ir::Expr::BVIntToBV(w, Box::new(ex)), t)

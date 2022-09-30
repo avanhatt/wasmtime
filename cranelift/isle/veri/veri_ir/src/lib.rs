@@ -186,14 +186,23 @@ pub enum Expr {
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
 
     // Conversions
-    BVZeroExt(usize, Box<Expr>),
-    BVSignExt(usize, Box<Expr>),
+    // Extract specified bits
     BVExtract(usize, usize, Box<Expr>),
+
+    // Convert integer to bitvector with that value
     BVIntToBV(usize, Box<Expr>),
+
+    // Zero extend, with static or dynamic width
+    BVZeroExtTo(usize, Box<Expr>),
+    BVZeroExtToVarWidth(Box<Expr>, Box<Expr>),
+
+    // Sign extend, with static or dynamic width
+    BVSignExt(usize, Box<Expr>),
+    BVSignExtToVarWidth(Box<Expr>, Box<Expr>),
+
+    // Conversion to wider/narrower bits, without an explicit extend
     BVConvTo(Box<Expr>),
     BVConvToVarWidth(Box<Expr>, Box<Expr>),
-    BVSignedConvTo(Box<Expr>),
-    BVSignedConvToVarWidth(Box<Expr>, Box<Expr>),
 
     WidthOf(Box<Expr>),
 

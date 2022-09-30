@@ -17,9 +17,9 @@
 ;; Helper for emitting `MInst.Extend` instructions.
 ;;@ (spec (sig (args a, b, c, d) (ret))
 ;;@     (assertions (if (b) {
-;;@                     (= (ret) (signed_conv_to (d) (a)))
+;;@                     (= (ret) (sign_ext (d) (a)))
 ;;@                  } else {
-;;@                      (= (ret) (conv_to (d) (a)))
+;;@                      (= (ret) (zero_ext (d) (a)))
 ;;@ }),
 ;;@     ))
 (decl extend (Reg bool u8 u8) Reg)

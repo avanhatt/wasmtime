@@ -1467,7 +1467,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (ret) (conv_to (regwidth) (arg)))))
+;;@     (assertions (= (ret) (zero_ext (regwidth) (arg)))))
 (decl uextend (Value) Inst)
 (extractor
     (uextend x)
