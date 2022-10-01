@@ -320,7 +320,17 @@ impl SolverCtx {
                 let shifts = vec![1, 2, 4, 8, 16, 32, 64];
                 self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
             }
-            Expr::BVExtract(i, j, x) => self.vir_expr_to_rsmt2_str(*x),
+            Expr::BVExtract(i, j, x) => {
+                assert!(i > j);
+                assert!(j >= 0);
+                assert!(i < self.bitwidth);
+                let xs = self.vir_expr_to_rsmt2_str(*x);
+                let extract = format!("((_ extract {} {}) {})", i, j, xs);
+                let new_width = i - j + 1;
+                let padding = self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
+                format!("(concat {} {})", padding, extract)
+
+            }
             Expr::Conditional(c, t, e) => {
                 format!(
                     "(ite {} {} {})",
