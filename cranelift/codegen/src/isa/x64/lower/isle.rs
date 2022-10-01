@@ -57,17 +57,12 @@ where
     isle_prelude_methods!();
 
     #[inline]
-    fn operand_size_of_type_32_64(&mut self, ty: Type) -> OperandSize {
+    fn operand_size_of_type(&mut self, ty: Type) -> OperandSize {
         if ty.bits() == 64 {
             OperandSize::Size64
         } else {
             OperandSize::Size32
         }
-    }
-
-    #[inline]
-    fn raw_operand_size_of_type(&mut self, ty: Type) -> OperandSize {
-        OperandSize::from_ty(ty)
     }
 
     fn put_in_reg_mem_imm(&mut self, val: Value) -> RegMemImm {

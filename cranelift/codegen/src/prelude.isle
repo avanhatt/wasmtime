@@ -309,14 +309,6 @@
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
-;; An extractor that matches 32- and 64-bit types only.
-(decl ty_32_or_64 (Type) Type)
-(extern extractor ty_32_or_64 ty_32_or_64)
-
-;; An extractor that matches 8- and 16-bit types only.
-(decl ty_8_or_16 (Type) Type)
-(extern extractor ty_8_or_16 ty_8_or_16)
-
 ;; An extractor that matches I64 or B64.
 (decl ty_int_bool_64 (Type) Type)
 (extern extractor ty_int_bool_64 ty_int_bool_64)

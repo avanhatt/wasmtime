@@ -502,13 +502,9 @@
             LFence
             SFence))
 
-;; Get the `OperandSize` for a given `Type`, rounding smaller types up to 32 bits.
-(decl operand_size_of_type_32_64 (Type) OperandSize)
-(extern constructor operand_size_of_type_32_64 operand_size_of_type_32_64)
-
-;; Get the true `OperandSize` for a given `Type`, with no rounding.
-(decl raw_operand_size_of_type (Type) OperandSize)
-(extern constructor raw_operand_size_of_type raw_operand_size_of_type)
+;; Get the `OperandSize` for a given `Type`.
+(decl operand_size_of_type (Type) OperandSize)
+(extern constructor operand_size_of_type operand_size_of_type)
 
 ;; Get the bit width of an `OperandSize`.
 (decl operand_size_bits (OperandSize) u16)
@@ -1370,7 +1366,7 @@
       (let ((from_bits u16 (ty_bits_u16 from_ty))
             ;; Use `operand_size_of_type` so that the we clamp the output to 32-
             ;; or 64-bit width types.
-            (to_bits u16 (operand_size_bits (operand_size_of_type_32_64 to_ty))))
+            (to_bits u16 (operand_size_bits (operand_size_of_type to_ty))))
         (extend kind
                 to_ty
                 (ext_mode from_bits to_bits)
@@ -1597,7 +1593,7 @@
 (rule (x64_add_with_flags_paired ty src1 src2)
       (let ((dst WritableGpr (temp_writable_gpr)))
         (ProducesFlags.ProducesFlagsReturnsResultWithConsumer
-         (MInst.AluRmiR (operand_size_of_type_32_64 ty)
+         (MInst.AluRmiR (operand_size_of_type ty)
                         (AluRmiROpcode.Add)
                         src1
                         src2
@@ -1609,7 +1605,7 @@
 (rule (x64_adc_paired ty src1 src2)
       (let ((dst WritableGpr (temp_writable_gpr)))
         (ConsumesFlags.ConsumesFlagsReturnsResultWithProducer
-         (MInst.AluRmiR (operand_size_of_type_32_64 ty)
+         (MInst.AluRmiR (operand_size_of_type ty)
                         (AluRmiROpcode.Adc)
                         src1
                         src2
@@ -1629,7 +1625,7 @@
 (rule (x64_sub_with_flags_paired ty src1 src2)
       (let ((dst WritableGpr (temp_writable_gpr)))
         (ProducesFlags.ProducesFlagsReturnsResultWithConsumer
-         (MInst.AluRmiR (operand_size_of_type_32_64 ty)
+         (MInst.AluRmiR (operand_size_of_type ty)
                         (AluRmiROpcode.Sub)
                         src1
                         src2
@@ -1641,7 +1637,7 @@
 (rule (x64_sbb_paired ty src1 src2)
       (let ((dst WritableGpr (temp_writable_gpr)))
         (ConsumesFlags.ConsumesFlagsReturnsResultWithProducer
-         (MInst.AluRmiR (operand_size_of_type_32_64 ty)
+         (MInst.AluRmiR (operand_size_of_type ty)
                         (AluRmiROpcode.Sbb)
                         src1
                         src2
@@ -1696,7 +1692,7 @@
 ;; Integer immediates.
 (rule (imm (fits_in_64 ty) simm64)
       (let ((dst WritableGpr (temp_writable_gpr))
-            (size OperandSize (operand_size_of_type_32_64 ty))
+            (size OperandSize (operand_size_of_type ty))
             (_ Unit (emit (MInst.Imm size simm64 dst))))
         dst))
 
@@ -1733,7 +1729,7 @@
 (rule (imm (fits_in_64 ty) 0)
       (let ((wgpr WritableGpr (temp_writable_gpr))
             (g Gpr wgpr)
-            (size OperandSize (operand_size_of_type_32_64 ty))
+            (size OperandSize (operand_size_of_type ty))
             (_ Unit (emit (MInst.AluRmiR size
                                          (AluRmiROpcode.Xor)
                                          g
@@ -2534,7 +2530,7 @@
 (rule (mul_hi ty signed src1 src2)
       (let ((dst_lo WritableGpr (temp_writable_gpr))
             (dst_hi WritableGpr (temp_writable_gpr))
-            (size OperandSize (operand_size_of_type_32_64 ty))
+            (size OperandSize (operand_size_of_type ty))
             (_ Unit (emit (MInst.MulHi size
                                        signed
                                        src1
@@ -2622,7 +2618,7 @@
 (decl x64_not (Type Gpr) Gpr)
 (rule (x64_not ty src)
       (let ((dst WritableGpr (temp_writable_gpr))
-            (size OperandSize (operand_size_of_type_32_64 ty))
+            (size OperandSize (operand_size_of_type ty))
             (_ Unit (emit (MInst.Not size src dst))))
         dst))
 
