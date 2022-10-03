@@ -8,7 +8,7 @@ use veri_annotation::parser_wrapper::{parse_annotations, AnnotationEnv};
 use veri_ir::Expr;
 use veri_ir::{annotation_ir, TypeContext};
 
-const REG_WIDTH: usize = 64;
+use crate::REG_WIDTH;
 
 #[derive(Clone, Debug)]
 struct RuleParseTree<'a> {
@@ -107,6 +107,7 @@ fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
     for def in defs.defs {
         match def {
             isle::ast::Def::Decl(d) => {
+                dbg!(&d);
                 decls.insert(d.term.0.clone(), d);
             }
             _ => continue,
@@ -971,10 +972,12 @@ fn create_parse_tree_pattern(
     typeenv: &TypeEnv,
     termenv: &TermEnv,
 ) -> TypeVarNode {
+    dbg!(&pattern);
     match pattern {
         isle::sema::Pattern::Term(_, term_id, args) => {
             let sym = termenv.terms[term_id.index()].name;
             let name = typeenv.syms[sym.index()].clone();
+            dbg!(&name);
 
             // process children first
             let mut children = vec![];
@@ -984,6 +987,8 @@ fn create_parse_tree_pattern(
             }
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
+
+            dbg!("done w children");
 
             TypeVarNode {
                 ident: format!("{}__{}", name, type_var),
@@ -1015,6 +1020,12 @@ fn create_parse_tree_pattern(
             }
         }
         isle::sema::Pattern::BindPattern(_, var_id, subpat) => {
+            match **subpat {
+                isle::sema::Pattern::Wildcard(..) => {
+                    dbg!("wildcard")
+                }
+                _ => panic!("other")
+            };
             let sym = var_map[var_id];
             let var = typeenv.syms[sym.index()].clone();
             let subpat_node = create_parse_tree_pattern(subpat, tree, var_map, typeenv, termenv);

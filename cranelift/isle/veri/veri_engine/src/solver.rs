@@ -10,7 +10,7 @@ use veri_ir::{
     VerificationResult,
 };
 
-const BITWIDTH: usize = 64;
+use crate::REG_WIDTH;
 
 struct SolverCtx {
     tyctx: TypeContext,
@@ -53,52 +53,88 @@ impl SolverCtx {
         name
     }
 
+    // SMTLIB only supports extends (zero or sign) by concrete amounts, but we 
+    // need symbolic ones. This method essentially does if-conversion over possible
+    // concrete forms, outputting nested ITE blocks. We consider both the starting 
+    // width and the destination width to be potentially symbolic.
+    // For safety, we add an assertion that some arm of this ITE must match. 
     fn extend_symbolic(
         &mut self,
-        dest_width: &String,
+        dest_width: &String, // 2
         source: &String,
-        source_width: &String,
+        source_width: &String, // 2
         op: &str,
     ) -> String {
+        // Symbolic expression for amount to shift
         let shift = format!("(- {} {})", dest_width, source_width);
-        let possible_shifts = 0..self.bitwidth + 1;
-        let some_shift_matches = format!(
-            "(or {})",
-            possible_shifts
-                .clone()
-                .map(|s| format!("(= {} {})", s, shift))
-                .join(" ")
-        );
-        self.width_assumptions.push(some_shift_matches);
+
+        let mut some_match = vec![];
         let mut ite_str = source.clone();
-        for possible_shift in possible_shifts {
-            for possible_source in 1..self.bitwidth {
-                if possible_source + possible_shift >= self.bitwidth {
+
+        // Special case: if we are asked to extend by 0, just return the source
+        let matching = format!("(and (= 0 {}))", shift);
+        some_match.push(matching.clone());
+        ite_str = format!("(ite {} {} {})", matching, source, ite_str);
+
+        // Possible amounts to extend by 
+        for possible_delta in 1..self.bitwidth + 1 {
+            // Possible starting widths
+            for possible_source in 1..self.bitwidth + 1 {
+                // For now, ignore extends beyond the bitwidth. This is safe because
+                // we will fail the rule feasibility check if this is violated. 
+                if possible_source + possible_delta > self.bitwidth {
                     continue;
                 }
+
+                // Statement meaning the symbolic case matches this concrete case
+                let matching = format!(
+                    "(and (= {} {}) (= {} {}))",
+                    possible_delta, shift, possible_source, source_width
+                );
+
+                // Extract the relevant bits of the source (which is modeled with a wider,
+                // register-width bitvector).
+                some_match.push(matching.clone());
                 let extract = format!(
                     "((_ extract {} 0) {})",
                     possible_source.wrapping_sub(1),
                     source
                 );
-                let extend = format!("((_ {} {}) {})", op, possible_shift, extract);
+
+                // Do the extend itself.
+                let extend = format!("((_ {} {}) {})", op, possible_delta, extract);
+
+                // Pad the extended result back to the full register bitwidth. Use the bits
+                // that were already in the source register. That is, given:
+                //                       reg - source width              source width
+                //                                |                           |
+                // SOURCE: [               don't care bits           |   care bits    ]
+                //
+                //                             dest width
+                //                                |       
+                // OUT:    [ same don't care bits |  defined extend  |   care bits     ]
                 let unconstrained_bits = self
                     .bitwidth
-                    .wrapping_sub(possible_shift)
-                    .wrapping_sub(possible_source);
-                let padding = format!(
-                    "((_ extract {} {}) {})",
-                    self.bitwidth.wrapping_sub(1),
-                    self.bitwidth.wrapping_sub(unconstrained_bits),
-                    source
-                );
-                let padded = format!("(concat {} {})", padding, extend);
-                ite_str = format!(
-                    "(ite (and (= {} {}) (= {} {})) {} {})",
-                    possible_shift, shift, possible_source, source_width, padded, ite_str
-                );
+                    .checked_sub(possible_delta).unwrap()
+                    .checked_sub(possible_source).unwrap();
+
+                // If we are extending to the full register width, no padding needed
+                let after_padding = if unconstrained_bits == 0 {
+                    extend
+                } else {
+                    let padding = format!(
+                        "((_ extract {} {}) {})",
+                        self.bitwidth.checked_sub(1).unwrap(),
+                        self.bitwidth.checked_sub(unconstrained_bits).unwrap(),
+                        source
+                    );
+                    format!("(concat {} {})", padding, extend)
+                };
+                ite_str = format!("(ite {} {} {})", matching, after_padding, ite_str);
             }
         }
+        let some_shift_matches = format!("(or {})", some_match.join(" "));
+        self.width_assumptions.push(some_shift_matches);
         ite_str
     }
 
@@ -109,30 +145,37 @@ impl SolverCtx {
         narrow_decl: String,
         name: Option<String>,
     ) -> String {
-        let mut narrow_name = format!("narrow__{}", tyvar);
-        let mut wide_name = format!("wide__{}", tyvar);
-        if let Some(s) = name {
-            narrow_name = format!("{}_{}", s, narrow_name);
-            wide_name = format!("{}_{}", s, wide_name);
-        }
-        self.additional_assumptions
-            .push(format!("(= {} {})", narrow_name, narrow_decl));
-        self.additional_decls
-            .push((narrow_name.clone(), format!("(_ BitVec {})", narrow_width)));
-        self.additional_decls
-            .push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
         let width = self.bitwidth.checked_sub(narrow_width).unwrap();
         if width > 0 {
+            let mut narrow_name = format!("narrow__{}", tyvar);
+            let mut wide_name = format!("wide__{}", tyvar);
+            if let Some(s) = name {
+                narrow_name = format!("{}_{}", s, narrow_name);
+                wide_name = format!("{}_{}", s, wide_name);
+            }
+            self.additional_assumptions
+                .push(format!("(= {} {})", narrow_name, narrow_decl));
+            self.additional_decls
+                .push((narrow_name.clone(), format!("(_ BitVec {})", narrow_width)));
+            self.additional_decls
+                .push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
             let padding = self.new_fresh_bits(width);
             self.additional_assumptions.push(format!(
                 "(= {} (concat {} {}))",
-                wide_name, padding, narrow_name
+                wide_name, padding, narrow_name,
             ));
+            wide_name
         } else {
-            self.additional_assumptions
-                .push(format!("(= {} {})", narrow_name, wide_name));
+            if let Some(s) = name {
+                // self.additional_decls
+                //     .push((s.clone(), format!("(_ BitVec {})", self.bitwidth)));
+                self.additional_assumptions
+                    .push(format!("(= {} {})", s, narrow_decl));
+                s
+            } else {
+                narrow_decl
+            }
         }
-        wide_name
     }
 
     pub fn get_expr_width_var(&self, e: &Expr) -> Option<&String> {
@@ -279,6 +322,7 @@ impl SolverCtx {
             }
             Expr::BVConvTo(y) => {
                 // For static convto, width constraints are handling during inference
+                dbg!("static");
                 self.vir_expr_to_rsmt2_str(*y)
             }
             Expr::BVZeroExtTo(i, x) => {
@@ -300,6 +344,7 @@ impl SolverCtx {
                 self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
             }
             Expr::BVConvToVarWidth(x, y) => {
+                dbg!("var width");
                 let expr_width = width.unwrap().clone();
                 let dyn_width = self.vir_expr_to_rsmt2_str(*x);
                 self.width_assumptions
@@ -354,9 +399,10 @@ impl SolverCtx {
     ) -> bool {
         solver.push(1).unwrap();
         for a in assumptions {
+            // println!("{}", &a);
             solver.assert(a).unwrap();
+
             // Uncomment to debug specific asserts
-            // println!("{}", a);
             // solver.push(2).unwrap();
             // let _ = match solver.check_sat() {
             //     Ok(true) => {
@@ -414,7 +460,7 @@ pub fn run_solver_rule_path(
 
     let mut ctx = SolverCtx {
         tyctx,
-        bitwidth: BITWIDTH,
+        bitwidth: REG_WIDTH,
         var_map: HashMap::new(),
         width_vars: HashMap::new(),
         width_assumptions: vec![],
@@ -457,6 +503,9 @@ pub fn run_solver_rule_path(
     }
 
     for (_e, t) in &ctx.tyctx.tyvars {
+        if *t == 46 {
+            dbg!(_e);
+        }
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
             Type::BitVector(w) => {
@@ -476,7 +525,7 @@ pub fn run_solver_rule_path(
                                 .insert(*t, Type::BitVector(Some(query_width)));
                             ctx.width_assumptions
                                 .push(format!("(= {} {})", width_name, query_width));
-                        } 
+                        }
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
@@ -563,9 +612,9 @@ pub fn run_solver_rule_path(
         (None, None) => {
             println!(
                 "Width of relevant bits of LHS and RHS unknown, using full register bitwidth: {}",
-                BITWIDTH
+                REG_WIDTH
             );
-            BITWIDTH
+            REG_WIDTH
         }
     };
 

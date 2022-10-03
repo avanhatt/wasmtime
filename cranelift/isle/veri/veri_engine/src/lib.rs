@@ -11,6 +11,8 @@ pub mod termname;
 pub mod type_check;
 pub mod type_inference;
 
+pub const REG_WIDTH: usize = 2;
+
 /// Given a file, lexes and parses the file to an ISLE term and type environment tuple
 pub fn isle_files_to_terms(files: &Vec<PathBuf>) -> (TypeEnv, TermEnv) {
     let lexer = isle::lexer::Lexer::from_files(files).unwrap();
