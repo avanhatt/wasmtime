@@ -4,9 +4,7 @@ use itertools::Itertools;
 ///
 /// Right now, this uses the rsmt2 crate.
 use rsmt2::Solver;
-use std::{
-    collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 use veri_ir::{
     BinaryOp, Counterexample, Expr, RulePath, Terminal, Type, TypeContext, UnaryOp,
     VerificationResult,
@@ -26,22 +24,23 @@ struct SolverCtx {
 }
 
 impl SolverCtx {
-
-    fn extract_symbolic(
-        &mut self,
-        source: &String,
-        width: &String,
-    ) -> String {
+    fn extract_symbolic(&mut self, source: &String, width: &String) -> String {
         let possible_widths = 0..self.bitwidth;
         let some_width_matches = format!(
             "(or {})",
-            possible_widths.clone().map(|s| format!("(= {} {})", s, width)).join(" ") 
+            possible_widths
+                .clone()
+                .map(|s| format!("(= {} {})", s, width))
+                .join(" ")
         );
         self.width_assumptions.push(some_width_matches);
         let mut ite_str = source.clone();
         for possible_width in possible_widths {
             let extract = format!("((_ extract {} 0) {})", possible_width - 1, source);
-            ite_str = format!("(ite (= {} {}) {} {})", possible_width, width, extract, ite_str);
+            ite_str = format!(
+                "(ite (= {} {}) {} {})",
+                possible_width, width, extract, ite_str
+            );
         }
         ite_str
     }
@@ -65,26 +64,39 @@ impl SolverCtx {
         let possible_shifts = 0..self.bitwidth + 1;
         let some_shift_matches = format!(
             "(or {})",
-            possible_shifts.clone().map(|s| format!("(= {} {})", s, shift)).join(" ") 
+            possible_shifts
+                .clone()
+                .map(|s| format!("(= {} {})", s, shift))
+                .join(" ")
         );
         self.width_assumptions.push(some_shift_matches);
         let mut ite_str = source.clone();
         for possible_shift in possible_shifts {
             for possible_source in 1..self.bitwidth {
-                if possible_source + possible_shift >= self.bitwidth {continue;}
-                let extract = format!("((_ extract {} 0) {})", possible_source.wrapping_sub(1), source);
+                if possible_source + possible_shift >= self.bitwidth {
+                    continue;
+                }
+                let extract = format!(
+                    "((_ extract {} 0) {})",
+                    possible_source.wrapping_sub(1),
+                    source
+                );
                 let extend = format!("((_ {} {}) {})", op, possible_shift, extract);
-                let unconstrained_bits = self.bitwidth.wrapping_sub(possible_shift).wrapping_sub(possible_source);
-                let padding = format!("((_ extract {} {}) {})", self.bitwidth.wrapping_sub(1), self.bitwidth.wrapping_sub(unconstrained_bits), source);
+                let unconstrained_bits = self
+                    .bitwidth
+                    .wrapping_sub(possible_shift)
+                    .wrapping_sub(possible_source);
+                let padding = format!(
+                    "((_ extract {} {}) {})",
+                    self.bitwidth.wrapping_sub(1),
+                    self.bitwidth.wrapping_sub(unconstrained_bits),
+                    source
+                );
                 let padded = format!("(concat {} {})", padding, extend);
                 ite_str = format!(
-                    "(ite (and (= {} {}) (= {} {})) {} {})", 
-                    possible_shift, 
-                    shift, 
-                    possible_source,
-                    source_width,
-                    padded, 
-                    ite_str);
+                    "(ite (and (= {} {}) (= {} {})) {} {})",
+                    possible_shift, shift, possible_source, source_width, padded, ite_str
+                );
             }
         }
         ite_str
@@ -95,24 +107,31 @@ impl SolverCtx {
         tyvar: u32,
         narrow_width: usize,
         narrow_decl: String,
+        name: Option<String>,
     ) -> String {
-        let narrow_name = format!("narrow__{}", tyvar);
-        let wide_name = format!("wide__{}", tyvar);
+        let mut narrow_name = format!("narrow__{}", tyvar);
+        let mut wide_name = format!("wide__{}", tyvar);
+        if let Some(s) = name {
+            narrow_name = format!("{}_{}", s, narrow_name);
+            wide_name = format!("{}_{}", s, wide_name);
+        }
         self.additional_assumptions
             .push(format!("(= {} {})", narrow_name, narrow_decl));
         self.additional_decls
             .push((narrow_name.clone(), format!("(_ BitVec {})", narrow_width)));
         self.additional_decls
             .push((wide_name.clone(), format!("(_ BitVec {})", self.bitwidth)));
-
-        let constraint = format!(
-            "(= ((_ extract {} {}) {}) {})",
-            narrow_width - 1,
-            0,
-            wide_name,
-            narrow_name
-        );
-        self.additional_assumptions.push(constraint);
+        let width = self.bitwidth.checked_sub(narrow_width).unwrap();
+        if width > 0 {
+            let padding = self.new_fresh_bits(width);
+            self.additional_assumptions.push(format!(
+                "(= {} (concat {} {}))",
+                wide_name, padding, narrow_name
+            ));
+        } else {
+            self.additional_assumptions
+                .push(format!("(= {} {})", narrow_name, wide_name));
+        }
         wide_name
     }
 
@@ -146,14 +165,12 @@ impl SolverCtx {
     pub fn assume_same_width(&mut self, x: &Expr, y: &Expr) {
         let xw = self.get_expr_width_var(&x).unwrap().clone();
         let yw = self.get_expr_width_var(&y).unwrap().clone();
-        self.width_assumptions
-            .push(format!("(= {} {})", xw, yw));
+        self.width_assumptions.push(format!("(= {} {})", xw, yw));
     }
 
     pub fn assume_same_width_from_string(&mut self, x: &String, y: &Expr) {
         let yw = self.get_expr_width_var(&y).unwrap().clone();
-        self.width_assumptions
-            .push(format!("(= {} {})", x, yw));
+        self.width_assumptions.push(format!("(= {} {})", x, yw));
     }
 
     pub fn assume_comparable_types(&mut self, x: &Expr, y: &Expr) {
@@ -173,21 +190,19 @@ impl SolverCtx {
         let width = self.get_expr_width_var(&e).map(|s| s.clone());
         match e {
             Expr::Terminal(t) => match t {
-                Terminal::Var(v) => {
-                    match self.var_map.get(&v) {
-                        Some(o) => o.clone(),
-                        None => v,
-                    }
-                }
+                Terminal::Var(v) => match self.var_map.get(&v) {
+                    Some(o) => o.clone(),
+                    None => v,
+                },
                 Terminal::Const(i) => match ty.unwrap() {
                     Type::BitVector(w) => {
                         let var = *tyvar.unwrap();
                         let width = w.unwrap_or(self.bitwidth);
                         let narrow_decl = format!("(_ bv{} {})", i, width);
-                        self.widen_to_query_width(var, width, narrow_decl)
+                        self.widen_to_query_width(var, width, narrow_decl, None)
                     }
                     Type::Int => i.to_string(),
-                    Type::Bool => { 
+                    Type::Bool => {
                         if i == 0 {
                             "false".to_string()
                         } else {
@@ -260,11 +275,7 @@ impl SolverCtx {
                 )
             }
             Expr::BVIntToBV(w, x) => {
-                format!(
-                    "((_ int2bv {}) {})",
-                    w,
-                    self.vir_expr_to_rsmt2_str(*x)
-                )
+                format!("((_ int2bv {}) {})", w, self.vir_expr_to_rsmt2_str(*x))
             }
             Expr::BVConvTo(y) => {
                 // For static convto, width constraints are handling during inference
@@ -313,7 +324,7 @@ impl SolverCtx {
                 let xs = self.vir_expr_to_rsmt2_str(*x);
                 self.width_assumptions
                     .push(format!("(= {} {})", expr_width, is));
-                self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
+                self.extend_symbolic(&is, &xs, &arg_width, &"sign_extend")
             }
             Expr::BVExtract(i, j, x) => {
                 assert!(i > j);
@@ -323,7 +334,6 @@ impl SolverCtx {
                 let new_width = i - j + 1;
                 let padding = self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                 format!("(concat {} {})", padding, extract)
-
             }
             Expr::Conditional(c, t, e) => {
                 format!(
@@ -455,7 +465,8 @@ pub fn run_solver_rule_path(
                     .push((width_name.clone(), "Int".to_string()));
                 match w {
                     Some(bitwidth) => {
-                        ctx.width_assumptions.push(format!("(= {} {})", width_name, bitwidth));
+                        ctx.width_assumptions
+                            .push(format!("(= {} {})", width_name, bitwidth));
                     }
                     None => {
                         let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&t];
@@ -463,8 +474,9 @@ pub fn run_solver_rule_path(
                             ctx.tyctx
                                 .tymap
                                 .insert(*t, Type::BitVector(Some(query_width)));
-                            ctx.width_assumptions.push(format!("(= {} {})", width_name, query_width));
-                        }
+                            ctx.width_assumptions
+                                .push(format!("(= {} {})", width_name, query_width));
+                        } 
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
@@ -480,7 +492,12 @@ pub fn run_solver_rule_path(
         let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
         // println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
-            let wide = ctx.widen_to_query_width(v.tyvar, w.unwrap_or(ctx.bitwidth), name.clone());
+            let wide = ctx.widen_to_query_width(
+                v.tyvar,
+                w.unwrap_or(ctx.bitwidth),
+                name.clone(),
+                Some(name.to_string()),
+            );
             ctx.var_map.insert(name.clone(), wide);
         }
         solver.declare_const(name, var_ty).unwrap();
@@ -494,7 +511,7 @@ pub fn run_solver_rule_path(
     }
     println!("Adding width assumptions");
     for a in &ctx.width_assumptions {
-        println!("\t{}", a);
+        // println!("\t{}", a);
         assumptions.push(a.clone());
     }
     println!("Adding additional assumptions");
@@ -562,8 +579,8 @@ pub fn run_solver_rule_path(
     println!("LHS and RHS equality condition:\n\t{}\n", side_equality);
 
     let query = format!("(not (=> {} {}))", assumption_str, side_equality);
-    println!("Running query");
-    // println!("Running query:\n\t{}\n", query);
+    // println!("Running query");
+    println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 
     match solver.check_sat() {

@@ -428,15 +428,14 @@ fn add_annotation_constraints(
             // In the dynamic case, we don't know the width at this point
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-            tree.concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(width)));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(width),
+            ));
 
             tree.next_type_var += 1;
 
-            (
-                veri_ir::Expr::BVZeroExtTo(width, Box::new(e1)),
-                t,
-            )
+            (veri_ir::Expr::BVZeroExtTo(width, Box::new(e1)), t)
         }
         annotation_ir::Expr::BVZeroExtToVarWidth(w, x, _) => {
             let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
@@ -467,8 +466,10 @@ fn add_annotation_constraints(
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::Int));
 
-            tree.concrete_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(w)));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(w),
+            ));
 
             (veri_ir::Expr::BVIntToBV(w, Box::new(ex)), t)
         }
@@ -602,8 +603,7 @@ fn add_rule_constraints(
         TypeVarConstruct::Var => {
             tree.quantified_vars
                 .insert((curr.ident.clone(), curr.type_var));
-            tree.free_vars
-                .insert((curr.ident.clone(), curr.type_var));
+            tree.free_vars.insert((curr.ident.clone(), curr.type_var));
             Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
                 curr.ident.clone(),
             )))
@@ -874,14 +874,14 @@ fn solve_constraints(
                             set.insert(v);
                             union_find.insert(unknown_by_tyvar.clone(), set);
 
-
                             // if this type var also has a polymorphic type, union
                             if let Some(var_type) = get_var_type_poly(v, &union_find) {
                                 let poly_bucket = union_find
                                     .remove(&var_type)
                                     .expect("expected key in union find");
-                                let bv_bucket =
-                                    union_find.get_mut(&unknown_by_tyvar).expect("expected key in union find");
+                                let bv_bucket = union_find
+                                    .get_mut(&unknown_by_tyvar)
+                                    .expect("expected key in union find");
                                 bv_bucket.extend(poly_bucket.iter());
                             }
                         }
@@ -1161,6 +1161,7 @@ fn create_parse_tree_expr(
                 "I64" => 64,
                 "I32" => 32,
                 "false" => 0,
+                "true" => 1,
                 _ => todo!("{:?}", &name),
             };
             let name = format!("{}__{}", name, type_var);

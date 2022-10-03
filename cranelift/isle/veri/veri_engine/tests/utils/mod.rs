@@ -10,7 +10,7 @@ use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_root;
 use veri_engine_lib::termname::pattern_contains_termname;
 use veri_engine_lib::type_inference::type_all_rules;
 use veri_engine_lib::{isle_files_to_terms, rule_tree::verify_rules_for_type_wih_rule_filter}; // parse_isle_to_terms};
-use veri_ir::{Type, VerificationResult};
+use veri_ir::{Type, VerificationResult, Counterexample};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -56,6 +56,12 @@ pub fn just_64_result() -> TestResult {
 #[allow(dead_code)]
 pub fn all_success_result() -> TestResult {
     custom_result(&|w| (w, VerificationResult::Success))
+}
+
+/// All bitwidths fail
+#[allow(dead_code)]
+pub fn all_failure_result() -> TestResult {
+    custom_result(&|w| (w, VerificationResult::Failure(Counterexample{})))
 }
 
 /// Only bitwidths under and including 64 should verify, rest inapplicable

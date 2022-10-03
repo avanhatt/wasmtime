@@ -1,5 +1,5 @@
 mod utils;
-use utils::{all_success_result, just_8_result, lte_64_success_result};
+use utils::{all_success_result, all_failure_result, just_8_result, lte_64_success_result};
 use utils::{
     test_from_file, test_from_file_custom_prelude, test_from_file_self_contained,
     test_from_files_with_lhs_termname,
@@ -20,7 +20,6 @@ fn test_iadds() {
     );
 }
 
-
 #[test]
 fn test_implicit_conversions() {
     test_from_file_custom_prelude(
@@ -39,6 +38,11 @@ fn test_implicit_conversions() {
 #[test]
 fn test_iadd_from_file() {
     test_from_file("./examples/iadd.isle", lte_64_success_result())
+}
+
+#[test]
+fn test_iadd_from_file_broken() {
+    test_from_file("./examples/broken_iadd.isle", all_failure_result())
 }
 
 // DISABLED for now while ruin chaining is on hold
