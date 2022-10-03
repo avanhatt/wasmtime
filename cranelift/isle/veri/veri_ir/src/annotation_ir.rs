@@ -88,6 +88,10 @@ pub enum Type {
     /// Use if the width is known
     BitVectorWithWidth(usize),
 
+    // Use if the width is unknown after inference, indexed by a 
+    // cannonical type variable
+    BitVectorUnknown(u32),
+
     /// The expression is an integer (currently used for ISLE type,
     /// representing bitwidth)
     Int,

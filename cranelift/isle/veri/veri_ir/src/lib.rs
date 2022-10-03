@@ -24,6 +24,7 @@ pub struct RuleSemantics {
     pub rhs: Expr,
 
     pub quantified_vars: Vec<BoundVar>,
+    pub free_vars: Vec<BoundVar>,
     pub assumptions: Vec<Expr>,
 
     pub tyctx: TypeContext,

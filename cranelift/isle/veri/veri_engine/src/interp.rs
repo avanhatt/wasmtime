@@ -30,6 +30,7 @@ impl Assumption {
 }
 pub struct Context<'ctx> {
     pub quantified_vars: Vec<BoundVar>,
+    pub free_vars: Vec<BoundVar>,
     pub assumptions: Vec<Assumption>,
     pub var_map: HashMap<VarId, BoundVar>,
 
@@ -47,6 +48,7 @@ impl<'ctx> Context<'ctx> {
     ) -> Context<'ctx> {
         Context {
             quantified_vars: vec![],
+            free_vars: vec![],
             assumptions: vec![],
             var_map: HashMap::new(),
             typesols,

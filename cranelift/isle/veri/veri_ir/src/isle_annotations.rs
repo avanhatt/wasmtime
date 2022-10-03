@@ -2,7 +2,7 @@
 /// the same type of structure, but for now, manually construct these annotations.
 use crate::annotation_ir::{
     BoundVar, Const, Expr, TermAnnotation,
-    TermSignature, Type, Width,
+    TermSignature, Type,
 };
 
 pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {

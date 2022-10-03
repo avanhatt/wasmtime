@@ -26,6 +26,7 @@ struct RuleParseTree<'a> {
 
     ty_vars: HashMap<veri_ir::Expr, u32>,
     quantified_vars: HashSet<(String, u32)>,
+    free_vars: HashSet<(String, u32)>,
     assumptions: Vec<Expr>,
 }
 
@@ -72,6 +73,7 @@ pub struct Solution {
     pub lhs: veri_ir::Expr,
     pub rhs: veri_ir::Expr,
     pub quantified_vars: Vec<veri_ir::BoundVar>,
+    pub free_vars: Vec<veri_ir::BoundVar>,
     pub assumptions: Vec<Expr>,
     pub tyctx: TypeContext,
 }
@@ -87,13 +89,13 @@ pub fn type_all_rules(
     let mut solutions = HashMap::new();
     for r in &termenv.rules {
         if let Some(s) = type_annotations_using_rule(r, annotation_env, &decls, typeenv, termenv) {
-            // for a in &s.annotation_infos {
-            //     println!("{}", a.term);
-            //     for (var, type_var) in &a.var_to_type_var {
-            //         println!("{}: {:#?}", var, s.type_var_to_type[type_var]);
-            //     }
-            //     println!();
-            // }
+            for a in &s.annotation_infos {
+                println!("{}", a.term);
+                for (var, type_var) in &a.var_to_type_var {
+                    println!("{}: {:#?}", var, s.type_var_to_type[type_var]);
+                }
+                println!();
+            }
             solutions.insert(r.id, s);
         }
     }
@@ -115,6 +117,7 @@ fn build_decl_map(defs: Defs) -> HashMap<String, Decl> {
 
 fn convert_type(aty: &annotation_ir::Type) -> veri_ir::Type {
     match aty {
+        annotation_ir::Type::BitVectorUnknown(..) => veri_ir::Type::BitVector(None),
         annotation_ir::Type::BitVector => veri_ir::Type::BitVector(None),
         annotation_ir::Type::BitVectorWithWidth(w) => veri_ir::Type::BitVector(Some(*w)),
         annotation_ir::Type::Int => veri_ir::Type::Int,
@@ -139,6 +142,7 @@ fn type_annotations_using_rule<'a>(
         decls,
         ty_vars: HashMap::new(),
         quantified_vars: HashSet::new(),
+        free_vars: HashSet::new(),
         assumptions: vec![],
     };
 
@@ -185,6 +189,18 @@ fn type_annotations_using_rule<'a>(
                     panic!("missing type variable {} in solution for: {:?}", t, expr);
                 }
             }
+            let mut free_vars = vec![];
+            for (s, t) in parse_tree.free_vars {
+                let expr = veri_ir::Expr::Terminal(veri_ir::Terminal::Var(s.clone()));
+                if let Some(ty) = solution.get(&t) {
+                    let ty = convert_type(ty);
+                    parse_tree.ty_vars.insert(expr, t);
+                    tymap.insert(t, ty.clone());
+                    free_vars.push(veri_ir::BoundVar { name: s, tyvar: t });
+                } else {
+                    panic!("missing type variable {} in solution for: {:?}", t, expr);
+                }
+            }
 
             Some(Solution {
                 annotation_infos,
@@ -193,6 +209,7 @@ fn type_annotations_using_rule<'a>(
                 rhs: rhs_expr,
                 assumptions: parse_tree.assumptions,
                 quantified_vars,
+                free_vars,
                 tyctx: TypeContext {
                     tyvars: parse_tree.ty_vars.clone(),
                     tymap,
@@ -370,7 +387,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
             tree.next_type_var += 1;
 
@@ -390,7 +407,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
             tree.next_type_var += 1;
 
@@ -412,7 +429,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.concrete_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVectorWithWidth(width)));
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(width)));
 
             tree.next_type_var += 1;
 
@@ -432,7 +449,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
             tree.next_type_var += 1;
 
@@ -584,6 +601,8 @@ fn add_rule_constraints(
     let e = match &curr.construct {
         TypeVarConstruct::Var => {
             tree.quantified_vars
+                .insert((curr.ident.clone(), curr.type_var));
+            tree.free_vars
                 .insert((curr.ident.clone(), curr.type_var));
             Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
                 curr.ident.clone(),
@@ -836,17 +855,25 @@ fn solve_constraints(
                                 annotation_ir::Type::BitVectorWithWidth(_) => {
                                     continue;
                                 }
+                                annotation_ir::Type::BitVectorUnknown(_) => {
+                                    continue;
+                                }
                                 _ => panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}", var_type, b),
                             }
 
                         // otherwise add it to a generic bv bucket
                         } else {
-                            if !union_find.contains_key(t) {
-                                union_find.insert(t.clone(), HashSet::new());
-                            }
-                            if let Some(group) = union_find.get_mut(t) {
-                                group.insert(v);
-                            }
+                            // if !union_find.contains_key(t) {
+                            //     union_find.insert(t.clone(), HashSet::new());
+                            // }
+                            // if let Some(group) = union_find.get_mut(t) {
+                            //     group.insert(v);
+                            // }
+                            let unknown_by_tyvar = annotation_ir::Type::BitVectorUnknown(v);
+                            let mut set = HashSet::new();
+                            set.insert(v);
+                            union_find.insert(unknown_by_tyvar.clone(), set);
+
 
                             // if this type var also has a polymorphic type, union
                             if let Some(var_type) = get_var_type_poly(v, &union_find) {
@@ -854,7 +881,7 @@ fn solve_constraints(
                                     .remove(&var_type)
                                     .expect("expected key in union find");
                                 let bv_bucket =
-                                    union_find.get_mut(t).expect("expected key in union find");
+                                    union_find.get_mut(&unknown_by_tyvar).expect("expected key in union find");
                                 bv_bucket.extend(poly_bucket.iter());
                             }
                         }
@@ -875,7 +902,7 @@ fn solve_constraints(
         for var in &vars {
             result.insert(*var, t.clone());
         }
-        if matches!(t, annotation_ir::Type::BitVector) {
+        if matches!(t, annotation_ir::Type::BitVectorUnknown(..)) {
             for var in &vars {
                 bv_unknown_width_sets.insert(*var, bv_unknown_width_idx);
             }
@@ -1252,8 +1279,8 @@ fn test_solve_constraints() {
         (4, annotation_ir::Type::BitVectorWithWidth(8)),
         (5, annotation_ir::Type::BitVectorWithWidth(8)),
         (6, annotation_ir::Type::BitVectorWithWidth(16)),
-        (7, annotation_ir::Type::BitVector),
-        (8, annotation_ir::Type::BitVector),
+        (7, annotation_ir::Type::BitVectorUnknown(7)),
+        (8, annotation_ir::Type::BitVectorUnknown(7)),
     ]);
     let expected_bvsets = HashMap::from([(7, 0), (8, 0)]);
     let (sol, bvsets) = solve_constraints(concrete, var, bv);

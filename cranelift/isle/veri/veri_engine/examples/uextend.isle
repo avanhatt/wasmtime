@@ -17,10 +17,10 @@
 ;; Helper for emitting `MInst.Extend` instructions.
 ;;@ (spec (sig (args a, b, c, d) (ret))
 ;;@     (assertions (if (b) {
-;;@                     (= (ret) (sign_ext (d) (a)))
-;;@                  } else {
-;;@                      (= (ret) (zero_ext (d) (a)))
-;;@ }),
+;;@                     (= (ret) (sign_ext (d) (conv_to (c) (a))))
+;;@                  } else { 
+;;@                      (= (ret) (zero_ext (d) (conv_to (c) (a))))
+;;@                  })
 ;;@     ))
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)

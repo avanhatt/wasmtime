@@ -32,13 +32,12 @@ impl SolverCtx {
         source: &String,
         width: &String,
     ) -> String {
-        let possible_widths = 1..2;
-        // let possible_widths = 0..self.bitwidth;
+        let possible_widths = 0..self.bitwidth;
         let some_width_matches = format!(
             "(or {})",
             possible_widths.clone().map(|s| format!("(= {} {})", s, width)).join(" ") 
         );
-        self.additional_assumptions.push(some_width_matches);
+        self.width_assumptions.push(some_width_matches);
         let mut ite_str = source.clone();
         for possible_width in possible_widths {
             let extract = format!("((_ extract {} 0) {})", possible_width - 1, source);
@@ -63,12 +62,12 @@ impl SolverCtx {
         op: &str,
     ) -> String {
         let shift = format!("(- {} {})", dest_width, source_width);
-        let possible_shifts = 0..self.bitwidth;
+        let possible_shifts = 0..self.bitwidth + 1;
         let some_shift_matches = format!(
             "(or {})",
             possible_shifts.clone().map(|s| format!("(= {} {})", s, shift)).join(" ") 
         );
-        self.additional_assumptions.push(some_shift_matches);
+        self.width_assumptions.push(some_shift_matches);
         let mut ite_str = source.clone();
         for possible_shift in possible_shifts {
             for possible_source in 1..self.bitwidth {
@@ -127,7 +126,7 @@ impl SolverCtx {
 
     pub fn vir_to_rsmt2_constant_ty(&self, ty: &Type) -> String {
         match ty {
-            Type::BitVector(w) => format!("(_ BitVec {})", w.unwrap()),
+            Type::BitVector(w) => format!("(_ BitVec {})", w.unwrap_or(self.bitwidth)),
             Type::Int => "Int".to_string(),
             Type::Bool => "Bool".to_string(),
         }
@@ -147,13 +146,13 @@ impl SolverCtx {
     pub fn assume_same_width(&mut self, x: &Expr, y: &Expr) {
         let xw = self.get_expr_width_var(&x).unwrap().clone();
         let yw = self.get_expr_width_var(&y).unwrap().clone();
-        self.additional_assumptions
+        self.width_assumptions
             .push(format!("(= {} {})", xw, yw));
     }
 
     pub fn assume_same_width_from_string(&mut self, x: &String, y: &Expr) {
         let yw = self.get_expr_width_var(&y).unwrap().clone();
-        self.additional_assumptions
+        self.width_assumptions
             .push(format!("(= {} {})", x, yw));
     }
 
@@ -183,7 +182,7 @@ impl SolverCtx {
                 Terminal::Const(i) => match ty.unwrap() {
                     Type::BitVector(w) => {
                         let var = *tyvar.unwrap();
-                        let width = w.unwrap();
+                        let width = w.unwrap_or(self.bitwidth);
                         let narrow_decl = format!("(_ bv{} {})", i, width);
                         self.widen_to_query_width(var, width, narrow_decl)
                     }
@@ -277,7 +276,6 @@ impl SolverCtx {
                 self.width_assumptions
                     .push(format!("(= {} {})", expr_width, i));
                 let xs = self.vir_expr_to_rsmt2_str(*x);
-                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
                 let is = i.to_string();
                 self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
             }
@@ -288,7 +286,6 @@ impl SolverCtx {
                 let xs = self.vir_expr_to_rsmt2_str(*x);
                 self.width_assumptions
                     .push(format!("(= {} {})", expr_width, is));
-                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
                 self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
             }
             Expr::BVConvToVarWidth(x, y) => {
@@ -306,7 +303,6 @@ impl SolverCtx {
                 self.width_assumptions
                     .push(format!("(= {} {})", expr_width, i));
                 let xs = self.vir_expr_to_rsmt2_str(*x);
-                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
                 let is = i.to_string();
                 self.extend_symbolic(&is, &xs, &arg_width, &"sign_extend")
             }
@@ -317,12 +313,10 @@ impl SolverCtx {
                 let xs = self.vir_expr_to_rsmt2_str(*x);
                 self.width_assumptions
                     .push(format!("(= {} {})", expr_width, is));
-                let shifts = vec![1, 2, 4, 8, 16, 32, 64];
                 self.extend_symbolic(&is, &xs, &arg_width, &"zero_extend")
             }
             Expr::BVExtract(i, j, x) => {
                 assert!(i > j);
-                assert!(j >= 0);
                 assert!(i < self.bitwidth);
                 let xs = self.vir_expr_to_rsmt2_str(*x);
                 let extract = format!("((_ extract {} {}) {})", i, j, xs);
@@ -350,25 +344,24 @@ impl SolverCtx {
     ) -> bool {
         solver.push(1).unwrap();
         for a in assumptions {
-            println!("{}", a);
             solver.assert(a).unwrap();
-            solver.push(2).unwrap();
-
-            let _ = match solver.check_sat() {
-                Ok(true) => {
-                    println!("Assertion list is feasible");
-                    true
-                }
-                Ok(false) => {
-                    println!("Assertion list is infeasible!");
-                    false
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-
-            solver.pop(2).unwrap();
+            // Uncomment to debug specific asserts
+            // println!("{}", a);
+            // solver.push(2).unwrap();
+            // let _ = match solver.check_sat() {
+            //     Ok(true) => {
+            //         println!("Assertion list is feasible");
+            //         true
+            //     }
+            //     Ok(false) => {
+            //         println!("Assertion list is infeasible!");
+            //         false
+            //     }
+            //     Err(err) => {
+            //         unreachable!("Error! {:?}", err);
+            //     }
+            // };
+            // solver.pop(2).unwrap();
         }
         let res = match solver.check_sat() {
             Ok(true) => {
@@ -388,16 +381,10 @@ impl SolverCtx {
     }
 }
 
-//
-
-/// Overall query:
+/// Overall query for single rule:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-pub fn run_solver_single_rule(rule_sem: veri_ir::RuleSemantics, _ty: &Type) -> VerificationResult {
-    todo!()
-}
-
-/// Overall query:
+/// Overall query for multiple rules (out of date):
 /// <declare vars>
 /// (not (=> (and
 ///             <all rules' assumptions>
@@ -441,10 +428,10 @@ pub fn run_solver_rule_path(
     assert_eq!(rule_path.rules.len(), 1);
     let rule_sem = rule_path.rules[0].to_owned();
 
-    // Use the query width for any quantified variables with unspecified bitwidths
+    // Use the query width for any free variables with unspecified bitwidths
     let mut query_width_used = false;
     let mut query_bv_set_idxs = HashSet::new();
-    for v in &rule_sem.quantified_vars {
+    for v in &rule_sem.free_vars {
         let ty = &ctx.tyctx.tymap[&v.tyvar];
         if let Type::BitVector(None) = ty {
             query_width_used = true;
@@ -459,7 +446,7 @@ pub fn run_solver_rule_path(
         panic!("Query width unused, check rule!");
     }
 
-    for (e, t) in &ctx.tyctx.tyvars {
+    for (_e, t) in &ctx.tyctx.tyvars {
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
             Type::BitVector(w) => {
@@ -468,7 +455,7 @@ pub fn run_solver_rule_path(
                     .push((width_name.clone(), "Int".to_string()));
                 match w {
                     Some(bitwidth) => {
-                        assumptions.push(format!("(= {} {})", width_name, bitwidth));
+                        ctx.width_assumptions.push(format!("(= {} {})", width_name, bitwidth));
                     }
                     None => {
                         let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&t];
@@ -476,6 +463,7 @@ pub fn run_solver_rule_path(
                             ctx.tyctx
                                 .tymap
                                 .insert(*t, Type::BitVector(Some(query_width)));
+                            ctx.width_assumptions.push(format!("(= {} {})", width_name, query_width));
                         }
                     }
                 };
@@ -490,34 +478,34 @@ pub fn run_solver_rule_path(
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
         let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
-        println!("\t{} : {:?}", name, var_ty);
+        // println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
-            let wide = ctx.widen_to_query_width(v.tyvar, w.unwrap(), name.clone());
+            let wide = ctx.widen_to_query_width(v.tyvar, w.unwrap_or(ctx.bitwidth), name.clone());
             ctx.var_map.insert(name.clone(), wide);
         }
         solver.declare_const(name, var_ty).unwrap();
     }
 
-    println!("Adding explicit assumptions:");
+    println!("Adding explicit assumptions");
     for a in &rule_sem.assumptions {
         let p = ctx.vir_expr_to_rsmt2_str(a.clone());
-        println!("\t{}", p);
+        // println!("\t{}", p);
         assumptions.push(p)
     }
-    println!("Adding width assumptions:");
+    println!("Adding width assumptions");
     for a in &ctx.width_assumptions {
         println!("\t{}", a);
         assumptions.push(a.clone());
     }
-    println!("Adding additional assumptions:");
+    println!("Adding additional assumptions");
     for a in &ctx.additional_assumptions {
-        println!("\t{}", a);
+        // println!("\t{}", a);
         assumptions.push(a.clone());
     }
 
     println!("Declaring additional variables");
     for (name, ty) in &ctx.additional_decls {
-        println!("\t{} : {:?}", name, ty);
+        // println!("\t{} : {:?}", name, ty);
         solver.declare_const(name, ty).unwrap();
     }
 
@@ -574,7 +562,8 @@ pub fn run_solver_rule_path(
     println!("LHS and RHS equality condition:\n\t{}\n", side_equality);
 
     let query = format!("(not (=> {} {}))", assumption_str, side_equality);
-    println!("Running query:\n\t{}\n", query);
+    println!("Running query");
+    // println!("Running query:\n\t{}\n", query);
     solver.assert(query).unwrap();
 
     match solver.check_sat() {

@@ -20,6 +20,7 @@ fn test_iadds() {
     );
 }
 
+
 #[test]
 fn test_implicit_conversions() {
     test_from_file_custom_prelude(
@@ -52,6 +53,11 @@ fn test_iadd_from_file() {
 #[test]
 fn test_ineg() {
     test_from_file("./examples/ineg.isle", lte_64_success_result())
+}
+
+#[test]
+fn test_uextend() {
+    test_from_file("./examples/uextend.isle", all_success_result())
 }
 
 // #[test]

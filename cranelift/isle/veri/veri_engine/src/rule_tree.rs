@@ -33,6 +33,7 @@ pub fn build_rule_tree_rec(
         rhs: sol.rhs.clone(),
         assumptions: sol.assumptions.clone(),
         quantified_vars: sol.quantified_vars.clone(),
+        free_vars: sol.free_vars.clone(),
         tyctx: sol.tyctx.to_owned(),
         lhs_undefined_terms: vec![],
         rhs_undefined_terms: vec![],
