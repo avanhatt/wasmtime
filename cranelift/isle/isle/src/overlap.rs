@@ -334,7 +334,7 @@ impl Pattern {
                 }
             }
 
-            sema::Pattern::Wildcard(_) => Pattern::Wildcard,
+            sema::Pattern::Wildcard(..) => Pattern::Wildcard,
 
             sema::Pattern::And(_, pats) => {
                 let pats = pats

@@ -432,7 +432,39 @@ impl PatternSequence {
                                 extractor_kind: Some(ExtractorKind::InternalExtractor { .. }),
                                 ..
                             } => {
-                                panic!("Should have been expanded away")
+                                let ext_sig = termdata.extractor_sig(typeenv).unwrap();
+
+                                // Evaluate all `input` args.
+                                let mut inputs = vec![];
+                                let mut input_tys = vec![];
+                                let mut output_tys = vec![];
+                                let mut output_pats = vec![];
+                                inputs.push(input);
+                                input_tys.push(termdata.ret_ty);
+                                for arg in args {
+                                    output_tys.push(arg.ty());
+                                    output_pats.push(arg);
+                                }
+
+                                // Invoke the extractor.
+                                let arg_values = self.add_extract(
+                                    inputs,
+                                    input_tys,
+                                    output_tys,
+                                    term,
+                                    ext_sig.infallible,
+                                    ext_sig.multi,
+                                );
+
+                                for (pat, &val) in output_pats.iter().zip(arg_values.iter()) {
+                                    self.gen_pattern(
+                                        ValueOrArgs::Value(val),
+                                        typeenv,
+                                        termenv,
+                                        pat,
+                                        vars,
+                                    );
+                                }
                             }
                             TermKind::Decl {
                                 extractor_kind: Some(ExtractorKind::ExternalExtractor { .. }),
@@ -481,7 +513,7 @@ impl PatternSequence {
                     self.gen_pattern(input, typeenv, termenv, child, vars);
                 }
             }
-            &Pattern::Wildcard(_ty) => {
+            &Pattern::Wildcard(_ty, _) => {
                 // Nothing!
             }
         }
@@ -571,7 +603,7 @@ impl ExprSequence {
                 ref body,
             } => {
                 let mut vars = vars.clone();
-                for &(var, _var_ty, ref var_expr) in bindings {
+                for &(var, _var_ty, _, ref var_expr) in bindings {
                     let var_value = self.gen_expr(typeenv, termenv, &*var_expr, &vars);
                     vars.insert(var, var_value);
                 }

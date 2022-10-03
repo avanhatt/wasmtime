@@ -93,6 +93,8 @@
 (type PReg (primitive PReg))
 
 ;; Construct a `ValueRegs` of one register.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl value_reg (Reg) ValueRegs)
 (extern constructor value_reg value_reg)
 
@@ -109,6 +111,8 @@
 (extern constructor output_none output_none)
 
 ;; Construct a single-element `InstOutput`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl output (ValueRegs) InstOutput)
 (extern constructor output output)
 
@@ -117,10 +121,14 @@
 (extern constructor output_pair output_pair)
 
 ;; Construct a single-element `InstOutput` from a single register.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (conv_to (widthof (arg)) (ret)))))
 (decl output_reg (Reg) InstOutput)
 (rule (output_reg reg) (output (value_reg reg)))
 
 ;; Construct a single-element `InstOutput` from a value.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl output_value (Value) InstOutput)
 (rule (output_value val) (output (put_in_regs val)))
 
@@ -167,12 +175,16 @@
 ;; multiple registers for its representation (like `i128` on x64 for example).
 ;;
 ;; As a side effect, this marks the value as used.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
 (decl put_in_reg (Value) Reg)
 (extern constructor put_in_reg put_in_reg)
 
 ;; Put the given value into one or more registers.
 ;;
 ;; As a side effect, this marks the value as used.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl put_in_regs (Value) ValueRegs)
 (extern constructor put_in_regs put_in_regs)
 
@@ -297,6 +309,8 @@
 (extern const $I32X4XN Type)
 
 ;; Get the bit width of a given type.
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (x) (ret))))
 (decl pure ty_bits (Type) u8)
 (extern constructor ty_bits ty_bits)
 
@@ -329,10 +343,14 @@
 ;;;; Helper Clif Extractors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; An extractor that only matches types that can fit in 16 bits.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (16i128: isleType))))
 (decl fits_in_16 (Type) Type)
 (extern extractor fits_in_16 fits_in_16)
 
 ;; An extractor that only matches types that can fit in 32 bits.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (32i128: isleType))))
 (decl fits_in_32 (Type) Type)
 (extern extractor fits_in_32 fits_in_32)
 
@@ -341,6 +359,8 @@
 (extern extractor lane_fits_in_32 lane_fits_in_32)
 
 ;; An extractor that only matches types that can fit in 64 bits.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
@@ -492,6 +512,8 @@
 (extern extractor infallible u64_from_bool u64_from_bool)
 
 ;; Extract a `u64` from an `Imm64`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl u64_from_imm64 (u64) Imm64)
 (extern extractor infallible u64_from_imm64 u64_from_imm64)
 
@@ -512,14 +534,20 @@
 (extern extractor infallible inst_results inst_results)
 
 ;; Extract the first result value of the given instruction.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl first_result (Value) Inst)
 (extern extractor first_result first_result)
 
 ;; Extract the `InstructionData` for an `Inst`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl inst_data (InstructionData) Inst)
 (extern extractor infallible inst_data inst_data)
 
 ;; Extract the type of a `Value`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (widthof (ret)))))
 (decl value_type (Type) Value)
 (extern extractor infallible value_type value_type)
 
@@ -530,6 +558,8 @@
 
 ;; Extract the type of the instruction's first result and pass along the
 ;; instruction as well.
+;;@ (spec (sig (args ty, arg) (ret))
+;;@ (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extractor (has_type ty inst)
            (and (result_type ty)

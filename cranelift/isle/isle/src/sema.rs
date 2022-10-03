@@ -203,6 +203,10 @@ pub struct TermEnv {
 
     /// A flag indicating whether or not overlap between rules should be considered an error.
     pub overlap_errors: bool,
+
+    /// Flag for whether to expand internal extractors in the
+    /// translation from the AST to sema.
+    pub expand_internal_extractors: bool,
 }
 
 /// A term.
@@ -474,10 +478,41 @@ pub enum Pattern {
     Term(TypeId, TermId, Vec<Pattern>),
 
     /// Match anything of the given type successfully.
-    Wildcard(TypeId),
+    /// Optionally include a reference to the the bound var the wildcard is capturing   
+    Wildcard(TypeId, Option<Sym>),
 
     /// Match all of the following patterns of the given type.
     And(TypeId, Vec<Pattern>),
+}
+
+impl Pattern {
+    /// Build associations between var ids and syms.    
+    /// Why do this after the fact instead of keeping a mapping of VarIds to Syms in    
+    /// the Termenv/Typeenv? Because that's a lot of VarIds, and this is really only    
+    /// import for debugging in the verification infrastructure.    
+    /// MLFB: May change key to var id index.   
+    pub fn build_var_map(&self, syms: &mut BTreeMap<VarId, Sym>) -> () {
+        match self {
+            Pattern::BindPattern(_, vid, pat) => match **pat {
+                Pattern::Wildcard(_, Some(sym)) => {
+                    syms.insert(*vid, sym);
+                }
+                Pattern::Wildcard(_, None) => panic!("Unexpected bind pattern: {:?}", pat),
+                _ => pat.build_var_map(syms),
+            },
+            Pattern::Term(_, _, pats) => {
+                for pat in pats {
+                    pat.build_var_map(syms)
+                }
+            }
+            Pattern::And(_, pats) => {
+                for pat in pats {
+                    pat.build_var_map(syms)
+                }
+            }
+            _ => return,
+        }
+    }
 }
 
 /// A right-hand side expression of some rule.
@@ -497,7 +532,7 @@ pub enum Expr {
         /// The type of the result of this let expression.
         ty: TypeId,
         /// The expressions that are evaluated and bound to the given variables.
-        bindings: Vec<(VarId, TypeId, Box<Expr>)>,
+        bindings: Vec<(VarId, TypeId, Sym, Box<Expr>)>,
         /// The body expression that is evaluated after the bindings.
         body: Box<Expr>,
     },
@@ -523,6 +558,32 @@ impl Pattern {
             &Pattern::Term(_, term, _) => Some(term),
             &Pattern::BindPattern(_, _, ref subpat) => subpat.root_term(),
             _ => None,
+        }
+    }
+
+    /// Given a var ID, find its matching sym in the pattern (if it exists)
+    pub fn get_sym(&self, vid: &VarId) -> Option<Sym> {
+        match self {
+            Self::BindPattern(_, var_id, pat) => {
+                if var_id == vid {
+                    pat.get_sym(vid)
+                } else {
+                    None
+                }
+            }
+            Self::Term(_, _, pats) => {
+                let sym = pats
+                    .iter()
+                    .filter_map(|pat| pat.get_sym(vid))
+                    .collect::<Vec<Sym>>();
+                if sym.is_empty() {
+                    return None;
+                }
+                assert!(sym.len() == 1);
+                return Some(sym[0]);
+            }
+            Self::Wildcard(_, Some(sym)) => Some(*sym),
+            _ => return None,
         }
     }
 }
@@ -783,13 +844,18 @@ struct BoundVar {
 
 impl TermEnv {
     /// Construct the term environment from the AST and the type environment.
-    pub fn from_ast(tyenv: &mut TypeEnv, defs: &ast::Defs) -> Result<TermEnv> {
+    pub fn from_ast(
+        tyenv: &mut TypeEnv,
+        defs: &ast::Defs,
+        expand_internal_extractors: bool,
+    ) -> Result<TermEnv> {
         let mut env = TermEnv {
             terms: vec![],
             term_map: StableMap::new(),
             rules: vec![],
             converters: StableMap::new(),
             overlap_errors: false,
+            expand_internal_extractors,
         };
 
         env.collect_pragmas(defs);
@@ -1535,7 +1601,7 @@ impl TermEnv {
                         return None;
                     }
                 };
-                Some((Pattern::Wildcard(ty), ty))
+                Some((Pattern::Wildcard(ty, None), ty))
             }
             &ast::Pattern::And { ref subpats, pos } => {
                 let mut expected_ty = expected_ty;
@@ -1570,7 +1636,7 @@ impl TermEnv {
                 pos,
             } => {
                 // Do the subpattern first so we can resolve the type for sure.
-                let (subpat, ty) = self.translate_pattern(
+                let (_subpat, ty) = self.translate_pattern(
                     tyenv,
                     rule_term,
                     &*subpat,
@@ -1591,8 +1657,10 @@ impl TermEnv {
                 bindings.next_var += 1;
                 log!("binding var {:?}", var.0);
                 bindings.vars.push(BoundVar { name, id, ty });
-
-                Some((Pattern::BindPattern(ty, id, Box::new(subpat)), ty))
+                Some((
+                    Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
+                    ty,
+                ))
             }
             &ast::Pattern::Var { ref var, pos } => {
                 // Look up the variable; if it has already been bound,
@@ -1618,7 +1686,11 @@ impl TermEnv {
                         log!("binding var {:?}", var.0);
                         bindings.vars.push(BoundVar { name, id, ty });
                         Some((
-                            Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty))),
+                            Pattern::BindPattern(
+                                ty,
+                                id,
+                                Box::new(Pattern::Wildcard(ty, Some(name))),
+                            ),
                             ty,
                         ))
                     }
@@ -1722,24 +1794,27 @@ impl TermEnv {
                         extractor_kind: Some(ExtractorKind::InternalExtractor { ref template }),
                         ..
                     } => {
-                        // Expand the extractor macro! We create a map
-                        // from macro args to AST pattern trees and
-                        // then evaluate the template with these
-                        // substitutions.
-                        let mut macro_args: Vec<ast::Pattern> = vec![];
-                        for template_arg in args {
-                            macro_args.push(template_arg.clone());
+                        // TODO
+                        if self.expand_internal_extractors {
+                            // Expand the extractor macro! We create a map
+                            // from macro args to AST pattern trees and
+                            // then evaluate the template with these
+                            // substitutions.
+                            let mut macro_args: Vec<ast::Pattern> = vec![];
+                            for template_arg in args {
+                                macro_args.push(template_arg.clone());
+                            }
+                            log!("internal extractor macro args = {:?}", args);
+                            let pat = template.subst_macro_args(&macro_args[..])?;
+                            return self.translate_pattern(
+                                tyenv,
+                                rule_term,
+                                &pat,
+                                expected_ty,
+                                bindings,
+                                /* is_root = */ false,
+                            );
                         }
-                        log!("internal extractor macro args = {:?}", args);
-                        let pat = template.subst_macro_args(&macro_args[..])?;
-                        return self.translate_pattern(
-                            tyenv,
-                            rule_term,
-                            &pat,
-                            expected_ty,
-                            bindings,
-                            /* is_root = */ false,
-                        );
                     }
                     TermKind::Decl {
                         extractor_kind: None,
@@ -2041,7 +2116,7 @@ impl TermEnv {
                     bindings.next_var += 1;
                     bindings.vars.push(BoundVar { name, id, ty: tid });
 
-                    let_defs.push((id, tid, val));
+                    let_defs.push((id, tid, name, val));
                 }
 
                 // Evaluate the body, expecting the type of the overall let-expr.
