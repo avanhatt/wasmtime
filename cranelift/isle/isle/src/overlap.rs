@@ -271,7 +271,7 @@ impl Pattern {
     ///    [`Pattern::Extractor`] cases depending on their term kind.
     fn from_sema(env: &TermEnv, binds: &mut Vec<(VarId, Pattern)>, pat: &sema::Pattern) -> Self {
         match pat {
-            sema::Pattern::BindPattern(_, id, pat) => {
+            sema::Pattern::BindPattern(_, id, pat, _) => {
                 let pat = Self::from_sema(env, binds, pat);
                 binds.push((*id, pat.clone()));
                 pat

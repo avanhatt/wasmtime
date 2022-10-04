@@ -351,7 +351,7 @@ impl PatternSequence {
         vars: &mut StableMap<VarId, Value>,
     ) {
         match pat {
-            &Pattern::BindPattern(_ty, var, ref subpat) => {
+            &Pattern::BindPattern(_ty, var, ref subpat, _) => {
                 // Bind the appropriate variable and recurse.
                 assert!(!vars.contains_key(&var));
                 if let Some(v) = input.to_value() {

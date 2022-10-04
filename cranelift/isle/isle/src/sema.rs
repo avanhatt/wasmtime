@@ -459,7 +459,7 @@ pub enum Pattern {
     /// Bind a variable of the given type from the current value.
     ///
     /// Keep matching on the value with the subpattern.
-    BindPattern(TypeId, VarId, Box<Pattern>),
+    BindPattern(TypeId, VarId, Box<Pattern>, Option<Sym>),
 
     /// Match the current value against an already bound variable with the given
     /// type.
@@ -493,7 +493,11 @@ impl Pattern {
     /// MLFB: May change key to var id index.   
     pub fn build_var_map(&self, syms: &mut BTreeMap<VarId, Sym>) -> () {
         match self {
-            Pattern::BindPattern(_, vid, pat) => match **pat {
+            Pattern::BindPattern(_, vid, pat, Some(sym)) => {
+                syms.insert(*vid, *sym);
+                pat.build_var_map(syms)
+            }
+            Pattern::BindPattern(_, vid, pat, None) => match **pat {
                 Pattern::Wildcard(_, Some(sym)) => {
                     syms.insert(*vid, sym);
                 }
@@ -556,7 +560,7 @@ impl Pattern {
     pub fn root_term(&self) -> Option<TermId> {
         match self {
             &Pattern::Term(_, term, _) => Some(term),
-            &Pattern::BindPattern(_, _, ref subpat) => subpat.root_term(),
+            &Pattern::BindPattern(_, _, ref subpat, _) => subpat.root_term(),
             _ => None,
         }
     }
@@ -564,7 +568,7 @@ impl Pattern {
     /// Given a var ID, find its matching sym in the pattern (if it exists)
     pub fn get_sym(&self, vid: &VarId) -> Option<Sym> {
         match self {
-            Self::BindPattern(_, var_id, pat) => {
+            Self::BindPattern(_, var_id, pat, _) => {
                 if var_id == vid {
                     pat.get_sym(vid)
                 } else {
@@ -1636,7 +1640,7 @@ impl TermEnv {
                 pos,
             } => {
                 // Do the subpattern first so we can resolve the type for sure.
-                let (_subpat, ty) = self.translate_pattern(
+                let (subpat, ty) = self.translate_pattern(
                     tyenv,
                     rule_term,
                     &*subpat,
@@ -1658,7 +1662,8 @@ impl TermEnv {
                 log!("binding var {:?}", var.0);
                 bindings.vars.push(BoundVar { name, id, ty });
                 Some((
-                    Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
+                    Pattern::BindPattern(ty, id, Box::new(subpat), Some(name)),
+                    // Pattern::BindPattern(ty, id, Box::new(Pattern::Wildcard(ty, Some(name)))),
                     ty,
                 ))
             }
@@ -1690,6 +1695,7 @@ impl TermEnv {
                                 ty,
                                 id,
                                 Box::new(Pattern::Wildcard(ty, Some(name))),
+                                Some(name),
                             ),
                             ty,
                         ))
