@@ -766,6 +766,7 @@ fn legal_bool(bits: RangeBound) -> bool {
 }
 
 /// Generates a set with all the powers of two included in the range.
+// AVH HERE
 fn range_to_set(range: Option<Range>) -> NumSet {
     let mut set = NumSet::new();
 

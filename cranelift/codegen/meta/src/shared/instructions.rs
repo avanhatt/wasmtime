@@ -1825,6 +1825,8 @@ pub(crate) fn define(
         .operands_out(vec![f]),
     );
 
+    // AVH TODO: check for masking around widths
+    // all 3 of these using "Int" constrains them to the same width
     let a = &Operand::new("a", Int);
     let x = &Operand::new("x", Int);
     let y = &Operand::new("y", Int);
