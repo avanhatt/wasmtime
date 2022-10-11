@@ -983,7 +983,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (+ (x) (conv_from 64 (y))) (ret))))
+;;@       (assertions (= (+ (sign_ext 64 (x)) (y)) (ret))))
 (decl iadd_imm (Value Imm64) Inst)
 (extractor
     (iadd_imm x Y)
