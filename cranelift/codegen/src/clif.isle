@@ -982,6 +982,8 @@
     (inst_data (InstructionData.Binary (Opcode.Srem) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (+ (x) (conv_from 64 (y))) (ret))))
 (decl iadd_imm (Value Imm64) Inst)
 (extractor
     (iadd_imm x Y)
@@ -1024,12 +1026,16 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.IrsubImm) x Y))
 )
 
+;;@ (spec (sig (args x, y, cin) (ret))
+;;@       (assertions (= (+ (+ (x) (y)) cin) (ret))))
 (decl iadd_cin (Value Value Value) Inst)
 (extractor
     (iadd_cin x y c_in)
     (inst_data (InstructionData.Ternary (Opcode.IaddCin) (value_array_3 x y c_in)))
 )
 
+;;@ (spec (sig (args x, y, cin) (ret))
+;;@       (assertions (= (+ (+ (x) (y)) cin) (ret))))
 (decl iadd_ifcin (Value Value Value) Inst)
 (extractor
     (iadd_ifcin x y c_in)
@@ -1060,12 +1066,16 @@
     (inst_data (InstructionData.Ternary (Opcode.IaddIfcarry) (value_array_3 x y c_in)))
 )
 
+;;@ (spec (sig (args x, y, bin) (ret))
+;;@       (assertions (= (- (x) (+ (y) (bin))) (ret))))
 (decl isub_bin (Value Value Value) Inst)
 (extractor
     (isub_bin x y b_in)
     (inst_data (InstructionData.Ternary (Opcode.IsubBin) (value_array_3 x y b_in)))
 )
 
+;;@ (spec (sig (args x, y, bin) (ret))
+;;@       (assertions (= (- (x) (+ (y) (bin))) (ret))))
 (decl isub_ifbin (Value Value Value) Inst)
 (extractor
     (isub_ifbin x y b_in)
