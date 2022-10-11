@@ -1641,10 +1641,13 @@
          dst)))
 
 ;; Helpers for generating `add` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
 (rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assertions (= (+ (a) (conv_from 12 (b))) (r))))
 (decl add_imm (Type Reg Imm12) Reg)
 (rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
 
@@ -1679,12 +1682,14 @@
 (rule (sub_vec x y size) (vec_rrr (VecALUOp.Sub) x y size))
 
 ;; Helpers for generating `madd` instructions.
-
+;;@ (spec (sig (args ty, a, b, c) (r))
+;;@     (assertions (= (+ (c) (* (a) (b))) (r))))
 (decl madd (Type Reg Reg Reg) Reg)
 (rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
 
 ;; Helpers for generating `msub` instructions.
-
+;;@ (spec (sig (args ty, a, b, c) (r))
+;;@     (assertions (= (- (c) (* (a) (b))) (r))))
 (decl msub (Type Reg Reg Reg) Reg)
 (rule (msub ty x y z) (alu_rrrr (ALUOp3.MSub) ty x y z))
 
