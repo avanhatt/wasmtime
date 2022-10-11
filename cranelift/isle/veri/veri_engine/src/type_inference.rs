@@ -610,7 +610,6 @@ fn add_annotation_constraints(
                 veri_ir::annotation_ir::Width::RegWidth => REG_WIDTH,
             };
 
-            // In the dynamic case, we don't know the width at this point
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.concrete_constraints.insert(TypeExpr::Concrete(
@@ -651,7 +650,6 @@ fn add_annotation_constraints(
                 veri_ir::annotation_ir::Width::RegWidth => REG_WIDTH,
             };
 
-            // In the dynamic case, we don't know the width at this point
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.concrete_constraints.insert(TypeExpr::Concrete(

@@ -72,6 +72,7 @@ pub FunctionApplication: FunctionApplication = {
 
 pub Width: Box<Width> = {
     "(" "regwidth" ")" => Box::new(Width::RegWidth),
+    "(" <n:UNum> ")" => Box::new(Width::Const(n)),
 }
 
 pub Expr: Box<Expr> = {
