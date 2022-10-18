@@ -598,6 +598,8 @@
 (extern extractor ty_dyn128_int ty_dyn128_int)
 
 ;; Match the instruction that defines the given value, if any.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl def_inst (Inst) Value)
 (extern extractor def_inst def_inst)
 
