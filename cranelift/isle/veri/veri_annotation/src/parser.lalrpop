@@ -89,6 +89,8 @@ pub Expr: Box<Expr> = {
 
     "(" "-" <u:Expr> ")" => Box::new(Expr::BVNeg(u, 0)),
     "(" "~" <u:Expr> ")" => Box::new(Expr::BVNot(u, 0)),
+    "(" "cls" <u:Expr> ")" => Box::new(Expr::CLS(u, 0)),
+    "(" "clz" <u:Expr> ")" => Box::new(Expr::CLZ(u, 0)),
 
     "(" "+" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAdd(u, v, 0)),
     "(" "-" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSub(u, v, 0)),

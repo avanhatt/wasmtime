@@ -151,6 +151,8 @@ pub enum UnaryOp {
     // Bitvector operations
     BVNeg,
     BVNot,
+    CLS,
+    CLZ,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]

@@ -194,6 +194,14 @@ impl SolverCtx {
         ite_str
     }
 
+    fn cls(x: &String) -> String {
+        String::from("")
+    }
+
+    fn clz(x: &String) -> String {
+        String::from("")
+    } 
+
     pub fn widen_to_query_width(
         &mut self,
         tyvar: u32,
@@ -322,6 +330,28 @@ impl SolverCtx {
                     UnaryOp::BVNot => {
                         self.assume_same_width_from_string(&width.unwrap(), &*arg);
                         "bvnot"
+                    }
+                    UnaryOp::CLS => {
+                        match *arg {
+                            Expr::Terminal(ref t) => {
+                                match t {
+                                    Terminal::Var(x) => &SolverCtx::cls(&x),
+                                    _ => unreachable!("{:?}", t),
+                                }
+                            }
+                            _ => unreachable!("{:?}", arg),
+                        }
+                    }
+                    UnaryOp::CLZ => {
+                        match *arg {
+                            Expr::Terminal(ref t) => {
+                                match t {
+                                    Terminal::Var(x) => &SolverCtx::clz(&x),
+                                    _ => unreachable!("{:?}", t),
+                                }
+                            }
+                            _ => unreachable!("{:?}", arg),
+                        }
                     }
                 };
                 format!("({} {})", op, self.vir_expr_to_rsmt2_str(*arg))

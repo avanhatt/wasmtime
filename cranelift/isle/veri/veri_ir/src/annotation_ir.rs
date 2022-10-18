@@ -174,6 +174,8 @@ pub enum Expr {
     // Unary operators
     BVNeg(Box<Expr>, u32),
     BVNot(Box<Expr>, u32),
+    CLS(Box<Expr>, u32),
+    CLZ(Box<Expr>, u32),
 
     // Binary operators
     BVAdd(Box<Expr>, Box<Expr>, u32),
@@ -233,6 +235,8 @@ impl Expr {
             | Expr::Not(_, t)
             | Expr::BVNeg(_, t)
             | Expr::BVNot(_, t)
+            | Expr::CLS(_, t)
+            | Expr::CLZ(_, t)
             | Expr::And(_, _, t)
             | Expr::Or(_, _, t)
             | Expr::Imp(_, _, t)
