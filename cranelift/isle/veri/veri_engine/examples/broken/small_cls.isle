@@ -1,0 +1,34 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;; Instruction formats.
+;;(type MInst
+;;  (enum
+    ;; A sign- or zero-extend operation.
+;;    (Extend
+;;      (rd WritableReg)
+;;      (rn Reg)
+;;      (signed bool)
+;;      (from_bits u8)
+;;      (to_bits u8))
+;;))
+
+;;@ (spec (sig (args a) (ret))
+;;@     (assertions (= (ret) (cls (a)))))
+(decl cls (Value) Inst)
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (ret) (cls (a)))))
+(decl a64_cls (Type Reg) Reg)
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (sign_ext 32 (x)) (ret))))
+(decl put_in_reg_sext32 (Value) Reg)
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (zero_ext 12 (x)) (ret))))
+(decl u8_into_imm12 (u8) Imm12)
+
+(rule (lower (has_type $I8 (cls x)))
+      (sub_imm $I32 (a64_cls $I32 (put_in_reg_sext32 x)) (u8_into_imm12 24)))

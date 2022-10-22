@@ -195,7 +195,65 @@ impl SolverCtx {
     }
 
     fn cls(x: &String) -> String {
-        String::from("")
+        "(declare-fun x () (_ BitVec 64))
+        (assert (= x (_ bv2305843009213693952 64)))
+
+        (declare-fun ret0 () (_ BitVec 8))
+        (assert (= ret0 (_ bv0 8)))
+
+        (declare-fun ret1 () (_ BitVec 8))
+        (declare-fun y32 () (_ BitVec 64))
+        (declare-fun x32 () (_ BitVec 64))
+
+        (assert (= y32 (bvlshr x #x0000000000000020)))
+        (assert (ite (not (= y32 (_ bv0 64))) (= ret1 ret0) (= ret1 (bvadd ret0 (_ bv32 8)))))
+        (assert (ite (not (= y32 (_ bv0 64))) (= x32 y32) (= x32 x)))
+
+        (declare-fun ret2 () (_ BitVec 8))
+        (declare-fun y16 () (_ BitVec 64))
+        (declare-fun x16 () (_ BitVec 64))
+
+        (assert (= y16 (bvlshr x32 #x0000000000000010)))
+        (assert (ite (not (= y16 (_ bv0 64))) (= ret2 ret1) (= ret2 (bvadd ret1 (_ bv16 8)))))
+        (assert (ite (not (= y16 (_ bv0 64))) (= x16 y16) (= x16 x32)))
+
+        (declare-fun ret3 () (_ BitVec 8))
+        (declare-fun y8 () (_ BitVec 64))
+        (declare-fun x8 () (_ BitVec 64))
+
+        (assert (= y8 (bvlshr x16 #x0000000000000008)))
+        (assert (ite (not (= y8 (_ bv0 64))) (= ret3 ret2) (= ret3 (bvadd ret2 (_ bv8 8)))))
+        (assert (ite (not (= y8 (_ bv0 64))) (= x8 y8) (= x8 x16)))
+
+        (declare-fun ret4 () (_ BitVec 8))
+        (declare-fun y4 () (_ BitVec 64))
+        (declare-fun x4 () (_ BitVec 64))
+
+        (assert (= y4 (bvlshr x8 #x0000000000000004)))
+        (assert (ite (not (= y4 (_ bv0 64))) (= ret4 ret3) (= ret4 (bvadd ret3 (_ bv4 8)))))
+        (assert (ite (not (= y4 (_ bv0 64))) (= x4 y4) (= x4 x8)))
+
+        (declare-fun ret5 () (_ BitVec 8))
+        (declare-fun y2 () (_ BitVec 64))
+        (declare-fun x2 () (_ BitVec 64))
+
+        (assert (= y2 (bvlshr x4 #x0000000000000002)))
+        (assert (ite (not (= y2 (_ bv0 64))) (= ret5 ret4) (= ret5 (bvadd ret4 (_ bv2 8)))))
+        (assert (ite (not (= y2 (_ bv0 64))) (= x2 y2) (= x2 x4)))
+
+        (declare-fun ret6 () (_ BitVec 8))
+        (declare-fun y1 () (_ BitVec 64))
+        (declare-fun x1 () (_ BitVec 64))
+
+        (assert (= y1 (bvlshr x2 #x0000000000000001)))
+        (assert (ite (not (= y1 (_ bv0 64))) (= ret6 ret5) (= ret6 (bvadd ret5 (_ bv1 8)))))
+        (assert (ite (not (= y1 (_ bv0 64))) (= x1 y1) (= x1 x2)))
+
+        (declare-fun ret () (_ BitVec 8))
+        (assert (ite (= ret6 #x00) (= ret ret6) (= ret (bvsub ret6 #x01))))
+
+        (check-sat)
+        (get-model)"
     }
 
     fn clz(x: &String) -> String {

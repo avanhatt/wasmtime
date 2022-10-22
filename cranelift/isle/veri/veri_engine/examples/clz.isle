@@ -1,0 +1,4 @@
+clz annotation:
+  - needs all 0 case
+  - uextend x
+  - clz(x) - widthof(x)
