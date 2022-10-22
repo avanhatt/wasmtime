@@ -936,18 +936,24 @@
     (inst_data (InstructionData.Unary (Opcode.Iabs) x))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (* (x) (y)) (ret))))
 (decl imul (Value Value) Inst)
 (extractor
     (imul x y)
     (inst_data (InstructionData.Binary (Opcode.Imul) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
 (decl umulhi (Value Value) Inst)
 (extractor
     (umulhi x y)
     (inst_data (InstructionData.Binary (Opcode.Umulhi) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (extract 128 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
 (decl smulhi (Value Value) Inst)
 (extractor
     (smulhi x y)
@@ -992,6 +998,8 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.IaddImm) x Y))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (* (sign_ext (64) (x)) (y)) (ret))))
 (decl imul_imm (Value Imm64) Inst)
 (extractor
     (imul_imm x Y)

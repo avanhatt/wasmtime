@@ -1685,7 +1685,6 @@
 (decl sub_vec (Reg Reg VectorSize) Reg)
 (rule (sub_vec x y size) (vec_rrr (VecALUOp.Sub) x y size))
 
-;; TODO MP
 ;; Helpers for generating `madd` instructions.
 ;;@ (spec (sig (args ty, a, b, c) (r))
 ;;@     (assertions (= (+ (c) (* (a) (b))) (r))))
@@ -1715,10 +1714,14 @@
 (rule (sqsub x y size) (vec_rrr (VecALUOp.Sqsub) x y size))
 
 ;; Helper for generating `umulh` instructions.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
 (decl umulh (Type Reg Reg) Reg)
 (rule (umulh ty x y) (alu_rrr (ALUOp.UMulH) ty x y))
 
 ;; Helper for generating `smulh` instructions.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
 (decl smulh (Type Reg Reg) Reg)
 (rule (smulh ty x y) (alu_rrr (ALUOp.SMulH) ty x y))
 
