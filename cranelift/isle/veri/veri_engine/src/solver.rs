@@ -334,7 +334,8 @@ impl SolverCtx {
                     _ => (),
                 };
                 match op {
-                    BinaryOp::BVAdd
+                    BinaryOp::BVMul
+                    | BinaryOp::BVAdd
                     | BinaryOp::BVSub
                     | BinaryOp::BVAnd
                     | BinaryOp::BVOr
@@ -393,6 +394,7 @@ impl SolverCtx {
                     BinaryOp::Imp => "=>",
                     BinaryOp::Eq => "=",
                     BinaryOp::Lte => "<=",
+                    BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVAdd => "bvadd",
                     BinaryOp::BVSub => "bvsub",
                     BinaryOp::BVAnd => "bvand",
