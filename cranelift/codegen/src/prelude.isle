@@ -498,6 +498,9 @@
            (value_list_slice (value_slice_unwrap head1 (value_slice_unwrap head2 tail))))
 
 ;; Constructor to test whether two values are same.
+;;@ (spec (sig (args x, y) (ret))
+;;@     (assertions (= (x) (ret)),
+;;@                 (= (x) (y))))
 (decl pure same_value (Value Value) Value)
 (extern constructor same_value same_value)
 
