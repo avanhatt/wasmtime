@@ -615,6 +615,25 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVSignExtTo(width, Box::new(e1)), t)
         }
+        annotation_ir::Expr::BVExtract(l, r, x, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            //tree.bv_constraints
+            //    .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t1,
+                annotation_ir::Type::BitVectorWithWidth(128),
+            ));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(l - r + 1),
+            ));
+
+            tree.next_type_var += 1;
+
+            (veri_ir::Expr::BVExtract(l, r, Box::new(e1)), t)
+        }
         annotation_ir::Expr::BVIntToBv(w, x, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
 
