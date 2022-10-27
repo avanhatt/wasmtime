@@ -351,7 +351,8 @@ impl SolverCtx {
                     _ => (),
                 };
                 match op {
-                    BinaryOp::BVAdd
+                    BinaryOp::BVMul
+                    | BinaryOp::BVAdd
                     | BinaryOp::BVSub
                     | BinaryOp::BVAnd
                     | BinaryOp::BVOr
@@ -410,6 +411,7 @@ impl SolverCtx {
                     BinaryOp::Imp => "=>",
                     BinaryOp::Eq => "=",
                     BinaryOp::Lte => "<=",
+                    BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVAdd => "bvadd",
                     BinaryOp::BVSub => "bvsub",
                     BinaryOp::BVAnd => "bvand",
@@ -651,7 +653,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
         let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
-        // println!("\t{} : {:?}", name, var_ty);
+        println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
                 v.tyvar,
