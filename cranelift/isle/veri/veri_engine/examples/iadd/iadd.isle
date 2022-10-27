@@ -91,9 +91,6 @@
 
 ;; Rules
 
-(rule (lower (has_type (fits_in_64 ty) (iadd x y)))
-      (add ty x y))
-
 (rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_value y))))
       (add_imm ty x y))
 
@@ -105,15 +102,6 @@
 
 (rule (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
       (sub_imm ty y x))
-
-(rule (lower (has_type (fits_in_64 ty) (iadd x (imul y z))))
-      (madd ty y z x))
-
-(rule (lower (has_type (fits_in_64 ty) (iadd (imul x y) z)))
-      (madd ty x y z))
-
-(rule (lower (has_type (fits_in_64 ty) (isub x (imul y z))))
-      (msub ty y z x))
 
 ;; Special cases for when we're adding an extended register where the extending
 ;; operation can get folded into the add itself.

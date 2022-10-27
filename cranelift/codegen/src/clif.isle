@@ -953,7 +953,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (extract 128 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
+;;@       (assertions (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
 (decl smulhi (Value Value) Inst)
 (extractor
     (smulhi x y)
