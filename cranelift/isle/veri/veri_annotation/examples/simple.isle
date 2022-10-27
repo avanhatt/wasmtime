@@ -15,7 +15,6 @@
 (decl iadd (Value Value) Inst)
 (extern extractor iadd iadd)
 
-;; CONSTRUCTORS
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (= (arg) (ret))))
 (decl value_reg (Reg) ValueRegs)
