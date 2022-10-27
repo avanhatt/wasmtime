@@ -1602,8 +1602,6 @@
 (decl pure imm_logic_from_imm64 (Type Imm64) ImmLogic)
 (extern constructor imm_logic_from_imm64 imm_logic_from_imm64)
 
-;;@ (spec (sig (args x) (r))
-;;@     (assertions (= (x) (r))))
 (decl pure imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
 
