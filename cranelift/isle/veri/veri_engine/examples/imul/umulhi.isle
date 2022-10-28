@@ -15,13 +15,7 @@
 ;; below (see `Inst`) in any combination.
 (type ALUOp
   (enum
-    (Add)
-))
-
-(type ALUOp3
-  (enum
-    ;; Multiply-add
-    (MAdd)
+    (UMulH)
 ))
 
 (type OperandSize extern
@@ -31,25 +25,16 @@
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
 
-(decl alu_rrrr (ALUOp3 Type Reg Reg Reg) Reg)
-(extern constructor alu_rrrr alu_rrrr)
-
-;;@ (spec (sig (args) (r))
-;;@     (assertions (= (zero_ext (regwidth) (0i1:bv)) (r))))
-(decl zero_reg () Reg)
-(extern constructor zero_reg zero_reg)
-
 ;; Helper for calculating the `OperandSize` corresponding to a type
 (decl operand_size (Type) OperandSize)
 (rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
-;; Helpers for generating `madd` instructions.
-;;@ (spec (sig (args ty, a, b, c) (r))
-;;@     (assertions (= (+ (c) (* (a) (b))) (r))))
-(decl madd (Type Reg Reg Reg) Reg)
-(rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
+;; Helper for generating `umulh` instructions.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
+(decl umulh (Type Reg Reg) Reg)
+(rule (umulh ty x y) (alu_rrr (ALUOp.UMulH) ty x y))
 
-;; `i64` and smaller.
-(rule (lower (has_type (fits_in_64 ty) (imul x y)))
-      (madd ty x y (zero_reg)))
+(rule (lower (has_type $I64 (umulhi x y)))
+      (umulh $I64 x y))

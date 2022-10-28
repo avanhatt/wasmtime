@@ -944,12 +944,16 @@
     (inst_data (InstructionData.Binary (Opcode.Imul) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
 (decl umulhi (Value Value) Inst)
 (extractor
     (umulhi x y)
     (inst_data (InstructionData.Binary (Opcode.Umulhi) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
 (decl smulhi (Value Value) Inst)
 (extractor
     (smulhi x y)

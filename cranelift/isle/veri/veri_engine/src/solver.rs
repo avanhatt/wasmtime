@@ -506,12 +506,16 @@ impl SolverCtx {
             Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
             Expr::BVExtract(i, j, x) => {
                 assert!(i > j);
-                assert!(i < self.bitwidth);
-                let xs = self.vir_expr_to_rsmt2_str(*x);
-                let extract = format!("((_ extract {} {}) {})", i, j, xs);
-                let new_width = i - j + 1;
-                let padding = self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
-                format!("(concat {} {})", padding, extract)
+                if let Type::BitVector(x_width) = ty.unwrap() {
+                    assert!(i < x_width.unwrap());
+                    let xs = self.vir_expr_to_rsmt2_str(*x);
+                    let extract = format!("((_ extract {} {}) {})", i, j, xs);
+                    let new_width = i - j + 1;
+                    let padding = self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
+                    format!("(concat {} {})", padding, extract)
+                } else {
+                    unreachable!("Must perform extraction on bv with known width")
+                }
             }
             Expr::Conditional(c, t, e) => {
                 format!(
