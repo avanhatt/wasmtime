@@ -1,0 +1,59 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;; Instruction formats.
+(type MInst
+  (enum
+    ;; An ALU operation with two register sources and a register destination.
+    (AluRRR
+      (alu_op ALUOp)
+      (size OperandSize)
+)))
+
+;; An ALU operation. This can be paired with several instruction formats
+;; below (see `Inst`) in any combination.
+(type ALUOp
+  (enum
+    (SDiv)
+))
+
+(type OperandSize extern
+      (enum Size32
+            Size64))
+
+;; Helper for calculating the `OperandSize` corresponding to a type
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+(decl alu_rrr (ALUOp Type Reg Reg) Reg)
+(extern constructor alu_rrr alu_rrr)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (sign_ext (64) (x)) (ret)),
+;;@                   (! (= (0i64:bv) (ret)))))
+(decl put_nonzero_in_reg_sext64 (Value) Reg)
+(extern constructor put_nonzero_in_reg_sext64 put_nonzero_in_reg_sext64)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (sign_ext (64) (x)) (ret))))
+(decl put_in_reg_sext64 (Value) Reg)
+(extern constructor put_in_reg_sext64 put_in_reg_sext64)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (sdiv (x) (y)) (ret))))
+(decl a64_sdiv (Type Reg Reg) Reg)
+(rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
+
+;;@ (spec (sig (args ty, a, b) (ret))
+;;@     (assertions (= (a) (ret))))
+(decl trap_if_div_overflow (Type Reg Reg) Reg)
+(extern constructor trap_if_div_overflow trap_if_div_overflow)
+
+(rule (lower (has_type (fits_in_64 ty) (sdiv x y)))
+      (let ((x64 Reg (put_in_reg_sext64 x))
+            (y64 Reg (put_nonzero_in_reg_sext64 y))
+            (valid_x64 Reg (trap_if_div_overflow ty x64 y64))
+            (result Reg (a64_sdiv $I64 valid_x64 y64)))
+        result))

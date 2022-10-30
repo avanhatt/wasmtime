@@ -1963,6 +1963,8 @@
 ;; Check for signed overflow. The only case is min_value / -1.
 ;; The following checks must be done in 32-bit or 64-bit, depending
 ;; on the input type.
+;;@ (spec (sig (args ty, a, b) (ret))
+;;@     (assertions (= (a) (a))))
 (decl trap_if_div_overflow (Type Reg Reg) Reg)
 (rule (trap_if_div_overflow ty x y)
       (let (

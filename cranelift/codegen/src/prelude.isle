@@ -523,6 +523,12 @@
 (extern extractor infallible u64_from_imm64 u64_from_imm64)
 
 ;; Extract a `u64` from an `Imm64` which is not zero.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (if (= (& (arg) (1152921504606846976i64:bv)) (0i64:bv)) {
+;;@          (= (arg) (ret))      
+;;@      } else {
+;;@          (= (ret) (+ (1i64:bv) (~(arg))))
+;;@      })))
 (decl nonzero_u64_from_imm64 (u64) Imm64)
 (extern extractor nonzero_u64_from_imm64 nonzero_u64_from_imm64)
 

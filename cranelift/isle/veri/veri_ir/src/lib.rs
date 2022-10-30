@@ -164,6 +164,8 @@ pub enum BinaryOp {
 
     // Bitvector operations
     BVMul,
+    BVUDiv,
+    BVSDiv,
     BVAdd,
     BVSub,
     BVAnd,
