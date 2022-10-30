@@ -45,18 +45,31 @@ fn test_iadd_from_file() {
     test_from_file("./examples/iadd/madd.isle", lte_64_success_result());
     test_from_file("./examples/iadd/madd2.isle", lte_64_success_result());
     test_from_file("./examples/iadd/msub.isle", lte_64_success_result());
-/*
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
 
+    test_from_file("./examples/iadd/imm12.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12_2.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12negated.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12negated_2.isle", lte_64_success_result());
+    /*
     test_from_file("./examples/iadd/", lte_64_success_result());
     test_from_file("./examples/iadd/", lte_64_success_result());
     test_from_file("./examples/iadd/", lte_64_success_result());
     test_from_file("./examples/iadd/", lte_64_success_result());
     */
 }
+
+#[test]
+fn test_isub_from_file() {
+    test_from_file("./examples/isub/base_case.isle", lte_64_success_result());
+    test_from_file("./examples/isub/imm12.isle", lte_64_success_result());
+    test_from_file("./examples/isub/imm12neg.isle", lte_64_success_result());
+
+    /*
+    test_from_file("./examples/isub/", lte_64_success_result());
+    test_from_file("./examples/isub/", lte_64_success_result());
+    */
+}
+
 
 #[test]
 fn test_broken_iadd_from_file() {
@@ -75,6 +88,15 @@ fn test_broken_iadd_from_file() {
             (Bitwidth::I64, VerificationResult::Failure(Counterexample{})),
         ],
     );
+}
+
+#[test]
+fn test_broken_iadd_from_file() {
+    //test_from_file("./examples/broken/isub/broken_base_case.isle", all_failure_result());
+    //test_from_file("./examples/broken/isub/broken_imm12.isle", all_failure_result());
+    //test_from_file("./examples/broken/isub/broken_imm12neg.isle", all_failure_result());
+    //test_from_file("./examples/broken/isub/", all_failure_result());
+    //test_from_file("./examples/broken/isub/", all_failure_result());
 }
 
 // DISABLED for now while ruin chaining is on hold
