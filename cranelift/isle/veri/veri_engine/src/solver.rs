@@ -357,7 +357,7 @@ impl SolverCtx {
                     | BinaryOp::BVAnd
                     | BinaryOp::BVOr
                     | BinaryOp::BVShl
-                    | BinaryOp::BVShr
+                    | BinaryOp::BVLShr
                     | BinaryOp::BVRotl => self.assume_same_width_from_string(&width.unwrap(), &*x),
                     _ => (),
                 };
@@ -384,7 +384,7 @@ impl SolverCtx {
                         return self.rotate_symbolic(&xs, &arg_width, &ys, "rotate_right");
                     }
                     // To shift right, we need to make sure the bits to the right get zeroed. Shift left first.
-                    BinaryOp::BVShr => {
+                    BinaryOp::BVLShr => {
                         let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                         let xs = self.vir_expr_to_rsmt2_str(*x);
                         let ys = self.vir_expr_to_rsmt2_str(*y);

@@ -184,7 +184,7 @@ pub enum Expr {
     BVRotl(Box<Expr>, Box<Expr>, u32),
     BVRotr(Box<Expr>, Box<Expr>, u32),
     BVShl(Box<Expr>, Box<Expr>, u32),
-    BVShr(Box<Expr>, Box<Expr>, u32),
+    BVLShr(Box<Expr>, Box<Expr>, u32),
 
     // Conversions
     // Zero extend, static and dynamic width
