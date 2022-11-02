@@ -1,0 +1,63 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;; Instruction formats.
+(type MInst
+  (enum
+       (AluRRRShift
+           (shiftop ShiftOpAndAmt))
+))
+
+;; ASSUMING 64 BIT MODE!!!
+;; annotations will interpret this as an 8 bit field
+;; the two msb encode the type of shift as follows:
+;;   00: lsl
+;;   01: lsr
+;;   10: asr
+;;   11: invalid
+;; the rest will encode a 6-bit shift amount 
+(type ShiftOpAndAmt (primitive ShiftOpAndAmt))
+
+(type ALUOp
+  (enum
+    (Add)
+))
+
+(type OperandSize extern
+      (enum Size32
+            Size64))
+
+;; Helper for calculating the `OperandSize` corresponding to a type
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+(decl alu_rrr_shift (ALUOp Type Reg Reg ShiftOpAndAmt) Reg)
+(extern constructor alu_rrr_shift alu_rrr_shift)
+
+ ;;@ (spec (sig (args ty, a, b, shift) (ret))
+ ;;@     (assertions (if (= (& (shift) (192i8:bv)) (0i8:bv)) {
+ ;;@                     (= (ret) )
+ ;;@                  } else {
+ ;;@                      (if (= (& (shift) (192i8:bv)) (64i8:bv))) {
+ ;;@
+ ;;@                      } else {
+ ;;@                          (if (= (& (shift) (192i8:bv)) (128i8:bv))) {
+ ;;@                          
+ ;;@                          } else {
+ ;;@                                (= (true) (false)) 
+ ;;@                            }
+ ;;@                      }
+ ;;@                  })
+ ;;@ ))
+(decl add_shift (Type Reg Reg ShiftOpAndAmt) Reg)
+(rule (add_shift ty x y z) (alu_rrr_shift (ALUOp.Add) ty x y z))
+
+(decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
+(extern constructor lshl_from_imm64 lshl_from_imm64)
+
+(rule (lower (has_type (fits_in_64 ty)
+                       (iadd x (ishl y (iconst k)))))
+      (if-let amt (lshl_from_imm64 ty k))
+      (add_shift ty x y amt))
