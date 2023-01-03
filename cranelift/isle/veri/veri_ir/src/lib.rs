@@ -81,22 +81,7 @@ pub struct VIRTermSignature {
     pub args: Vec<BoundVar>,
     pub ret: BoundVar,
 }
-/// A bound function with named arguments, the VIR type signature, and the body
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Function {
-    pub name: String,
-    pub ty: Type,
-    pub args: Vec<BoundVar>,
-    pub body: Box<Expr>,
-}
 
-/// Application of a function expression to arguments
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FunctionApplication {
-    pub ty: Type,
-    pub func: Box<Expr>,
-    pub args: Vec<Expr>,
-}
 /// A bound variable, including the VIR type
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct BoundVar {
@@ -151,8 +136,6 @@ pub enum UnaryOp {
     // Bitvector operations
     BVNeg,
     BVNot,
-    CLS,
-    CLZ,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -187,6 +170,10 @@ pub enum Expr {
 
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+
+    // Count leading signed or zero bits
+    CLS(Box<Expr>),
+    CLZ(Box<Expr>),
 
     // Conversions
     // Extract specified bits

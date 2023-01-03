@@ -69,13 +69,6 @@ impl TermAnnotation {
     }
 }
 
-/// Function type with argument and return types.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct FunctionType {
-    pub args: Vec<Type>,
-    pub ret: Box<Type>,
-}
-
 /// Higher-level type, not including bitwidths.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Type {
@@ -127,24 +120,6 @@ pub enum Width {
     RegWidth,
 }
 
-/// A bound function with named arguments, the VIR type signature, and the body
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Function {
-    pub name: String,
-    pub ty: Type,
-    pub args: Vec<BoundVar>,
-    pub body: Box<Expr>,
-}
-
-/// Application of a function expression to arguments
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FunctionApplication {
-    pub func: Box<Expr>,
-    // Note: extra Box for now for ease of parsing
-    #[allow(clippy::vec_box)]
-    pub args: Vec<Box<Expr>>,
-}
-
 /// Typed expressions (u32 is the type var)
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
@@ -153,9 +128,6 @@ pub enum Expr {
     Const(Const, u32),
     True(u32),
     False(u32),
-
-    // Special terminal node: the current width
-    TyWidth(u32),
 
     // Get the width of a bitvector
     WidthOf(Box<Expr>, u32),
@@ -228,7 +200,6 @@ impl Expr {
         match x {
             Expr::True(t)
             | Expr::False(t)
-            | Expr::TyWidth(t)
             | Expr::Var(_, t)
             | Expr::Const(_, t)
             | Expr::WidthOf(_, t)

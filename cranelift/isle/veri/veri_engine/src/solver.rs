@@ -195,70 +195,79 @@ impl SolverCtx {
     }
 
     fn cls(x: &String) -> String {
-        "(declare-fun x () (_ BitVec 64))
-        (assert (= x (_ bv2305843009213693952 64)))
-
-        (declare-fun ret0 () (_ BitVec 8))
-        (assert (= ret0 (_ bv0 8)))
-
-        (declare-fun ret1 () (_ BitVec 8))
-        (declare-fun y32 () (_ BitVec 64))
-        (declare-fun x32 () (_ BitVec 64))
-
-        (assert (= y32 (bvlshr x #x0000000000000020)))
-        (assert (ite (not (= y32 (_ bv0 64))) (= ret1 ret0) (= ret1 (bvadd ret0 (_ bv32 8)))))
-        (assert (ite (not (= y32 (_ bv0 64))) (= x32 y32) (= x32 x)))
-
-        (declare-fun ret2 () (_ BitVec 8))
-        (declare-fun y16 () (_ BitVec 64))
-        (declare-fun x16 () (_ BitVec 64))
-
-        (assert (= y16 (bvlshr x32 #x0000000000000010)))
-        (assert (ite (not (= y16 (_ bv0 64))) (= ret2 ret1) (= ret2 (bvadd ret1 (_ bv16 8)))))
-        (assert (ite (not (= y16 (_ bv0 64))) (= x16 y16) (= x16 x32)))
-
-        (declare-fun ret3 () (_ BitVec 8))
-        (declare-fun y8 () (_ BitVec 64))
-        (declare-fun x8 () (_ BitVec 64))
-
-        (assert (= y8 (bvlshr x16 #x0000000000000008)))
-        (assert (ite (not (= y8 (_ bv0 64))) (= ret3 ret2) (= ret3 (bvadd ret2 (_ bv8 8)))))
-        (assert (ite (not (= y8 (_ bv0 64))) (= x8 y8) (= x8 x16)))
-
-        (declare-fun ret4 () (_ BitVec 8))
-        (declare-fun y4 () (_ BitVec 64))
-        (declare-fun x4 () (_ BitVec 64))
-
-        (assert (= y4 (bvlshr x8 #x0000000000000004)))
-        (assert (ite (not (= y4 (_ bv0 64))) (= ret4 ret3) (= ret4 (bvadd ret3 (_ bv4 8)))))
-        (assert (ite (not (= y4 (_ bv0 64))) (= x4 y4) (= x4 x8)))
-
-        (declare-fun ret5 () (_ BitVec 8))
-        (declare-fun y2 () (_ BitVec 64))
-        (declare-fun x2 () (_ BitVec 64))
-
-        (assert (= y2 (bvlshr x4 #x0000000000000002)))
-        (assert (ite (not (= y2 (_ bv0 64))) (= ret5 ret4) (= ret5 (bvadd ret4 (_ bv2 8)))))
-        (assert (ite (not (= y2 (_ bv0 64))) (= x2 y2) (= x2 x4)))
-
-        (declare-fun ret6 () (_ BitVec 8))
-        (declare-fun y1 () (_ BitVec 64))
-        (declare-fun x1 () (_ BitVec 64))
-
-        (assert (= y1 (bvlshr x2 #x0000000000000001)))
-        (assert (ite (not (= y1 (_ bv0 64))) (= ret6 ret5) (= ret6 (bvadd ret5 (_ bv1 8)))))
-        (assert (ite (not (= y1 (_ bv0 64))) (= x1 y1) (= x1 x2)))
-
-        (declare-fun ret () (_ BitVec 8))
-        (assert (ite (= ret6 #x00) (= ret ret6) (= ret (bvsub ret6 #x01))))
-
-        (check-sat)
-        (get-model)"
+        String::from("")
     }
 
-    fn clz(x: &String) -> String {
-        String::from("")
-    } 
+    // use param x, return ret, and add unique idents to all intermediate vars
+    // rename clz's final result
+    fn clz(arg: &String, ret: &String) -> String {
+        let s: Vec<&str> = arg.split("_").collect();
+        let id = s[s.len() - 1];
+
+        format!("(declare-fun {x} () (_ BitVec 64))
+
+         ; total zeros counter
+         (declare-fun ret0_{n} () (_ BitVec 8))
+         (assert (= ret0_{n} (_ bv0 8)))
+
+         ; round 1
+         (declare-fun ret1_{n} () (_ BitVec 8))
+         (declare-fun y32_{n} () (_ BitVec 64))
+         (declare-fun x32_{n} () (_ BitVec 64))
+
+         (assert (= y32_{n} (bvlshr {x} #x0000000000000020)))
+         (assert (ite (not (= y32_{n} (_ bv0 64))) (= ret1_{n} ret0_{n}) (= ret1_{n} (bvadd ret0_{n} (_ bv32 8)))))
+         (assert (ite (not (= y32_{n} (_ bv0 64))) (= x32_{n} y32_{n}) (= x32_{n} {x})))
+
+         ; round 2
+         (declare-fun ret2_{n} () (_ BitVec 8))
+         (declare-fun y16_{n} () (_ BitVec 64))
+         (declare-fun x16_{n} () (_ BitVec 64))
+
+         (assert (= y16_{n} (bvlshr x32_{n} #x0000000000000010)))
+         (assert (ite (not (= y16_{n} (_ bv0 64))) (= ret2_{n} ret1_{n}) (= ret2_{n} (bvadd ret1_{n} (_ bv16 8)))))
+         (assert (ite (not (= y16_{n} (_ bv0 64))) (= x16_{n} y16_{n}) (= x16_{n} x32_{n})))
+
+         ; round 3
+         (declare-fun ret3_{n} () (_ BitVec 8))
+         (declare-fun y8_{n} () (_ BitVec 64))
+         (declare-fun x8_{n} () (_ BitVec 64))
+
+         (assert (= y8_{n} (bvlshr x16_{n} #x0000000000000008)))
+         (assert (ite (not (= y8_{n} (_ bv0 64))) (= ret3_{n} ret2_{n}) (= ret3_{n} (bvadd ret2_{n} (_ bv8 8)))))
+         (assert (ite (not (= y8_{n} (_ bv0 64))) (= x8_{n} y8_{n}) (= x8_{n} x16_{n})))
+
+         ; round 4
+         (declare-fun ret4_{n} () (_ BitVec 8))
+         (declare-fun y4_{n} () (_ BitVec 64))
+         (declare-fun x4_{n} () (_ BitVec 64))
+
+         (assert (= y4_{n} (bvlshr x8_{n} #x0000000000000004)))
+         (assert (ite (not (= y4_{n} (_ bv0 64))) (= ret4_{n} ret3_{n}) (= ret4_{n} (bvadd ret3_{n} (_ bv4 8)))))
+         (assert (ite (not (= y4_{n} (_ bv0 64))) (= x4_{n} y4_{n}) (= x4_{n} x8_{n})))
+
+         ; round 5
+         (declare-fun ret5_{n} () (_ BitVec 8))
+         (declare-fun y2_{n} () (_ BitVec 64))
+         (declare-fun x2_{n} () (_ BitVec 64))
+
+         (assert (= y2_{n} (bvlshr x4_{n} #x0000000000000002)))
+         (assert (ite (not (= y2_{n} (_ bv0 64))) (= ret5_{n} ret4_{n}) (= ret5_{n} (bvadd ret4_{n} (_ bv2 8)))))
+         (assert (ite (not (= y2_{n} (_ bv0 64))) (= x2_{n} y2_{n}) (= x2_{n} x4_{n})))
+
+         ; round 6
+         (declare-fun ret6_{n} () (_ BitVec 8))
+         (declare-fun y1_{n} () (_ BitVec 64))
+         (declare-fun x1_{n} () (_ BitVec 64))
+
+         (assert (= y1_{n} (bvlshr x2_{n} #x0000000000000001)))
+         (assert (ite (not (= y1_{n} (_ bv0 64))) (= ret6_{n} ret5_{n}) (= ret6_{n} (bvadd ret5_{n} (_ bv1 8)))))
+         (assert (ite (not (= y1_{n} (_ bv0 64))) (= x1_{n} y1_{n}) (= x1_{n} x2_{n})))
+
+         ; final return
+         (declare-fun {r} () (_ BitVec 8))
+         (assert (= {r} ret6_{n}))", x = arg, n = id, r = ret)
+    }
 
     pub fn widen_to_query_width(
         &mut self,
@@ -389,29 +398,8 @@ impl SolverCtx {
                         self.assume_same_width_from_string(&width.unwrap(), &*arg);
                         "bvnot"
                     }
-                    UnaryOp::CLS => {
-                        match *arg {
-                            Expr::Terminal(ref t) => {
-                                match t {
-                                    Terminal::Var(x) => &SolverCtx::cls(&x),
-                                    _ => unreachable!("{:?}", t),
-                                }
-                            }
-                            _ => unreachable!("{:?}", arg),
-                        }
-                    }
-                    UnaryOp::CLZ => {
-                        match *arg {
-                            Expr::Terminal(ref t) => {
-                                match t {
-                                    Terminal::Var(x) => &SolverCtx::clz(&x),
-                                    _ => unreachable!("{:?}", t),
-                                }
-                            }
-                            _ => unreachable!("{:?}", arg),
-                        }
-                    }
                 };
+
                 format!("({} {})", op, self.vir_expr_to_rsmt2_str(*arg))
             }
             Expr::Binary(op, x, y) => {
@@ -488,12 +476,58 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                format!(
-                    "({} {} {})",
-                    op,
-                    self.vir_expr_to_rsmt2_str(*x),
-                    self.vir_expr_to_rsmt2_str(*y)
-                )
+                if op == "=" {
+                    // Currently we can only perform clz on vars that represent bvs
+                    // And we can only use annotations that directly compare the 
+                    // result of clz to some var
+                    match (*x.clone(), *y.clone()) {
+                        (Expr::CLZ(arg), ret) | (ret, Expr::CLZ(arg)) => {
+                            match (*arg.clone(), ret.clone()) {
+                                (Expr::Terminal(ref t1), Expr::Terminal(ref t2)) => {
+                                    match (t1, t2) {
+                                        (Terminal::Var(a), Terminal::Var(r)) => {
+                                            SolverCtx::clz(&a, &r)
+                                        }
+                                        _ => unreachable!("({:?}, {:?})", t1, t2),
+                                    }                                  
+                                }
+                                _ => unreachable!("({:?}, {:?})", arg, ret),
+                            }
+                        }
+                        _ => {
+                            format!(
+                                "({} {} {})",
+                                op,
+                                self.vir_expr_to_rsmt2_str(*x),
+                                self.vir_expr_to_rsmt2_str(*y)
+                            )
+                        }
+                    }
+                } else {
+                    format!(
+                        "({} {} {})",
+                        op,
+                        self.vir_expr_to_rsmt2_str(*x),
+                        self.vir_expr_to_rsmt2_str(*y)
+                    )
+                }
+            }
+            Expr::CLZ(arg) => {
+                String::from("")
+                // match *arg {
+                //     Expr::Terminal(ref t) => {
+                //         match t {
+                //             Terminal::Var(x) => {
+                //                 SolverCtx::clz(&x, &String::from("ret"))
+                //             }
+                //             _ => unreachable!("{:?}", t),
+                //         }
+                //     }
+                //     _ => unreachable!("{:?}", arg),
+                // }
+            }
+            Expr::CLS(_) => {
+                String::from("")
             }
             Expr::BVIntToBV(w, x) => {
                 let padded_width = self.bitwidth - w;
@@ -582,26 +616,26 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         solver.push(1).unwrap();
         for a in assumptions {
-            // println!("{}", &a);
+            println!("{}", &a);
             solver.assert(a).unwrap();
 
             // Uncomment to debug specific asserts
-            // solver.push(2).unwrap();
-            // let _ = match solver.check_sat() {
-            //     Ok(true) => {
-            //         println!("Assertion list is feasible");
-            //         true
-            //     }
-            //     Ok(false) => {
-            //         println!("Assertion list is infeasible!");
-            //         panic!();
-            //         false
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // solver.pop(2).unwrap();
+            solver.push(2).unwrap();
+            let _ = match solver.check_sat() {
+                Ok(true) => {
+                    println!("Assertion list is feasible");
+                    true
+                }
+                Ok(false) => {
+                    println!("Assertion list is infeasible!");
+                    panic!();
+                    false
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            solver.pop(2).unwrap();
         }
         let res = match solver.check_sat() {
             Ok(true) => {
@@ -667,8 +701,8 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     }
 
     for (_e, t) in &ctx.tyctx.tyvars {
-        // dbg!(t);
-        // dbg!(&_e);
+        dbg!(t);
+        dbg!(&_e);
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
             Type::BitVector(w) => {
@@ -702,7 +736,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
         let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
-        // println!("\t{} : {:?}", name, var_ty);
+        println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
                 v.tyvar,
@@ -718,23 +752,23 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     println!("Adding explicit assumptions");
     for a in &rule_sem.assumptions {
         let p = ctx.vir_expr_to_rsmt2_str(a.clone());
-        // println!("\t{}", p);
+        println!("\t{}", p);
         assumptions.push(p)
     }
     println!("Adding width assumptions");
     for a in &ctx.width_assumptions {
-        // println!("\t{}", a);
+        println!("\t{}", a);
         assumptions.push(a.clone());
     }
     println!("Adding additional assumptions");
     for a in &ctx.additional_assumptions {
-        // println!("\t{}", a);
+        println!("\t{}", a);
         assumptions.push(a.clone());
     }
 
     println!("Declaring additional variables");
     for (name, ty) in &ctx.additional_decls {
-        // println!("\t{} : {:?}", name, ty);
+        println!("\t{} : {:?}", name, ty);
         solver.declare_const(name, ty).unwrap();
     }
 

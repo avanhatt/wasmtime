@@ -52,22 +52,8 @@ pub TermSignature: TermSignature = {
         TermSignature{args: a, ret: r},
 };
 
-pub FunctionType: FunctionType = {
-    "func" "(" <a:TypeList> ")" "(" <r:Type> ")" =>
-        FunctionType{args: a, ret: Box::new(r)},
-};
-
 pub Const: Const = {
     <v:Num> <n:UNum> ":" <t:Type> => Const{ty: t, value: v, width: n},
-};
-
-pub Function: Function = {
-    <n:Ident> "(" <a:ArgList> ")" "(" <t:Type> ")" "{" <b:Expr> "}" =>
-        Function{name: n, ty: t, args: a, body: b},
-};
-
-pub FunctionApplication: FunctionApplication = {
-    <f:Expr> "(" <x:ExprList> ")" => FunctionApplication{func: f, args: x},
 };
 
 pub Width: Box<Width> = {

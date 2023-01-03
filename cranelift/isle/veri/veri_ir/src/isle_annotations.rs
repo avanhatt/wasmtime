@@ -17,31 +17,21 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             };
             Some(TermAnnotation::new(func, vec![identity]))
         }
-        "value_type" => {
-            let arg = BoundVar::new("arg");
-            let result = BoundVar::new("ret");
-            let ty_eq = Expr::binary(Expr::Eq, arg.as_expr(), Expr::TyWidth(0));
-            let func = TermSignature {
-                args: vec![arg],
-                ret: result,
-            };
-            Some(TermAnnotation::new(func, vec![ty_eq]))
-        }
         // (spec (sig (args x: bvX) (ret: bvX))
         //       (assumptions (= x ret)))
-        "has_type" => {
-            // Add an assertion on the type
-            let ty_arg = BoundVar::new("ty");
-            let arg = BoundVar::new("arg");
-            let result = BoundVar::new("ret");
-            let ty_eq = Expr::binary(Expr::Eq, ty_arg.as_expr(), Expr::TyWidth(0));
-            let identity = Expr::binary(Expr::Eq, arg.as_expr(), result.as_expr());
-            let func = TermSignature {
-                args: vec![ty_arg, arg],
-                ret: result,
-            };
-            Some(TermAnnotation::new(func, vec![ty_eq, identity]))
-        }
+        // "has_type" => {
+        //     // Add an assertion on the type
+        //     let ty_arg = BoundVar::new("ty");
+        //     let arg = BoundVar::new("arg");
+        //     let result = BoundVar::new("ret");
+        //     let ty_eq = Expr::binary(Expr::Eq, ty_arg.as_expr(), Expr::TyWidth(0));
+        //     let identity = Expr::binary(Expr::Eq, arg.as_expr(), result.as_expr());
+        //     let func = TermSignature {
+        //         args: vec![ty_arg, arg],
+        //         ret: result,
+        //     };
+        //     Some(TermAnnotation::new(func, vec![ty_eq, identity]))
+        // }
         "fits_in_64" => {
             // Identity, but add assertion on type
             let arg = BoundVar::new("arg");

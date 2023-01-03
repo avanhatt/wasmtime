@@ -322,40 +322,6 @@ fn add_annotation_constraints(
                 t,
             )
         }
-        annotation_ir::Expr::CLS(x, _) => {
-            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
-
-            let t = tree.next_type_var;
-            // TODO: MP decided this operation should return a bv8. Revisit if this
-            // choice causes problems.
-            tree.bv_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(8)));
-            tree.bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-
-            tree.next_type_var += 1;
-            (
-                veri_ir::Expr::Unary(veri_ir::UnaryOp::CLS, Box::new(e1)),
-                t,
-            )
-        }
-        annotation_ir::Expr::CLZ(x, _) => {
-            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
-
-            let t = tree.next_type_var;
-            // TODO: MP decided this operation should return a bv8. Revisit if this
-            // choice causes problems.
-            tree.bv_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(8)));
-            tree.bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-
-            tree.next_type_var += 1;
-            (
-                veri_ir::Expr::Unary(veri_ir::UnaryOp::CLZ, Box::new(e1)),
-                t,
-            )
-        }
 
         annotation_ir::Expr::BVAdd(x, y, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
@@ -508,7 +474,7 @@ fn add_annotation_constraints(
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVShl, Box::new(xe), Box::new(ae)),
                 t,
             )
-        }
+        }        
         annotation_ir::Expr::BVConvTo(w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
@@ -660,6 +626,41 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (
                 veri_ir::Expr::Conditional(Box::new(e1), Box::new(e2), Box::new(e3)),
+                t,
+            )
+        }
+        annotation_ir::Expr::CLS(x, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            // TODO: types are hardcoded to satisfy the final equality check
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVectorWithWidth(REG_WIDTH)));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::CLS(Box::new(e1)),
+                t,
+            )
+        }
+        annotation_ir::Expr::CLZ(x, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            // TODO: currently we're making the return type of clz to be some
+            // bv with unspecified length. Since we include an equality check
+            // at the end of the clz operation, it's implied that we can only
+            // compare against other bv types (hopefully with known length)
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::CLZ(Box::new(e1)),
                 t,
             )
         }

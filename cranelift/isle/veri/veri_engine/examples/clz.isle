@@ -1,4 +1,30 @@
-clz annotation:
-  - needs all 0 case
-  - uextend x
-  - clz(x) - widthof(x)
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+    (BitRR
+        (op BitOp))
+))
+
+(type BitOp
+  (enum
+    (Clz)
+))
+
+(decl bit_rr (BitOp Type Reg) Reg)
+(extern constructor bit_rr bit_rr)
+
+;;; solver needs to glue clz(a) to ret
+;;;@ (spec (sig (args a) (ret))
+;;;@     (assertions (= (ret) (clz (a)))))
+;;(decl clz (Value) Inst)
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (ret) (clz (a)))))
+(decl a64_clz (Type Reg) Reg)
+(rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
+
+(rule (lower (has_type ty (clz x)))
+      (a64_clz ty x))
