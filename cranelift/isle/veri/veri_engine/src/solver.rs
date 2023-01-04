@@ -198,75 +198,13 @@ impl SolverCtx {
         String::from("")
     }
 
-    // use param x, return ret, and add unique idents to all intermediate vars
-    // rename clz's final result
-    fn clz(arg: &String, ret: &String) -> String {
-        let s: Vec<&str> = arg.split("_").collect();
+    fn clz(&mut self, x: &String, ret: &String) {
+        let s: Vec<&str> = x.split("_").collect();
         let id = s[s.len() - 1];
 
-        format!("(declare-fun {x} () (_ BitVec 64))
-
-         ; total zeros counter
-         (declare-fun ret0_{n} () (_ BitVec 8))
-         (assert (= ret0_{n} (_ bv0 8)))
-
-         ; round 1
-         (declare-fun ret1_{n} () (_ BitVec 8))
-         (declare-fun y32_{n} () (_ BitVec 64))
-         (declare-fun x32_{n} () (_ BitVec 64))
-
-         (assert (= y32_{n} (bvlshr {x} #x0000000000000020)))
-         (assert (ite (not (= y32_{n} (_ bv0 64))) (= ret1_{n} ret0_{n}) (= ret1_{n} (bvadd ret0_{n} (_ bv32 8)))))
-         (assert (ite (not (= y32_{n} (_ bv0 64))) (= x32_{n} y32_{n}) (= x32_{n} {x})))
-
-         ; round 2
-         (declare-fun ret2_{n} () (_ BitVec 8))
-         (declare-fun y16_{n} () (_ BitVec 64))
-         (declare-fun x16_{n} () (_ BitVec 64))
-
-         (assert (= y16_{n} (bvlshr x32_{n} #x0000000000000010)))
-         (assert (ite (not (= y16_{n} (_ bv0 64))) (= ret2_{n} ret1_{n}) (= ret2_{n} (bvadd ret1_{n} (_ bv16 8)))))
-         (assert (ite (not (= y16_{n} (_ bv0 64))) (= x16_{n} y16_{n}) (= x16_{n} x32_{n})))
-
-         ; round 3
-         (declare-fun ret3_{n} () (_ BitVec 8))
-         (declare-fun y8_{n} () (_ BitVec 64))
-         (declare-fun x8_{n} () (_ BitVec 64))
-
-         (assert (= y8_{n} (bvlshr x16_{n} #x0000000000000008)))
-         (assert (ite (not (= y8_{n} (_ bv0 64))) (= ret3_{n} ret2_{n}) (= ret3_{n} (bvadd ret2_{n} (_ bv8 8)))))
-         (assert (ite (not (= y8_{n} (_ bv0 64))) (= x8_{n} y8_{n}) (= x8_{n} x16_{n})))
-
-         ; round 4
-         (declare-fun ret4_{n} () (_ BitVec 8))
-         (declare-fun y4_{n} () (_ BitVec 64))
-         (declare-fun x4_{n} () (_ BitVec 64))
-
-         (assert (= y4_{n} (bvlshr x8_{n} #x0000000000000004)))
-         (assert (ite (not (= y4_{n} (_ bv0 64))) (= ret4_{n} ret3_{n}) (= ret4_{n} (bvadd ret3_{n} (_ bv4 8)))))
-         (assert (ite (not (= y4_{n} (_ bv0 64))) (= x4_{n} y4_{n}) (= x4_{n} x8_{n})))
-
-         ; round 5
-         (declare-fun ret5_{n} () (_ BitVec 8))
-         (declare-fun y2_{n} () (_ BitVec 64))
-         (declare-fun x2_{n} () (_ BitVec 64))
-
-         (assert (= y2_{n} (bvlshr x4_{n} #x0000000000000002)))
-         (assert (ite (not (= y2_{n} (_ bv0 64))) (= ret5_{n} ret4_{n}) (= ret5_{n} (bvadd ret4_{n} (_ bv2 8)))))
-         (assert (ite (not (= y2_{n} (_ bv0 64))) (= x2_{n} y2_{n}) (= x2_{n} x4_{n})))
-
-         ; round 6
-         (declare-fun ret6_{n} () (_ BitVec 8))
-         (declare-fun y1_{n} () (_ BitVec 64))
-         (declare-fun x1_{n} () (_ BitVec 64))
-
-         (assert (= y1_{n} (bvlshr x2_{n} #x0000000000000001)))
-         (assert (ite (not (= y1_{n} (_ bv0 64))) (= ret6_{n} ret5_{n}) (= ret6_{n} (bvadd ret5_{n} (_ bv1 8)))))
-         (assert (ite (not (= y1_{n} (_ bv0 64))) (= x1_{n} y1_{n}) (= x1_{n} x2_{n})))
-
-         ; final return
-         (declare-fun {r} () (_ BitVec 8))
-         (assert (= {r} ret6_{n}))", x = arg, n = id, r = ret)
+        // total zeros counter
+        self.additional_decls.push((format!("ret0_{id}", id = id), String::from("(_ BitVec 8)")));
+        self.additional_assumptions.push(format!("(= ret0_{id} 0)", id = id));
     }
 
     pub fn widen_to_query_width(
@@ -486,7 +424,8 @@ impl SolverCtx {
                                 (Expr::Terminal(ref t1), Expr::Terminal(ref t2)) => {
                                     match (t1, t2) {
                                         (Terminal::Var(a), Terminal::Var(r)) => {
-                                            SolverCtx::clz(&a, &r)
+                                            self.clz(&a, &r);
+                                            String::from("")
                                         }
                                         _ => unreachable!("({:?}, {:?})", t1, t2),
                                     }                                  
@@ -512,7 +451,7 @@ impl SolverCtx {
                     )
                 }
             }
-            Expr::CLZ(arg) => {
+            Expr::CLZ(_) => {
                 String::from("")
                 // match *arg {
                 //     Expr::Terminal(ref t) => {
