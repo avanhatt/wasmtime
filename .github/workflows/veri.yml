@@ -29,6 +29,8 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Install Rust
       uses: ./.github/actions/install-rust
+    - name: Install Z3
+      uses: ./.github/actions/setup-z3
     - name: Build
       run: cargo build --verbose -p veri_ir -p veri_engine -p veri_annotation
     - name: Test
