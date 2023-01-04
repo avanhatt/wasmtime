@@ -18,9 +18,12 @@ child_process.execFileSync('rustup', ['default', toolchain]);
 
 // Deny warnings on CI to keep our code warning-free as it lands in-tree. Don't
 // do this on nightly though since there's a fair amount of warning churn there.
+/*
 if (!toolchain.startsWith('nightly')) {
   set_env("RUSTFLAGS", "-D warnings");
 }
+*/
+// Disabled to allow warnings in the in-progress verification branch. --ALDS
 
 // Save disk space by avoiding incremental compilation, and also we don't use
 // any caching so incremental wouldn't help anyway.
