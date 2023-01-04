@@ -18,16 +18,8 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+    - uses: ./.github/actions/install-rust
     - name: Build
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --verbose -p veri_ir -p veri_engine -p veri_annotation
+      run: cargo build --verbose -p veri_ir -p veri_engine -p veri_annotation
     - name: Test
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --verbose -p veri_ir -p veri_engine -p veri_annotation
+      run: cargo test --verbose -p veri_ir -p veri_engine -p veri_annotation
