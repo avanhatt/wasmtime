@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: recursive
     - uses: ./.github/actions/install-rust
     - name: Build
       run: cargo build --verbose -p veri_ir -p veri_engine -p veri_annotation
