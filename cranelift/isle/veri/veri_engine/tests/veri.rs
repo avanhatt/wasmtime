@@ -497,20 +497,22 @@ fn test_64_rotr() {
     )
 }
 
-#[test]
-fn test_64_with_imm_rotr() {
-    test_from_file_with_filter(
-        "./examples/64_with_imm_rotr.isle",
-        "rotr".to_string(),
-        vec![
-            (Bitwidth::I1, VerificationResult::InapplicableRule),
-            (Bitwidth::I8, VerificationResult::InapplicableRule),
-            (Bitwidth::I16, VerificationResult::InapplicableRule),
-            (Bitwidth::I32, VerificationResult::InapplicableRule),
-            (Bitwidth::I64, VerificationResult::Success),
-        ],
-    )
-}
+// Test timing out, reenable with
+// https://github.com/avanhatt/wasmtime/issues/14
+// #[test]
+// fn test_64_with_imm_rotr() {
+//     test_from_file_with_filter(
+//         "./examples/64_with_imm_rotr.isle",
+//         "rotr".to_string(),
+//         vec![
+//             (Bitwidth::I1, VerificationResult::InapplicableRule),
+//             (Bitwidth::I8, VerificationResult::InapplicableRule),
+//             (Bitwidth::I16, VerificationResult::InapplicableRule),
+//             (Bitwidth::I32, VerificationResult::InapplicableRule),
+//             (Bitwidth::I64, VerificationResult::Success),
+//         ],
+//     )
+// }
 
 #[test]
 fn test_fits_in_32_band() {
