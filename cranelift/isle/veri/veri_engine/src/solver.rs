@@ -299,6 +299,63 @@ impl SolverCtx {
         }
     }
 
+    pub fn clz(&mut self, x: &String, ret: &String) {
+        let s: Vec<&str> = x.split("_").collect();
+        let id = s[s.len() - 1];
+
+        // total zeros counter
+        self.additional_decls.push((format!("ret0_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_assumptions.push(format!("(= ret0_{id} (_ bv0 64))", id = id));
+
+        // round 1
+        self.additional_decls.push((format!("ret1_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("y1_{id}6_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("x1_{id}6_{id}", id = id), String::from("(_ BitVec 64)")));
+
+        self.additional_assumptions.push(format!("(= y1_{id}6_{id} (bvlshr {x} #x0000000000000010))", x = x, id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y1_{id}6_{id} (_ bv0 64))) (= ret1_{id} ret0_{id}) (= ret1_{id} (bvadd ret0_{id} (_ bv16 64))))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y1_{id}6_{id} (_ bv0 64))) (= x1_{id}6_{id} y1_{id}6_{id}) (= x1_{id}6_{id} {x}))", x = x, id = id));
+
+        // round 2
+        self.additional_decls.push((format!("ret2_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("y8_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("x8_{id}", id = id), String::from("(_ BitVec 64)")));
+
+        self.additional_assumptions.push(format!("(= y8_{id} (bvlshr x1_{id}6_{id} #x0000000000000008))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 64))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv8 64))))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 64))) (= x8_{id} y8_{id}) (= x8_{id} x1_{id}6_{id}))", id = id));
+
+        // round 3
+        self.additional_decls.push((format!("ret3_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("y4_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("x4_{id}", id = id), String::from("(_ BitVec 64)")));
+
+        self.additional_assumptions.push(format!("(= y4_{id} (bvlshr x8_{id} #x0000000000000004))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 64))) (= ret3_{id} ret2_{id}) (= ret3_{id} (bvadd ret2_{id} (_ bv4 64))))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 64))) (= x4_{id} y4_{id}) (= x4_{id} x8_{id}))", id = id));
+
+        // round 4
+        self.additional_decls.push((format!("ret4_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("y2_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("x2_{id}", id = id), String::from("(_ BitVec 64)")));
+
+        self.additional_assumptions.push(format!("(= y2_{id} (bvlshr x4_{id} #x0000000000000002))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 64))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 64))))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 64))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))", id = id));
+
+        // round 5
+        self.additional_decls.push((format!("ret5_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("y1_{id}", id = id), String::from("(_ BitVec 64)")));
+        self.additional_decls.push((format!("x1_{id}", id = id), String::from("(_ BitVec 64)")));
+
+        self.additional_assumptions.push(format!("(= y1_{id} (bvlshr x2_{id} #x0000000000000001))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 64))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 64))))", id = id));
+        self.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 64))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))", id = id));
+
+        // final return
+        self.additional_assumptions.push(format!("(= {ret} ret5_{id})", ret = ret, id = id));
+    }
+
     pub fn vir_expr_to_rsmt2_str(&mut self, e: Expr) -> String {
         let tyvar = self.tyctx.tyvars.get(&e);
         let ty = &self.get_type(&e);
@@ -420,12 +477,44 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                format!(
-                    "({} {} {})",
-                    op,
-                    self.vir_expr_to_rsmt2_str(*x),
-                    self.vir_expr_to_rsmt2_str(*y)
-                )
+                if op == "=" {
+                    // Currently we can only perform clz on vars that represent bvs
+                    // And we can only use annotations that directly compare the 
+                    // result of clz to some var
+                    match (*x.clone(), *y.clone()) {
+                        (Expr::CLZ(arg), ret) | (ret, Expr::CLZ(arg)) => {
+                            match (*arg.clone(), ret.clone()) {
+                                (Expr::Terminal(ref t1), Expr::Terminal(ref t2)) => {
+                                    match (t1, t2) {
+                                        (Terminal::Var(a), Terminal::Var(r)) => {
+                                            self.clz(&a, &r);
+                                            // dummy because we have to return a string
+                                            // that we can wrap parens around
+                                            String::from("true")
+                                        }
+                                        _ => unreachable!("({:?}, {:?})", t1, t2),
+                                    }                                  
+                                }
+                                _ => unreachable!("({:?}, {:?})", arg, ret),
+                            }
+                        }
+                        _ => {
+                            format!(
+                                "({} {} {})",
+                                op,
+                                self.vir_expr_to_rsmt2_str(*x),
+                                self.vir_expr_to_rsmt2_str(*y)
+                            )
+                        }
+                    }
+                } else {
+                    format!(
+                        "({} {} {})",
+                        op,
+                        self.vir_expr_to_rsmt2_str(*x),
+                        self.vir_expr_to_rsmt2_str(*y)
+                    )
+                }
             }
             Expr::BVIntToBV(w, x) => {
                 let padded_width = self.bitwidth - w;
@@ -527,6 +616,8 @@ impl SolverCtx {
                     self.vir_expr_to_rsmt2_str(*e)
                 )
             }
+            // Handled in =
+            Expr::CLZ(_) => todo!(),
         }
     }
 
@@ -539,7 +630,7 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         solver.push(1).unwrap();
         for a in assumptions {
-            // println!("{}", &a);
+            println!("{}", &a);
             solver.assert(a).unwrap();
 
             // Uncomment to debug specific asserts
@@ -675,23 +766,23 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     println!("Adding explicit assumptions");
     for a in &rule_sem.assumptions {
         let p = ctx.vir_expr_to_rsmt2_str(a.clone());
-        // println!("\t{}", p);
+        println!("\t{}", p);
         assumptions.push(p)
     }
     println!("Adding width assumptions");
     for a in &ctx.width_assumptions {
-        // println!("\t{}", a);
+        println!("\t{}", a);
         assumptions.push(a.clone());
     }
     println!("Adding additional assumptions");
     for a in &ctx.additional_assumptions {
-        // println!("\t{}", a);
+        println!("\t{}", a);
         assumptions.push(a.clone());
     }
 
     println!("Declaring additional variables");
     for (name, ty) in &ctx.additional_decls {
-        // println!("\t{} : {:?}", name, ty);
+        println!("\t{} : {:?}", name, ty);
         solver.declare_const(name, ty).unwrap();
     }
 

@@ -747,6 +747,25 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::CLZ(x, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            // TODO: currently we're making the return type of clz some
+            // bv with unspecified length. Since we include an equality check
+            // at the end of the clz operation, it's implied that we can only
+            // compare against other bv types (hopefully with known length)
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::CLZ(Box::new(e1)),
+                t,
+            )
+        }
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
