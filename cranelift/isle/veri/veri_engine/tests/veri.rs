@@ -1,6 +1,6 @@
 mod utils;
 use utils::{
-    all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result,
+    all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result, just_64_result,
 };
 use utils::{
     test_from_file, test_from_file_custom_prelude, test_from_file_self_contained,
@@ -124,6 +124,15 @@ fn test_broken_uextend() {
                 },
             )
         }),
+    )
+}
+
+#[test]
+fn test_clz_simple() {
+    test_from_file_with_filter(
+        "./examples/clz/clz.isle",
+        "clz".to_string(),
+        just_64_result(),
     )
 }
 
