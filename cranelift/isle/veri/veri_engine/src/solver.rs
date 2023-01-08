@@ -1068,7 +1068,7 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         solver.push(1).unwrap();
         for a in assumptions {
-            println!("{}", &a);
+            // println!("{}", &a);
             solver.assert(a).unwrap();
 
             // Uncomment to debug specific asserts
@@ -1189,7 +1189,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
         let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
-        // println!("\t{} : {:?}", name, var_ty);
+        println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
                 v.tyvar,

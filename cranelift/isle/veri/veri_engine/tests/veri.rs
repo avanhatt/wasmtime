@@ -1,6 +1,6 @@
 mod utils;
 use utils::{
-    all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result, just_64_result,
+    all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result,
 };
 use utils::{
     test_from_file, test_from_file_custom_prelude, test_from_file_self_contained,
