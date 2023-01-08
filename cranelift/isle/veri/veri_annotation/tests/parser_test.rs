@@ -68,6 +68,7 @@ fn test_expr() {
     assert!(parser::ExprParser::new().parse("(-(a))").is_ok());
     assert!(parser::ExprParser::new().parse("(~(a))").is_ok());
     assert!(parser::ExprParser::new().parse("(clz (a))").is_ok());
+    assert!(parser::ExprParser::new().parse("(a64clz (ty) (a))").is_ok());
     assert!(parser::ExprParser::new().parse("(+ (-(a)) (b))").is_ok());
     assert!(parser::ExprParser::new().parse("(- (a) (~(b)))").is_ok());
     assert!(parser::ExprParser::new().parse("(& (a) (b))").is_ok());
