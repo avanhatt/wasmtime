@@ -132,7 +132,13 @@ fn test_clz() {
     test_from_file_with_filter(
         "./examples/clz/clz.isle",
         "clz".to_string(),
-        all_success_result(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
     );
 
     test_from_file_with_filter(

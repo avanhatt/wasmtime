@@ -17,7 +17,16 @@
 (extern constructor bit_rr bit_rr)
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assertions (= (ret) (a64clz (ty) (a)))))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (a64clz (32i0:isleType) (a)) }
+;;@                        else
+;;@                        { (a64clz (64i0:isleType) (a)) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
+;;@ )
 (decl a64_clz (Type Reg) Reg)
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 

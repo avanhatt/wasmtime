@@ -21,7 +21,6 @@ struct SolverCtx {
     additional_decls: Vec<(String, String)>,
     additional_assumptions: Vec<String>,
     fresh_bits_idx: usize,
-    query_width: usize,
 }
 
 impl SolverCtx {
@@ -317,10 +316,7 @@ impl SolverCtx {
         }
     }
 
-    pub fn a64clz32(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
-
+    pub fn a64clz32(&mut self, x: &String, id: u32) -> String {
         // extract to ensure we have a 32 bit input
         self.additional_decls
             .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 32)")));
@@ -424,209 +420,10 @@ impl SolverCtx {
         self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 32))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 64))))", id = id));
 
         // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret6_{id})", ret = ret, id = id));
+        format!("ret6_{id}", id = id)
     }
 
-    pub fn a64clz16(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
-
-        // extract to ensure we have a 16 bit input
-        self.additional_decls
-            .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 16)")));
-        self.additional_assumptions.push(format!(
-            "(= a64x_{id} ((_ extract 15 0) {x}))",
-            id = id,
-            x = x
-        ));
-
-        // total zeros counter
-        self.additional_decls
-            .push((format!("ret1_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_assumptions
-            .push(format!("(= ret1_{id} (_ bv0 64))", id = id));
-
-        // round 1
-        self.additional_decls
-            .push((format!("ret2_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y8_{id}", id = id), String::from("(_ BitVec 16)")));
-        self.additional_decls
-            .push((format!("x8_{id}", id = id), String::from("(_ BitVec 16)")));
-
-        self.additional_assumptions
-            .push(format!("(= y8_{id} (bvlshr a64x_{id} #x0008))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 16))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv8 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y8_{id} (_ bv0 16))) (= x8_{id} y8_{id}) (= x8_{id} a64x_{id}))",
-            id = id
-        ));
-
-        // round 2
-        self.additional_decls
-            .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y4_{id}", id = id), String::from("(_ BitVec 16)")));
-        self.additional_decls
-            .push((format!("x4_{id}", id = id), String::from("(_ BitVec 16)")));
-
-        self.additional_assumptions
-            .push(format!("(= y4_{id} (bvlshr x8_{id} #x0004))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 16))) (= ret3_{id} ret2_{id}) (= ret3_{id} (bvadd ret2_{id} (_ bv4 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y4_{id} (_ bv0 16))) (= x4_{id} y4_{id}) (= x4_{id} x8_{id}))",
-            id = id
-        ));
-
-        // round 3
-        self.additional_decls
-            .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y2_{id}", id = id), String::from("(_ BitVec 16)")));
-        self.additional_decls
-            .push((format!("x2_{id}", id = id), String::from("(_ BitVec 16)")));
-
-        self.additional_assumptions
-            .push(format!("(= y2_{id} (bvlshr x4_{id} #x0002))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 16))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y2_{id} (_ bv0 16))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-            id = id
-        ));
-
-        // round 4
-        self.additional_decls
-            .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y1_{id}", id = id), String::from("(_ BitVec 16)")));
-        self.additional_decls
-            .push((format!("x1_{id}", id = id), String::from("(_ BitVec 16)")));
-
-        self.additional_assumptions
-            .push(format!("(= y1_{id} (bvlshr x2_{id} #x0001))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 16))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y1_{id} (_ bv0 16))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-            id = id
-        ));
-
-        // last round
-        self.additional_decls
-            .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 16))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 64))))", id = id));
-
-        // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret6_{id})", ret = ret, id = id));
-    }
-
-    pub fn a64clz8(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
-
-        // extract to ensure we have an 8 bit input
-        self.additional_decls
-            .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 8)")));
-        self.additional_assumptions.push(format!(
-            "(= a64x_{id} ((_ extract 7 0) {x}))",
-            id = id,
-            x = x
-        ));
-
-        // total zeros counter
-        self.additional_decls
-            .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_assumptions
-            .push(format!("(= ret0_{id} (_ bv0 64))", id = id));
-
-        // round 1
-        self.additional_decls
-            .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y4_{id}", id = id), String::from("(_ BitVec 8)")));
-        self.additional_decls
-            .push((format!("x4_{id}", id = id), String::from("(_ BitVec 8)")));
-
-        self.additional_assumptions
-            .push(format!("(= y4_{id} (bvlshr a64x_{id} #x04))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 8))) (= ret3_{id} ret0_{id}) (= ret3_{id} (bvadd ret0_{id} (_ bv4 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y4_{id} (_ bv0 8))) (= x4_{id} y4_{id}) (= x4_{id} a64x_{id}))",
-            id = id
-        ));
-
-        // round 2
-        self.additional_decls
-            .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y2_{id}", id = id), String::from("(_ BitVec 8)")));
-        self.additional_decls
-            .push((format!("x2_{id}", id = id), String::from("(_ BitVec 8)")));
-
-        self.additional_assumptions
-            .push(format!("(= y2_{id} (bvlshr x4_{id} #x02))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 8))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y2_{id} (_ bv0 8))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-            id = id
-        ));
-
-        // round 3
-        self.additional_decls
-            .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_decls
-            .push((format!("y1_{id}", id = id), String::from("(_ BitVec 8)")));
-        self.additional_decls
-            .push((format!("x1_{id}", id = id), String::from("(_ BitVec 8)")));
-
-        self.additional_assumptions
-            .push(format!("(= y1_{id} (bvlshr x2_{id} #x01))", id = id));
-        self.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 8))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 64))))", id = id));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= y1_{id} (_ bv0 8))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-            id = id
-        ));
-
-        // last round
-        self.additional_decls
-            .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 8))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 64))))", id = id));
-
-        // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret6_{id})", ret = ret, id = id));
-    }
-
-    pub fn a64clz1(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
-
-        // extract to ensure we have a 1 bit input
-        self.additional_decls
-            .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 1)")));
-        self.additional_assumptions.push(format!(
-            "(= a64x_{id} ((_ extract 0 0) {x}))",
-            id = id,
-            x = x
-        ));
-
-        // total zeros counter
-        self.additional_decls
-            .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 64)")));
-        self.additional_assumptions.push(format!(
-            "(ite (not (= a64x_{id} (_ bv0 1))) (= ret0_{id} (_ bv0 64)) (= ret0_{id} (_ bv1 64)))",
-            id = id
-        ));
-
-        self.additional_assumptions
-            .push(format!("(= {ret} ret0_{id})"));
-    }
-
-    pub fn clz64(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
-
+    pub fn clz64(&mut self, x: &String, id: u32) -> String {
         // total zeros counter
         self.additional_decls
             .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 64)")));
@@ -749,13 +546,11 @@ impl SolverCtx {
         self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 64))) (= ret7_{id} ret6_{id}) (= ret7_{id} (bvadd ret6_{id} (_ bv1 64))))", id = id));
 
         // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret7_{id})", ret = ret, id = id));
+        format!("ret7_{id}", id = id)
     }
 
-    pub fn clz32(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
+    pub fn clz32(&mut self, x: &String, id: u32) -> String {
+        let x = format!("((_ extract 31 0) {})", x);
 
         // total zeros counter
         self.additional_decls
@@ -853,13 +648,12 @@ impl SolverCtx {
         self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 32))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 32))))", id = id));
 
         // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret6_{id})", ret = ret, id = id));
+        let padding = self.new_fresh_bits(self.bitwidth - 32);
+        format!("(concat {padding} ret6_{id})", padding = padding, id = id)
     }
 
-    pub fn clz16(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
+    pub fn clz16(&mut self, x: &String, id: u32) -> String {
+        let x = format!("((_ extract 15 0) {})", x);
 
         // total zeros counter
         self.additional_decls
@@ -941,13 +735,12 @@ impl SolverCtx {
         self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 16))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 16))))", id = id));
 
         // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret6_{id})", ret = ret, id = id));
+        let padding = self.new_fresh_bits(self.bitwidth - 16);
+        format!("(concat {padding} ret6_{id})", padding = padding, id = id)
     }
 
-    pub fn clz8(&mut self, x: &String, ret: &String) {
-        let s: Vec<&str> = x.split("_").collect();
-        let id = s[s.len() - 1];
+    pub fn clz8(&mut self, x: &String, id: u32) -> String {
+        let x = format!("((_ extract 7 0) {})", x);
 
         // total zeros counter
         self.additional_decls
@@ -1010,13 +803,19 @@ impl SolverCtx {
         self.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 8))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 8))))", id = id));
 
         // final return
-        self.additional_assumptions
-            .push(format!("(= {ret} ret6_{id})", ret = ret, id = id));
+        let padding = self.new_fresh_bits(self.bitwidth - 8);
+        format!("(concat {padding} ret6_{id})", padding = padding, id = id)
     }
 
-    pub fn clz1(&mut self, x: &String, ret: &String) {
+    pub fn clz1(&mut self, x: &String, id: u32) -> String {
+        let extract = format!("((_ extract 0 0) {})", x);
+        self.additional_decls
+            .push((format!("ret_{id}", id = id), String::from("(_ BitVec 1)")));
         self.additional_assumptions
-            .push(format!("(= {ret} (bvnot {x}))", ret = ret, x = x));
+            .push(format!("(= ret_{id} (bvnot {x}))", id = id, x = extract));
+
+        let padding = self.new_fresh_bits(self.bitwidth - 1);
+        format!("(concat {padding} ret_{id})", padding = padding, id = id)
     }
 
     pub fn vir_expr_to_rsmt2_str(&mut self, e: Expr) -> String {
@@ -1141,107 +940,12 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                if op == "=" {
-                    // Currently we can only perform clz on vars that represent bvs
-                    // And we can only use annotations that directly compare the
-                    // result of clz to some var
-                    match (*x.clone(), *y.clone()) {
-                        (Expr::CLZ(arg), ret) | (ret, Expr::CLZ(arg)) => {
-                            match (*arg.clone(), ret.clone()) {
-                                (Expr::Terminal(ref t1), Expr::Terminal(ref t2)) => {
-                                    match (t1, t2) {
-                                        (Terminal::Var(a), Terminal::Var(r)) => {
-                                            let static_width = self.static_width(&*arg);
-                                            if let Some(size) = static_width {
-                                                if size == 1 {
-                                                    self.clz1(&a, &r);
-                                                } else if size == 8 {
-                                                    self.clz8(&a, &r);
-                                                } else if size == 16 {
-                                                    self.clz16(&a, &r);
-                                                } else if size == 32 {
-                                                    self.clz32(&a, &r);
-                                                } else if size == 64 {
-                                                    self.clz64(&a, &r);
-                                                } else {
-                                                    println!("Unrecognized size for clz: {}", size);
-                                                }
-                                                // dummy because we have to return a string
-                                                // that we can wrap parens around
-                                                String::from("true")
-                                            } else {
-                                                unreachable!("Could not type clz arg {:#?}", arg);
-                                            }
-                                        }
-                                        _ => unreachable!("({:?}, {:?})", t1, t2),
-                                    }
-                                }
-                                _ => unreachable!("({:?}, {:?})", arg, ret),
-                            }
-                        }
-                        (Expr::A64CLZ(ty, arg), ret) | (ret, Expr::A64CLZ(ty, arg)) => {
-                            match (*arg.clone(), ret.clone()) {
-                                (Expr::Terminal(ref t1), Expr::Terminal(ref t2)) => {
-                                    match (t1, t2) {
-                                        (Terminal::Var(a), Terminal::Var(r)) => {
-                                            let val = self.get_expr_value(&*ty);
-                                            if let Some(v) = val {
-                                                if v == 1 {
-                                                    self.a64clz1(&a, &r);
-                                                } else if v == 8 {
-                                                    self.a64clz8(&a, &r);
-                                                } else if v == 16 {
-                                                    self.a64clz16(&a, &r);
-                                                } else if v == 32 {
-                                                    self.a64clz32(&a, &r);
-                                                } else if v == 64 {
-                                                    self.clz64(&a, &r);
-                                                } else {
-                                                    println!("Unrecognized size for a64clz: {}", v);
-                                                }
-                                            } else {
-                                                if self.query_width == 1 {
-                                                    self.a64clz1(&a, &r);
-                                                } else if self.query_width == 8 {
-                                                    self.a64clz8(&a, &r);
-                                                } else if self.query_width == 16 {
-                                                    self.a64clz16(&a, &r);
-                                                } else if self.query_width == 32 {
-                                                    self.a64clz32(&a, &r);
-                                                } else if self.query_width == 64 {
-                                                    self.clz64(&a, &r);
-                                                } else {
-                                                    println!(
-                                                        "Unrecognized size for a64clz: {}",
-                                                        self.query_width
-                                                    );
-                                                }
-                                            }
-                                            String::from("true")
-                                        }
-                                        _ => unreachable!("({:?}, {:?})", t1, t2),
-                                    }
-                                }
-                                _ => unreachable!("({:?}, {:?})", arg, ret),
-                            }
-                        }
-                        _ => {
-                            format!(
-                                "({} {} {})",
-                                op,
-                                self.vir_expr_to_rsmt2_str(*x),
-                                self.vir_expr_to_rsmt2_str(*y)
-                            )
-                        }
-                    }
-                } else {
-                    format!(
-                        "({} {} {})",
-                        op,
-                        self.vir_expr_to_rsmt2_str(*x),
-                        self.vir_expr_to_rsmt2_str(*y)
-                    )
-                }
+                format!(
+                    "({} {} {})",
+                    op,
+                    self.vir_expr_to_rsmt2_str(*x),
+                    self.vir_expr_to_rsmt2_str(*y)
+                )
             }
             Expr::BVIntToBV(w, x) => {
                 let padded_width = self.bitwidth - w;
@@ -1343,9 +1047,38 @@ impl SolverCtx {
                     self.vir_expr_to_rsmt2_str(*e)
                 )
             }
-            // Handled in =
-            Expr::CLZ(_) => todo!(),
-            Expr::A64CLZ(..) => todo!(),
+            Expr::CLZ(e) => {
+                let tyvar = *tyvar.unwrap();
+                let es = self.vir_expr_to_rsmt2_str(*e);
+                match static_expr_width {
+                    Some(1) => self.clz1(&es, tyvar),
+                    Some(8) => self.clz8(&es, tyvar),
+                    Some(16) => self.clz16(&es, tyvar),
+                    Some(32) => self.clz32(&es, tyvar),
+                    Some(64) => self.clz64(&es, tyvar),
+                    Some(w) => unreachable!("Unexpected CLZ width {}", w),
+                    None => unreachable!("Need static CLZ width"),
+                }
+            }
+            Expr::A64CLZ(ty, e) => {
+                let tyvar = *tyvar.unwrap();
+                let es = self.vir_expr_to_rsmt2_str(*e);
+                let val = self.get_expr_value(&*ty);
+                match val {
+                    Some(32) => self.a64clz32(&es, tyvar),
+                    Some(64) => self.clz64(&es, tyvar),
+                    Some(w) => {
+                        println!("Unexpected A64CLZ width {}", w);
+                        self.additional_assumptions.push("false".to_string());
+                        es
+                    }
+                    None => {
+                        println!("Need static A64CLZ width");
+                        self.additional_assumptions.push("false".to_string());
+                        es
+                    }
+                }
+            }
         }
     }
 

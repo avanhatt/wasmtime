@@ -315,6 +315,10 @@ fn add_annotation_constraints(
                 }
             }
             tree.next_type_var += 1;
+
+            // If constant is known, add the value to the tree. Useful for
+            // capturing isleTypes
+            tree.type_var_to_val_map.insert(t, c.value);
             (e, t)
         }
 
@@ -356,6 +360,25 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::Lte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::Or(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::Bool));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t2, annotation_ir::Type::Bool));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::Or, Box::new(e1), Box::new(e2)),
                 t,
             )
         }
@@ -919,10 +942,16 @@ fn add_rule_constraints(
             ));
             Some(children[0].clone())
         }
-        TypeVarConstruct::Const(i) => Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Const(
-            *i,
-            curr.type_var,
-        ))),
+        TypeVarConstruct::Const(i) => {
+            // If constant is known, add the value to the tree. Useful for
+            // capturing isleTypes
+            tree.type_var_to_val_map.insert(curr.type_var, *i);
+
+            Some(veri_ir::Expr::Terminal(veri_ir::Terminal::Const(
+                *i,
+                curr.type_var,
+            )))
+        }
         TypeVarConstruct::And => {
             tree.quantified_vars
                 .insert((curr.ident.clone(), curr.type_var));
@@ -990,15 +1019,6 @@ fn add_rule_constraints(
                 let annotation_type_var = annotation_info.var_to_type_var[&arg.name];
                 tree.var_constraints
                     .insert(TypeExpr::Variable(rule_type_var, annotation_type_var));
-
-                // If constant is known, add the value to the tree. Useful for
-                // capturing isleTypes
-                match child.construct {
-                    TypeVarConstruct::Const(val) => {
-                        tree.type_var_to_val_map.insert(annotation_type_var, val);
-                    }
-                    _ => (),
-                }
             }
 
             for (child, arg) in children.iter().zip(&annotation.sig.args) {
