@@ -1155,7 +1155,6 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         additional_decls: vec![],
         additional_assumptions: vec![],
         fresh_bits_idx: 0,
-        query_width,
     };
 
     // Use the query width for any free variables with unspecified bitwidths
