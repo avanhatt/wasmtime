@@ -482,6 +482,7 @@ fn test_32_with_imm_rotr() {
     )
 }
 
+// TODO: reenable.
 // #[test]
 // fn test_64_rotr() {
 //     test_from_file_with_filter(
