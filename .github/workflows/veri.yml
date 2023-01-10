@@ -34,4 +34,5 @@ jobs:
     - name: Build
       run: cargo build --verbose -p veri_ir -p veri_engine -p veri_annotation
     - name: Test
-      run: cargo test --verbose -p veri_ir -p veri_engine -p veri_annotation
+      # Single thread because Z3 is a memory hog 
+      run: cargo test -j 1 --verbose -p veri_ir -p veri_engine -p veri_annotation 
