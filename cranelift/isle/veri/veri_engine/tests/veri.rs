@@ -42,21 +42,21 @@ fn test_implicit_conversions() {
 // https://github.com/avanhatt/wasmtime/issues/13
 // #[test]
 // fn test_iadd_from_file() {
-    // test_from_file("./examples/iadd/base_case.isle", lte_64_success_result());
-    // test_from_file("./examples/iadd/madd.isle", lte_64_success_result());
-    // test_from_file("./examples/iadd/madd2.isle", lte_64_success_result());
-    // test_from_file("./examples/iadd/msub.isle", lte_64_success_result());
-    /*
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
+// test_from_file("./examples/iadd/base_case.isle", lte_64_success_result());
+// test_from_file("./examples/iadd/madd.isle", lte_64_success_result());
+// test_from_file("./examples/iadd/madd2.isle", lte_64_success_result());
+// test_from_file("./examples/iadd/msub.isle", lte_64_success_result());
+/*
+test_from_file("./examples/iadd/", lte_64_success_result());
+test_from_file("./examples/iadd/", lte_64_success_result());
+test_from_file("./examples/iadd/", lte_64_success_result());
+test_from_file("./examples/iadd/", lte_64_success_result());
 
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    test_from_file("./examples/iadd/", lte_64_success_result());
-    */
+test_from_file("./examples/iadd/", lte_64_success_result());
+test_from_file("./examples/iadd/", lte_64_success_result());
+test_from_file("./examples/iadd/", lte_64_success_result());
+test_from_file("./examples/iadd/", lte_64_success_result());
+*/
 // }
 
 #[test]
@@ -287,6 +287,92 @@ fn test_cls_broken() {
     test_from_file_with_filter(
         "./examples/broken/cls/broken_cls16.isle",
         "cls".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
+    )
+}
+
+#[test]
+fn test_ctz() {
+    test_from_file_with_filter(
+        "./examples/ctz/ctz.isle",
+        "ctz".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
+    );
+
+    test_from_file_with_filter(
+        "./examples/ctz/ctz8.isle",
+        "ctz".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::Success),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
+    );
+
+    test_from_file_with_filter(
+        "./examples/ctz/ctz16.isle",
+        "ctz".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::Success),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
+    )
+}
+
+#[test]
+fn test_ctz_broken() {
+    test_from_file(
+        "./examples/broken/ctz/broken_ctz.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
+
+    test_from_file_with_filter(
+        "./examples/broken/ctz/broken_ctz8.isle",
+        "ctz".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
+    );
+
+    test_from_file_with_filter(
+        "./examples/broken/ctz/broken_ctz16.isle",
+        "ctz".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
             (Bitwidth::I8, VerificationResult::InapplicableRule),

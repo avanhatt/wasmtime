@@ -177,7 +177,9 @@ pub enum Expr {
     CLZ(Box<Expr>, u32),
     A64CLZ(Box<Expr>, Box<Expr>, u32),
     CLS(Box<Expr>, u32),
-    A64CLS(Box<Expr>, Box<Expr>, u32),    
+    A64CLS(Box<Expr>, Box<Expr>, u32),
+    Rev(Box<Expr>, u32),
+    A64Rev(Box<Expr>, Box<Expr>, u32),    
 
     // Binary operators
     BVMul(Box<Expr>, Box<Expr>, u32),
@@ -245,7 +247,9 @@ impl Expr {
             | Expr::CLZ(_, t)
             | Expr::A64CLZ(_, _, t)
             | Expr::CLS(_, t)
-            | Expr::A64CLS(_, _, t)            
+            | Expr::A64CLS(_, _, t)
+            | Expr::Rev(_, t)
+            | Expr::A64Rev(_, _, t)           
             | Expr::And(_, _, t)
             | Expr::Or(_, _, t)
             | Expr::Imp(_, _, t)

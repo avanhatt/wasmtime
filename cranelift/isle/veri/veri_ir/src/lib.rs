@@ -191,7 +191,9 @@ pub enum Expr {
     CLZ(Box<Expr>),
     A64CLZ(Box<Expr>, Box<Expr>),
     CLS(Box<Expr>),
-    A64CLS(Box<Expr>, Box<Expr>),    
+    A64CLS(Box<Expr>, Box<Expr>),
+    Rev(Box<Expr>),
+    A64Rev(Box<Expr>, Box<Expr>),  
 
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),

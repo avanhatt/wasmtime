@@ -1,0 +1,87 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+    (BitRR
+      (op BitOp))
+    (AluRRImmLogic
+      (alu_op ALUOp)
+      (size OperandSize)
+      (rd WritableReg)
+      (rn Reg)
+      (imml ImmLogic))
+))
+
+(type ALUOp
+  (enum
+    (Orr)
+))
+
+(type BitOp
+  (enum
+    (Clz)
+    (RBit)
+))
+
+(type ImmLogic (primitive ImmLogic))
+
+(type OperandSize extern
+      (enum Size32
+            Size64))
+
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+(decl bit_rr (BitOp Type Reg) Reg)
+(extern constructor bit_rr bit_rr)
+
+(decl alu_rr_imm_logic (ALUOp Type Reg ImmLogic) Reg)
+(rule (alu_rr_imm_logic op ty src imm)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.AluRRImmLogic op (operand_size ty) dst src imm))))
+        dst))
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (a64clz (32i0:isleType) (a)) }
+;;@                        else
+;;@                        { (a64clz (64i0:isleType) (a)) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
+;;@ )
+(decl a64_clz (Type Reg) Reg)
+(rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
+
+;;@ (spec (sig (args ty, a, b) (ret))
+;;@     (assertions (= (ret) (| (a) (b)))))
+(decl orr_imm (Type Reg ImmLogic) Reg)
+(rule (orr_imm ty x y) (alu_rr_imm_logic (ALUOp.Orr) ty x y))
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (a64rev (32i0:isleType) (a)) }
+;;@                        else
+;;@                        { (a64rev (64i0:isleType) (a)) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
+;;@ )
+(decl rbit (Type Reg) Reg)
+(rule (rbit ty x) (bit_rr (BitOp.RBit) ty x))
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@ ))
+(decl u64_into_imm_logic (Type u64) ImmLogic)
+(extern constructor u64_into_imm_logic u64_into_imm_logic)
+
+(rule (lower (has_type $I16 (ctz x)))
+      (a64_clz $I32 (orr_imm $I32 (rbit $I32 x) (u64_into_imm_logic $I32 0x8000))))

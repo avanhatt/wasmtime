@@ -1,0 +1,49 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+    (BitRR
+        (op BitOp))
+))
+
+(type BitOp
+  (enum
+    (Clz)
+    (RBit)
+))
+
+(decl bit_rr (BitOp Type Reg) Reg)
+(extern constructor bit_rr bit_rr)
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (a64clz (32i0:isleType) (a)) }
+;;@                        else
+;;@                        { (a64clz (64i0:isleType) (a)) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
+;;@ )
+(decl a64_clz (Type Reg) Reg)
+(rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
+
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (a64rev (32i0:isleType) (a)) }
+;;@                        else
+;;@                        { (a64rev (64i0:isleType) (a)) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
+;;@ )
+(decl rbit (Type Reg) Reg)
+(rule (rbit ty x) (bit_rr (BitOp.RBit) ty x))
+
+(rule -1 (lower (has_type ty (ctz x)))
+      (a64_clz ty (rbit ty x)))
