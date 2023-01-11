@@ -8,7 +8,6 @@
     ;; An ALU operation with two register sources and a register destination.
     (AluRRR
       (alu_op ALUOp)
-      (size OperandSize)
 )))
 
 (type Imm12 (primitive Imm12))
@@ -19,15 +18,6 @@
   (enum
     (Add)
 ))
-
-(type OperandSize extern
-      (enum Size32
-            Size64))
-
-;; Helper for calculating the `OperandSize` corresponding to a type
-(decl operand_size (Type) OperandSize)
-(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
-(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
 ;;@ (spec (sig (args ty, a, b) (r))
 ;;@     (assertions (= (+ (a) (sign_ext (regwidth) (b))) (r))))
