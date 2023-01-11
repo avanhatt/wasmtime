@@ -76,5 +76,8 @@
 (decl u8_into_imm12 (u8) Imm12)
 (extern constructor u8_into_imm12 u8_into_imm12)
 
+;; A reproduction of the previously reported bug:
+;; https://github.com/bytecodealliance/wasmtime/issues/3248.
+;; This rule should sign extend instead of zero extending.
 (rule (lower (has_type $I8 (cls x)))
       (sub_imm $I32 (a64_cls $I32 (put_in_reg_zext32 x)) (u8_into_imm12 24)))
