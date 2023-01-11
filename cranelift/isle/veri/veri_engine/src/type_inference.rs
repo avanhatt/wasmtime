@@ -850,6 +850,36 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (veri_ir::Expr::A64CLS(Box::new(e0), Box::new(e1)), t)
         }
+        annotation_ir::Expr::Rev(x, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t1));
+
+            tree.next_type_var += 1;
+            (veri_ir::Expr::Rev(Box::new(e1)), t)
+        }
+        annotation_ir::Expr::A64Rev(ty, x, _) => {
+            let (e0, t0) = add_annotation_constraints(*ty, tree, annotation_info);
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(REG_WIDTH),
+            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t0, annotation_ir::Type::Int));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+            (veri_ir::Expr::A64Rev(Box::new(e0), Box::new(e1)), t)
+        }
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
@@ -878,7 +908,7 @@ fn add_isle_constraints(
         ),
         (
             "ImmLogic".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(12),
+            annotation_ir::Type::BitVectorWithWidth(64),
         ),
         (
             "u64".to_owned(),

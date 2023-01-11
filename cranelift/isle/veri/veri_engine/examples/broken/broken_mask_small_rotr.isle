@@ -26,7 +26,7 @@
 (extern constructor extend extend)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (& (a) (b)) (r))))
+;;@     (assertions (= (& (conv_to (ty) (a)) (conv_to (ty) (b))) (conv_to (ty) (r)))))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (extern constructor and_imm and_imm)
 
@@ -45,7 +45,7 @@
 ;; }
 ;;
 ;;@ (spec (sig (args x) (ret))
-;;@   (assertions (= (- (int2bv 12 (x)) (0i12:bv)) (ret))))
+;;@   (assertions (= (- (int2bv 64 (x)) (0i64:bv)) (ret))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 
