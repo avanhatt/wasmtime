@@ -96,17 +96,17 @@ fn test_broken_iadd_from_file() {
 
 #[test]
 fn test_ineg() {
-    test_from_file("./examples/ineg.isle", lte_64_success_result())
+    test_from_file("./examples/ineg/ineg.isle", lte_64_success_result())
 }
 
 #[test]
 fn test_uextend() {
-    test_from_file("./examples/uextend.isle", all_success_result())
+    test_from_file("./examples/uextend/uextend.isle", all_success_result())
 }
 
 #[test]
 fn test_sextend() {
-    test_from_file("./examples/sextend.isle", all_success_result())
+    test_from_file("./examples/sextend/sextend.isle", all_success_result())
 }
 
 #[test]
@@ -389,7 +389,7 @@ fn test_ctz_broken() {
 #[test]
 fn test_small_rotr_to_shifts() {
     test_from_file_with_filter(
-        "./examples/small_rotr_to_shifts.isle",
+        "./examples/rotr/small_rotr_to_shifts.isle",
         "small_rotr".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -436,7 +436,7 @@ fn test_small_rotr_to_shifts_broken() {
 #[test]
 fn test_small_rotr_imm_to_shifts() {
     test_from_file_with_filter(
-        "./examples/small_rotr_imm_to_shifts.isle",
+        "./examples/rotr/small_rotr_imm_to_shifts.isle",
         "small_rotr_imm".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -451,7 +451,7 @@ fn test_small_rotr_imm_to_shifts() {
 #[test]
 fn test_fits_in_16_rotl_to_rotr() {
     test_from_file_with_filter(
-        "./examples/fits_in_16_rotl_to_rotr.isle",
+        "./examples/rotl/fits_in_16_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -466,7 +466,7 @@ fn test_fits_in_16_rotl_to_rotr() {
 #[test]
 fn test_32_general_rotl_to_rotr() {
     test_from_file_with_filter(
-        "./examples/32_general_rotl_to_rotr.isle",
+        "./examples/rotl/32_general_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -499,7 +499,7 @@ fn test_broken_32_general_rotl_to_rotr() {
 #[test]
 fn test_64_general_rotl_to_rotr() {
     test_from_file_with_filter(
-        "./examples/64_general_rotl_to_rotr.isle",
+        "./examples/rotl/64_general_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -532,7 +532,7 @@ fn test_broken_fits_in_16_rotl_to_rotr() {
 #[test]
 fn test_fits_in_16_with_imm_rotl_to_rotr() {
     test_from_file_with_filter(
-        "./examples/fits_in_16_with_imm_rotl_to_rotr.isle",
+        "./examples/rotl/fits_in_16_with_imm_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -547,7 +547,7 @@ fn test_fits_in_16_with_imm_rotl_to_rotr() {
 #[test]
 fn test_64_with_imm_rotl_to_rotr() {
     test_from_file_with_filter(
-        "./examples/64_with_imm_rotl_to_rotr.isle",
+        "./examples/rotl/64_with_imm_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -562,7 +562,7 @@ fn test_64_with_imm_rotl_to_rotr() {
 #[test]
 fn test_32_with_imm_rotl_to_rotr() {
     test_from_file_with_filter(
-        "./examples/32_with_imm_rotl_to_rotr.isle",
+        "./examples/rotl/32_with_imm_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -595,7 +595,7 @@ fn test_32_with_imm_rotl_to_rotr() {
 #[test]
 fn test_fits_in_16_rotr() {
     test_from_file_with_filter(
-        "./examples/fits_in_16_rotr.isle",
+        "./examples/rotr/fits_in_16_rotr.isle",
         "rotr".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -610,7 +610,7 @@ fn test_fits_in_16_rotr() {
 #[test]
 fn test_fits_in_16_with_imm_rotr() {
     test_from_file_with_filter(
-        "./examples/fits_in_16_rotr.isle",
+        "./examples/rotr/fits_in_16_rotr.isle",
         "rotr".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -625,7 +625,7 @@ fn test_fits_in_16_with_imm_rotr() {
 #[test]
 fn test_32_rotr() {
     test_from_file_with_filter(
-        "./examples/32_rotr.isle",
+        "./examples/rotr/32_rotr.isle",
         "rotr".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -640,7 +640,7 @@ fn test_32_rotr() {
 #[test]
 fn test_32_with_imm_rotr() {
     test_from_file_with_filter(
-        "./examples/32_with_imm_rotr.isle",
+        "./examples/rotr/32_with_imm_rotr.isle",
         "rotr".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -688,7 +688,7 @@ fn test_32_with_imm_rotr() {
 #[test]
 fn test_fits_in_32_band() {
     test_from_file_with_filter(
-        "./examples/fits_in_32_band.isle",
+        "./examples/band/fits_in_32_band.isle",
         "band".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -724,7 +724,7 @@ fn test_broken_fits_in_32_band() {
 #[test]
 fn test_64_band() {
     test_from_file_with_filter(
-        "./examples/64_band.isle",
+        "./examples/band/64_band.isle",
         "band".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -739,7 +739,7 @@ fn test_64_band() {
 #[test]
 fn test_fits_in_32_bor() {
     test_from_file_with_filter(
-        "./examples/fits_in_32_bor.isle",
+        "./examples/bor/fits_in_32_bor.isle",
         "bor".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -754,7 +754,7 @@ fn test_fits_in_32_bor() {
 #[test]
 fn test_64_bor() {
     test_from_file_with_filter(
-        "./examples/64_bor.isle",
+        "./examples/bor/64_bor.isle",
         "bor".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -790,7 +790,7 @@ fn test_broken_fits_in_32_bor() {
 #[test]
 fn test_fits_in_32_bxor() {
     test_from_file_with_filter(
-        "./examples/fits_in_32_bxor.isle",
+        "./examples/bxor/fits_in_32_bxor.isle",
         "bxor".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -805,7 +805,7 @@ fn test_fits_in_32_bxor() {
 #[test]
 fn test_64_bxor() {
     test_from_file_with_filter(
-        "./examples/64_bxor.isle",
+        "./examples/bxor/64_bxor.isle",
         "bxor".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
