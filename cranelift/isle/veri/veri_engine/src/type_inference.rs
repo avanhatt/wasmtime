@@ -592,6 +592,23 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::BVAshr(x, a, _) => {
+            let (xe, xt) = add_annotation_constraints(*x, tree, annotation_info);
+            let (ae, at) = add_annotation_constraints(*a, tree, annotation_info);
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(xt, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t, xt));
+
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVAshr, Box::new(xe), Box::new(ae)),
+                t,
+            )
+        }
         annotation_ir::Expr::BVShl(x, a, _) => {
             let (xe, xt) = add_annotation_constraints(*x, tree, annotation_info);
             let (ae, at) = add_annotation_constraints(*a, tree, annotation_info);

@@ -394,6 +394,7 @@ impl SolverCtx {
                     | BinaryOp::BVOr
                     | BinaryOp::BVShl
                     | BinaryOp::BVShr
+                    | BinaryOp::BVAshr
                     | BinaryOp::BVRotl => self.assume_same_width_from_string(&width.unwrap(), &*x),
                     _ => (),
                 };
@@ -444,6 +445,25 @@ impl SolverCtx {
 
                         let amt_plus_extra = format!("(bvadd {} {})", ys, extra_shift);
                         return format!("(bvlshr {} {})", shl_to_zero, amt_plus_extra);
+                    }
+                    BinaryOp::BVAshr => {
+                        let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                        let xs = self.vir_expr_to_rsmt2_str(*x);
+                        let ys = self.vir_expr_to_rsmt2_str(*y);
+
+                        // Strategy: shift right by (bitwidth - arg width) to zero bits to the right
+                        // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
+
+                        // Width math
+                        let arg_width_as_bv =
+                            format!("((_ int2bv {}) {})", self.bitwidth, arg_width);
+                        let bitwidth_as_bv = format!("(_ bv{} {})", self.bitwidth, self.bitwidth);
+                        let extra_shift =
+                            format!(" (bvsub {} {})", bitwidth_as_bv, arg_width_as_bv);
+                        let shl_to_zero = format!("(bvshl {} {})", xs, extra_shift);
+
+                        let amt_plus_extra = format!("(bvadd {} {})", ys, extra_shift);
+                        return format!("(bvashr {} {})", shl_to_zero, amt_plus_extra);
                     }
                     _ => (),
                 };

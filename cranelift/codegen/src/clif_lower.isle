@@ -1062,6 +1062,8 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.RotrImm) x Y))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (shl (x) (y)) (ret))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
