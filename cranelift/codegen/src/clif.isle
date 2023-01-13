@@ -1211,7 +1211,8 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (shl (a) (b)))))
+;;@     (assertions (<= (bv2int (b)) (widthof (a))),
+;;@                 (= (ret) (shl (a) (b)))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
