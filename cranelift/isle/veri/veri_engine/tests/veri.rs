@@ -839,10 +839,9 @@ fn test_do_shift_with_imm() {
     test_from_file_with_filter(
         "./examples/shifts/do_shift_with_imm.isle",
         "do_shift".to_string(),
-        all_success_result()
+        all_success_result(),
     )
 }
-
 
 #[test]
 fn test_if_let() {

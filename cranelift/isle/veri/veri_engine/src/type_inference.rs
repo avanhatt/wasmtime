@@ -4,7 +4,7 @@ use std::hash::Hash;
 use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{TermEnv, TypeEnv, VarId};
-use veri_annotation::parser_wrapper::{AnnotationEnv};
+use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::Expr;
 use veri_ir::{annotation_ir, TypeContext};
 
