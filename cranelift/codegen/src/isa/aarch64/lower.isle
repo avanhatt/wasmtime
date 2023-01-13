@@ -44,77 +44,77 @@
 ;; `i64` and smaller
 
 ;; Base case, simply adding things in registers.
-(rule -1 (lower (has_type (fits_in_64 ty) (iadd x y)))
-      (add ty  x y))
+;; (rule -1 (lower (has_type (fits_in_64 ty) (iadd x y)))
+;;       (add ty  x y))
 
 ;; Special cases for when one operand is an immediate that fits in 12 bits.
 (rule 4 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_value y))))
       (add_imm ty x y))
 
-(rule 5 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
-      (add_imm ty y x))
+;; (rule 5 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
+;;       (add_imm ty y x))
 
 ;; Same as the previous special cases, except we can switch the addition to a
 ;; subtraction if the negated immediate fits in 12 bits.
 (rule 2 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
       (sub_imm ty x y))
 
-(rule 3 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
-      (sub_imm ty y x))
+;; (rule 3 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
+;;       (sub_imm ty y x))
 
 ;; Special cases for when we're adding an extended register where the extending
 ;; operation can get folded into the add itself.
-(rule 0 (lower (has_type (fits_in_64 ty) (iadd x (extended_value_from_value y))))
-      (add_extend ty x y))
+;; (rule 0 (lower (has_type (fits_in_64 ty) (iadd x (extended_value_from_value y))))
+;;       (add_extend ty x y))
 
-(rule 1 (lower (has_type (fits_in_64 ty) (iadd (extended_value_from_value x) y)))
-      (add_extend ty y x))
+;; (rule 1 (lower (has_type (fits_in_64 ty) (iadd (extended_value_from_value x) y)))
+;;       (add_extend ty y x))
 
 ;; Special cases for when we're adding the shift of a different
 ;; register by a constant amount and the shift can get folded into the add.
-(rule 7 (lower (has_type (fits_in_64 ty)
-                       (iadd x (ishl y (iconst k)))))
-      (if-let amt (lshl_from_imm64 ty k))
-      (add_shift ty x y amt))
+;; (rule 7 (lower (has_type (fits_in_64 ty)
+;;                        (iadd x (ishl y (iconst k)))))
+;;       (if-let amt (lshl_from_imm64 ty k))
+;;       (add_shift ty x y amt))
 
-(rule 6 (lower (has_type (fits_in_64 ty)
-                       (iadd (ishl x (iconst k)) y)))
-      (if-let amt (lshl_from_imm64 ty k))
-      (add_shift ty y x amt))
+;; (rule 6 (lower (has_type (fits_in_64 ty)
+;;                        (iadd (ishl x (iconst k)) y)))
+;;       (if-let amt (lshl_from_imm64 ty k))
+;;       (add_shift ty y x amt))
 
 ;; Fold an `iadd` and `imul` combination into a `madd` instruction.
-(rule 7 (lower (has_type (fits_in_64 ty) (iadd x (imul y z))))
-      (madd ty y z x))
+;; (rule 7 (lower (has_type (fits_in_64 ty) (iadd x (imul y z))))
+;;       (madd ty y z x))
 
-(rule 6 (lower (has_type (fits_in_64 ty) (iadd (imul x y) z)))
-      (madd ty x y z))
+;; (rule 6 (lower (has_type (fits_in_64 ty) (iadd (imul x y) z)))
+;;       (madd ty x y z))
 
 ;; Fold an `isub` and `imul` combination into a `msub` instruction.
-(rule (lower (has_type (fits_in_64 ty) (isub x (imul y z))))
-      (msub ty y z x))
+;; (rule (lower (has_type (fits_in_64 ty) (isub x (imul y z))))
+;;       (msub ty y z x))
 
 ;; vectors
 
-(rule -2 (lower (has_type ty @ (multi_lane _ _) (iadd x y)))
-      (add_vec x y (vector_size ty)))
+;; (rule -2 (lower (has_type ty @ (multi_lane _ _) (iadd x y)))
+;;       (add_vec x y (vector_size ty)))
 
 ;; `i128`
-(rule -3 (lower (has_type $I128 (iadd x y)))
-      (let
-          ;; Get the high/low registers for `x`.
-          ((x_regs ValueRegs x)
-           (x_lo Reg (value_regs_get x_regs 0))
-           (x_hi Reg (value_regs_get x_regs 1))
+;; (rule -3 (lower (has_type $I128 (iadd x y)))
+;;       (let
+;;           ;; Get the high/low registers for `x`.
+;;           ((x_regs ValueRegs x)
+;;            (x_lo Reg (value_regs_get x_regs 0))
+;;            (x_hi Reg (value_regs_get x_regs 1))
 
-           ;; Get the high/low registers for `y`.
-           (y_regs ValueRegs y)
-           (y_lo Reg (value_regs_get y_regs 0))
-           (y_hi Reg (value_regs_get y_regs 1)))
-        ;; the actual addition is `adds` followed by `adc` which comprises the
-        ;; low/high bits of the result
-        (with_flags
-          (add_with_flags_paired $I64 x_lo y_lo)
-          (adc_paired $I64 x_hi y_hi))))
+;;            ;; Get the high/low registers for `y`.
+;;            (y_regs ValueRegs y)
+;;            (y_lo Reg (value_regs_get y_regs 0))
+;;            (y_hi Reg (value_regs_get y_regs 1)))
+;;         ;; the actual addition is `adds` followed by `adc` which comprises the
+;;         ;; low/high bits of the result
+;;         (with_flags
+;;           (add_with_flags_paired $I64 x_lo y_lo)
+;;           (adc_paired $I64 x_hi y_hi))))
 
 ;;;; Rules for `shuffle` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -551,6 +551,26 @@ mod tests {
     use alloc::string::ToString;
 
     #[test]
+    fn iconst_please() {
+
+        use crate::ir::InstBuilder;
+
+        let mut func = Function::new();
+        {
+            let block0 = func.dfg.make_block();
+            let mut pos = FuncCursor::new(&mut func);
+            pos.insert_block(block0);
+
+            let help = pos.ins().iconst(types::I32, -1);
+            // panic!("{:?}", help);
+        }
+        assert_eq!(
+            func.to_string(),
+            "function u0:0() fast {\nblock0(v3: i32):\n    v0 -> v3\n    v2 -> v0\n    v4 = iconst.i32 42\n    v5 = iadd v0, v0\n    v1 -> v5\n    v6 = iconst.i32 23\n    v7 = iadd v1, v1\n}\n"
+        );
+    }
+
+    #[test]
     fn basic() {
         let mut f = Function::new();
         assert_eq!(f.to_string(), "function u0:0() fast {\n}\n");

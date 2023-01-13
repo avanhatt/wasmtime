@@ -1,5 +1,6 @@
 test run
 target aarch64
+target x86_64
 
 function %a(i32) -> i32 {
 block0(v0: i32):
