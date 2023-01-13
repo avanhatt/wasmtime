@@ -2032,6 +2032,7 @@ impl SolverCtx {
                     | BinaryOp::BVOr
                     | BinaryOp::BVShl
                     | BinaryOp::BVShr
+                    | BinaryOp::BVAShr
                     | BinaryOp::BVRotl => self.assume_same_width_from_string(&width.unwrap(), &*x),
                     _ => (),
                 };
@@ -2093,6 +2094,7 @@ impl SolverCtx {
                     BinaryOp::BVOr => "bvor",
                     BinaryOp::BVXor => "bvxor",
                     BinaryOp::BVShl => "bvshl",
+                    BinaryOp::BVAShr => "bvashr",
                     _ => unreachable!("{:?}", op),
                 };
                 format!(

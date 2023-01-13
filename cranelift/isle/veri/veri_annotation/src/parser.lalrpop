@@ -105,6 +105,7 @@ pub Expr: Box<Expr> = {
     "(" "rotr" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVRotr(u, v, 0)),
     "(" "shl" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVShl(u, v, 0)),
     "(" "shr" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVShr(u, v, 0)),
+    "(" "ashr" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAShr(u, v, 0)),
 
     "(" "zero_ext" <n:Width> <v:Expr> ")" => Box::new(Expr::BVZeroExtTo(n, v, 0)),
     "(" "zero_ext" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVZeroExtToVarWidth(n, v, 0)),

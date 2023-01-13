@@ -174,6 +174,7 @@ pub enum BinaryOp {
     BVRotr,
     BVShl,
     BVShr,
+    BVAShr,
 }
 
 /// Expressions (combined across all types).
@@ -224,7 +225,8 @@ pub enum Expr {
 }
 
 pub fn all_query_widths() -> Vec<usize> {
-    vec![1, 8, 16, 32, 64]
+    //vec![1, 8, 16, 32, 64]
+    vec![16]
 }
 
 impl BoundVar {

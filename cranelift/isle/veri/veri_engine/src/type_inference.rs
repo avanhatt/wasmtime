@@ -321,6 +321,20 @@ fn add_annotation_constraints(
             tree.type_var_to_val_map.insert(t, c.value);
             (e, t)
         }
+        annotation_ir::Expr::True(_) => {
+            let t = tree.next_type_var;
+            tree.concrete_constraints.insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+
+            tree.next_type_var += 1;
+            (veri_ir::Expr::Terminal(veri_ir::Terminal::True), t)
+        }
+        annotation_ir::Expr::False(_) => {
+            let t = tree.next_type_var;
+            tree.concrete_constraints.insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+
+            tree.next_type_var += 1;
+            (veri_ir::Expr::Terminal(veri_ir::Terminal::False), t)
+        }
 
         annotation_ir::Expr::WidthOf(x, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
@@ -573,6 +587,23 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::BVShl(x, a, _) => {
+            let (xe, xt) = add_annotation_constraints(*x, tree, annotation_info);
+            let (ae, at) = add_annotation_constraints(*a, tree, annotation_info);
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(xt, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t, xt));
+
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVShl, Box::new(xe), Box::new(ae)),
+                t,
+            )
+        }
         annotation_ir::Expr::BVShr(x, a, _) => {
             let (xe, xt) = add_annotation_constraints(*x, tree, annotation_info);
             let (ae, at) = add_annotation_constraints(*a, tree, annotation_info);
@@ -590,7 +621,7 @@ fn add_annotation_constraints(
                 t,
             )
         }
-        annotation_ir::Expr::BVShl(x, a, _) => {
+        annotation_ir::Expr::BVAShr(x, a, _) => {
             let (xe, xt) = add_annotation_constraints(*x, tree, annotation_info);
             let (ae, at) = add_annotation_constraints(*a, tree, annotation_info);
             let t = tree.next_type_var;
@@ -601,9 +632,10 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
             tree.var_constraints.insert(TypeExpr::Variable(t, xt));
+            tree.var_constraints.insert(TypeExpr::Variable(at, xt));
 
             (
-                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVShl, Box::new(xe), Box::new(ae)),
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVAShr, Box::new(xe), Box::new(ae)),
                 t,
             )
         }
@@ -898,6 +930,7 @@ fn add_isle_constraints(
         ("Value".to_owned(), annotation_ir::Type::BitVector),
         ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
+        ("ShiftOpAndAmt".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
     ]);
 
     let mut annotation_vars = vec![];
