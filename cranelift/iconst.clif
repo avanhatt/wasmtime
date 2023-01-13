@@ -1,0 +1,10 @@
+test run
+target aarch64
+
+function %a(i32) -> i32 {
+block0(v0: i32):
+    v2 = iconst.i32 -1
+    v3 = iadd v0, v2
+    return v3
+}
+; run: %a(50) == 8798787
