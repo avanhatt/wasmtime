@@ -1,0 +1,86 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+    (AluRRR
+      (alu_op ALUOp))
+    (AluRRRExtend
+      (alu_op ALUOp)
+      (size OperandSize)
+      (rd WritableReg)
+      (rn Reg)
+      (rm Reg)
+      (extendop ExtendOp))
+))
+
+(type ALUOp
+  (enum
+    (Add)
+))
+
+(type OperandSize extern
+      (enum Size32
+            Size64))
+
+;; ASSUMING 64 BIT MODE!!!
+;; annotations will interpret this as
+;; a 6 bit field, where the 3 msb encode
+;; a shift amount that must be between 0
+;; and 4, inclusive. The rest will encode
+;; an extend op as follows:
+(type ExtendedValue extern (enum))
+
+;; always extend to ty bits
+;; 000: uextend lower byte 
+;; 001: uextend lower 2 bytes
+;; 010: uextend lower 4 bytes
+;; 011: uextend lower 8 bytes
+;; 100: sextend lower byte
+;; 101: sextend lower 2 bytes
+;; 110: sextend lower 4 bytes
+;; 111: sextend lower 8 bytes
+(type ExtendOp extern
+  (enum
+    (UXTB)
+    (UXTH)
+    (UXTW)
+    (UXTX)
+    (SXTB)
+    (SXTH)
+    (SXTW)
+    (SXTX)
+))
+
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+(decl put_extended_in_reg (ExtendedValue) Reg)
+(extern constructor put_extended_in_reg put_extended_in_reg)
+(decl get_extended_op (ExtendedValue) ExtendOp)
+(extern constructor get_extended_op get_extended_op)
+
+;;@
+(decl extended_value_from_value (ExtendedValue) Value)
+(extern extractor extended_value_from_value extended_value_from_value)
+
+(decl alu_rrr_extend (ALUOp Type Reg Reg ExtendOp) Reg)
+(rule (alu_rrr_extend op ty src1 src2 extend)
+      (let ((dst WritableReg (temp_writable_reg $I64))
+            (_ Unit (emit (MInst.AluRRRExtend op (operand_size ty) dst src1 src2 extend))))
+        dst))
+
+(decl alu_rr_extend_reg (ALUOp Type Reg ExtendedValue) Reg)
+(rule (alu_rr_extend_reg op ty src1 extended_reg)
+      (let ((src2 Reg (put_extended_in_reg extended_reg))
+            (extend ExtendOp (get_extended_op extended_reg)))
+        (alu_rrr_extend op ty src1 src2 extend)))
+
+;;@ 
+(decl add_extend (Type Reg ExtendedValue) Reg)
+(rule (add_extend ty x y) (alu_rr_extend_reg (ALUOp.Add) ty x y))
+
+(rule (lower (has_type (fits_in_64 ty) (iadd x (extended_value_from_value y))))
+      (add_extend ty x y))
