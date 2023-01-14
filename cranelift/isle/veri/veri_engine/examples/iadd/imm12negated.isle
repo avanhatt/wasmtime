@@ -28,7 +28,7 @@
 
 ;;@ (spec (sig (args x) (ret))
 ;;@     (assertions (<= (12i0:isleType) (widthof (ret))),
-;;@                 (= (ret) (sign_ext (widthof (ret)) (-(x))))
+;;@                 (= (ret) (sign_ext (widthof (ret)) (x)))
 ;;@ ))
 (decl imm12_from_negated_value (Imm12) Value)
 (extractor
