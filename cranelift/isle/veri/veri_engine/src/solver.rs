@@ -388,6 +388,7 @@ impl SolverCtx {
             Expr::Binary(op, x, y) => {
                 match op {
                     BinaryOp::BVMul
+                    | BinaryOp::BVUDiv
                     | BinaryOp::BVAdd
                     | BinaryOp::BVSub
                     | BinaryOp::BVAnd
@@ -455,6 +456,7 @@ impl SolverCtx {
                     // TODO: this comparison only works for Ints!!
                     BinaryOp::Lte => "<=",
                     BinaryOp::BVMul => "bvmul",
+                    BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVAdd => "bvadd",
                     BinaryOp::BVSub => "bvsub",
                     BinaryOp::BVAnd => "bvand",

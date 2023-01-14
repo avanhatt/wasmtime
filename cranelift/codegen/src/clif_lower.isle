@@ -852,6 +852,8 @@
     (inst_data (InstructionData.Binary (Opcode.SqmulRoundSat) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (/ (x) (y)) (ret))))
 (decl udiv (Value Value) Inst)
 (extractor
     (udiv x y)
