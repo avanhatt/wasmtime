@@ -338,7 +338,7 @@ impl SolverCtx {
 
     pub fn vir_expr_to_rsmt2_str(&mut self, e: Expr) -> String {
         let tyvar = self.tyctx.tyvars.get(&e);
-        let ty = &self.get_type(&e);
+        let ty = self.get_type(&e);
         let width = self.get_expr_width_var(&e).map(|s| s.clone());
         let static_expr_width = self.static_width(&e);
         match e {
@@ -387,12 +387,6 @@ impl SolverCtx {
             }
             Expr::Binary(op, x, y) => {
                 match op {
-                    BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
-                        self.assume_comparable_types(&*x, &*y)
-                    }
-                    _ => (),
-                };
-                match op {
                     BinaryOp::BVMul
                     | BinaryOp::BVAdd
                     | BinaryOp::BVSub
@@ -401,6 +395,12 @@ impl SolverCtx {
                     | BinaryOp::BVShl
                     | BinaryOp::BVShr
                     | BinaryOp::BVRotl => self.assume_same_width_from_string(&width.unwrap(), &*x),
+                    _ => (),
+                };
+                match op {
+                    BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
+                        self.assume_comparable_types(&*x, &*y)
+                    }
                     _ => (),
                 };
                 match op {
@@ -431,7 +431,7 @@ impl SolverCtx {
                         let xs = self.vir_expr_to_rsmt2_str(*x);
                         let ys = self.vir_expr_to_rsmt2_str(*y);
 
-                        // Strategy: shift right by (bitwidth - arg width) to zero bits to the right
+                        // Strategy: shift left by (bitwidth - arg width) to zero bits to the right
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
 
                         // Width math
@@ -447,7 +447,7 @@ impl SolverCtx {
                     }
                     _ => (),
                 };
-                let op = match op {
+                let op_str = match op {
                     BinaryOp::And => "and",
                     BinaryOp::Or => "or",
                     BinaryOp::Imp => "=>",
@@ -463,12 +463,25 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                format!(
-                    "({} {} {})",
-                    op,
-                    self.vir_expr_to_rsmt2_str(*x),
-                    self.vir_expr_to_rsmt2_str(*y)
-                )
+                // If we have some static width that isn't the bitwidth, extract based on it 
+                // before performing the operation.
+                match static_expr_width {
+                    Some(w) if w < self.bitwidth => 
+                    format!(
+                        "((_ zero_extend {padding}) ({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y})))",
+                        padding =  self.bitwidth.checked_sub(w).unwrap(),
+                        op = op_str,
+                        h = w - 1,
+                        x = self.vir_expr_to_rsmt2_str(*x),
+                        y = self.vir_expr_to_rsmt2_str(*y),
+                    ),
+                    _ => format!(
+                        "({} {} {})",
+                        op_str,
+                        self.vir_expr_to_rsmt2_str(*x),
+                        self.vir_expr_to_rsmt2_str(*y)
+                    )
+                }
             }
             Expr::BVIntToBV(w, x) => {
                 let padded_width = self.bitwidth - w;
@@ -553,7 +566,7 @@ impl SolverCtx {
             Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
             Expr::BVExtract(i, j, x) => {
                 assert!(i > j);
-                if let Type::BitVector(x_width) = ty.unwrap() {
+                if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
                     assert!(i < x_width.unwrap());
                     let xs = self.vir_expr_to_rsmt2_str(*x);
                     let extract = format!("((_ extract {} {}) {})", i, j, xs);
