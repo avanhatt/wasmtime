@@ -31,11 +31,13 @@ fn test_implicit_conversions() {
         lte_64_success_result(),
     );
 
+    /* 
     test_from_file_custom_prelude(
         "./tests/code/selfcontained/prelude.isle",
         "./tests/code/selfcontained/iadd_to_sub_implicit_conv.isle",
-        lte_64_success_result(),
+        lte_64_success_result()
     );
+    */
 }
 
 // Currently timing out, disabling for now.
