@@ -184,6 +184,7 @@ pub enum Expr {
     // Binary operators
     BVMul(Box<Expr>, Box<Expr>, u32),
     BVUDiv(Box<Expr>, Box<Expr>, u32),
+    BVSDiv(Box<Expr>, Box<Expr>, u32),
     BVAdd(Box<Expr>, Box<Expr>, u32),
     BVSub(Box<Expr>, Box<Expr>, u32),
     BVAnd(Box<Expr>, Box<Expr>, u32),
@@ -258,6 +259,7 @@ impl Expr {
             | Expr::Lte(_, _, t)
             | Expr::BVMul(_, _, t)
             | Expr::BVUDiv(_, _, t)
+            | Expr::BVSDiv(_, _, t)
             | Expr::BVAdd(_, _, t)
             | Expr::BVSub(_, _, t)
             | Expr::BVAnd(_, _, t)
