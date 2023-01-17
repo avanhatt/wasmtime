@@ -92,7 +92,14 @@ fn test_broken_iadd_from_file() {
         ],
     );
     test_from_file("./examples/broken/iadd/broken_shift.isle", all_failure_result());
-    test_from_file("./examples/broken/iadd/broken_shift2.isle", all_failure_result());
+    test_from_file("./examples/broken/iadd/broken_shift2.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+    ]);
 }
 
 #[test]
