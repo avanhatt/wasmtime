@@ -102,6 +102,19 @@ fn test_ineg() {
 }
 
 #[test]
+fn test_udiv() {
+    test_from_file("./examples/udiv/udiv.isle",
+        // for ease of commenting out until we debug further
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Success),
+            // (Bitwidth::I16, VerificationResult::Success),
+            // (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],)
+}
+
+#[test]
 fn test_uextend() {
     test_from_file("./examples/uextend/uextend.isle", all_success_result())
 }

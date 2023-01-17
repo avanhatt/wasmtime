@@ -388,6 +388,7 @@ impl SolverCtx {
             Expr::Binary(op, x, y) => {
                 match op {
                     BinaryOp::BVMul
+                    | BinaryOp::BVUDiv
                     | BinaryOp::BVAdd
                     | BinaryOp::BVSub
                     | BinaryOp::BVAnd
@@ -455,6 +456,7 @@ impl SolverCtx {
                     // TODO: this comparison only works for Ints!!
                     BinaryOp::Lte => "<=",
                     BinaryOp::BVMul => "bvmul",
+                    BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVAdd => "bvadd",
                     BinaryOp::BVSub => "bvsub",
                     BinaryOp::BVAnd => "bvand",
@@ -565,7 +567,7 @@ impl SolverCtx {
             Expr::UndefinedTerm(term) => term.ret.name,
             Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
             Expr::BVExtract(i, j, x) => {
-                assert!(i > j);
+                assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
                     assert!(i < x_width.unwrap());
                     let xs = self.vir_expr_to_rsmt2_str(*x);
