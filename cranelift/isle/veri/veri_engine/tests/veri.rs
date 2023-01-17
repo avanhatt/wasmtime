@@ -42,24 +42,21 @@ fn test_implicit_conversions() {
 
 // Currently timing out, disabling for now.
 // https://github.com/avanhatt/wasmtime/issues/13
-// #[test]
-// fn test_iadd_from_file() {
-// test_from_file("./examples/iadd/base_case.isle", lte_64_success_result());
-// test_from_file("./examples/iadd/madd.isle", lte_64_success_result());
-// test_from_file("./examples/iadd/madd2.isle", lte_64_success_result());
-// test_from_file("./examples/iadd/msub.isle", lte_64_success_result());
-/*
-test_from_file("./examples/iadd/", lte_64_success_result());
-test_from_file("./examples/iadd/", lte_64_success_result());
-test_from_file("./examples/iadd/", lte_64_success_result());
-test_from_file("./examples/iadd/", lte_64_success_result());
-
-test_from_file("./examples/iadd/", lte_64_success_result());
-test_from_file("./examples/iadd/", lte_64_success_result());
-test_from_file("./examples/iadd/", lte_64_success_result());
-test_from_file("./examples/iadd/", lte_64_success_result());
-*/
-// }
+#[test]
+fn test_iadd_from_file() {
+    test_from_file("./examples/iadd/base_case.isle", lte_64_success_result());
+    //test_from_file("./examples/iadd/imm12.isle", lte_64_success_result());
+    //test_from_file("./examples/iadd/imm12_2.isle", lte_64_success_result());
+    //test_from_file("./examples/iadd/imm12negated.isle", lte_64_success_result());
+    //test_from_file("./examples/iadd/imm12negated2.isle", lte_64_success_result());
+    //test_from_file("./examples/iadd/extend.isle", lte_64_success_result());
+    //test_from_file("./examples/iadd/extend2.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/shift.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/shift.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/madd.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/madd2.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/msub.isle", lte_64_success_result());
+}
 
 #[test]
 fn test_broken_iadd_from_file() {
@@ -94,6 +91,8 @@ fn test_broken_iadd_from_file() {
             ),
         ],
     );
+    test_from_file("./examples/broken/iadd/broken_shift.isle", all_failure_result());
+    test_from_file("./examples/broken/iadd/broken_shift2.isle", all_failure_result());
 }
 
 #[test]
