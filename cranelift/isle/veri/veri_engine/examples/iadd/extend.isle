@@ -35,9 +35,42 @@
 ;;             (extend ExtendOp (get_extended_op extended_reg)))
 ;;         (alu_rrr_extend op ty src1 src2 extend)))
 
+;;;@ (spec (sig (args x) (ret))
+;;;@     (assertions
+;;;@          (<= (8i0:isleType) (widthof (x))),
+;;;@          (if (= (extract 2 0 (x)) (0i3:bv)) {
+;;;@              (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
+;;;@           } else {
+;;;@             (if (= (extract 2 0 (x)) (1i3:bv)) {
+;;;@                 (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
+;;;@              } else {
+;;;@                (if (= (extract 2 0 (x)) (2i3:bv)) {
+;;;@                    (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
+;;;@                 } else {
+;;;@                   (if (= (extract 2 0 (x)) (3i3:bv)) {
+;;;@                       (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
+;;;@                    } else {
+;;;@                      (if (= (extract 2 0 (x)) (4i3:bv)) {
+;;;@                          (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
+;;;@                       } else {
+;;;@                         (if (= (extract 2 0 (x)) (5i3:bv)) {
+;;;@                             (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
+;;;@                          } else {
+;;;@                            (if (= (extract 2 0 (x)) (6i3:bv)) {
+;;;@                                (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
+;;;@                             } else {
+;;;@                                (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
+;;;@                             })
+;;;@                          })
+;;;@                       })
+;;;@                    })
+;;;@                 })
+;;;@              })
+;;;@           })
+;;;@ ))
+
 ;;@ (spec (sig (args x) (ret))
 ;;@     (assertions
-;;@          (<= (8i0:isleType) (widthof (x))),
 ;;@          (if (= (extract 2 0 (x)) (0i3:bv)) {
 ;;@              (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
 ;;@           } else {
