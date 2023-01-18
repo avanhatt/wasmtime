@@ -4,7 +4,7 @@ use utils::{
 };
 use utils::{
     test_from_file, test_from_file_custom_prelude, test_from_file_self_contained,
-    test_from_file_with_filter, test_from_files_with_lhs_termname, Bitwidth,
+    test_from_file_with_filter, Bitwidth,
 };
 use veri_ir::{Counterexample, VerificationResult};
 
@@ -111,7 +111,48 @@ fn test_udiv() {
             // (Bitwidth::I16, VerificationResult::Success),
             // (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::Success),
-        ],)
+        ])
+}
+
+#[test]
+fn test_broken_udiv() {
+    test_from_file("./examples/broken/udiv/broken_udiv.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (Bitwidth::I16, VerificationResult::Failure(Counterexample {})),
+            (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
+            (Bitwidth::I64, VerificationResult::Success),
+        ])
+}
+
+#[test]
+fn test_sdiv() {
+    test_from_file("./examples/sdiv/sdiv.isle", all_success_result());
+    test_from_file("./examples/sdiv/sdiv32.isle", 
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            // Too slow rn
+            // (Bitwidth::I32, VerificationResult::Success),
+            // (Bitwidth::I64, VerificationResult::Success),
+        ]
+    )
+}
+
+#[test]
+fn test_broken_sdiv() {
+    test_from_file("./examples/broken/sdiv/broken_sdiv.isle", all_failure_result());
+    test_from_file("./examples/broken/sdiv/broken_sdiv32.isle", 
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            // (Bitwidth::I32, VerificationResult::Success),
+            // (Bitwidth::I64, VerificationResult::Success),
+        ]
+    )
 }
 
 #[test]
