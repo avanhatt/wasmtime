@@ -1,0 +1,28 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+))
+
+(type ALUOp
+  (enum
+      (UMulH)
+))
+
+(decl alu_rrr (ALUOp Type Reg Reg) Reg)
+(extern constructor alu_rrr alu_rrr)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (if (= (ty) (64i0:isleType)) {
+;;@                        (= (ret) (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))))
+;;@                    } else {
+;;@                        (false)
+;;@                    })
+;;@ ))
+(decl umulh (Type Reg Reg) Reg)
+(rule (umulh ty x y) (alu_rrr (ALUOp.UMulH) ty x y))
+
+(rule 1 (lower (has_type $I64 (umulhi x y)))
+      (umulh $I64 x y))
