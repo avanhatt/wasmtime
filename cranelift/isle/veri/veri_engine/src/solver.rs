@@ -803,7 +803,8 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     let mut query_bv_set_idxs = HashSet::new();
     for v in &rule_sem.free_vars {
         let ty = &ctx.tyctx.tymap[&v.tyvar];
-        if let Type::BitVector(None) = ty {
+        if let Type::BitVector(None) = ty  {
+            if v.tyvar == 5 {
             query_width_used = true;
             ctx.tyctx
                 .tymap
@@ -811,7 +812,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
             let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&v.tyvar];
             query_bv_set_idxs.insert(bv_set_idx);
             dbg!(&v.tyvar);
-            break;
+            }
         }
     }
     if !query_width_used {
