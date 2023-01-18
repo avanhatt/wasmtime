@@ -160,6 +160,42 @@ impl SolverCtx {
         ite_str
     }
 
+    // SMTLIB only supports extract by concrete amounts, but we
+    // need symbolic ones. This method essentially does if-conversion over possible
+    // concrete forms, outputting nested ITE blocks.
+    // For now, only consider <symbolic> high and 0 low.
+    // For safety, we add an assertion that some arm of this ITE must match.
+    fn extract_equal_symbolic(
+        &mut self,
+        source1: &String,
+        source2: &String,
+        symbolic_high: &String,
+    ) -> String {
+        let mut some_match = vec![];
+        let mut ite_str = format!("(= {} {})", source1, source2);
+
+        // Special case: if we are asked to extract the bitwidth, just return the source
+        let matching = format!("(and (= {} {}))", self.bitwidth.to_string(), symbolic_high);
+        some_match.push(matching.clone());
+
+        // Possible amounts to extract by
+        for possible_high in vec![1, 8, 16, 32] {
+            // Statement meaning the symbolic case matches this concrete case
+            let matching = format!("(= {} {})", possible_high, symbolic_high);
+            some_match.push(matching.clone());
+            let extract = format!(
+                "(= ((_ extract {h} 0) {s1}) ((_ extract {h} 0) {s2}))",
+                h = possible_high,
+                s1 = source1,
+                s2 = source2
+            );
+            ite_str = format!("(ite {} {} {})", matching, extract, ite_str);
+        }
+        let some_shift_matches = format!("(or {})", some_match.join(" "));
+        self.width_assumptions.push(some_shift_matches);
+        ite_str
+    }
+
     // SMTLIB only supports rotates by concrete amounts, but we
     // need symbolic ones. This method essentially does if-conversion over possible
     // concrete forms, outputting nested ITE blocks. We consider both the starting
@@ -392,11 +428,19 @@ impl SolverCtx {
                     | BinaryOp::BVSub
                     | BinaryOp::BVAnd
                     | BinaryOp::BVOr
+                    | BinaryOp::BVXor
                     | BinaryOp::BVShl
                     | BinaryOp::BVShr
                     | BinaryOp::BVAshr
-                    | BinaryOp::BVRotl => self.assume_same_width_from_string(&width.unwrap(), &*x),
-                    _ => (),
+                    | BinaryOp::BVRotl
+                    | BinaryOp::BVRotr => {
+                        self.assume_same_width_from_string(&width.unwrap(), &*x);
+                    }
+                    BinaryOp::And
+                    | BinaryOp::Or
+                    | BinaryOp::Imp
+                    | BinaryOp::Eq
+                    | BinaryOp::Lte => (),
                 };
                 match op {
                     BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
@@ -483,10 +527,10 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                // If we have some static width that isn't the bitwidth, extract based on it 
+                // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation.
                 match static_expr_width {
-                    Some(w) if w < self.bitwidth => 
+                    Some(w) if w < self.bitwidth =>
                     format!(
                         "((_ zero_extend {padding}) ({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y})))",
                         padding =  self.bitwidth.checked_sub(w).unwrap(),
@@ -599,6 +643,13 @@ impl SolverCtx {
                 }
             }
             Expr::Conditional(c, t, e) => {
+                match ty {
+                    Some(Type::BitVector(_)) => {
+                        self.assume_same_width_from_string(&width.clone().unwrap(), &*t);
+                        self.assume_same_width_from_string(&width.unwrap(), &*e);
+                    }
+                    _ => ()
+                };
                 format!(
                     "(ite {} {} {})",
                     self.vir_expr_to_rsmt2_str(*c),
@@ -714,7 +765,7 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         solver.push(1).unwrap();
         for a in assumptions {
-            // println!("{}", &a);
+            println!("{}", &a);
             solver.assert(a).unwrap();
 
             // Uncomment to debug specific asserts
@@ -784,6 +835,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     let mut query_width_used = false;
     let mut query_bv_set_idxs = HashSet::new();
     for v in &rule_sem.free_vars {
+        dbg!(v.tyvar);
         let ty = &ctx.tyctx.tymap[&v.tyvar];
         if let Type::BitVector(None) = ty {
             query_width_used = true;
@@ -797,6 +849,9 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     if !query_width_used {
         panic!("Query width unused, check rule!");
     }
+
+    dbg!(&ctx.tyctx.bv_unknown_width_sets);
+    dbg!(&query_bv_set_idxs);
 
     for (_e, t) in &ctx.tyctx.tyvars {
         // dbg!(t);
@@ -820,6 +875,8 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                                 .insert(*t, Type::BitVector(Some(query_width)));
                             ctx.width_assumptions
                                 .push(format!("(= {} {})", width_name, query_width));
+                        } else {
+                            dbg!(t);
                         }
                     }
                 };
@@ -884,27 +941,43 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         ctx.static_width(&rule_sem.lhs),
         ctx.static_width(&rule_sem.rhs),
     ) {
-        (Some(w), None) | (None, Some(w)) => w,
+        (Some(w), None) | (None, Some(w)) => Some(w),
         (Some(w1), Some(w2)) => {
             assert_eq!(w1, w2);
-            w1
+            Some(w1)
         }
         (None, None) => {
             println!(
-                "Width of relevant bits of LHS and RHS unknown, using full register bitwidth: {}",
-                REG_WIDTH
+                "Width of relevant bits of LHS and RHS unknown, using more expensive symbolic extract"
             );
-            REG_WIDTH
+            None
         }
     };
 
-    let lhs = ctx.vir_expr_to_rsmt2_str(rule_sem.lhs);
-    let rhs = ctx.vir_expr_to_rsmt2_str(rule_sem.rhs);
+    let side_equality = match width {
+        Some(w) => {
+            let lhs = ctx.vir_expr_to_rsmt2_str(rule_sem.lhs);
+            let rhs = ctx.vir_expr_to_rsmt2_str(rule_sem.rhs);
 
-    let lhs_care_bits = format!("((_ extract {} {}) {})", width - 1, 0, &lhs);
-    let rhs_care_bits = format!("((_ extract {} {}) {})", width - 1, 0, &rhs);
+            let lhs_care_bits = format!("((_ extract {} {}) {})", w - 1, 0, &lhs);
+            let rhs_care_bits = format!("((_ extract {} {}) {})", w - 1, 0, &rhs);
 
-    let side_equality = format!("(= {} {})", lhs_care_bits, rhs_care_bits);
+            format!("(= {} {})", lhs_care_bits, rhs_care_bits)
+        }
+        None => {
+            let lhs_width = ctx.get_expr_width_var(&rule_sem.lhs).unwrap().clone();
+            let rhs_width = ctx.get_expr_width_var(&rule_sem.lhs).unwrap().clone();
+            ctx.additional_assumptions
+                .push(format!("(= {} {})", lhs_width, rhs_width));
+
+            dbg!(&lhs_width);
+
+            let lhs = ctx.vir_expr_to_rsmt2_str(rule_sem.lhs);
+            let rhs = ctx.vir_expr_to_rsmt2_str(rule_sem.rhs);
+
+            ctx.extract_equal_symbolic(&lhs, &rhs, &lhs_width)
+        }
+    };
     println!("LHS and RHS equality condition:\n\t{}\n", side_equality);
 
     let query = format!("(not (=> {} {}))", assumption_str, side_equality);

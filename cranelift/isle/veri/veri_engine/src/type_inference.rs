@@ -94,13 +94,13 @@ pub fn type_all_rules(
     for r in &termenv.rules {
         if let Some(s) = type_annotations_using_rule(r, annotation_env, &decls, typeenv, termenv) {
             // Uncomment for debugging
-            // for a in &s.annotation_infos {
-            //     println!("{}", a.term);
-            //     for (var, type_var) in &a.var_to_type_var {
-            //         println!("{}: {:#?}", var, s.type_var_to_type[type_var]);
-            //     }
-            //     println!();
-            // }
+            for a in &s.annotation_infos {
+                println!("{}", a.term);
+                for (var, type_var) in &a.var_to_type_var {
+                    println!("{}: {:#?}", var, s.type_var_to_type[type_var]);
+                }
+                println!();
+            }
             solutions.insert(r.id, s);
         }
     }

@@ -76,11 +76,17 @@
 ;;@                          (if (= (op) (2i64:bv)) {
 ;;@                              (= (ret) (ashr (conv_to (t) (a)) (b)))
 ;;@                          } else { 
-;;@                              (= (ret) (0i64:bv))
+;;@                              (= (ret) (conv_to (t) (0i64:bv)))
 ;;@                          })
 ;;@                      })
 ;;@                  }),
-;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv))))
+;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@                  (= (t) (widthof (b))),
+;;@                  (|| (= (t) (1i8: isleType)) 
+;;@                  (|| (= (t) (8i8: isleType))
+;;@                  (|| (= (t) (16i8: isleType))
+;;@                  (|| (= (t) (32i8: isleType))
+;;@                      (= (t) (64i8: isleType))))))
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern extractor do_shift do_shift)

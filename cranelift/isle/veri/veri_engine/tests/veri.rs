@@ -31,7 +31,7 @@ fn test_implicit_conversions() {
         lte_64_success_result(),
     );
 
-    /* 
+    /*
     test_from_file_custom_prelude(
         "./tests/code/selfcontained/prelude.isle",
         "./tests/code/selfcontained/iadd_to_sub_implicit_conv.isle",
@@ -840,6 +840,21 @@ fn test_do_shift_with_imm() {
         "./examples/shifts/do_shift_with_imm.isle",
         "do_shift".to_string(),
         all_success_result(),
+    )
+}
+
+#[test]
+fn test_do_shift_32() {
+    test_from_file_with_filter(
+        "./examples/shifts/do_shift_32.isle",
+        "do_shift".to_string(),
+        vec![
+            // (Bitwidth::I1, VerificationResult::InapplicableRule),
+            // (Bitwidth::I8, VerificationResult::InapplicableRule),
+            // (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::Success),
+            // (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
     )
 }
 

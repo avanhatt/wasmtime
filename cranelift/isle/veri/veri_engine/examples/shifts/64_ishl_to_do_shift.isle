@@ -50,9 +50,6 @@
     (SbcS)
 ))
 
-;;@ types get bucketed for <= 32, <= 64
-;;@ (if (< (t) 32) {} else {})
-
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@     (assertions (if (= (op) (0i64:bv)) {
 ;;@                     (= (ret) (shl (conv_to (t) (a)) (b)))
@@ -66,7 +63,7 @@
 ;;@                              (= (ret) (0i64:bv))
 ;;@                          })
 ;;@                      })
-;;@                  })
+;;@                  }),
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern constructor do_shift do_shift)
