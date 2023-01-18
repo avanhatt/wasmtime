@@ -37,28 +37,29 @@
 
 ;;@ (spec (sig (args x) (ret))
 ;;@     (assertions
+;;@          (<= (8i0:isleType) (widthof (x))),
 ;;@          (if (= (extract 2 0 (x)) (0i3:bv)) {
-;;@              (= (ret) (extract 7 0 (shr (3i8:bv) (x))))
+;;@              (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
 ;;@           } else {
 ;;@             (if (= (extract 2 0 (x)) (1i3:bv)) {
-;;@                 (= (ret) (extract 15 0 (shr (3i8:bv) (x))))
+;;@                 (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
 ;;@              } else {
 ;;@                (if (= (extract 2 0 (x)) (2i3:bv)) {
-;;@                    (= (ret) (extract 31 0 (shr (3i8:bv) (x))))
+;;@                    (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
 ;;@                 } else {
 ;;@                   (if (= (extract 2 0 (x)) (3i3:bv)) {
-;;@                       (= (ret) (extract 63 0 (shr (3i8:bv) (x))))
+;;@                       (= (ret) (zero_ext (regwidth) (shr (3i8:bv) (x))))
 ;;@                    } else {
 ;;@                      (if (= (extract 2 0 (x)) (4i3:bv)) {
-;;@                          (= (ret) (extract 7 0 (ashr (3i8:bv) (x))))
+;;@                          (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
 ;;@                       } else {
 ;;@                         (if (= (extract 2 0 (x)) (5i3:bv)) {
-;;@                             (= (ret) (extract 15 0 (ashr (3i8:bv) (x))))
+;;@                             (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
 ;;@                          } else {
 ;;@                            (if (= (extract 2 0 (x)) (6i3:bv)) {
-;;@                                (= (ret) (extract 31 0 (ashr (3i8:bv) (x))))
+;;@                                (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
 ;;@                             } else {
-;;@                                (= (ret) (extract 63 0 (ashr (3i8:bv) (x))))
+;;@                                (= (ret) (sign_ext (regwidth) (ashr (3i8:bv) (x))))
 ;;@                             })
 ;;@                          })
 ;;@                       })
@@ -73,27 +74,27 @@
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@     (assertions
 ;;@          (if (= (extract 2 0 (x)) (0i3:bv)) {
-;;@              (= (ret) (+ (x) (zero_ext (regwidth) (extract 7 0 (shr (3i8:bv) (y))))))
+;;@              (= (ret) (+ (x) (zero_ext (regwidth) (extract 7 0 (shr (3i8:bv) (zero_ext (regwidth) (y)))))))
 ;;@           } else {
 ;;@             (if (= (extract 2 0 (x)) (1i3:bv)) {
-;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (extract 15 0 (shr (3i8:bv) (y))))))
+;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (extract 15 0 (shr (3i8:bv) (zero_ext (regwidth) (y)))))))
 ;;@              } else {
 ;;@                (if (= (extract 2 0 (x)) (2i3:bv)) {
-;;@                    (= (ret) (+ (x) (zero_ext (regwidth) (extract 31 0 (shr (3i8:bv) (y))))))
+;;@                    (= (ret) (+ (x) (zero_ext (regwidth) (extract 31 0 (shr (3i8:bv) (zero_ext (regwidth) (y)))))))
 ;;@                 } else {
 ;;@                   (if (= (extract 2 0 (x)) (3i3:bv)) {
-;;@                       (= (ret) (+ (x) (zero_ext (regwidth) (extract 63 0 (shr (3i8:bv) (y))))))
+;;@                       (= (ret) (+ (x) (zero_ext (regwidth) (extract 63 0 (shr (3i8:bv) (zero_ext (regwidth) (y)))))))
 ;;@                    } else {
 ;;@                      (if (= (extract 2 0 (x)) (4i3:bv)) {
-;;@                          (= (ret) (+ (x) (sign_ext (regwidth) (extract 7 0 (ashr (3i8:bv) (y))))))
+;;@                          (= (ret) (+ (x) (sign_ext (regwidth) (extract 7 0 (ashr (3i8:bv) (sign_ext (regwidth) (y)))))))
 ;;@                       } else {
 ;;@                         (if (= (extract 2 0 (x)) (5i3:bv)) {
-;;@                             (= (ret) (+ (x) (sign_ext (regwidth) (extract 15 0 (ashr (3i8:bv) (y))))))
+;;@                             (= (ret) (+ (x) (sign_ext (regwidth) (extract 15 0 (ashr (3i8:bv) (sign_ext (regwidth) (y)))))))
 ;;@                          } else {
 ;;@                            (if (= (extract 2 0 (x)) (6i3:bv)) {
-;;@                                (= (ret) (+ (x) (sign_ext (regwidth) (extract 31 0 (ashr (3i8:bv) (y))))))
+;;@                                (= (ret) (+ (x) (sign_ext (regwidth) (extract 31 0 (ashr (3i8:bv) (sign_ext (regwidth) (y)))))))
 ;;@                             } else {
-;;@                                (= (ret) (+ (x) (sign_ext (regwidth) (extract 63 0 (ashr (3i8:bv) (y))))))
+;;@                                (= (ret) (+ (x) (sign_ext (regwidth) (extract 63 0 (ashr (3i8:bv) (sign_ext (regwidth) (y)))))))
 ;;@                             })
 ;;@                          })
 ;;@                       })
