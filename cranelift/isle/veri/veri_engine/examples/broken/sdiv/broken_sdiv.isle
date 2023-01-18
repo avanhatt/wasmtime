@@ -35,9 +35,9 @@
 ;;@ (spec (sig (args ty, ext, x) (ret))
 ;;@       (assertions (|| (= (ext) (0i0:isleType)) (= (ext) (1i0:isleType))),
 ;;@                   (if (= (ext) (0i0:isleType)) {
-;;@                        (= (ret) (zero_ext (regwidth) (x)))
+;;@                        (= (ret) (zero_ext (regwidth) (conv_to (ty) (x))))
 ;;@                    } else {
-;;@                        (= (ret) (sign_ext (regwidth) (x)))
+;;@                        (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))
 ;;@                    })
 ;;@ ))
 (decl imm (Type ImmExtend u64) Reg)

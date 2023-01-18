@@ -698,7 +698,7 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         solver.push(1).unwrap();
         for a in assumptions {
-            // println!("{}", &a);
+            println!("{}", &a);
             solver.assert(a).unwrap();
 
             // Uncomment to debug specific asserts
@@ -779,7 +779,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         }
     }
     if !query_width_used {
-        //panic!("Query width unused, check rule!");
+        panic!("Query width unused, check rule!");
     }
 
     for (_e, t) in &ctx.tyctx.tyvars {

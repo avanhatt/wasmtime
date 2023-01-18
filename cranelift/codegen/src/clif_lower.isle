@@ -695,7 +695,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (zero_ext (widthof (arg)) (ret)) (arg))))
 (decl iconst (Imm64) Inst)
 (extractor
     (iconst N)
