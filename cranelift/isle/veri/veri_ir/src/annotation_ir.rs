@@ -194,6 +194,7 @@ pub enum Expr {
     BVRotr(Box<Expr>, Box<Expr>, u32),
     BVShl(Box<Expr>, Box<Expr>, u32),
     BVShr(Box<Expr>, Box<Expr>, u32),
+    BVAShr(Box<Expr>, Box<Expr>, u32),
 
     // Conversions
     // Zero extend, static and dynamic width
@@ -269,6 +270,7 @@ impl Expr {
             | Expr::BVRotr(_, _, t)
             | Expr::BVShl(_, _, t)
             | Expr::BVShr(_, _, t)
+            | Expr::BVAShr(_, _, t)
             | Expr::BVZeroExtTo(_, _, t)
             | Expr::BVZeroExtToVarWidth(_, _, t)
             | Expr::BVSignExtTo(_, _, t)
