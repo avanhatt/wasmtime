@@ -1,0 +1,109 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+))
+
+(type ALUOp
+  (enum
+    (Add)
+))
+
+;; Helper type to represent a value and an extend operation fused together.
+(type ExtendedValue extern (enum))
+
+;; We represent ExtendedValue as a bv
+;; where the three least significant bits
+;; encode an extend op as follows:
+;;   UXTB = 0b000,
+;;   UXTH = 0b001,
+;;   UXTW = 0b010,
+;;   UXTX = 0b011,
+;;   SXTB = 0b100,
+;;   SXTH = 0b101,
+;;   SXTW = 0b110,
+;;   SXTX = 0b111,
+;; and the remaining bits encode the value.
+
+(decl alu_rr_extend_reg (ALUOp Type Reg ExtendedValue) Reg)
+(extern constructor alu_rr_extend_reg alu_rr_extend_reg)
+
+;; (rule (alu_rr_extend_reg op ty src1 extended_reg)
+;;       (let ((src2 Reg (put_extended_in_reg extended_reg))
+;;             (extend ExtendOp (get_extended_op extended_reg)))
+;;         (alu_rrr_extend op ty src1 src2 extend)))
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions
+;;@          (if (= (extract 2 0 (x)) (0i3:bv)) {
+;;@              (= (ret) (extract 7 0 (shr (3i8:bv) (x))))
+;;@           } else {
+;;@             (if (= (extract 2 0 (x)) (1i3:bv)) {
+;;@                 (= (ret) (extract 15 0 (shr (3i8:bv) (x))))
+;;@              } else {
+;;@                (if (= (extract 2 0 (x)) (2i3:bv)) {
+;;@                    (= (ret) (extract 31 0 (shr (3i8:bv) (x))))
+;;@                 } else {
+;;@                   (if (= (extract 2 0 (x)) (3i3:bv)) {
+;;@                       (= (ret) (extract 63 0 (shr (3i8:bv) (x))))
+;;@                    } else {
+;;@                      (if (= (extract 2 0 (x)) (4i3:bv)) {
+;;@                          (= (ret) (extract 7 0 (ashr (3i8:bv) (x))))
+;;@                       } else {
+;;@                         (if (= (extract 2 0 (x)) (5i3:bv)) {
+;;@                             (= (ret) (extract 15 0 (ashr (3i8:bv) (x))))
+;;@                          } else {
+;;@                            (if (= (extract 2 0 (x)) (6i3:bv)) {
+;;@                                (= (ret) (extract 31 0 (ashr (3i8:bv) (x))))
+;;@                             } else {
+;;@                                (= (ret) (extract 63 0 (ashr (3i8:bv) (x))))
+;;@                             })
+;;@                          })
+;;@                       })
+;;@                    })
+;;@                 })
+;;@              })
+;;@           })
+;;@ ))
+(decl extended_value_from_value (ExtendedValue) Value)
+(extern extractor extended_value_from_value extended_value_from_value)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assertions
+;;@          (if (= (extract 2 0 (x)) (0i3:bv)) {
+;;@              (= (ret) (+ (x) (zero_ext (regwidth) (extract 7 0 (shr (3i8:bv) (y))))))
+;;@           } else {
+;;@             (if (= (extract 2 0 (x)) (1i3:bv)) {
+;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (extract 15 0 (shr (3i8:bv) (y))))))
+;;@              } else {
+;;@                (if (= (extract 2 0 (x)) (2i3:bv)) {
+;;@                    (= (ret) (+ (x) (zero_ext (regwidth) (extract 31 0 (shr (3i8:bv) (y))))))
+;;@                 } else {
+;;@                   (if (= (extract 2 0 (x)) (3i3:bv)) {
+;;@                       (= (ret) (+ (x) (zero_ext (regwidth) (extract 63 0 (shr (3i8:bv) (y))))))
+;;@                    } else {
+;;@                      (if (= (extract 2 0 (x)) (4i3:bv)) {
+;;@                          (= (ret) (+ (x) (sign_ext (regwidth) (extract 7 0 (ashr (3i8:bv) (y))))))
+;;@                       } else {
+;;@                         (if (= (extract 2 0 (x)) (5i3:bv)) {
+;;@                             (= (ret) (+ (x) (sign_ext (regwidth) (extract 15 0 (ashr (3i8:bv) (y))))))
+;;@                          } else {
+;;@                            (if (= (extract 2 0 (x)) (6i3:bv)) {
+;;@                                (= (ret) (+ (x) (sign_ext (regwidth) (extract 31 0 (ashr (3i8:bv) (y))))))
+;;@                             } else {
+;;@                                (= (ret) (+ (x) (sign_ext (regwidth) (extract 63 0 (ashr (3i8:bv) (y))))))
+;;@                             })
+;;@                          })
+;;@                       })
+;;@                    })
+;;@                 })
+;;@              })
+;;@           })
+;;@ ))
+(decl add_extend (Type Reg ExtendedValue) Reg)
+(rule (add_extend ty x y) (alu_rr_extend_reg (ALUOp.Add) ty x y))
+
+(rule 0 (lower (has_type (fits_in_64 ty) (iadd x (extended_value_from_value y))))
+      (add_extend ty x y))
