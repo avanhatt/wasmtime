@@ -29,6 +29,9 @@ pub struct SolverCtx {
 
 impl SolverCtx {
     pub fn new_fresh_bits(&mut self, width: usize) -> String {
+        if width < 1 {
+            panic!("too few fresh bits, can't have a 0 length bv");
+        }
         let name = format!("fresh{}", self.fresh_bits_idx);
         self.fresh_bits_idx += 1;
         self.additional_decls
@@ -499,12 +502,14 @@ impl SolverCtx {
                         x = self.vir_expr_to_rsmt2_str(*x),
                         y = self.vir_expr_to_rsmt2_str(*y),
                     ),
-                    _ => format!(
-                        "({} {} {})",
-                        op_str,
-                        self.vir_expr_to_rsmt2_str(*x),
-                        self.vir_expr_to_rsmt2_str(*y)
-                    )
+                    _ => {
+                        format!(
+                            "({} {} {})",
+                            op_str,
+                            self.vir_expr_to_rsmt2_str(*x),
+                            self.vir_expr_to_rsmt2_str(*y)
+                        )
+                    }
                 }
             }
             Expr::BVIntToBV(w, x) => {
@@ -591,13 +596,22 @@ impl SolverCtx {
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
-                    assert!(i < x_width.unwrap());
+                    let new_width = i - j + 1;
+                    if x_width.is_none() || i >= x_width.unwrap() {
+                        println!("Infeasible extract: {} {:?}", i, x_width);
+                        self.additional_assumptions.push("false".to_string());
+                        panic!();
+                        return self.new_fresh_bits(self.bitwidth);  
+                    }
                     let xs = self.vir_expr_to_rsmt2_str(*x);
                     let extract = format!("((_ extract {} {}) {})", i, j, xs);
-                    let new_width = i - j + 1;
-                    let padding =
-                        self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
-                    format!("(concat {} {})", padding, extract)
+                    let padding_width = self.bitwidth.checked_sub(new_width).unwrap();
+                    if padding_width == 0 {
+                        extract
+                    } else {
+                        let padding = self.new_fresh_bits(padding_width);
+                        format!("(concat {} {})", padding, extract)
+                    }
                 } else {
                     unreachable!("Must perform extraction on bv with known width")
                 }
@@ -718,7 +732,7 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         solver.push(1).unwrap();
         for a in assumptions {
-            println!("{}", &a);
+            // println!("{}", &a);
             solver.assert(a).unwrap();
 
             // Uncomment to debug specific asserts
@@ -796,6 +810,8 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                 .insert(v.tyvar, Type::BitVector(Some(query_width)));
             let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&v.tyvar];
             query_bv_set_idxs.insert(bv_set_idx);
+            dbg!(&v.tyvar);
+            break;
         }
     }
     if !query_width_used {

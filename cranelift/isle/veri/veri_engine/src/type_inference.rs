@@ -690,6 +690,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
             tree.var_constraints.insert(TypeExpr::Variable(t, xt));
+            tree.var_constraints.insert(TypeExpr::Variable(at, xt));
 
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVShr, Box::new(xe), Box::new(ae)),
