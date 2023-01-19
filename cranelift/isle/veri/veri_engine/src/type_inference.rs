@@ -964,7 +964,7 @@ fn add_isle_constraints(
         ("Type".to_owned(), annotation_ir::Type::Int),
         (
             "Imm12".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(12),
+            annotation_ir::Type::BitVectorWithWidth(13),
         ),
         (
             "Imm64".to_owned(),
