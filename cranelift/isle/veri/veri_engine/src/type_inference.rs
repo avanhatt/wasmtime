@@ -412,6 +412,24 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::And(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::Bool));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t2, annotation_ir::Type::Bool));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::And, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }        
 
         annotation_ir::Expr::BVNeg(x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
@@ -964,7 +982,7 @@ fn add_isle_constraints(
         ("Type".to_owned(), annotation_ir::Type::Int),
         (
             "Imm12".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(13),
+            annotation_ir::Type::BitVectorWithWidth(24),
         ),
         (
             "Imm64".to_owned(),

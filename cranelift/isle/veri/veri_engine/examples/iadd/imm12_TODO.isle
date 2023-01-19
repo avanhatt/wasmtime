@@ -15,16 +15,13 @@
     (Add)
 ))
 
+;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (if (= (1i1:bv) (extract 12 12 (y))) {
-;;@                     (if (= (0i13:bv) (& (y) (4095i13:bv))) {
-;;@                         (= (ret) (+ (x) (shl (zero_ext (regwidth) (extract 11 0 (y))) (12i24:bv))))
-;;@                      } else {
-;;@                         (false)
-;;@                      })
-;;@                  } else {
-;;@                     (= (ret) (+ (x) (zero_ext (regwidth) (extract 11 0 (y)))))
-;;@                  })
+;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (y)) (0i3:bv))
+;;@                 )),
+;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (y))))
 ;;@ ))
 (decl add_imm (Type Reg Imm12) Reg)
 (rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
@@ -32,16 +29,13 @@
 (decl alu_rr_imm12 (ALUOp Type Reg Imm12) Reg)
 (extern constructor alu_rr_imm12 alu_rr_imm12)
 
+;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (if (= (1i1:bv) (extract 12 12 (arg))) {
-;;@                     (if (= (0i13:bv) (& (arg) (4095i13:bv))) {
-;;@                         (= (ret) (shl (zero_ext (24) (extract 11 0 (arg))) (12i24:bv)))
-;;@                      } else {
-;;@                         (false)
-;;@                      })
-;;@                  } else {
-;;@                     (= (ret) (zero_ext (24) (extract 11 0 (arg))))
-;;@                  })
+;;@     (assertions (|| (<= (bv2int (arg)) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (arg)) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (arg)) (0i3:bv))
+;;@                 )),
+;;@                 (= (arg) (ret))
 ;;@ ))
 (decl imm12_from_value (Imm12) Value)
 (extern extractor imm12_from_value imm12_from_value)
