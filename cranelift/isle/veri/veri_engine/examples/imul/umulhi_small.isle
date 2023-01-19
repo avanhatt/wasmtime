@@ -1,0 +1,61 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+))
+
+(type ALUOp
+  (enum
+      (Lsr)
+))
+
+(type ALUOp3
+  (enum
+    (MAdd)
+))
+
+(type ImmShift (primitive ImmShift))
+
+(decl alu_rrrr (ALUOp3 Type Reg Reg Reg) Reg)
+(extern constructor alu_rrrr alu_rrrr)
+
+(decl alu_rr_imm_shift (ALUOp Type Reg ImmShift) Reg)
+(extern constructor alu_rr_imm_shift alu_rr_imm_shift)
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (= (zero_ext (regwidth) (x)) (ret))))
+(decl put_in_reg_zext64 (Value) Reg)
+(extern constructor put_in_reg_zext64 put_in_reg_zext64)
+
+;;@ (spec (sig (args ty, a, b, c) (r))
+;;@     (assertions (= (+ (c) (* (a) (b))) (r))))
+(decl madd (Type Reg Reg Reg) Reg)
+(rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
+
+;;@ (spec (sig (args) (r))
+;;@     (assertions (= (zero_ext (regwidth) (0i1:bv)) (r))))
+(decl zero_reg () Reg)
+(extern constructor zero_reg zero_reg)
+
+;;@ (spec (sig (args x) (ret))
+;;@     (assertions (<= (bv2int (x)) (64i0:isleType)),
+;;@                 (= (ret) (extract 5 0 (x)))
+;;@ ))
+(decl imm_shift_from_u8 (u8) ImmShift)
+(extern constructor imm_shift_from_u8 imm_shift_from_u8)
+
+;;@ (spec (sig (args ty, arg, shift) (ret))
+;;@     (assertions (= (ret) (conv_to (regwidth) (shr (arg) (zero_ext (widthof (arg)) (shift)))))))
+(decl lsr_imm (Type Reg ImmShift) Reg)
+(rule (lsr_imm ty x imm) (alu_rr_imm_shift (ALUOp.Lsr) ty x imm))
+
+(rule (lower (has_type (fits_in_32 ty) (umulhi x y)))
+      (let (
+          (x64 Reg (put_in_reg_zext64 x))
+          (y64 Reg (put_in_reg_zext64 y))
+          (mul Reg (madd $I64 x64 y64 (zero_reg)))
+          (result Reg (lsr_imm $I64 mul (imm_shift_from_u8 (ty_bits ty))))
+        )
+        (value_reg result)))

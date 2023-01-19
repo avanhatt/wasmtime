@@ -15,11 +15,8 @@
 (extern constructor alu_rrr alu_rrr)
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@       (assertions (if (= (ty) (64i0:isleType)) {
-;;@                        (= (ret) (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))))
-;;@                    } else {
-;;@                        (false)
-;;@                    })
+;;@       (assertions (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret)),
+;;@                   (= (ty) (64i0:isleType))
 ;;@ ))
 (decl umulh (Type Reg Reg) Reg)
 (rule (umulh ty x y) (alu_rrr (ALUOp.UMulH) ty x y))

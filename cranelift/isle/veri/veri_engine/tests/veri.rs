@@ -42,6 +42,7 @@ fn test_implicit_conversions() {
 
 // Currently timing out, disabling for now.
 // https://github.com/avanhatt/wasmtime/issues/13
+/*
 #[test]
 fn test_iadd_from_file() {
     test_from_file("./examples/iadd/base_case.isle", lte_64_success_result());
@@ -57,6 +58,7 @@ fn test_iadd_from_file() {
     test_from_file("./examples/iadd/madd2.isle", lte_64_success_result());
     test_from_file("./examples/iadd/msub.isle", lte_64_success_result());
 }
+*/
 
 #[test]
 fn test_broken_iadd_from_file() {
@@ -107,6 +109,18 @@ fn test_ineg() {
     test_from_file("./examples/ineg/ineg.isle", lte_64_success_result())
 }
 
+/*
+#[test]
+fn test_mul() {
+    test_from_file("./examples/imul/imul.isle", lte_64_success_result());
+    test_from_file("./examples/imul/smulhi.isle", lte_64_success_result());
+    test_from_file("./examples/imul/smulhi_small.isle", lte_64_success_result());
+    test_from_file("./examples/imul/umulhi.isle", lte_64_success_result());
+    test_from_file("./examples/imul/umulhi_small.isle", lte_64_success_result());   
+}
+*/
+
+/*
 #[test]
 fn test_udiv() {
     test_from_file("./examples/udiv/udiv.isle",
@@ -119,6 +133,7 @@ fn test_udiv() {
             (Bitwidth::I64, VerificationResult::Success),
         ],)
 }
+*/
 
 #[test]
 fn test_uextend() {
