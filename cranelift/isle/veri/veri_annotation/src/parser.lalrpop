@@ -99,8 +99,11 @@ pub Expr: Box<Expr> = {
 
     "(" "*" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVMul(u, v, 0)),
     "(" "/" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),
+    "(" "sdiv" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),
     "(" "+" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAdd(u, v, 0)),
     "(" "-" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSub(u, v, 0)),
+    "(" "urem" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUrem(u, v, 0)),
+    "(" "srem" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSrem(u, v, 0)),
     "(" "&" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAnd(u, v, 0)),
     "(" "|" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVOr(u, v, 0)),
     "(" "xor" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVXor(u, v, 0)),

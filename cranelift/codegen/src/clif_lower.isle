@@ -866,12 +866,20 @@
     (inst_data (InstructionData.Binary (Opcode.Sdiv) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (urem (x) (y)) (ret)),
+;;@                   (! (= (bv2int (ret)) (0i0:isleType)))
+;;@ ))
 (decl urem (Value Value) Inst)
 (extractor
     (urem x y)
     (inst_data (InstructionData.Binary (Opcode.Urem) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (srem (x) (y)) (ret)),
+;;@                   (! (= (bv2int (ret)) (0i0:isleType)))
+;;@ ))
 (decl srem (Value Value) Inst)
 (extractor
     (srem x y)

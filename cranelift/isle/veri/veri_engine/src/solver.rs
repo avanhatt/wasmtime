@@ -389,8 +389,11 @@ impl SolverCtx {
                 match op {
                     BinaryOp::BVMul
                     | BinaryOp::BVUDiv
+                    | BinaryOp::BVSDiv
                     | BinaryOp::BVAdd
                     | BinaryOp::BVSub
+                    | BinaryOp::BVUrem
+                    | BinaryOp::BVSrem
                     | BinaryOp::BVAnd
                     | BinaryOp::BVOr
                     | BinaryOp::BVShl
@@ -473,12 +476,14 @@ impl SolverCtx {
                     BinaryOp::Or => "or",
                     BinaryOp::Imp => "=>",
                     BinaryOp::Eq => "=",
-                    // TODO: this comparison only works for Ints!!
                     BinaryOp::Lte => "<=",
                     BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVUDiv => "bvudiv",
+                    BinaryOp::BVSDiv => "bvsdiv",
                     BinaryOp::BVAdd => "bvadd",
                     BinaryOp::BVSub => "bvsub",
+                    BinaryOp::BVUrem => "bvurem",
+                    BinaryOp::BVSrem => "bvsrem",
                     BinaryOp::BVAnd => "bvand",
                     BinaryOp::BVOr => "bvor",
                     BinaryOp::BVXor => "bvxor",
