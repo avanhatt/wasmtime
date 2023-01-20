@@ -31,7 +31,7 @@ fn test_implicit_conversions() {
         lte_64_success_result(),
     );
 
-    /* 
+    /*
     test_from_file_custom_prelude(
         "./tests/code/selfcontained/prelude.isle",
         "./tests/code/selfcontained/iadd_to_sub_implicit_conv.isle",
@@ -91,15 +91,20 @@ fn test_broken_iadd_from_file() {
             ),
         ],
     );
-    test_from_file("./examples/broken/iadd/broken_shift.isle", all_failure_result());
-    test_from_file("./examples/broken/iadd/broken_shift2.isle",
+    test_from_file(
+        "./examples/broken/iadd/broken_shift.isle",
+        all_failure_result(),
+    );
+    test_from_file(
+        "./examples/broken/iadd/broken_shift2.isle",
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
-    ]);
+        ],
+    );
 }
 
 #[test]
@@ -113,25 +118,74 @@ fn test_isub_from_file() {
 
 #[test]
 fn test_broken_isub_from_file() {
-    test_from_file("./examples/broken/isub/broken_base_case.isle",
+    test_from_file(
+        "./examples/broken/isub/broken_base_case.isle",
         vec![
             (Bitwidth::I1, VerificationResult::Success),
             (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-            (Bitwidth::I16, VerificationResult::Failure(Counterexample {})),
-            (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
-            (Bitwidth::I64, VerificationResult::Failure(Counterexample {})),
-        ]);
-    test_from_file("./examples/broken/isub/broken_imm12.isle", all_failure_result());
-    test_from_file("./examples/broken/isub/broken_imm12neg.isle", all_failure_result());
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
+    test_from_file(
+        "./examples/broken/isub/broken_imm12.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
+    test_from_file(
+        "./examples/broken/isub/broken_imm12neg.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
     //test_from_file("./examples/broken/isub/broken_extend.isle", all_failure_result());
-    test_from_file("./examples/broken/isub/broken_shift.isle",
+    test_from_file(
+        "./examples/broken/isub/broken_shift.isle",
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
-        ]);
+        ],
+    );
 }
 
 #[test]
@@ -141,7 +195,8 @@ fn test_ineg() {
 
 #[test]
 fn test_udiv() {
-    test_from_file("./examples/udiv/udiv.isle",
+    test_from_file(
+        "./examples/udiv/udiv.isle",
         // for ease of commenting out until we debug further
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -149,7 +204,8 @@ fn test_udiv() {
             // (Bitwidth::I16, VerificationResult::Success),
             // (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::Success),
-        ],)
+        ],
+    )
 }
 
 #[test]
