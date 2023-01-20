@@ -429,7 +429,7 @@ fn add_annotation_constraints(
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::And, Box::new(e1), Box::new(e2)),
                 t,
             )
-        }        
+        }
 
         annotation_ir::Expr::BVNeg(x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
