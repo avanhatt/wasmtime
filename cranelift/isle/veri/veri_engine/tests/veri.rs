@@ -45,10 +45,10 @@ fn test_implicit_conversions() {
 #[test]
 fn test_iadd_from_file() {
     test_from_file("./examples/iadd/base_case.isle", lte_64_success_result());
-    //test_from_file("./examples/iadd/imm12.isle", lte_64_success_result());
-    //test_from_file("./examples/iadd/imm12_2.isle", lte_64_success_result());
-    //test_from_file("./examples/iadd/imm12negated.isle", lte_64_success_result());
-    //test_from_file("./examples/iadd/imm12negated2.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12_2.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12neg.isle", lte_64_success_result());
+    test_from_file("./examples/iadd/imm12neg2.isle", lte_64_success_result());
     //test_from_file("./examples/iadd/extend.isle", lte_64_success_result());
     //test_from_file("./examples/iadd/extend2.isle", lte_64_success_result());
     test_from_file("./examples/iadd/shift.isle", lte_64_success_result());
@@ -64,6 +64,78 @@ fn test_broken_iadd_from_file() {
         "./examples/broken/iadd/broken_base_case.isle",
         all_failure_result(),
     );
+    test_from_file("./examples/broken/iadd/broken_imm12.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
+    test_from_file("./examples/broken/iadd/broken_imm12_2.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
+    test_from_file("./examples/broken/iadd/broken_imm12neg.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    );
+    test_from_file("./examples/broken/iadd/broken_imm12neg2.isle",
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ],
+    ); 
     test_from_file(
         "./examples/broken/iadd/broken_madd.isle",
         all_failure_result(),

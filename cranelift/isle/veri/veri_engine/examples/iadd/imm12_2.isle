@@ -12,7 +12,7 @@
 
 (type ALUOp
   (enum
-    (Sub)
+    (Add)
 ))
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
@@ -21,10 +21,10 @@
 ;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
-;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y))))
+;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (y))))
 ;;@ ))
-(decl sub_imm (Type Reg Imm12) Reg)
-(rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
+(decl add_imm (Type Reg Imm12) Reg)
+(rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
 
 (decl alu_rr_imm12 (ALUOp Type Reg Imm12) Reg)
 (extern constructor alu_rr_imm12 alu_rr_imm12)
@@ -35,10 +35,11 @@
 ;;@                     (&& (<= (bv2int (arg)) (16773119i0:isleType))
 ;;@                         (= (extract 2 0 (arg)) (0i3:bv))
 ;;@                 )),
-;;@                 (= (-(arg)) (ret))
+;;@                 (= (arg) (conv_to (widthof (arg)) (ret)))
 ;;@ ))
-(decl imm12_from_negated_value (Imm12) Value)
-(extern extractor imm12_from_negated_value imm12_from_negated_value)
+(decl imm12_from_value (Imm12) Value)
+(extern extractor imm12_from_value imm12_from_value)
 
-(rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
-      (sub_imm ty x y))
+(rule (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
+      (add_imm ty y x))
+
