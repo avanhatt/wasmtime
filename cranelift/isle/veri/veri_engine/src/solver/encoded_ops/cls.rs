@@ -1,8 +1,9 @@
 use crate::solver::SolverCtx;
+use easy_smt::SExpr;
 
 // Adapted from https://stackoverflow.com/questions/23856596/how-to-count-leading-zeros-in-a-32-bit-unsigned-integer
 
-pub fn a64cls32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn a64cls32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     // extract to ensure we have a 32 bit input
     solver
         .additional_decls
@@ -284,7 +285,7 @@ pub fn a64cls32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("a64cls32ret_{id}", id = id)
 }
 
-pub fn cls64(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn cls64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     // total zeros counter
     solver.additional_decls.push((
         format!("zret0_{id}", id = id),
@@ -592,7 +593,7 @@ pub fn cls64(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("cls64ret_{id}", id = id)
 }
 
-pub fn cls32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn cls32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 31 0) {})", x);
 
     // total zeros counter
@@ -882,7 +883,7 @@ pub fn cls32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn cls16(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn cls16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 15 0) {})", x);
 
     // total zeros counter
@@ -1118,7 +1119,7 @@ pub fn cls16(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn cls8(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn cls8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 7 0) {})", x);
 
     // total zeros counter
@@ -1302,7 +1303,7 @@ pub fn cls8(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn cls1(solver: &mut SolverCtx, id: u32) -> String {
+pub fn cls1(solver: &mut SolverCtx, id: u32) -> SExpr {
     solver.additional_decls.push((
         format!("cls1ret_{id}", id = id),
         String::from("(_ BitVec 1)"),

@@ -17,7 +17,7 @@ path = "src/main.rs"
 cranelift-isle = { path = "../../isle" }
 veri_ir = { path = "../veri_ir" }
 veri_annotation = { path = "../veri_annotation" }
-rsmt2 = "0.14.1"
+easy-smt = { git = "https://github.com/elliottt/easy-smt.git" }
 clap = "3.1.2"
 itertools = "0.10.3"
 

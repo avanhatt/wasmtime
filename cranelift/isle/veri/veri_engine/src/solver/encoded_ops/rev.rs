@@ -1,6 +1,7 @@
 use crate::solver::SolverCtx;
+use easy_smt::SExpr;
 
-pub fn rbit32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn rbit32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     solver
         .additional_decls
         .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 32)")));
@@ -47,7 +48,7 @@ pub fn rbit32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn rev64(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn rev64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     solver
         .additional_decls
         .push((format!("x1_{id}", id = id), String::from("(_ BitVec 64)")));
@@ -86,7 +87,7 @@ pub fn rev64(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("rev64ret_{id}", id = id)
 }
 
-pub fn rev32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn rev32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 31 0) {})", x);
 
     solver
@@ -127,7 +128,7 @@ pub fn rev32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn rev16(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn rev16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 15 0) {})", x);
 
     solver
@@ -163,7 +164,7 @@ pub fn rev16(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn rev8(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn rev8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 7 0) {})", x);
 
     solver
@@ -197,7 +198,7 @@ pub fn rev8(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     )
 }
 
-pub fn rev1(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn rev1(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let extract = format!("((_ extract 0 0) {})", x);
 
     solver.additional_decls.push((

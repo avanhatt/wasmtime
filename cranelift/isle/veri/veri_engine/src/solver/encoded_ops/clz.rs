@@ -1,25 +1,26 @@
 use crate::solver::SolverCtx;
+use easy_smt::SExpr;
 
 // Adapted from https://stackoverflow.com/questions/23856596/how-to-count-leading-zeros-in-a-32-bit-unsigned-integer
 
-pub fn a64clz32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     // extract to ensure we have a 32 bit input
+    let name = format!("a64x_{id}", id = id);
     solver
         .additional_decls
-        .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!(
-        "(= a64x_{id} ((_ extract 31 0) {x}))",
-        id = id,
-        x = x
-    ));
+        .push((name, String::from("(_ BitVec 32)")));
+    solver.additional_assumptions.push(
+       solver.smt.eq(solver.smt.atom(name), solver.smt.extract(31, 0, x))
+    );
 
     // total zeros counter
+    let name = format!("ret0_{id}", id = id);
     solver
         .additional_decls
-        .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 64)")));
+        .push((name, String::from("(_ BitVec 64)")));
     solver
         .additional_assumptions
-        .push(format!("(= ret0_{id} (_ bv0 64))", id = id));
+        .push(solver.smt.eq(solver.smt.atom(name), solver.bv(0, 64)));
 
     // round 1
     solver
@@ -132,7 +133,7 @@ pub fn a64clz32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("ret6_{id}", id = id)
 }
 
-pub fn clz64(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn clz64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     // total zeros counter
     solver
         .additional_decls
@@ -279,7 +280,7 @@ pub fn clz64(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("ret7_{id}", id = id)
 }
 
-pub fn clz32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 31 0) {})", x);
 
     // total zeros counter
@@ -404,7 +405,7 @@ pub fn clz32(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("(concat {padding} ret6_{id})", padding = padding, id = id)
 }
 
-pub fn clz16(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn clz16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 15 0) {})", x);
 
     // total zeros counter
@@ -507,7 +508,7 @@ pub fn clz16(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("(concat {padding} ret6_{id})", padding = padding, id = id)
 }
 
-pub fn clz8(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn clz8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = format!("((_ extract 7 0) {})", x);
 
     // total zeros counter
@@ -590,7 +591,7 @@ pub fn clz8(solver: &mut SolverCtx, x: &String, id: u32) -> String {
     format!("(concat {padding} ret6_{id})", padding = padding, id = id)
 }
 
-pub fn clz1(solver: &mut SolverCtx, x: &String, id: u32) -> String {
+pub fn clz1(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let extract = format!("((_ extract 0 0) {})", x);
     solver
         .additional_decls

@@ -1079,6 +1079,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453440c271cf5577fd2a40e4942540cb7d0d2f85e27c8d07dd0023c925a67541"
 
 [[package]]
+name = "easy-smt"
+version = "0.1.0"
+source = "git+https://github.com/elliottt/easy-smt.git#614cad724a7fb8df6629bb7a2973d8718ff6e43d"
+dependencies = [
+ "log",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "ecdsa"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1218,16 +1227,6 @@ checksum = "aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf"
 dependencies = [
  "cc",
  "libc",
-]
-
-[[package]]
-name = "error-chain"
-version = "0.12.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d2f06b9cac1506ece98fe3231e3cc9c4410ec3d5b1f24ae1c8946f0742cdefc"
-dependencies = [
- "backtrace",
- "version_check",
 ]
 
 [[package]]
@@ -2618,15 +2617,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rsmt2"
-version = "0.14.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4affc8a99241732d2e214728974bd002bf3aa1d114760cf5c3ac6c1fd5650c7d"
-dependencies = [
- "error-chain",
-]
-
-[[package]]
 name = "rustc-demangle"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3220,6 +3210,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-segmentation"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fdbf052a0783de01e944a6ce7a8cb939e295b1e7be835a1112c3b9a7f047a5a"
+
+[[package]]
 name = "unicode-width"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3296,8 +3292,8 @@ version = "0.1.0"
 dependencies = [
  "clap 3.2.8",
  "cranelift-isle",
+ "easy-smt",
  "itertools",
- "rsmt2",
  "strum",
  "strum_macros",
  "veri_annotation",
