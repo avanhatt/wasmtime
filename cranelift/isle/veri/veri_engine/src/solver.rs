@@ -52,6 +52,14 @@ impl SolverCtx {
             .push((name.clone(), self.smt.bool_sort()));
         self.smt.atom(name)
     }
+
+    fn declare(&mut self, name: String, typ: SExpr) -> SExpr {
+        let atom = self.smt.atom(name);
+        self
+            .additional_decls
+            .push((name, typ));
+        atom
+    }
     
     /// Construct a constant bit-vector value of the given width. (This is used so pervasively that
     /// perhaps we should submit it for inclusion in the easy_smt library...) (Also, this is

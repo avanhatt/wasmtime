@@ -8,38 +8,33 @@ pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let bv64 = solver.smt.bit_vec_sort(solver.usize(64));
 
     // extract to ensure we have a 32 bit input
-    let a64x_name = format!("a64x_{id}", id = id);
-    let a64x = solver.smt.atom(a64x_name);
-    solver
-        .additional_decls
-        .push((a64x_name, bv32));
+    let a64x = solver.declare(format!("a64x_{id}", id = id), bv32);
     solver.additional_assumptions.push(
        solver.smt.eq(a64x, solver.smt.extract(31, 0, x))
     );
 
     // total zeros counter
-    let ret0_name = format!("ret0_{id}", id = id);
-    let ret0 = solver.smt.atom(ret0);
-    solver
-        .additional_decls
-        .push((ret0_name, bv64));
+    let ret0 = solver.declare(format!("ret0_{id}", id = id), bv64);
     solver
         .additional_assumptions
-        .push(solver.smt.eq(solver.smt.atom(ret0), solver.bv(0, 64)));
+        .push(solver.smt.eq(ret0, solver.bv(0, 64)));
 
     // round 1
-    let ret1 = format!("ret1_{id}", id = id);
-    solver.additional_decls.push((ret1, bv64));
-    let y16 = format!("y16_{id}", id = id);
-    solver.additional_decls.push((y16, bv32));
-    let x16 = format!("x16_{id}", id = id);
-    solver.additional_decls.push((x16, bv32));
+    let ret1 = solver.declare(format!("ret1_{id}", id = id), bv64);
+    let y16 = solver.declare(format!("y16_{id}", id = id), bv32);
+    let x16 = solver.declare(format!("x16_{id}", id = id), bv32);
     
     solver.additional_assumptions.push(solver.smt.eq(
-        solver.smt.atom(y16),
-        solver.smt.bvlshr(solver.smt.atom(a64x), solver.smt.atom("#x00000010")),
+        y16,
+        solver.smt.bvlshr(a64x, solver.smt.atom("#x00000010")),
     ));
-    solver.additional_assumptions.push(format!("(ite (not (= y16_{id} (_ bv0 32))) (= ret1_{id} ret0_{id}) (= ret1_{id} (bvadd ret0_{id} (_ bv16 64))))", id = id));
+    solver.additional_assumptions.push(
+        solver.smt.ite(
+            solver.smt.not(solver.smt.eq(y16, solver.bv(0, 32))),
+            solver.smt.eq(ret1, ret0),
+            solver.smt.eq(ret1, solver.smt.bvadd(ret0, solver.bv(16, 64))),
+        )
+    );
     solver.additional_assumptions.push(
         solver.smt.ite(
             solver.smt.not(solver.smt.eq(y16, solver.bv(0, 32))),
@@ -49,19 +44,13 @@ pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     );
 
     // round 2
-    solver
-        .additional_decls
-        .push((format!("ret2_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y8_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x8_{id}", id = id), String::from("(_ BitVec 32)")));
+    let ret2 = solver.declare(format!("ret2_{id}", id = id), bv64);
+    let y8 = solver.declare(format!("y8_{id}", id = id), bv32);
+    let x8 = solver.declare(format!("x8_{id}", id = id), bv32);
 
     solver
         .additional_assumptions
-        .push(format!("(= y8_{id} (bvlshr x16_{id} #x00000008))", id = id));
+        .push(solver.smt.eq(y8, solver.smt.bvlshr(x16, solver.smt.atom("#x00000008"))));
     solver.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 32))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv8 64))))", id = id));
     solver.additional_assumptions.push(format!(
         "(ite (not (= y8_{id} (_ bv0 32))) (= x8_{id} y8_{id}) (= x8_{id} x16_{id}))",
