@@ -4,38 +4,38 @@ use easy_smt::SExpr;
 // Adapted from https://stackoverflow.com/questions/23856596/how-to-count-leading-zeros-in-a-32-bit-unsigned-integer
 
 pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
+    let bv32 = solver.smt.bit_vec_sort(solver.usize(32));
+    let bv64 = solver.smt.bit_vec_sort(solver.usize(64));
+
     // extract to ensure we have a 32 bit input
-    let name = format!("a64x_{id}", id = id);
+    let a64x = format!("a64x_{id}", id = id);
     solver
         .additional_decls
-        .push((name, String::from("(_ BitVec 32)")));
+        .push((a64x, bv32));
     solver.additional_assumptions.push(
-       solver.smt.eq(solver.smt.atom(name), solver.smt.extract(31, 0, x))
+       solver.smt.eq(solver.smt.atom(a64x), solver.smt.extract(31, 0, x))
     );
 
     // total zeros counter
-    let name = format!("ret0_{id}", id = id);
+    let ret0 = format!("ret0_{id}", id = id);
     solver
         .additional_decls
-        .push((name, String::from("(_ BitVec 64)")));
+        .push((ret0, bv64));
     solver
         .additional_assumptions
-        .push(solver.smt.eq(solver.smt.atom(name), solver.bv(0, 64)));
+        .push(solver.smt.eq(solver.smt.atom(ret0), solver.bv(0, 64)));
 
     // round 1
-    solver
-        .additional_decls
-        .push((format!("ret1_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y16_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x16_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y16_{id} (bvlshr a64x_{id} #x00000010))",
-        id = id
+    let ret1 = format!("ret1_{id}", id = id);
+    solver.additional_decls.push((ret1, bv64));
+    let y16 = format!("y16_{id}", id = id);
+    solver.additional_decls.push((y16, bv32));
+    let x16 = format!("x16_{id}", id = id);
+    solver.additional_decls.push((x16, bv32));
+    
+    solver.additional_assumptions.push(solver.smt.eq(
+        solver.smt.atom(y16),
+        solver.smt.bvlshr(solver.smt.atom(a64x), solver.smt.atom("#x00000010")),
     ));
     solver.additional_assumptions.push(format!("(ite (not (= y16_{id} (_ bv0 32))) (= ret1_{id} ret0_{id}) (= ret1_{id} (bvadd ret0_{id} (_ bv16 64))))", id = id));
     solver.additional_assumptions.push(format!(
