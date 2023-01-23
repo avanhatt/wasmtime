@@ -996,7 +996,13 @@ fn test_do_shift_with_imm() {
     test_from_file_with_filter(
         "./examples/shifts/do_shift_with_imm.isle",
         "do_shift".to_string(),
-        all_success_result(),
+        vec![
+            // (Bitwidth::I1, VerificationResult::InapplicableRule),
+            // (Bitwidth::I8, VerificationResult::Success),
+            // (Bitwidth::I16, VerificationResult::Success),
+            (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
     )
 }
 
@@ -1006,11 +1012,26 @@ fn test_do_shift_32() {
         "./examples/shifts/do_shift_32.isle",
         "do_shift".to_string(),
         vec![
-            // (Bitwidth::I1, VerificationResult::InapplicableRule),
-            // (Bitwidth::I8, VerificationResult::InapplicableRule),
-            // (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
             (Bitwidth::I32, VerificationResult::Success),
-            // (Bitwidth::I64, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
+    )
+}
+
+#[test]
+fn test_do_shift_64() {
+    test_from_file_with_filter(
+        "./examples/shifts/do_shift_64.isle",
+        "do_shift".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::InapplicableRule),
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::Success),
         ],
     )
 }
