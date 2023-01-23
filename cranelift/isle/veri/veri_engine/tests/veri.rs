@@ -31,7 +31,7 @@ fn test_implicit_conversions() {
         lte_64_success_result(),
     );
 
-    /* 
+    /*
     test_from_file_custom_prelude(
         "./tests/code/selfcontained/prelude.isle",
         "./tests/code/selfcontained/iadd_to_sub_implicit_conv.isle",
@@ -91,15 +91,20 @@ fn test_broken_iadd_from_file() {
             ),
         ],
     );
-    test_from_file("./examples/broken/iadd/broken_shift.isle", all_failure_result());
-    test_from_file("./examples/broken/iadd/broken_shift2.isle",
+    test_from_file(
+        "./examples/broken/iadd/broken_shift.isle",
+        all_failure_result(),
+    );
+    test_from_file(
+        "./examples/broken/iadd/broken_shift2.isle",
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
-    ]);
+        ],
+    );
 }
 
 #[test]
@@ -109,7 +114,8 @@ fn test_ineg() {
 
 #[test]
 fn test_udiv() {
-    test_from_file("./examples/udiv/udiv.isle",
+    test_from_file(
+        "./examples/udiv/udiv.isle",
         // for ease of commenting out until we debug further
         vec![
             (Bitwidth::I1, VerificationResult::Success),
@@ -117,7 +123,8 @@ fn test_udiv() {
             // (Bitwidth::I16, VerificationResult::Success),
             // (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::Success),
-        ],)
+        ],
+    )
 }
 
 #[test]
@@ -839,7 +846,7 @@ fn test_64_bxor() {
 }
 
 #[test]
-fn test_64_ishl() {
+fn test_64_ishl_to_do_shift() {
     test_from_file_with_filter(
         "./examples/shifts/64_ishl_to_do_shift.isle",
         "ishl".to_string(),

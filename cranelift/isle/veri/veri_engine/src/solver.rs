@@ -437,11 +437,9 @@ impl SolverCtx {
                     | BinaryOp::BVRotr => {
                         self.assume_same_width_from_string(&width.unwrap(), &*x);
                     }
-                    BinaryOp::And
-                    | BinaryOp::Or
-                    | BinaryOp::Imp
-                    | BinaryOp::Eq
-                    | BinaryOp::Lte => (),
+                    BinaryOp::And | BinaryOp::Or | BinaryOp::Imp | BinaryOp::Eq | BinaryOp::Lte => {
+                        ()
+                    }
                 };
                 match op {
                     BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
@@ -475,7 +473,14 @@ impl SolverCtx {
                     BinaryOp::BVShr => {
                         let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                         let xs = self.vir_expr_to_rsmt2_str(*x);
-                        let ys = self.vir_expr_to_rsmt2_str(*y);
+                        // The shift arg needs to be extracted to the right width
+                        let y_static_width = self.static_width(&y);
+                        let ys = format!(
+                            "((_ zero_extend {}) ((_ extract {} 0) {}))",
+                            self.bitwidth - y_static_width.unwrap(),
+                            y_static_width.unwrap() - 1,
+                            self.vir_expr_to_rsmt2_str(*y)
+                        );
 
                         // Strategy: shift left by (bitwidth - arg width) to zero bits to the right
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
@@ -494,7 +499,14 @@ impl SolverCtx {
                     BinaryOp::BVAShr => {
                         let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                         let xs = self.vir_expr_to_rsmt2_str(*x);
-                        let ys = self.vir_expr_to_rsmt2_str(*y);
+                        // The shift arg needs to be extracted to the right width
+                        let y_static_width = self.static_width(&y);
+                        let ys = format!(
+                            "((_ zero_extend {}) ((_ extract {} 0) {}))",
+                            self.bitwidth - y_static_width.unwrap(),
+                            y_static_width.unwrap() - 1,
+                            self.vir_expr_to_rsmt2_str(*y)
+                        );
 
                         // Strategy: shift left by (bitwidth - arg width) to eliminate bits to the left
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
@@ -529,24 +541,34 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                // If we have some static width that isn't the bitwidth, extract based on it 
+                // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation.
-                match static_expr_width {
-                    Some(w) if w < self.bitwidth => 
-                    format!(
-                        "((_ zero_extend {padding}) ({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y})))",
-                        padding =  self.bitwidth.checked_sub(w).unwrap(),
-                        op = op_str,
-                        h = w - 1,
-                        x = self.vir_expr_to_rsmt2_str(*x),
-                        y = self.vir_expr_to_rsmt2_str(*y),
-                    ),
-                    _ => format!(
-                        "({} {} {})",
-                        op_str,
-                        self.vir_expr_to_rsmt2_str(*x),
-                        self.vir_expr_to_rsmt2_str(*y)
-                    )
+                let x_static_width = self.static_width(&x);
+                let y_static_width = self.static_width(&y);
+                let x_rec = self.vir_expr_to_rsmt2_str(*x);
+                let y_rec = self.vir_expr_to_rsmt2_str(*y);
+                match (x_static_width, y_static_width) {
+                    (Some(wx), Some(wy)) if wx == wy => {
+                        let bin = format!(
+                            "({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y}))",
+                            op = op_str,
+                            h = wx - 1,
+                            x = x_rec,
+                            y = y_rec,
+                        );
+                        if let Some(w) = static_expr_width {
+                            assert_eq!(wx, w);
+                            format!(
+                                "((_ zero_extend {padding}) {bin})",
+                                padding = self.bitwidth.checked_sub(wx).unwrap(),
+                                bin = bin,
+                            )
+                        } else {
+                            bin
+                        }
+                    }
+                    (None, None) => format!("({} {} {})", op_str, x_rec, y_rec,),
+                    (a, b) => unreachable!("staticdebu widths {:?} {:?}", a, b),
                 }
             }
             Expr::BVIntToBV(w, x) => {
@@ -650,7 +672,7 @@ impl SolverCtx {
                         self.assume_same_width_from_string(&width.clone().unwrap(), &*t);
                         self.assume_same_width_from_string(&width.unwrap(), &*e);
                     }
-                    _ => ()
+                    _ => (),
                 };
                 format!(
                     "(ite {} {} {})",
@@ -837,7 +859,6 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     let mut query_width_used = false;
     let mut query_bv_set_idxs = HashSet::new();
     for v in &rule_sem.free_vars {
-        dbg!(v.tyvar);
         let ty = &ctx.tyctx.tymap[&v.tyvar];
         if let Type::BitVector(None) = ty {
             query_width_used = true;
@@ -851,9 +872,6 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     if !query_width_used {
         panic!("Query width unused, check rule!");
     }
-
-    dbg!(&ctx.tyctx.bv_unknown_width_sets);
-    dbg!(&query_bv_set_idxs);
 
     for (_e, t) in &ctx.tyctx.tyvars {
         // dbg!(t);
@@ -877,8 +895,6 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                                 .insert(*t, Type::BitVector(Some(query_width)));
                             ctx.width_assumptions
                                 .push(format!("(= {} {})", width_name, query_width));
-                        } else {
-                            dbg!(t);
                         }
                     }
                 };
@@ -971,8 +987,6 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
             let rhs_width = ctx.get_expr_width_var(&rule_sem.lhs).unwrap().clone();
             ctx.additional_assumptions
                 .push(format!("(= {} {})", lhs_width, rhs_width));
-
-            dbg!(&lhs_width);
 
             let lhs = ctx.vir_expr_to_rsmt2_str(rule_sem.lhs);
             let rhs = ctx.vir_expr_to_rsmt2_str(rule_sem.rhs);
