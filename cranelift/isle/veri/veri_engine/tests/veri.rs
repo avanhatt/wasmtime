@@ -977,7 +977,7 @@ fn test_64_bxor() {
 }
 
 #[test]
-fn test_64_ishl() {
+fn test_64_ishl_to_do_shift() {
     test_from_file_with_filter(
         "./examples/shifts/64_ishl_to_do_shift.isle",
         "ishl".to_string(),
