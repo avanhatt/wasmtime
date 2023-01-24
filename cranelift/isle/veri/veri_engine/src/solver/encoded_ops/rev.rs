@@ -241,7 +241,7 @@ mod tests {
         }
     }
     
-    fn check(ctx: &mut SolverCtx, expr: SExpr, expected: &str) {
+    fn check(ctx: &SolverCtx, expr: SExpr, expected: &str) {
         let expr_s = format!("{}", ctx.smt.display(expr));
         assert_eq!(expr_s, expected);
     }
@@ -253,6 +253,8 @@ mod tests {
         let x = ctx.smt.atom("x");
         let res = rev1(&mut ctx, x, 42);
 
-        check(&mut ctx, res, "(concat fresh0 rev1ret_42)");
+        check(&ctx, res, "(concat fresh0 rev1ret_42)");
+        check(&ctx, ctx.additional_decls[0].1, "(_ BitVec 32)");
+        check(&ctx, ctx.additional_assumptions[0], "(= rev1ret_42 ((_ extract 0 0) x))");
     }
 }
