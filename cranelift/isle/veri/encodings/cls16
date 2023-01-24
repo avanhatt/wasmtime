@@ -1,6 +1,3 @@
-(declare-fun {x} () (_ BitVec 16))
-(assert (= x (_ bv5 16))) ; placeholder to test x = 5
-
 ; total zeros counter
 (declare-fun zret0_{id} () (_ BitVec 16))
 (assert (= zret0_{id} (_ bv0 16)))
@@ -104,9 +101,4 @@
 
 
 
-(declare-fun {ret} () (_ BitVec 16))
 (assert (ite (bvsle (_ bv0 16) {x}) (= {ret} clzret_{id}) (= {ret} clsret_{id})))
-
-
-(check-sat)
-(get-model)
