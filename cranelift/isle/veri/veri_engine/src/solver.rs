@@ -13,7 +13,9 @@ mod encoded_ops;
 
 /*
  * TODO: TEMPORARILY DISABLED during easy-smt refactor.
+*/
 use encoded_ops::cls;
+/*
 use encoded_ops::clz;
 */
 use encoded_ops::rev;
@@ -720,11 +722,11 @@ impl SolverCtx {
                 let tyvar = *tyvar.unwrap();
                 let es = self.vir_expr_to_sexp(*e);
                 match static_expr_width {
-                    Some(1) => todo!(), //cls::cls1(self, tyvar),
-                    Some(8) => todo!(), //cls::cls8(self, es, tyvar),
-                    Some(16) => todo!(), //cls::cls16(self, es, tyvar),
-                    Some(32) => todo!(), //cls::cls32(self, es, tyvar),
-                    Some(64) => todo!(), //cls::cls64(self, es, tyvar),
+                    Some(1) => cls::cls1(self, tyvar),
+                    Some(8) => cls::cls8(self, es, tyvar),
+                    Some(16) => cls::cls16(self, es, tyvar),
+                    Some(32) => cls::cls32(self, es, tyvar),
+                    Some(64) => cls::cls64(self, es, tyvar),
                     Some(w) => unreachable!("Unexpected CLS width {}", w),
                     None => unreachable!("Need static CLS width"),
                 }
@@ -734,8 +736,8 @@ impl SolverCtx {
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
-                    Some(32) => todo!(), //cls::a64cls32(self, es, tyvar),
-                    Some(64) => todo!(), //cls::cls64(self, es, tyvar),
+                    Some(32) => cls::a64cls32(self, es, tyvar),
+                    Some(64) => cls::cls64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64CLS width {}", w);
                         self.additional_assumptions.push(self.smt.false_());
