@@ -201,14 +201,11 @@ pub fn rev8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
 */
 
 pub fn rev1(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
-    let bv1 = solver.smt.bit_vec_sort(solver.smt.numeral(32));
-
-    let extract = solver.smt.extract(0, 0, x);
+    let x = solver.smt.extract(0, 0, x);
     
-    let rev1ret = solver.declare(format!("rev1ret_{id}", id = id), bv1);
-    solver.assume(
-        solver.smt.eq(rev1ret, extract)
-    );
+    // Generated code.
+    let rev1ret = solver.declare(format!("rev1ret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(1)]));
+    solver.assume(solver.smt.eq(rev1ret, x));
 
     let padding = solver.new_fresh_bits(solver.bitwidth - 1);
     solver.smt.concat(padding, rev1ret)
@@ -254,7 +251,7 @@ mod tests {
         let res = rev1(&mut ctx, x, 42);
 
         check(&ctx, res, "(concat fresh0 rev1ret_42)");
-        check(&ctx, ctx.additional_decls[0].1, "(_ BitVec 32)");
+        check(&ctx, ctx.additional_decls[0].1, "(_ BitVec 1)");
         check(&ctx, ctx.additional_assumptions[0], "(= rev1ret_42 ((_ extract 0 0) x))");
     }
 }
