@@ -1304,18 +1304,10 @@ pub fn cls8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
 }
 
 pub fn cls1(solver: &mut SolverCtx, id: u32) -> SExpr {
-    solver.additional_decls.push((
-        format!("cls1ret_{id}", id = id),
-        String::from("(_ BitVec 1)"),
-    ));
-    solver
-        .additional_assumptions
-        .push(format!("(= cls1ret_{id} (_ bv0 1))", id = id));
-
+    // Generated code.
+    let cls1ret = solver.declare(format!("cls1ret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(1)]));
+    solver.assume(solver.smt.eq(cls1ret, x));
+    
     let padding = solver.new_fresh_bits(solver.bitwidth - 1);
-    format!(
-        "(concat {padding} cls1ret_{id})",
-        padding = padding,
-        id = id
-    )
+    solver.smt.concat(padding, cls1ret)
 }
