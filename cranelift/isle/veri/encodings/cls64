@@ -137,4 +137,5 @@
 
 
 
+(declare-fun cls64ret_{id} () (_ BitVec 64))
 (assert (ite (bvsle (_ bv0 64) {x}) (= cls64ret_{id} clzret_{id}) (= cls64ret_{id} clsret_{id})))

@@ -119,4 +119,5 @@
 
 
 
+(declare-fun cls32ret_{id} () (_ BitVec 32))
 (assert (ite (bvsle (_ bv0 32) {x}) (= cls32ret_{id} clzret_{id}) (= cls32ret_{id} clsret_{id})))

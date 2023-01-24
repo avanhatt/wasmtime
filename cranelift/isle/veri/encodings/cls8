@@ -83,4 +83,5 @@
 
 
 
+(declare-fun cls8ret_{id} () (_ BitVec 8))
 (assert (ite (bvsle (_ bv0 8) {x}) (= cls8ret_{id} clzret_{id}) (= cls8ret_{id} clsret_{id})))
