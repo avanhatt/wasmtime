@@ -114,11 +114,6 @@ def main():
         for line in f:
             line = line.strip()
 
-            # Preserve blank lines.
-            if not line:
-                print()
-                continue
-
             # Convert comments.
             if line.startswith(';'):
                 print(f'//{line[1:]}')
