@@ -80,7 +80,6 @@
 ;;@                          })
 ;;@                      })
 ;;@                  }),
-;;@                  (= (t) (widthof (a))),
 ;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
@@ -105,7 +104,7 @@
 ;;@                      } else { 
 ;;@                          (if (= (op) (2i64:bv)) {
 ;;@                              (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
-;;@                                   (zero_ext (regwidth) (b))))
+;;@                                   (zero_ext  (regwidth) (b))))
 ;;@                          } else { 
 ;;@                              (= (ret) (0i64:bv))
 ;;@                          })

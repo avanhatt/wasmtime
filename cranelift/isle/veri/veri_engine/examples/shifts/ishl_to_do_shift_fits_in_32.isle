@@ -1,3 +1,7 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
 ;; Instruction formats.
 (type MInst
   (enum
@@ -68,29 +72,7 @@
 ;;@                      (= (t) (64i8: isleType))))))
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
+(extern constructor do_shift do_shift)
 
-;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (if (= (op) (0i64:bv)) {
-;;@                     (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) (b)))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) (b)))
-;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) (b)))
-;;@                          } else { 
-;;@                              (= (ret) (0i64:bv))
-;;@                          })
-;;@                      })
-;;@                  }),
-;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
-;;@                  (|| (= (t) (1i8: isleType)) 
-;;@                  (|| (= (t) (8i8: isleType))
-;;@                  (|| (= (t) (16i8: isleType))
-;;@                  (|| (= (t) (32i8: isleType))
-;;@                      (= (t) (64i8: isleType))))))
-;;@     ))
-(decl alu_rrr (ALUOp Type Reg Reg) Reg)
-(extern constructor alu_rrr alu_rrr)
-
-(rule (do_shift op $I32 x y) (alu_rrr op $I32 x (value_regs_get y 0)))
+(rule -1 (lower (has_type (fits_in_32 ty) (ishl x y)))
+      (do_shift (ALUOp.Lsl) ty x y))

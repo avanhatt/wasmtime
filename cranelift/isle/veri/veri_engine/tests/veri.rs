@@ -977,9 +977,9 @@ fn test_64_bxor() {
 }
 
 #[test]
-fn test_64_ishl_to_do_shift() {
+fn test_ishl_to_do_shift_64() {
     test_from_file_with_filter(
-        "./examples/shifts/64_ishl_to_do_shift.isle",
+        "./examples/shifts/ishl_to_do_shift_64.isle",
         "ishl".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
@@ -987,6 +987,21 @@ fn test_64_ishl_to_do_shift() {
             (Bitwidth::I16, VerificationResult::InapplicableRule),
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::Success),
+        ],
+    )
+}
+
+#[test]
+fn test_ishl_to_do_shift_fits_in_32() {
+    test_from_file_with_filter(
+        "./examples/shifts/ishl_to_do_shift_fits_in_32.isle",
+        "ishl".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Success),
+            (Bitwidth::I16, VerificationResult::Success),
+            (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )
 }
