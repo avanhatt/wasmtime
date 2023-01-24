@@ -82,6 +82,11 @@
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern constructor do_shift do_shift)
 
-;; Shift for i64.
-(rule (lower (has_type $I64 (ishl x y)))
-      (do_shift (ALUOp.Lsl) $I64 x y))
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (zero_ext (32) (x)) (ret))))
+(decl put_in_reg_zext32 (Value) Reg)
+(extern constructor put_in_reg_zext32 put_in_reg_zext32)
+
+;; Shift for i8/i16/i32.
+(rule -1 (lower (has_type (fits_in_32 ty) (ushr x y)))
+      (do_shift (ALUOp.Lsr) ty (put_in_reg_zext32 x) y))
