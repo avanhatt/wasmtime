@@ -87,35 +87,31 @@ def parse_assertion(line):
 def main():
     filename = sys.argv[1]
 
-    lines = []
     with open(filename, 'r') as f:
-        lines = f.readlines()
+        for line in f:
+            line = line.strip()
 
-    # this converter assumes there's a solver called "solver"
-    for line in lines:
-        line = line.strip()
+            # Preserve blank lines.
+            if not line:
+                print()
+                continue
 
-        # leave blank lines
-        if len(line) == 0:
-            print("")
-            continue
+            # Convert comments.
+            if line.startswith(';'):
+                print(f'//{line[1:]}')
+                continue
 
-        # convert comments
-        if line[0] == ';':
-            print(f'//{line[1:]}')
-            continue
+            # Convert declarations.
+            if line.startswith(DECL):
+                name, ty = parse_decl(line)
+                print(f'solver.declare({name}, {ty});')
+                continue
 
-        # convert declarations
-        if line.startswith(DECL):
-            name, ty = parse_decl(line)
-            print(f'solver.declare({name}, {ty});')
-            continue
-
-        # convert assertions
-        if line.startswith(ASSERTION):
-            a = parse_assertion(line)
-            print(f'solver.assume({a});')
-            continue
+            # Convert assertions.
+            if line.startswith(ASSERTION):
+                a = parse_assertion(line)
+                print(f'solver.assume({a});')
+                continue
 
 
 if __name__ == '__main__':
