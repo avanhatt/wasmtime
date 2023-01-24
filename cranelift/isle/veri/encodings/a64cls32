@@ -115,4 +115,4 @@
 (assert (ite (= sret7_{id} (_ bv0 64)) (= clsret_{id} sret7_{id}) (= clsret_{id} (bvsub sret7_{id} (_ bv1 64)))))
 
 (declare-fun a64cls32ret_{id} () (_ BitVec 64))
-(assert (ite (bvsle (_ bv0 32) a64x_{id}) (= a64cls32ret_{id} clzret_{id}) (= a64clzret_{id} clsret_{id})))
+(assert (ite (bvsle (_ bv0 32) a64x_{id}) (= a64cls32ret_{id} clzret_{id}) (= a64cls32ret_{id} clsret_{id})))

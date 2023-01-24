@@ -95,7 +95,7 @@ pub fn a64cls32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let clsret = solver.declare(format!("clsret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
     solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.eq(sret7, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)])), solver.smt.eq(clsret, sret7), solver.smt.eq(clsret, solver.smt.list(vec![solver.smt.atom("bvsub"), sret7, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(64)])]))]));
     let a64cls32ret = solver.declare(format!("a64cls32ret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
-    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("bvsle"), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]), a64x]), solver.smt.eq(a64cls32ret, clzret), solver.smt.eq(a64clzret, clsret)]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("bvsle"), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]), a64x]), solver.smt.eq(a64cls32ret, clzret), solver.smt.eq(a64cls32ret, clsret)]));
 
     a64cls32ret 
 }
