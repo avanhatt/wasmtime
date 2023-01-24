@@ -101,4 +101,4 @@
 
 
 
-(assert (ite (bvsle (_ bv0 16) {x}) (= {ret} clzret_{id}) (= {ret} clsret_{id})))
+(assert (ite (bvsle (_ bv0 16) {x}) (= cls16ret_{id} clzret_{id}) (= cls16ret_{id} clsret_{id})))

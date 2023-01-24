@@ -38,6 +38,7 @@ def sexpr_to_rs(sexpr):
             return 'solver.smt.atoms().und'
 
         # General case: construct an atom.
+        assert '{' not in sym  # Guard against unhandled templates.
         return f'solver.smt.atom("{sym}")'
 
     elif isinstance(sexpr, list):
@@ -102,8 +103,6 @@ def parse_assertion(line):
     exp = sexpdata.loads(line)
     assert exp[0].value() == 'assert'
     _, asst = exp
-
-    # TODO do something with the pattern variables
 
     return sexpr_to_rs(asst)
 
