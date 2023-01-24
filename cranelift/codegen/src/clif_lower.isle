@@ -1073,12 +1073,18 @@
     (inst_data (InstructionData.Binary (Opcode.Ishl) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args a, b) (ret))
+;;@     (assertions (<= (bv2int (b)) (widthof (a))),
+;;@                 (= (ret) (shr (a) (b)))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
     (inst_data (InstructionData.Binary (Opcode.Ushr) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args a, b) (ret))
+;;@     (assertions (<= (bv2int (b)) (widthof (a))),
+;;@                 (= (ret) (ashr (a) (b)))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)
