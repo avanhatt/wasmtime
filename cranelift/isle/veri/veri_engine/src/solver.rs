@@ -58,13 +58,13 @@ impl SolverCtx {
     }
 
     fn declare(&mut self, name: String, typ: SExpr) -> SExpr {
-        let atom = self.smt.atom(name);
+        let atom = self.smt.atom(&name);
         self
             .additional_decls
             .push((name, typ));
         atom
     }
-    
+
     /// Construct a constant bit-vector value of the given width. (This is used so pervasively that
     /// perhaps we should submit it for inclusion in the easy_smt library...) (Also, this is
     /// generic because we use it with several integer types, but it probably shouldn't be *this*
@@ -328,7 +328,7 @@ impl SolverCtx {
                 wide_name = format!("{}_{}", s, wide_name);
             }
             self.additional_assumptions .push(self.smt.eq(
-                self.smt.atom(narrow_name),
+                self.smt.atom(&narrow_name),
                 narrow_decl,
             ));
             self.additional_decls
@@ -336,14 +336,14 @@ impl SolverCtx {
             self.additional_decls
                 .push((wide_name.clone(), self.smt.bit_vec_sort(self.usize(self.bitwidth))));
             let padding = self.new_fresh_bits(width);
-            self.additional_assumptions.push(self.smt.eq(self.smt.atom(wide_name), self.smt.concat(padding, self.smt.atom(narrow_name))));
+            self.additional_assumptions.push(self.smt.eq(self.smt.atom(&wide_name), self.smt.concat(padding, self.smt.atom(narrow_name))));
             self.smt.atom(wide_name)
         } else {
             if let Some(s) = name {
                 // self.additional_decls
                 //     .push((s.clone(), format!("(_ BitVec {})", self.bitwidth)));
-                self.additional_assumptions.push(self.smt.eq(self.smt.atom(s), narrow_decl));
-                self.smt.atom(s)
+                self.additional_assumptions.push(self.smt.eq(self.smt.atom(&s), narrow_decl));
+                self.smt.atom(&s)
             } else {
                 narrow_decl
             }
@@ -358,14 +358,14 @@ impl SolverCtx {
         }
     }
 
-    pub fn vir_to_rsmt2_constant_ty(&self, solver: &easy_smt::Context, ty: &Type) -> SExpr {
+    pub fn vir_to_rsmt2_constant_ty(&self, ty: &Type) -> SExpr {
         match ty {
             Type::BitVector(w) => {
                 let width = w.unwrap_or(self.bitwidth);
-                solver.bit_vec_sort(solver.i32(width.try_into().unwrap()))
+                self.smt.bit_vec_sort(self.smt.i32(width.try_into().unwrap()))
             }
-            Type::Int => solver.int_sort(),
-            Type::Bool => solver.bool_sort(),
+            Type::Int => self.smt.int_sort(),
+            Type::Bool => self.smt.bool_sort(),
         }
     }
 
@@ -461,7 +461,8 @@ impl SolverCtx {
                         "bvnot"
                     }
                 };
-                self.smt.list(vec![self.smt.atom(op), self.vir_expr_to_sexp(*arg)])
+                let subexp = self.vir_expr_to_sexp(*arg);
+                self.smt.list(vec![self.smt.atom(op), subexp])
             }
             Expr::Binary(op, x, y) => {
                 match op {
@@ -568,28 +569,36 @@ impl SolverCtx {
                 match static_expr_width {
                     Some(w) if w < self.bitwidth => {
                         let h: i32 = (w - 1).try_into().unwrap();
+                        let x_sexp = self.vir_expr_to_sexp(*x);
+                        let y_sexp = self.vir_expr_to_sexp(*y);
                         self.zero_extend(
                             self.bitwidth.checked_sub(w).unwrap(),
                             self.smt.list(vec![
                                 self.smt.atom(op_str),
-                                self.smt.extract(h, 0, self.vir_expr_to_sexp(*x)),
-                                self.smt.extract(h, 0, self.vir_expr_to_sexp(*y)),
+                                self.smt.extract(h, 0, x_sexp),
+                                self.smt.extract(h, 0, y_sexp),
                             ]),
                         )
                     }
-                    _ => self.smt.list(vec![
-                        self.smt.atom(op_str),
-                        self.vir_expr_to_sexp(*x),
-                        self.vir_expr_to_sexp(*y)
-                    ])
+                    _ => {
+                        let x_sexp = self.vir_expr_to_sexp(*x);
+                        let y_sexp = self.vir_expr_to_sexp(*y);
+                        self.smt.list(vec![
+                            self.smt.atom(op_str),
+                            x_sexp,
+                            y_sexp,
+                        ])
+                    }
                 }
             }
             Expr::BVIntToBV(w, x) => {
                 let padded_width = self.bitwidth - w;
-                self.zero_extend(padded_width, self.int2bv(w, self.vir_expr_to_sexp(*x)))
+                let x_sexp = self.vir_expr_to_sexp(*x);
+                self.zero_extend(padded_width, self.int2bv(w, x_sexp))
             }
             Expr::BVToInt(x) => {
-                self.bv2nat(self.vir_expr_to_sexp(*x))
+                let x_sexp = self.vir_expr_to_sexp(*x);
+                self.bv2nat(x_sexp)
             }
             Expr::BVConvTo(y) => {
                 // For static convto, width constraints are handling during inference
@@ -673,10 +682,13 @@ impl SolverCtx {
                 }
             }
             Expr::Conditional(c, t, e) => {
+                let c_sexp = self.vir_expr_to_sexp(*c);
+                let t_sexp = self.vir_expr_to_sexp(*t);
+                let e_sexp = self.vir_expr_to_sexp(*e);
                 self.smt.ite(
-                    self.vir_expr_to_sexp(*c),
-                    self.vir_expr_to_sexp(*t),
-                    self.vir_expr_to_sexp(*e)
+                    c_sexp,
+                    t_sexp,
+                    e_sexp,
                 )
             }
             Expr::CLZ(e) => {
@@ -780,15 +792,14 @@ impl SolverCtx {
 
     // Checks whether the assumption list is always false
     fn check_assumptions_feasibility(
-        &self,
-        solver: &mut easy_smt::Context,
-        assumptions: Vec<SExpr>,
+        &mut self,
+        assumptions: &Vec<SExpr>,
     ) -> bool {
         println!("Checking assumption feasibility");
-        solver.push().unwrap();
+        self.smt.push().unwrap();
         for a in assumptions {
             // println!("{}", &a);
-            solver.assert(a).unwrap();
+            self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
             // solver.push(2).unwrap();
@@ -808,7 +819,7 @@ impl SolverCtx {
             // };
             // solver.pop(2).unwrap();
         }
-        let res = match solver.check() {
+        let res = match self.smt.check() {
             Ok(Response::Sat) => {
                 println!("Assertion list is feasible");
                 true
@@ -824,7 +835,7 @@ impl SolverCtx {
                 unreachable!("Error! {:?}", err);
             }
         };
-        solver.pop().unwrap();
+        self.smt.pop().unwrap();
         res
     }
 }
@@ -883,11 +894,11 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
             Type::BitVector(w) => {
                 let width_name = format!("width__{}", t);
                 ctx.additional_decls
-                    .push((width_name.clone(), solver.int_sort()));
+                    .push((width_name.clone(), ctx.smt.int_sort()));
                 match *w {
                     Some(bitwidth) => {
                         ctx.width_assumptions
-                            .push(ctx.smt.eq(ctx.smt.atom(width_name), ctx.usize(bitwidth)));
+                            .push(ctx.smt.eq(ctx.smt.atom(&width_name), ctx.usize(bitwidth)));
                     }
                     None => {
                         let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&t];
@@ -896,7 +907,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                                 .tymap
                                 .insert(*t, Type::BitVector(Some(query_width)));
                             ctx.width_assumptions
-                                .push(ctx.smt.eq(ctx.smt.atom(width_name), ctx.usize(query_width)));
+                                .push(ctx.smt.eq(ctx.smt.atom(&width_name), ctx.usize(query_width)));
                         }
                     }
                 };
@@ -910,7 +921,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     for v in &rule_sem.quantified_vars {
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
-        let var_ty = ctx.vir_to_rsmt2_constant_ty(&solver, &ty);
+        let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
         println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
@@ -921,7 +932,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
             );
             ctx.var_map.insert(name.clone(), wide);
         }
-        solver.declare_const(name, var_ty).unwrap();
+        ctx.smt.declare_const(name, var_ty).unwrap();
     }
 
     println!("Adding explicit assumptions");
@@ -942,15 +953,13 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     }
 
     println!("Declaring additional variables");
-    for (name, ty) in ctx.additional_decls {
+    for (name, ty) in &ctx.additional_decls {
         println!("\t{} : {:?}", name, ty);
-        solver.declare_const(name, ty).unwrap();
+        ctx.smt.declare_const(name, *ty).unwrap();
     }
 
-    let assumption_conjunction = solver.and_many(assumptions);
-
     // Check whether the assumptions are possible
-    if !ctx.check_assumptions_feasibility(&mut solver, assumptions) {
+    if !ctx.check_assumptions_feasibility(&assumptions) {
         println!("Rule not applicable as written for rule assumptions, skipping full query");
         return VerificationResult::InapplicableRule;
     }
@@ -978,21 +987,22 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     let lhs = ctx.vir_expr_to_sexp(rule_sem.lhs);
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs);
 
-    let lhs_care_bits = solver.extract((width - 1).try_into().unwrap(), 0, lhs);
-    let rhs_care_bits = solver.extract((width - 1).try_into().unwrap(), 0, rhs);
+    let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
+    let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
 
-    let side_equality = solver.eq(lhs_care_bits, rhs_care_bits);
+    let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
     println!("LHS and RHS equality condition:\n\t{:?}\n", side_equality);
 
-    let query = solver.not(solver.imp(assumption_conjunction, side_equality));
+    let assumption_conjunction = ctx.smt.and_many(assumptions);
+    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, side_equality));
     println!("Running query");
     // println!("Running query:\n\t{}\n", query);
-    solver.assert(query).unwrap();
+    ctx.smt.assert(query).unwrap();
 
-    match solver.check() {
+    match ctx.smt.check() {
         Ok(Response::Sat) => {
             println!("Verification failed");
-            let model = solver.get_model().unwrap();
+            let model = ctx.smt.get_model().unwrap();
             dbg!(model);
             VerificationResult::Failure(Counterexample {})
         }
