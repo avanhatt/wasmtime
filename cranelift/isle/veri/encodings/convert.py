@@ -5,6 +5,13 @@ import sexpdata
 DECL = "(declare-fun "
 ASSERTION = "(assert "
 PATTERN = r'\{(.*?)\}'
+SMT_FUNCS = [
+    'bvand',
+    'bvor',
+    'bvshl',
+    'bvlshr',
+    'bvashr',
+]
 
 
 def sexpr_to_rs(sexpr):
@@ -32,9 +39,21 @@ def sexpr_to_rs(sexpr):
 
         # General case: construct an atom.
         return f'solver.smt.atom("{sym}")'
+
     elif isinstance(sexpr, list):
+        # Special cases for common SMT functions.
+        if sexpr:
+            hd, tl = sexpr[0], sexpr[1:]
+            tl_rs = ", ".join(sexpr_to_rs(v) for v in tl)
+            if hd == sexpdata.Symbol('='):
+                return f'solver.smt.eq({tl_rs})'
+            elif isinstance(hd, sexpdata.Symbol) and hd.value() in SMT_FUNCS:
+                return f'solver.smt.{hd.value()}({tl_rs})'
+
+        # General case: construct a normal list.
         guts = ", ".join(sexpr_to_rs(v) for v in sexpr)
         return f'solver.smt.list(vec![{guts}])'
+
     elif isinstance(sexpr, int):
         return f'solver.smt.numeral({sexpr})'
     else:
