@@ -37,7 +37,7 @@ impl SolverCtx {
         let name = format!("fresh{}", self.fresh_bits_idx);
         self.fresh_bits_idx += 1;
         self.additional_decls
-            .push((name.clone(), self.smt.bit_vec_sort(self.usize(width))));
+            .push((name.clone(), self.smt.bit_vec_sort(self.smt.numeral(width))));
         self.smt.atom(name)
     }
 
@@ -77,19 +77,8 @@ impl SolverCtx {
         self.smt.list(vec![
             self.smt.atoms().und,
             self.smt.atom(format!("bv{}", value)),
-            self.usize(width),
+            self.smt.numeral(width),
         ])
-    }
-    
-    /// A usize constant for SMT. (Another one to possibly add to easy_smt! It has "i32" already,
-    /// so why not add this?)
-    fn usize(&self, value: usize) -> SExpr {
-        self.smt.atom(value.to_string())
-    }
-
-    /// As above.
-    fn i128(&self, value: i128) -> SExpr {
-        self.smt.atom(value.to_string())
     }
     
     /// Convert an SMT integer to a bit vector of a given width.
@@ -98,7 +87,7 @@ impl SolverCtx {
             self.smt.list(vec![
                 self.smt.atoms().und,
                 self.smt.atom("int2bv"),
-                self.usize(width),
+                self.smt.numeral(width),
             ]),
             value,
         ])
@@ -119,7 +108,7 @@ impl SolverCtx {
             self.smt.list(vec![
                 self.smt.atoms().und,
                 self.smt.atom("zero_extend"),
-                self.usize(padding),
+                self.smt.numeral(padding),
             ]),
             value,
         ])
@@ -148,7 +137,7 @@ impl SolverCtx {
             self.smt.list(vec![
                 self.smt.atoms().und,
                 self.smt.atom(op),
-                self.usize(delta),
+                self.smt.numeral(delta),
             ]),
             extract,
         ]);
@@ -201,7 +190,7 @@ impl SolverCtx {
         let mut ite_str = source.clone();
 
         // Special case: if we are asked to extend by 0, just return the source
-        let matching = self.smt.eq(self.smt.i32(0), shift);
+        let matching = self.smt.eq(self.smt.numeral(0), shift);
         some_match.push(matching.clone());
         ite_str = self.smt.ite(matching, source, ite_str);
 
@@ -217,8 +206,8 @@ impl SolverCtx {
 
                 // Statement meaning the symbolic case matches this concrete case
                 let matching = self.smt.and(
-                    self.smt.eq(self.usize(possible_delta), shift),
-                    self.smt.eq(self.usize(possible_source), source_width),
+                    self.smt.eq(self.smt.numeral(possible_delta), shift),
+                    self.smt.eq(self.smt.numeral(possible_source), source_width),
                 );
                 some_match.push(matching.clone());
                 let extend = self.extend_concrete(
@@ -264,7 +253,7 @@ impl SolverCtx {
                 // Statement meaning the symbolic case matches this concrete case
                 let matching = self.smt.and(
                     self.smt.eq(self.bv(possible_rotate, self.bitwidth), amount),
-                    self.smt.eq(self.usize(possible_source), source_width),
+                    self.smt.eq(self.smt.numeral(possible_source), source_width),
                 );
                 some_match.push(matching);
 
@@ -281,7 +270,7 @@ impl SolverCtx {
                     self.smt.list(vec![
                         self.smt.atoms().und,
                         self.smt.atom(op),
-                        self.usize(possible_rotate),
+                        self.smt.numeral(possible_rotate),
                     ]),
                     extract,
                 ]);
@@ -336,9 +325,9 @@ impl SolverCtx {
                 narrow_decl,
             ));
             self.additional_decls
-                .push((narrow_name.clone(), self.smt.bit_vec_sort(self.usize(narrow_width))));
+                .push((narrow_name.clone(), self.smt.bit_vec_sort(self.smt.numeral(narrow_width))));
             self.additional_decls
-                .push((wide_name.clone(), self.smt.bit_vec_sort(self.usize(self.bitwidth))));
+                .push((wide_name.clone(), self.smt.bit_vec_sort(self.smt.numeral(self.bitwidth))));
             let padding = self.new_fresh_bits(width);
             self.additional_assumptions.push(self.smt.eq(self.smt.atom(&wide_name), self.smt.concat(padding, self.smt.atom(narrow_name))));
             self.smt.atom(wide_name)
@@ -366,7 +355,7 @@ impl SolverCtx {
         match ty {
             Type::BitVector(w) => {
                 let width = w.unwrap_or(self.bitwidth);
-                self.smt.bit_vec_sort(self.smt.i32(width.try_into().unwrap()))
+                self.smt.bit_vec_sort(self.smt.numeral(width))
             }
             Type::Int => self.smt.int_sort(),
             Type::Bool => self.smt.bool_sort(),
@@ -436,7 +425,7 @@ impl SolverCtx {
                         let narrow_decl = self.bv(i, width);
                         self.widen_to_query_width(var, width, narrow_decl, None)
                     }
-                    Type::Int => self.i128(i),
+                    Type::Int => self.smt.numeral(i),
                     Type::Bool => {
                         if i == 0 {
                             self.smt.true_()
@@ -613,12 +602,12 @@ impl SolverCtx {
                 let static_width = self.static_width(&*x);
                 let expr_width = width.unwrap().clone();
                 self.width_assumptions
-                    .push(self.smt.eq(expr_width, self.usize(i)));
+                    .push(self.smt.eq(expr_width, self.smt.numeral(i)));
                 let xs = self.vir_expr_to_sexp(*x);
                 if let Some(size) = static_width {
                     self.extend_concrete(i, xs, size, &"zero_extend")
                 } else {
-                    self.extend_symbolic(self.usize(i), xs, arg_width, &"zero_extend")
+                    self.extend_symbolic(self.smt.numeral(i), xs, arg_width, &"zero_extend")
                 }
             }
             Expr::BVZeroExtToVarWidth(i, x) => {
@@ -640,12 +629,12 @@ impl SolverCtx {
                 let static_width = self.static_width(&*x);
                 let expr_width = width.unwrap().clone();
                 self.width_assumptions
-                    .push(self.smt.eq(expr_width, self.usize(i)));
+                    .push(self.smt.eq(expr_width, self.smt.numeral(i)));
                 let xs = self.vir_expr_to_sexp(*x);
                 if let Some(size) = static_width {
                     self.extend_concrete(i, xs, size, &"sign_extend")
                 } else {
-                    self.extend_symbolic(self.usize(i), xs, arg_width, "sign_extend")
+                    self.extend_symbolic(self.smt.numeral(i), xs, arg_width, "sign_extend")
                 }
             }
             Expr::BVSignExtToVarWidth(i, x) => {
@@ -856,7 +845,7 @@ impl SolverCtx {
 ///          (= <first rule LHS> <first rule RHS>))))))
 pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationResult {
     println!("Verifying with query width: {}", query_width);
-    let mut solver = easy_smt::Context::new("z3", ["-smt2", "-in"]).unwrap();
+    let mut solver = easy_smt::ContextBuilder::new().solver("z3", ["-smt2", "-in"]).build().unwrap();
 
     let mut assumptions: Vec<SExpr> = vec![];
 
@@ -902,7 +891,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                 match *w {
                     Some(bitwidth) => {
                         ctx.width_assumptions
-                            .push(ctx.smt.eq(ctx.smt.atom(&width_name), ctx.usize(bitwidth)));
+                            .push(ctx.smt.eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth)));
                     }
                     None => {
                         let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&t];
@@ -911,7 +900,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                                 .tymap
                                 .insert(*t, Type::BitVector(Some(query_width)));
                             ctx.width_assumptions
-                                .push(ctx.smt.eq(ctx.smt.atom(&width_name), ctx.usize(query_width)));
+                                .push(ctx.smt.eq(ctx.smt.atom(&width_name), ctx.smt.numeral(query_width)));
                         }
                     }
                 };
