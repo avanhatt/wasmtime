@@ -460,7 +460,7 @@ pub fn cls8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
 pub fn cls1(solver: &mut SolverCtx, id: u32) -> SExpr {
     // Generated code.
     let cls1ret = solver.declare(format!("cls1ret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(1)]));
-    solver.assume(solver.smt.eq(cls1ret, x));
+    solver.assume(solver.smt.eq(cls1ret, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(1)])));
     
     let padding = solver.new_fresh_bits(solver.bitwidth - 1);
     solver.smt.concat(padding, cls1ret)
