@@ -1,23 +1,55 @@
 import sys
 import re
+import sexpdata
 
 DECL = "(declare-fun "
 ASSERTION = "(assert "
-PATTERN = re.compile(r'\{.*?\}')
+PATTERN = r'\{(.*?)\}'
 
 
-# assume the line looks like (declare-fun <name> () <type>)
+def sexpr_to_rs(sexpr):
+    """Generate Rust code to generate an S-expression.
+
+    Convert a parsed S-expression to Rust code (as a string) that
+    generates the same thing. The generated code makes calls to a
+    `solver` context struct.
+    """
+    if isinstance(sexpr, sexpdata.Symbol):
+        sym = sexpr.value()
+        return f'solver.smt.atom("{sym}")'
+    elif isinstance(sexpr, list):
+        guts = ", ".join(sexpr_to_rs(v) for v in sexpr)
+        return f'solver.smt.list(vec![{guts}])'
+    elif isinstance(sexpr, int):
+        return f'solver.smt.numeral({sexpr})'
+    else:
+        assert False
+
+
 def parse_decl(line):
-    name = line.split()[1]
-    ty = f'String::from(\"{line.split("()")[1][1:-1]}\")'
+    """Parse a `declare-fun` line.
 
+    The line must look like `(declare-fun <name> () <type>)`. Return
+    Rust expressions for the variable's name (a string) and the type (an
+    SExpr).
+    """
+    # Parse the S-expression.
+    exp = sexpdata.loads(line)
+    assert exp[0].value() == 'declare-fun'
+    _, name, args, ret = exp
+    name = name.value()
+
+    # Rust code to format the variable name. Format with Rust variables
+    # matching the variables in the format string.
     matches = re.findall(PATTERN, name)
-    if len(matches) == 0:
-        return name, ty
+    if matches:
+        var = [m[0] for m in matches]
+        named_params = ', '.join([f'{x} = {x}' for x in var])
+        name_rs = f'format!(\"{name}\", {named_params})'
+    else:
+        name_rs = name  # TODO Should be surrounded in quotes?
 
-    var = set([m[1:-1] for m in matches])
-    named_params = ', '.join([f'{x} = {x}' for x in var])
-    return f'format!(\"{name}\", {named_params})', ty
+    return name_rs, sexpr_to_rs(ret)
 
 
 # assume the line looks like (assert <assertion>)
