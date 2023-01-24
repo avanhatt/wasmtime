@@ -34,4 +34,4 @@
 (assert (ite (not (= x1_{id} (_ bv0 8))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 8)))))
 
 ; final return
-(assert (= {ret} ret6_{id}))
+(assert (= clz8ret_{id} ret6_{id}))

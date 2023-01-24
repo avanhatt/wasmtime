@@ -57,4 +57,4 @@
 (assert (ite (not (= y1_{id} (_ bv0 64))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id})))
 
 ; final return
-(assert (= {ret} ret6_{id}))
+(assert (= clz64ret_{id} ret6_{id}))

@@ -39,4 +39,4 @@
 (assert (ite (not (= y1_{id} (_ bv0 16))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id})))
 
 ; final return
-(assert (= {ret} ret5_{id}))
+(assert (= clz16ret_{id} ret5_{id}))
