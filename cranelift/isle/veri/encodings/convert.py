@@ -80,8 +80,7 @@ def parse_decl(line):
     # matching the variables in the format string.
     matches = re.findall(PATTERN, name)
     if matches:
-        var = [m[0] for m in matches]
-        named_params = ', '.join([f'{x} = {x}' for x in var])
+        named_params = ', '.join([f'{x} = {x}' for x in matches])
         name_rs = f'format!(\"{name}\", {named_params})'
     else:
         name_rs = name  # TODO Should be surrounded in quotes?
