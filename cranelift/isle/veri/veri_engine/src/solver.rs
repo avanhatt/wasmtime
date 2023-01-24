@@ -475,12 +475,16 @@ impl SolverCtx {
                         let xs = self.vir_expr_to_rsmt2_str(*x);
                         // The shift arg needs to be extracted to the right width
                         let y_static_width = self.static_width(&y);
-                        let ys = format!(
-                            "((_ zero_extend {}) ((_ extract {} 0) {}))",
-                            self.bitwidth - y_static_width.unwrap(),
-                            y_static_width.unwrap() - 1,
+                        let ys = if let Some(w) = y_static_width {
+                            format!(
+                                "((_ zero_extend {}) ((_ extract {} 0) {}))",
+                                self.bitwidth - w,
+                                w - 1,
+                                self.vir_expr_to_rsmt2_str(*y)
+                            )
+                        } else {
                             self.vir_expr_to_rsmt2_str(*y)
-                        );
+                        };
 
                         // Strategy: shift left by (bitwidth - arg width) to zero bits to the right
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
@@ -501,12 +505,16 @@ impl SolverCtx {
                         let xs = self.vir_expr_to_rsmt2_str(*x);
                         // The shift arg needs to be extracted to the right width
                         let y_static_width = self.static_width(&y);
-                        let ys = format!(
-                            "((_ zero_extend {}) ((_ extract {} 0) {}))",
-                            self.bitwidth - y_static_width.unwrap(),
-                            y_static_width.unwrap() - 1,
+                        let ys = if let Some(w) = y_static_width {
+                            format!(
+                                "((_ zero_extend {}) ((_ extract {} 0) {}))",
+                                self.bitwidth - w,
+                                w - 1,
+                                self.vir_expr_to_rsmt2_str(*y)
+                            )
+                        } else {
                             self.vir_expr_to_rsmt2_str(*y)
-                        );
+                        };
 
                         // Strategy: shift left by (bitwidth - arg width) to eliminate bits to the left
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
@@ -567,8 +575,26 @@ impl SolverCtx {
                             bin
                         }
                     }
-                    (None, None) => format!("({} {} {})", op_str, x_rec, y_rec,),
-                    (a, b) => unreachable!("staticdebu widths {:?} {:?}", a, b),
+                    (Some(w), _) | (_, Some(w)) => {
+                        let bin = format!(
+                            "({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y}))",
+                            op = op_str,
+                            h = w - 1,
+                            x = x_rec,
+                            y = y_rec,
+                        );
+                        if let Some(we) = static_expr_width {
+                            assert_eq!(w, we);
+                            format!(
+                                "((_ zero_extend {padding}) {bin})",
+                                padding = self.bitwidth.checked_sub(we).unwrap(),
+                                bin = bin,
+                            )
+                        } else {
+                            bin
+                        }
+                    }
+                    _ => format!("({} {} {})", op_str, x_rec, y_rec,),
                 }
             }
             Expr::BVIntToBV(w, x) => {
@@ -840,7 +866,9 @@ impl SolverCtx {
 ///          (= <first rule LHS> <first rule RHS>))))))
 pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationResult {
     println!("Verifying with query width: {}", query_width);
-    let mut solver = Solver::default_z3(()).unwrap();
+    let mut conf = rsmt2::SmtConf::default_z3();
+    conf.unsat_cores();
+    let mut solver = Solver::new(conf, ()).unwrap();
 
     let mut assumptions: Vec<String> = vec![];
 
