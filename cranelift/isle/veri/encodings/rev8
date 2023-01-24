@@ -5,4 +5,4 @@
 (assert (= x2_{id} (bvor (bvlshr (bvand x1_{id} #xcc) #x02) (bvshl (bvand x1_{id} #x33) #x02))))
 
 (declare-fun rev8ret_{id} () (_ BitVec 8))
-(assert (= rev1ret_{id} (bvor (bvlshr (bvand x2_{id} #xaa) #x01) (bvshl (bvand x2_{id} #x55) #x01))))
+(assert (= rev8ret_{id} (bvor (bvlshr (bvand x2_{id} #xaa) #x01) (bvshl (bvand x2_{id} #x55) #x01))))
