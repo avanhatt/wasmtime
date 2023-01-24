@@ -44,9 +44,12 @@ def sexpr_to_rs(sexpr):
 def parse_decl(line):
     """Parse a `declare-fun` line.
 
-    The line must look like `(declare-fun <name> () <type>)`. Return
-    Rust expressions for the variable's name (a string) and the type (an
-    SExpr).
+    The line must look like `(declare-fun <name> () <type>)`. Return a
+    tuple consisting of:
+
+    * The Rust variable name we should use for the declared SMT variable.
+    * A Rust expression for the SMT variable's name (a string).
+    * A Rust expression for the type (an SExpr).
     """
     # Parse the S-expression.
     exp = sexpdata.loads(line)
@@ -64,8 +67,11 @@ def parse_decl(line):
     else:
         name_rs = name  # TODO Should be surrounded in quotes?
 
-    # Convert the type, and return the name and the type.
-    return name_rs, sexpr_to_rs(ret)
+    # Strip off the '_{id}' to get the Rust variable name.
+    assert name.endswith('_{id}')
+    name_var, _ = name.rsplit('_', 1)
+
+    return name_var, name_rs, sexpr_to_rs(ret)
 
 
 def parse_assertion(line):
@@ -103,8 +109,8 @@ def main():
 
             # Convert declarations.
             if line.startswith(DECL):
-                name, ty = parse_decl(line)
-                print(f'solver.declare({name}, {ty});')
+                var, name, ty = parse_decl(line)
+                print(f'let {var} = solver.declare({name}, {ty});')
                 continue
 
             # Convert assertions.
