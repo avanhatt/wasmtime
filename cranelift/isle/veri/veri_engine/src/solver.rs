@@ -64,6 +64,10 @@ impl SolverCtx {
             .push((name, typ));
         atom
     }
+    
+    fn assume(&mut self, expr: SExpr) {
+        self.additional_assumptions.push(expr);
+    }
 
     /// Construct a constant bit-vector value of the given width. (This is used so pervasively that
     /// perhaps we should submit it for inclusion in the easy_smt library...) (Also, this is
