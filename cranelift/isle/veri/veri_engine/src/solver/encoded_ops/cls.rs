@@ -959,14 +959,11 @@ pub fn cls16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(sx1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv65535"), solver.smt.numeral(16)]))]), solver.smt.eq(sret7, sret6), solver.smt.eq(sret7, solver.smt.list(vec![solver.smt.atom("bvadd"), sret6, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(16)])]))]));
     let clsret = solver.declare(format!("clsret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
     solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.eq(sret7, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)])), solver.smt.eq(clsret, sret7), solver.smt.eq(clsret, solver.smt.list(vec![solver.smt.atom("bvsub"), sret7, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(16)])]))]));
+    let cls16ret = solver.declare(format!("cls16ret_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
     solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("bvsle"), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]), x]), solver.smt.eq(cls16ret, clzret), solver.smt.eq(cls16ret, clsret)]));
 
     let padding = solver.new_fresh_bits(solver.bitwidth - 16);
-    format!(
-        "(concat {padding} cls16ret_{id})",
-        padding = padding,
-        id = id
-    )
+    solver.smt.concat(padding, cls16ret)
 }
 
 pub fn cls8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
