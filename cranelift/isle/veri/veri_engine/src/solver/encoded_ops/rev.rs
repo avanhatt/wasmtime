@@ -135,7 +135,7 @@ mod tests {
     use super::*;
     use veri_ir::TypeContext;
     use crate::solver::SolverCtx;
-    use std::collections::{HashMap, HashSet};
+    use std::collections::HashMap;
     
     fn get_ctx() -> SolverCtx {
         let mut smt = easy_smt::ContextBuilder::new().build().unwrap();
