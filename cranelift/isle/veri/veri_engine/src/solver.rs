@@ -15,8 +15,8 @@ mod encoded_ops;
  * TODO: TEMPORARILY DISABLED during easy-smt refactor.
 use encoded_ops::cls;
 use encoded_ops::clz;
-use encoded_ops::rev;
 */
+use encoded_ops::rev;
 
 use crate::REG_WIDTH;
 
@@ -752,11 +752,11 @@ impl SolverCtx {
                 let tyvar = *tyvar.unwrap();
                 let es = self.vir_expr_to_sexp(*e);
                 match static_expr_width {
-                    Some(1) => todo!(), //rev::rev1(self, es, tyvar),
-                    Some(8) => todo!(), //rev::rev8(self, es, tyvar),
-                    Some(16) => todo!(), //rev::rev16(self, es, tyvar),
-                    Some(32) => todo!(), //rev::rev32(self, es, tyvar),
-                    Some(64) => todo!(), //rev::rev64(self, es, tyvar),
+                    Some(1) => rev::rev1(self, es, tyvar),
+                    Some(8) => rev::rev8(self, es, tyvar),
+                    Some(16) => rev::rev16(self, es, tyvar),
+                    Some(32) => rev::rev32(self, es, tyvar),
+                    Some(64) => rev::rev64(self, es, tyvar),
                     Some(w) => unreachable!("Unexpected CLS width {}", w),
                     None => unreachable!("Need static CLS width"),
                 }
@@ -767,7 +767,7 @@ impl SolverCtx {
                 let val = self.get_expr_value(&*ty);
                 match val {
                     Some(32) => todo!(), //rev::rbit32(self, es, tyvar),
-                    Some(64) => todo!(), //rev::rev64(self, es, tyvar),
+                    Some(64) => rev::rev64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64Rev width {}", w);
                         self.additional_assumptions.push(self.smt.false_());
