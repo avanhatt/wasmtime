@@ -216,17 +216,14 @@ pub fn rev1(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use veri_ir::TypeContext;
-
     use crate::solver::SolverCtx;
     use std::collections::{HashMap, HashSet};
-
-    #[test]
-    fn rev1_test() {
+    
+    fn get_ctx() -> SolverCtx {
         let mut smt = easy_smt::ContextBuilder::new().build().unwrap();
-
-        // Seems like we could make it easier to construct a test context!
-        let mut ctx = SolverCtx {
+        SolverCtx {
             smt: smt,
             tyctx: TypeContext {
                 tyvars: HashMap::new(),
@@ -241,10 +238,21 @@ mod tests {
             additional_decls: vec![],
             additional_assumptions: vec![],
             fresh_bits_idx: 0,
-        };
+        }
+    }
+    
+    fn check(ctx: &mut SolverCtx, expr: SExpr, expected: &str) {
+        let expr_s = format!("{}", ctx.smt.display(expr));
+        assert_eq!(expr_s, expected);
+    }
+
+    #[test]
+    fn rev1_test() {
+        let mut ctx = get_ctx();
         
         let x = ctx.smt.atom("x");
-        let res = crate::solver::encoded_ops::rev::rev1(&mut ctx, x, 42);
-        assert_eq!(format!("{}", ctx.smt.display(res)), "(concat fresh0 rev1ret_42)");
+        let res = rev1(&mut ctx, x, 42);
+
+        check(&mut ctx, res, "(concat fresh0 rev1ret_42)");
     }
 }
