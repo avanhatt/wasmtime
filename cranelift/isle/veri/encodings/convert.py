@@ -13,9 +13,24 @@ def sexpr_to_rs(sexpr):
     Convert a parsed S-expression to Rust code (as a string) that
     generates the same thing. The generated code makes calls to a
     `solver` context struct.
+
+    Symbols containing Rust formatting delimiters, like `{this}`, are
+    treated specially. Instead of generating liter symbols, we generate
+    references to corresponding Rust variables that should hold those
+    symbols.
     """
     if isinstance(sexpr, sexpdata.Symbol):
         sym = sexpr.value()
+
+        if sym == '{x}':  # The special input expression.
+            return 'x'
+        elif sym.endswith('_{id}'):  # Tagged "local" variables.
+            base, ext = sym.rsplit('_', 1)
+            return base
+        elif sym == '_':
+            return 'solver.smt.atoms().und'
+
+        # General case: construct an atom.
         return f'solver.smt.atom("{sym}")'
     elif isinstance(sexpr, list):
         guts = ", ".join(sexpr_to_rs(v) for v in sexpr)
@@ -49,20 +64,24 @@ def parse_decl(line):
     else:
         name_rs = name  # TODO Should be surrounded in quotes?
 
+    # Convert the type, and return the name and the type.
     return name_rs, sexpr_to_rs(ret)
 
 
-# assume the line looks like (assert <assertion>)
 def parse_assertion(line):
-    a = line[len(ASSERTION):-1]
+    """Parse an `assert` line.
 
-    matches = re.findall(PATTERN, a)
-    if len(matches) == 0:
-        return a
+    The line must look like `(assert <assertion>)`. Return Rust code to
+    generate an equivalent S-expression for the underlying assertion.
+    """
+    # Parse the S-expression.
+    exp = sexpdata.loads(line)
+    assert exp[0].value() == 'assert'
+    _, asst = exp
 
-    var = set([m[1:-1] for m in matches])
-    named_params = ', '.join([f'{x} = {x}' for x in var])
-    return f'format!(\"{a}\", {named_params})'
+    # TODO do something with the pattern variables
+
+    return sexpr_to_rs(asst)
 
 
 def main():
