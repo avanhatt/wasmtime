@@ -1066,20 +1066,20 @@ fn test_ushr_to_do_shift_fits_in_32() {
     )
 }
 
-// #[test]
-// fn test_do_shift_with_imm() {
-//     test_from_file_with_filter(
-//         "./examples/shifts/do_shift_with_imm.isle",
-//         "do_shift".to_string(),
-//         vec![
-//             (Bitwidth::I1, VerificationResult::Success),
-//             (Bitwidth::I8, VerificationResult::Success),
-//             (Bitwidth::I16, VerificationResult::Success),
-//             (Bitwidth::I32, VerificationResult::Success),
-//             (Bitwidth::I64, VerificationResult::Success),
-//         ],
-//     )
-// }
+#[test]
+fn test_do_shift_with_imm() {
+    test_from_file_with_filter(
+        "./examples/shifts/do_shift_with_imm.isle",
+        "do_shift".to_string(),
+        vec![
+            (Bitwidth::I1, VerificationResult::Success),
+            (Bitwidth::I8, VerificationResult::Success),
+            (Bitwidth::I16, VerificationResult::Success),
+            (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
+    )
+}
 
 // #[test]
 // fn test_do_shift_fits_in_16() {

@@ -543,6 +543,8 @@ impl SolverCtx {
                 };
                 // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation.
+                dbg!(&x);
+                dbg!(&y);
                 let x_static_width = self.static_width(&x);
                 let y_static_width = self.static_width(&y);
                 let x_rec = self.vir_expr_to_rsmt2_str(*x);
@@ -567,8 +569,27 @@ impl SolverCtx {
                             bin
                         }
                     }
-                    (None, None) => format!("({} {} {})", op_str, x_rec, y_rec,),
-                    (a, b) => unreachable!("staticdebu widths {:?} {:?}", a, b),
+                    (Some(w), None) | (None, Some(w))  => {
+                        let bin = format!(
+                            "({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y}))",
+                            op = op_str,
+                            h = w - 1,
+                            x = x_rec,
+                            y = y_rec,
+                        );
+                        if let Some(we) = static_expr_width {
+                            assert_eq!(we, w);
+                            format!(
+                                "((_ zero_extend {padding}) {bin})",
+                                padding = self.bitwidth.checked_sub(w).unwrap(),
+                                bin = bin,
+                            )
+                        } else {
+                            bin
+                        }
+                    }
+                    (_, _) => format!("({} {} {})", op_str, x_rec, y_rec,),
+                    // (a, b) => unreachable!("static widths {:?} {:?}", a, b),
                 }
             }
             Expr::BVIntToBV(w, x) => {

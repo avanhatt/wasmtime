@@ -59,19 +59,19 @@
 ))
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (if (= (op) (0i64:bv)) {
-;;@                     (= (ret) (shl (conv_to (t) (a)) (b)))
+;;@     (assertions (= (ret) (conv_to (t) (if (= (op) (0i64:bv)) {
+;;@                     (shl (a) (b))
 ;;@                  } else { 
 ;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (= (ret) (shr (conv_to (t) (a)) (b)))
+;;@                          (shr (a) (b))
 ;;@                      } else { 
 ;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (= (ret) (ashr (conv_to (t) (a)) (b)))
+;;@                              (ashr (a) (b))
 ;;@                          } else { 
-;;@                              (= (ret) (64i64:bv))
+;;@                              (64i64:bv)
 ;;@                          })
 ;;@                      })
-;;@                  }),
+;;@                  }))),
 ;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
