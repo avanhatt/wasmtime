@@ -426,9 +426,9 @@ impl SolverCtx {
                     Type::Int => self.smt.numeral(i),
                     Type::Bool => {
                         if i == 0 {
-                            self.smt.true_()
-                        } else {
                             self.smt.false_()
+                        } else {
+                            self.smt.true_()
                         }
                     }
                 },
@@ -829,6 +829,43 @@ impl SolverCtx {
         self.smt.pop().unwrap();
         res
     }
+
+    fn display_value(&self, variable: SExpr, value: SExpr) -> (String, String ){
+        let SEXPR_HEX_PREFIX = "#x";
+        let var_str = self.smt.display(variable).to_string();
+        let val_str = self.smt.display(value).to_string();
+        if val_str.starts_with(SEXPR_HEX_PREFIX) {
+            let without_prefix = val_str.trim_start_matches("#x");
+            let as_unsigned = u64::from_str_radix(without_prefix, 16).unwrap();
+            (var_str, format!("{}\n{:#b}", self.smt.display(value), as_unsigned))
+        } else {
+            (var_str, val_str)
+        }
+    }
+
+    fn display_model(&mut self, model: SExpr) {
+        
+        println!("Quantified variables:");
+        let mut vars = vec![];
+        for (name, atom) in &self.var_map {
+            let solution = self.smt.get_value(vec![self.smt.atom(name), *atom]).unwrap();
+            for (variable, value) in solution {
+                vars.push(self.display_value(variable, value)); 
+            }
+        }
+        for (name, _) in &self.additional_decls {
+            let solution = self.smt.get_value(vec![self.smt.atom(name)]).unwrap();
+            for (variable, value) in solution {
+                vars.push(self.display_value(variable, value)); 
+            }
+        }
+        vars.sort_by_key(|x| x.0.clone());
+        vars.dedup();
+        for (v, x) in vars {
+            println!("{}", v);
+            println!("{}\n", x);
+        }
+    }
 }
 
 /// Overall query for single rule:
@@ -990,7 +1027,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         Ok(Response::Sat) => {
             println!("Verification failed");
             let model = ctx.smt.get_model().unwrap();
-            println!("{}", ctx.smt.display(model));
+            ctx.display_model(model);
             VerificationResult::Failure(Counterexample {})
         }
         Ok(Response::Unsat) => {
