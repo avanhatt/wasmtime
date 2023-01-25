@@ -842,7 +842,7 @@ impl SolverCtx {
 ///          (= <first rule LHS> <first rule RHS>))))))
 pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationResult {
     println!("Verifying with query width: {}", query_width);
-    let mut solver = easy_smt::ContextBuilder::new().solver("z3", ["-smt2", "-in"]).build().unwrap();
+    let solver = easy_smt::ContextBuilder::new().solver("z3", ["-smt2", "-in"]).build().unwrap();
 
     let mut assumptions: Vec<SExpr> = vec![];
 
