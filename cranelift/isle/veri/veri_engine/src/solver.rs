@@ -1,7 +1,7 @@
 /// Convert our internal Verification IR to an external SMT AST and pass
 /// queries to that solver.
 ///
-/// Right now, this uses the rsmt2 crate.
+/// This uses the easy-smt crate to interact with any solver.
 use easy_smt::{SExpr, Response};
 use std::collections::{HashMap, HashSet};
 use veri_ir::{
@@ -348,7 +348,7 @@ impl SolverCtx {
         }
     }
 
-    pub fn vir_to_rsmt2_constant_ty(&self, ty: &Type) -> SExpr {
+    pub fn vir_to_smt_ty(&self, ty: &Type) -> SExpr {
         match ty {
             Type::BitVector(w) => {
                 let width = w.unwrap_or(self.bitwidth);
@@ -911,7 +911,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     for v in &rule_sem.quantified_vars {
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
-        let var_ty = ctx.vir_to_rsmt2_constant_ty(&ty);
+        let var_ty = ctx.vir_to_smt_ty(&ty);
         println!("\t{} : {:?}", name, var_ty);
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
