@@ -11,13 +11,8 @@ use veri_ir::{
 
 mod encoded_ops;
 
-/*
- * TODO: TEMPORARILY DISABLED during easy-smt refactor.
-*/
 use encoded_ops::cls;
-/*
 use encoded_ops::clz;
-*/
 use encoded_ops::rev;
 
 use crate::REG_WIDTH;
@@ -690,11 +685,11 @@ impl SolverCtx {
                 let tyvar = *tyvar.unwrap();
                 let es = self.vir_expr_to_sexp(*e);
                 match static_expr_width {
-                    Some(1) => todo!(), //clz::clz1(self, es, tyvar),
-                    Some(8) => todo!(), //clz::clz8(self, es, tyvar),
-                    Some(16) => todo!(), //clz::clz16(self, es, tyvar),
-                    Some(32) => todo!(), //clz::clz32(self, es, tyvar),
-                    Some(64) => todo!(), //clz::clz64(self, es, tyvar),
+                    Some(1) => clz::clz1(self, es, tyvar),
+                    Some(8) => clz::clz8(self, es, tyvar),
+                    Some(16) => clz::clz16(self, es, tyvar),
+                    Some(32) => clz::clz32(self, es, tyvar),
+                    Some(64) => clz::clz64(self, es, tyvar),
                     Some(w) => unreachable!("Unexpected CLZ width {}", w),
                     None => unreachable!("Need static CLZ width"),
                 }
@@ -704,8 +699,8 @@ impl SolverCtx {
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
-                    Some(32) => todo!(), //clz::a64clz32(self, es, tyvar),
-                    Some(64) => todo!(), //clz::clz64(self, es, tyvar),
+                    Some(32) => clz::a64clz32(self, es, tyvar),
+                    Some(64) => clz::clz64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64CLZ width {}", w);
                         self.additional_assumptions.push(self.smt.false_());
@@ -768,7 +763,7 @@ impl SolverCtx {
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
-                    Some(32) => todo!(), //rev::rbit32(self, es, tyvar),
+                    Some(32) => rev::rbit32(self, es, tyvar),
                     Some(64) => rev::rev64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64Rev width {}", w);

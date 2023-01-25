@@ -1,54 +1,10 @@
 use crate::solver::SolverCtx;
 use easy_smt::SExpr;
 
-/*
 pub fn rbit32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
-    solver
-        .additional_decls
-        .push((format!("a64x_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!(
-        "(= a64x_{id} ((_ extract 31 0) {x}))",
-        id = id,
-        x = x
-    ));
-
-    solver
-        .additional_decls
-        .push((format!("x1_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!(
-        "(= x1_{id} (bvor (bvlshr a64x_{id} #x00000010) (bvshl a64x_{id} #x00000010)))",
-        id = id
-    ));
-
-    solver
-        .additional_decls
-        .push((format!("x2_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!("(= x2_{id} (bvor (bvlshr (bvand x1_{id} #xff00ff00) #x00000008) (bvshl (bvand x1_{id} #x00ff00ff) #x00000008)))", id = id));
-
-    solver
-        .additional_decls
-        .push((format!("x3_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!("(= x3_{id} (bvor (bvlshr (bvand x2_{id} #xf0f0f0f0) #x00000004) (bvshl (bvand x2_{id} #x0f0f0f0f) #x00000004)))", id = id));
-
-    solver
-        .additional_decls
-        .push((format!("x4_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!("(= x4_{id} (bvor (bvlshr (bvand x3_{id} #xcccccccc) #x00000002) (bvshl (bvand x3_{id} #x33333333) #x00000002)))", id = id));
-
-    solver.additional_decls.push((
-        format!("rbitret_{id}", id = id),
-        String::from("(_ BitVec 32)"),
-    ));
-    solver.additional_assumptions.push(format!("(= rbitret_{id} (bvor (bvlshr (bvand x4_{id} #xaaaaaaaa) #x00000001) (bvshl (bvand x4_{id} #x55555555) #x00000001)))", id = id));
-
-    let padding = solver.new_fresh_bits(solver.bitwidth - 32);
-    format!(
-        "(concat {padding} rbitret_{id})",
-        padding = padding,
-        id = id
-    )
+    // Don't have an input SMT file for this one?
+    todo!();
 }
-*/
 
 pub fn rev64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     // Generated code.
