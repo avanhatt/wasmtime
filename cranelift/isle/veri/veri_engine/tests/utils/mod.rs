@@ -160,6 +160,8 @@ pub fn test_from_file(s: &str, tr: TestResult) -> () {
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
     let input = PathBuf::from(s);
+
+    std::thread::sleep(std::time::Duration::from_millis(10));
     test(vec![prelude_isle, prelude_lower_isle, clif_isle, input], tr);
 }
 

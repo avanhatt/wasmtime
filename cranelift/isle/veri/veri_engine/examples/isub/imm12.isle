@@ -29,8 +29,14 @@
 (rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
-;;@ (spec (sig (args ty, reg, imm_arg) (ret))
-;;@     (assertions (= (-(reg) (sign_ext (regwidth) (imm_arg))) (ret))))
+;; Note that 4094 = 0xffe and 16773119 = 0xffefff
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (y)) (0i3:bv))
+;;@                 )),
+;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y))))
+;;@ ))
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 

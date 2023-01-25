@@ -554,7 +554,7 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                // If we have some static width that isn't the bitwidth, extract based on it 
+                // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation.
                 match static_expr_width {
                     Some(w) if w < self.bitwidth => {
