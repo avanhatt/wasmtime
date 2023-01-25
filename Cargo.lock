@@ -1209,6 +1209,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_logger"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
+dependencies = [
+ "humantime 2.1.0",
+ "is-terminal",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
 name = "errno"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3293,7 +3306,9 @@ dependencies = [
  "clap 3.2.8",
  "cranelift-isle",
  "easy-smt",
+ "env_logger 0.10.0",
  "itertools",
+ "log",
  "strum",
  "strum_macros",
  "veri_annotation",

@@ -3,6 +3,7 @@
 ///
 /// This uses the easy-smt crate to interact with any solver.
 use easy_smt::{SExpr, Response};
+use log::{debug};
 use std::collections::{HashMap, HashSet};
 use veri_ir::{
     BinaryOp, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext, UnaryOp,
@@ -788,7 +789,7 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
         for a in assumptions {
-            // println!("{}", &a);
+            debug!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
@@ -912,7 +913,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
         let var_ty = ctx.vir_to_smt_ty(&ty);
-        println!("\t{} : {:?}", name, var_ty);
+        println!("\t{} : {}", name, ctx.smt.display(var_ty));
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
                 v.tyvar,
@@ -928,23 +929,20 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     println!("Adding explicit assumptions");
     for a in &rule_sem.assumptions {
         let p = ctx.vir_expr_to_sexp(a.clone());
-        // println!("\t{}", p);
         assumptions.push(p)
     }
     println!("Adding width assumptions");
     for a in &ctx.width_assumptions {
-        // println!("\t{}", a);
         assumptions.push(a.clone());
     }
     println!("Adding additional assumptions");
     for a in &ctx.additional_assumptions {
-        // println!("\t{}", a);
         assumptions.push(a.clone());
     }
 
     println!("Declaring additional variables");
     for (name, ty) in &ctx.additional_decls {
-        println!("\t{} : {:?}", name, ty);
+        println!("\t{} : {}", name, ctx.smt.display(*ty));
         ctx.smt.declare_const(name, *ty).unwrap();
     }
 
@@ -981,19 +979,18 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
 
     let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
-    println!("LHS and RHS equality condition:\n\t{:?}\n", side_equality);
+    println!("LHS and RHS equality condition:\n\t{}\n", ctx.smt.display(side_equality));
 
     let assumption_conjunction = ctx.smt.and_many(assumptions);
     let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, side_equality));
     println!("Running query");
-    // println!("Running query:\n\t{}\n", query);
     ctx.smt.assert(query).unwrap();
 
     match ctx.smt.check() {
         Ok(Response::Sat) => {
             println!("Verification failed");
             let model = ctx.smt.get_model().unwrap();
-            dbg!(model);
+            println!("{}", ctx.smt.display(model));
             VerificationResult::Failure(Counterexample {})
         }
         Ok(Response::Unsat) => {

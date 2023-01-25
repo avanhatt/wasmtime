@@ -10,6 +10,8 @@ use veri_engine_lib::rule_tree::verify_rules_with_lhs_root;
 use veri_engine_lib::type_inference::type_all_rules;
 
 fn main() {
+    env_logger::init();
+    
     let cur_dir = env::current_dir().expect("Can't access current working directory");
 
     // TODO: clean up path logic
