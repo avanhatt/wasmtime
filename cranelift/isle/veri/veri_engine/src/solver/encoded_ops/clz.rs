@@ -4,585 +4,182 @@ use easy_smt::SExpr;
 // Adapted from https://stackoverflow.com/questions/23856596/how-to-count-leading-zeros-in-a-32-bit-unsigned-integer
 
 pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
-    let bv32 = solver.smt.bit_vec_sort(solver.usize(32));
-    let bv64 = solver.smt.bit_vec_sort(solver.usize(64));
-
-    // extract to ensure we have a 32 bit input
-    let a64x = solver.declare(format!("a64x_{id}", id = id), bv32);
-    solver.additional_assumptions.push(
-       solver.smt.eq(a64x, solver.smt.extract(31, 0, x))
-    );
-
-    // total zeros counter
-    let ret0 = solver.declare(format!("ret0_{id}", id = id), bv64);
-    solver
-        .additional_assumptions
-        .push(solver.smt.eq(ret0, solver.bv(0, 64)));
-
-    // round 1
-    let ret1 = solver.declare(format!("ret1_{id}", id = id), bv64);
-    let y16 = solver.declare(format!("y16_{id}", id = id), bv32);
-    let x16 = solver.declare(format!("x16_{id}", id = id), bv32);
-    
-    solver.additional_assumptions.push(solver.smt.eq(
-        y16,
-        solver.smt.bvlshr(a64x, solver.smt.atom("#x00000010")),
-    ));
-    solver.additional_assumptions.push(
-        solver.smt.ite(
-            solver.smt.not(solver.smt.eq(y16, solver.bv(0, 32))),
-            solver.smt.eq(ret1, ret0),
-            solver.smt.eq(ret1, solver.smt.bvadd(ret0, solver.bv(16, 64))),
-        )
-    );
-    solver.additional_assumptions.push(
-        solver.smt.ite(
-            solver.smt.not(solver.smt.eq(y16, solver.bv(0, 32))),
-            solver.smt.eq(x16, y16),
-            solver.smt.eq(x16, a64x),
-        )
-    );
-
-    // round 2
-    let ret2 = solver.declare(format!("ret2_{id}", id = id), bv64);
-    let y8 = solver.declare(format!("y8_{id}", id = id), bv32);
-    let x8 = solver.declare(format!("x8_{id}", id = id), bv32);
-
-    solver
-        .additional_assumptions
-        .push(solver.smt.eq(y8, solver.smt.bvlshr(x16, solver.smt.atom("#x00000008"))));
-    solver.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 32))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv8 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y8_{id} (_ bv0 32))) (= x8_{id} y8_{id}) (= x8_{id} x16_{id}))",
-        id = id
-    ));
-
-    // round 3
-    solver
-        .additional_decls
-        .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y4_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x4_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y4_{id} (bvlshr x8_{id} #x00000004))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 32))) (= ret3_{id} ret2_{id}) (= ret3_{id} (bvadd ret2_{id} (_ bv4 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y4_{id} (_ bv0 32))) (= x4_{id} y4_{id}) (= x4_{id} x8_{id}))",
-        id = id
-    ));
-
-    // round 4
-    solver
-        .additional_decls
-        .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y2_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x2_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y2_{id} (bvlshr x4_{id} #x00000002))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 32))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y2_{id} (_ bv0 32))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-        id = id
-    ));
-
-    // round 5
-    solver
-        .additional_decls
-        .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y1_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x1_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y1_{id} (bvlshr x2_{id} #x00000001))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 32))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y1_{id} (_ bv0 32))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-        id = id
-    ));
-
-    // last round
-    solver
-        .additional_decls
-        .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 32))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 64))))", id = id));
-
-    // final return
-    format!("ret6_{id}", id = id)
+    // Don't yet have an SMT file for this one?
+    todo!()
 }
 
 pub fn clz64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
+    // Generated code.
     // total zeros counter
-    solver
-        .additional_decls
-        .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_assumptions
-        .push(format!("(= ret0_{id} (_ bv0 64))", id = id));
-
+    let ret0 = solver.declare(format!("ret0_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(ret0, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)])));
     // round 1
-    solver
-        .additional_decls
-        .push((format!("ret1_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y32_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("x32_{id}", id = id), String::from("(_ BitVec 64)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y32_{id} (bvlshr {x} #x0000000000000020))",
-        x = x,
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y32_{id} (_ bv0 64))) (= ret1_{id} ret0_{id}) (= ret1_{id} (bvadd ret0_{id} (_ bv32 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y32_{id} (_ bv0 64))) (= x32_{id} y32_{id}) (= x32_{id} {x}))",
-        x = x,
-        id = id
-    ));
-
+    let ret1 = solver.declare(format!("ret1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let y32 = solver.declare(format!("y32_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let x32 = solver.declare(format!("x32_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(y32, solver.smt.bvlshr(x, solver.smt.atom("#x0000000000000020"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y32, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(ret1, ret0), solver.smt.eq(ret1, solver.smt.list(vec![solver.smt.atom("bvadd"), ret0, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv32"), solver.smt.numeral(64)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y32, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(x32, y32), solver.smt.eq(x32, x)]));
     // round 2
-    solver
-        .additional_decls
-        .push((format!("ret2_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y16_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("x16_{id}", id = id), String::from("(_ BitVec 64)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y16_{id} (bvlshr x32_{id} #x0000000000000010))",
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y16_{id} (_ bv0 64))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv16 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y16_{id} (_ bv0 64))) (= x16_{id} y16_{id}) (= x16_{id} x32_{id}))",
-        id = id
-    ));
-
+    let ret2 = solver.declare(format!("ret2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let y16 = solver.declare(format!("y16_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let x16 = solver.declare(format!("x16_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(y16, solver.smt.bvlshr(x32, solver.smt.atom("#x0000000000000010"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y16, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(ret2, ret1), solver.smt.eq(ret2, solver.smt.list(vec![solver.smt.atom("bvadd"), ret1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv16"), solver.smt.numeral(64)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y16, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(x16, y16), solver.smt.eq(x16, x32)]));
     // round 3
-    solver
-        .additional_decls
-        .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y8_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("x8_{id}", id = id), String::from("(_ BitVec 64)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y8_{id} (bvlshr x16_{id} #x0000000000000008))",
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 64))) (= ret3_{id} ret2_{id}) (= ret3_{id} (bvadd ret2_{id} (_ bv8 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y8_{id} (_ bv0 64))) (= x8_{id} y8_{id}) (= x8_{id} x16_{id}))",
-        id = id
-    ));
-
+    let ret3 = solver.declare(format!("ret3_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let y8 = solver.declare(format!("y8_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let x8 = solver.declare(format!("x8_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(y8, solver.smt.bvlshr(x16, solver.smt.atom("#x0000000000000008"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y8, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(ret3, ret2), solver.smt.eq(ret3, solver.smt.list(vec![solver.smt.atom("bvadd"), ret2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv8"), solver.smt.numeral(64)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y8, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(x8, y8), solver.smt.eq(x8, x16)]));
     // round 4
-    solver
-        .additional_decls
-        .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y4_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("x4_{id}", id = id), String::from("(_ BitVec 64)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y4_{id} (bvlshr x8_{id} #x0000000000000004))",
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 64))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv4 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y4_{id} (_ bv0 64))) (= x4_{id} y4_{id}) (= x4_{id} x8_{id}))",
-        id = id
-    ));
-
+    let ret4 = solver.declare(format!("ret4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let y4 = solver.declare(format!("y4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let x4 = solver.declare(format!("x4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(y4, solver.smt.bvlshr(x8, solver.smt.atom("#x0000000000000004"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(ret4, ret3), solver.smt.eq(ret4, solver.smt.list(vec![solver.smt.atom("bvadd"), ret3, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv4"), solver.smt.numeral(64)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(x4, y4), solver.smt.eq(x4, x8)]));
     // round 5
-    solver
-        .additional_decls
-        .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y2_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("x2_{id}", id = id), String::from("(_ BitVec 64)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y2_{id} (bvlshr x4_{id} #x0000000000000002))",
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 64))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv2 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y2_{id} (_ bv0 64))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-        id = id
-    ));
-
+    let ret5 = solver.declare(format!("ret5_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let y2 = solver.declare(format!("y2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let x2 = solver.declare(format!("x2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(y2, solver.smt.bvlshr(x4, solver.smt.atom("#x0000000000000002"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(ret5, ret4), solver.smt.eq(ret5, solver.smt.list(vec![solver.smt.atom("bvadd"), ret4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv2"), solver.smt.numeral(64)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(x2, y2), solver.smt.eq(x2, x4)]));
     // round 6
-    solver
-        .additional_decls
-        .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("y1_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver
-        .additional_decls
-        .push((format!("x1_{id}", id = id), String::from("(_ BitVec 64)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y1_{id} (bvlshr x2_{id} #x0000000000000001))",
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 64))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 64))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y1_{id} (_ bv0 64))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-        id = id
-    ));
-
-    // last round
-    solver
-        .additional_decls
-        .push((format!("ret7_{id}", id = id), String::from("(_ BitVec 64)")));
-    solver.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 64))) (= ret7_{id} ret6_{id}) (= ret7_{id} (bvadd ret6_{id} (_ bv1 64))))", id = id));
-
-    // final return
-    format!("ret7_{id}", id = id)
+    let ret6 = solver.declare(format!("ret6_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let y1 = solver.declare(format!("y1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    let x1 = solver.declare(format!("x1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(64)]));
+    solver.assume(solver.smt.eq(y1, solver.smt.bvlshr(x2, solver.smt.atom("#x0000000000000001"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(ret6, ret5), solver.smt.eq(ret6, solver.smt.list(vec![solver.smt.atom("bvadd"), ret5, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(64)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(64)]))]), solver.smt.eq(x1, y1), solver.smt.eq(x1, x2)]));
+        
+    ret6
 }
 
 pub fn clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
-    let x = format!("((_ extract 31 0) {})", x);
+    let x = solver.smt.extract(31, 0, x);
 
+    // Generated code.
     // total zeros counter
-    solver
-        .additional_decls
-        .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_assumptions
-        .push(format!("(= ret0_{id} (_ bv0 32))", id = id));
-
+    let ret0 = solver.declare(format!("ret0_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    solver.assume(solver.smt.eq(ret0, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)])));
     // round 1
-    solver
-        .additional_decls
-        .push((format!("ret1_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("y16_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x16_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver.additional_assumptions.push(format!(
-        "(= y16_{id} (bvlshr {x} #x00000010))",
-        x = x,
-        id = id
-    ));
-    solver.additional_assumptions.push(format!("(ite (not (= y16_{id} (_ bv0 32))) (= ret1_{id} ret0_{id}) (= ret1_{id} (bvadd ret0_{id} (_ bv16 32))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y16_{id} (_ bv0 32))) (= x16_{id} y16_{id}) (= x16_{id} {x}))",
-        x = x,
-        id = id
-    ));
-
+    let ret1 = solver.declare(format!("ret1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let y16 = solver.declare(format!("y16_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let x16 = solver.declare(format!("x16_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    solver.assume(solver.smt.eq(y16, solver.smt.bvlshr(x, solver.smt.atom("#x00000010"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y16, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(ret1, ret0), solver.smt.eq(ret1, solver.smt.list(vec![solver.smt.atom("bvadd"), ret0, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv16"), solver.smt.numeral(32)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y16, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(x16, y16), solver.smt.eq(x16, x)]));
     // round 2
-    solver
-        .additional_decls
-        .push((format!("ret2_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("y8_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x8_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y8_{id} (bvlshr x16_{id} #x00000008))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 32))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv8 32))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y8_{id} (_ bv0 32))) (= x8_{id} y8_{id}) (= x8_{id} x16_{id}))",
-        id = id
-    ));
-
+    let ret2 = solver.declare(format!("ret2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let y8 = solver.declare(format!("y8_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let x8 = solver.declare(format!("x8_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    solver.assume(solver.smt.eq(y8, solver.smt.bvlshr(x16, solver.smt.atom("#x00000008"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y8, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(ret2, ret1), solver.smt.eq(ret2, solver.smt.list(vec![solver.smt.atom("bvadd"), ret1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv8"), solver.smt.numeral(32)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y8, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(x8, y8), solver.smt.eq(x8, x16)]));
     // round 3
-    solver
-        .additional_decls
-        .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("y4_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x4_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y4_{id} (bvlshr x8_{id} #x00000004))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 32))) (= ret3_{id} ret2_{id}) (= ret3_{id} (bvadd ret2_{id} (_ bv4 32))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y4_{id} (_ bv0 32))) (= x4_{id} y4_{id}) (= x4_{id} x8_{id}))",
-        id = id
-    ));
-
+    let ret3 = solver.declare(format!("ret3_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let y4 = solver.declare(format!("y4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let x4 = solver.declare(format!("x4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    solver.assume(solver.smt.eq(y4, solver.smt.bvlshr(x8, solver.smt.atom("#x00000004"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(ret3, ret2), solver.smt.eq(ret3, solver.smt.list(vec![solver.smt.atom("bvadd"), ret2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv4"), solver.smt.numeral(32)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(x4, y4), solver.smt.eq(x4, x8)]));
     // round 4
-    solver
-        .additional_decls
-        .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("y2_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x2_{id}", id = id), String::from("(_ BitVec 32)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y2_{id} (bvlshr x4_{id} #x00000002))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 32))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 32))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y2_{id} (_ bv0 32))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-        id = id
-    ));
-
+    let ret4 = solver.declare(format!("ret4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let y2 = solver.declare(format!("y2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let x2 = solver.declare(format!("x2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    solver.assume(solver.smt.eq(y2, solver.smt.bvlshr(x4, solver.smt.atom("#x00000002"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(ret4, ret3), solver.smt.eq(ret4, solver.smt.list(vec![solver.smt.atom("bvadd"), ret3, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv2"), solver.smt.numeral(32)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(x2, y2), solver.smt.eq(x2, x4)]));
     // round 5
-    solver
-        .additional_decls
-        .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("y1_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver
-        .additional_decls
-        .push((format!("x1_{id}", id = id), String::from("(_ BitVec 32)")));
+    let ret5 = solver.declare(format!("ret5_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let y1 = solver.declare(format!("y1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    let x1 = solver.declare(format!("x1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(32)]));
+    solver.assume(solver.smt.eq(y1, solver.smt.bvlshr(x2, solver.smt.atom("#x00000001"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(ret5, ret4), solver.smt.eq(ret5, solver.smt.list(vec![solver.smt.atom("bvadd"), ret4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(32)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(32)]))]), solver.smt.eq(x1, y1), solver.smt.eq(x1, x2)]));
 
-    solver
-        .additional_assumptions
-        .push(format!("(= y1_{id} (bvlshr x2_{id} #x00000001))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 32))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 32))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y1_{id} (_ bv0 32))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-        id = id
-    ));
-
-    // last round
-    solver
-        .additional_decls
-        .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 32)")));
-    solver.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 32))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 32))))", id = id));
-
-    // final return
     let padding = solver.new_fresh_bits(solver.bitwidth - 32);
-    format!("(concat {padding} ret6_{id})", padding = padding, id = id)
+    solver.smt.concat(padding, ret5)
 }
 
 pub fn clz16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
-    let x = format!("((_ extract 15 0) {})", x);
+    let x = solver.smt.extract(15, 0, x);
 
+    // Generated code.
     // total zeros counter
-    solver
-        .additional_decls
-        .push((format!("ret1_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_assumptions
-        .push(format!("(= ret1_{id} (_ bv0 16))", id = id));
-
+    let ret1 = solver.declare(format!("ret1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    solver.assume(solver.smt.eq(ret1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)])));
     // round 1
-    solver
-        .additional_decls
-        .push((format!("ret2_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("y8_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("x8_{id}", id = id), String::from("(_ BitVec 16)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y8_{id} (bvlshr {x} #x0008))", x = x, id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y8_{id} (_ bv0 16))) (= ret2_{id} ret1_{id}) (= ret2_{id} (bvadd ret1_{id} (_ bv8 16))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y8_{id} (_ bv0 16))) (= x8_{id} y8_{id}) (= x8_{id} {x}))",
-        x = x,
-        id = id
-    ));
-
+    let ret2 = solver.declare(format!("ret2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let y8 = solver.declare(format!("y8_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let x8 = solver.declare(format!("x8_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    solver.assume(solver.smt.eq(y8, solver.smt.bvlshr(x, solver.smt.atom("#x0008"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y8, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(ret2, ret1), solver.smt.eq(ret2, solver.smt.list(vec![solver.smt.atom("bvadd"), ret1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv8"), solver.smt.numeral(16)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y8, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(x8, y8), solver.smt.eq(x8, x)]));
     // round 2
-    solver
-        .additional_decls
-        .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("y4_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("x4_{id}", id = id), String::from("(_ BitVec 16)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y4_{id} (bvlshr x8_{id} #x0004))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 16))) (= ret3_{id} ret2_{id}) (= ret3_{id} (bvadd ret2_{id} (_ bv4 16))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y4_{id} (_ bv0 16))) (= x4_{id} y4_{id}) (= x4_{id} x8_{id}))",
-        id = id
-    ));
-
+    let ret3 = solver.declare(format!("ret3_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let y4 = solver.declare(format!("y4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let x4 = solver.declare(format!("x4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    solver.assume(solver.smt.eq(y4, solver.smt.bvlshr(x8, solver.smt.atom("#x0004"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(ret3, ret2), solver.smt.eq(ret3, solver.smt.list(vec![solver.smt.atom("bvadd"), ret2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv4"), solver.smt.numeral(16)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(x4, y4), solver.smt.eq(x4, x8)]));
     // round 3
-    solver
-        .additional_decls
-        .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("y2_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("x2_{id}", id = id), String::from("(_ BitVec 16)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y2_{id} (bvlshr x4_{id} #x0002))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 16))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 16))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y2_{id} (_ bv0 16))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-        id = id
-    ));
-
+    let ret4 = solver.declare(format!("ret4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let y2 = solver.declare(format!("y2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let x2 = solver.declare(format!("x2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    solver.assume(solver.smt.eq(y2, solver.smt.bvlshr(x4, solver.smt.atom("#x0002"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(ret4, ret3), solver.smt.eq(ret4, solver.smt.list(vec![solver.smt.atom("bvadd"), ret3, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv2"), solver.smt.numeral(16)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(x2, y2), solver.smt.eq(x2, x4)]));
     // round 4
-    solver
-        .additional_decls
-        .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("y1_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver
-        .additional_decls
-        .push((format!("x1_{id}", id = id), String::from("(_ BitVec 16)")));
+    let ret5 = solver.declare(format!("ret5_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let y1 = solver.declare(format!("y1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    let x1 = solver.declare(format!("x1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(16)]));
+    solver.assume(solver.smt.eq(y1, solver.smt.bvlshr(x2, solver.smt.atom("#x0001"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(ret5, ret4), solver.smt.eq(ret5, solver.smt.list(vec![solver.smt.atom("bvadd"), ret4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(16)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(16)]))]), solver.smt.eq(x1, y1), solver.smt.eq(x1, x2)]));
 
-    solver
-        .additional_assumptions
-        .push(format!("(= y1_{id} (bvlshr x2_{id} #x0001))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 16))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 16))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y1_{id} (_ bv0 16))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-        id = id
-    ));
-
-    // last round
-    solver
-        .additional_decls
-        .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 16)")));
-    solver.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 16))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 16))))", id = id));
-
-    // final return
     let padding = solver.new_fresh_bits(solver.bitwidth - 16);
-    format!("(concat {padding} ret6_{id})", padding = padding, id = id)
+    solver.smt.concat(padding, ret5)
 }
 
 pub fn clz8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
-    let x = format!("((_ extract 7 0) {})", x);
+    let x = solver.smt.extract(7, 0, x);
 
+    // Generated code.
     // total zeros counter
-    solver
-        .additional_decls
-        .push((format!("ret0_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_assumptions
-        .push(format!("(= ret0_{id} (_ bv0 8))", id = id));
-
+    let ret0 = solver.declare(format!("ret0_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    solver.assume(solver.smt.eq(ret0, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)])));
     // round 1
-    solver
-        .additional_decls
-        .push((format!("ret3_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_decls
-        .push((format!("y4_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_decls
-        .push((format!("x4_{id}", id = id), String::from("(_ BitVec 8)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y4_{id} (bvlshr {x} #x04))", x = x, id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y4_{id} (_ bv0 8))) (= ret3_{id} ret0_{id}) (= ret3_{id} (bvadd ret0_{id} (_ bv4 8))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y4_{id} (_ bv0 8))) (= x4_{id} y4_{id}) (= x4_{id} {x}))",
-        x = x,
-        id = id
-    ));
-
+    let ret3 = solver.declare(format!("ret3_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    let y4 = solver.declare(format!("y4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    let x4 = solver.declare(format!("x4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    solver.assume(solver.smt.eq(y4, solver.smt.bvlshr(x, solver.smt.atom("#x04"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(ret3, ret0), solver.smt.eq(ret3, solver.smt.list(vec![solver.smt.atom("bvadd"), ret0, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv4"), solver.smt.numeral(8)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(x4, y4), solver.smt.eq(x4, x)]));
     // round 2
-    solver
-        .additional_decls
-        .push((format!("ret4_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_decls
-        .push((format!("y2_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_decls
-        .push((format!("x2_{id}", id = id), String::from("(_ BitVec 8)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y2_{id} (bvlshr x4_{id} #x02))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y2_{id} (_ bv0 8))) (= ret4_{id} ret3_{id}) (= ret4_{id} (bvadd ret3_{id} (_ bv2 8))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y2_{id} (_ bv0 8))) (= x2_{id} y2_{id}) (= x2_{id} x4_{id}))",
-        id = id
-    ));
-
+    let ret4 = solver.declare(format!("ret4_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    let y2 = solver.declare(format!("y2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    let x2 = solver.declare(format!("x2_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    solver.assume(solver.smt.eq(y2, solver.smt.bvlshr(x4, solver.smt.atom("#x02"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(ret4, ret3), solver.smt.eq(ret4, solver.smt.list(vec![solver.smt.atom("bvadd"), ret3, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv2"), solver.smt.numeral(8)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y2, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(x2, y2), solver.smt.eq(x2, x4)]));
     // round 3
-    solver
-        .additional_decls
-        .push((format!("ret5_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_decls
-        .push((format!("y1_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver
-        .additional_decls
-        .push((format!("x1_{id}", id = id), String::from("(_ BitVec 8)")));
-
-    solver
-        .additional_assumptions
-        .push(format!("(= y1_{id} (bvlshr x2_{id} #x01))", id = id));
-    solver.additional_assumptions.push(format!("(ite (not (= y1_{id} (_ bv0 8))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 8))))", id = id));
-    solver.additional_assumptions.push(format!(
-        "(ite (not (= y1_{id} (_ bv0 8))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id}))",
-        id = id
-    ));
-
+    let ret5 = solver.declare(format!("ret5_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    let y1 = solver.declare(format!("y1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    let x1 = solver.declare(format!("x1_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    solver.assume(solver.smt.eq(y1, solver.smt.bvlshr(x2, solver.smt.atom("#x01"))));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(ret5, ret4), solver.smt.eq(ret5, solver.smt.list(vec![solver.smt.atom("bvadd"), ret4, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(8)])]))]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(y1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(x1, y1), solver.smt.eq(x1, x2)]));
     // last round
-    solver
-        .additional_decls
-        .push((format!("ret6_{id}", id = id), String::from("(_ BitVec 8)")));
-    solver.additional_assumptions.push(format!("(ite (not (= x1_{id} (_ bv0 8))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 8))))", id = id));
+    let ret6 = solver.declare(format!("ret6_{id}", id = id), solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("BitVec"), solver.smt.numeral(8)]));
+    solver.assume(solver.smt.list(vec![solver.smt.atom("ite"), solver.smt.list(vec![solver.smt.atom("not"), solver.smt.eq(x1, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv0"), solver.smt.numeral(8)]))]), solver.smt.eq(ret6, ret5), solver.smt.eq(ret6, solver.smt.list(vec![solver.smt.atom("bvadd"), ret5, solver.smt.list(vec![solver.smt.atoms().und, solver.smt.atom("bv1"), solver.smt.numeral(8)])]))]));
 
-    // final return
     let padding = solver.new_fresh_bits(solver.bitwidth - 8);
-    format!("(concat {padding} ret6_{id})", padding = padding, id = id)
+    solver.smt.concat(padding, ret6)
 }
 
 pub fn clz1(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {

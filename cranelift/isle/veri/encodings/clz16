@@ -37,6 +37,3 @@
 (assert (= y1_{id} (bvlshr x2_{id} #x0001)))
 (assert (ite (not (= y1_{id} (_ bv0 16))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 16)))))
 (assert (ite (not (= y1_{id} (_ bv0 16))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id})))
-
-; final return
-(assert (= clz16ret_{id} ret5_{id}))
