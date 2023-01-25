@@ -1,6 +1,3 @@
-(declare-fun {x} () (_ BitVec 32))
-(assert (= {x} (_ bv5 32))) ; placeholder to test x = 5
-
 ; extract to ensure we have a 32 bit input
 (declare-fun a64x_{id} () (_ BitVec 32))
 (assert (= a64x_{id} ((_ extract 31 0) {x})))
