@@ -22,6 +22,7 @@ clap = "3.1.2"
 itertools = "0.10.3"
 log = "0.4.17"
 env_logger = "0.10.0"
+retry = "2.0.0"
 
 [dev-dependencies]
 strum = "0.24.0"
