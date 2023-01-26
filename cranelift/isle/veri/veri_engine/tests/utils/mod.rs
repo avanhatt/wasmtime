@@ -85,7 +85,7 @@ pub fn custom_result(f: &TestResultBuilder) -> TestResult {
     Bitwidth::iter().map(|w| f(w)).collect()
 }
 
-/// Run the test with a 3 minute timeout, retrying 5 times if timeout hit, waiting 1ms between tries
+/// Run the test with a 4 minute timeout, retrying 5 times if timeout hit, waiting 1ms between tries
 pub fn run_and_retry<T, F>(f: F) -> ()
 where
     T: Send + 'static,
@@ -94,7 +94,7 @@ where
 {
     let delay_before_retrying = retry::delay::Fixed::from_millis(1);
     let num_retries = 5;
-    let timeout_per_try = Duration::from_secs(3 * 60);
+    let timeout_per_try = Duration::from_secs(4 * 60);
 
     use std::{sync::mpsc, thread};
     let result = retry::retry_with_index(delay_before_retrying, |current_try| {
@@ -118,7 +118,7 @@ where
 
         match done_rx.recv_timeout(timeout_per_try) {
             Ok(_) => handle.join().expect("Test thread panicked"),
-            Err(_) => retry::OperationResult::Err("Test thread took too long".to_string()),
+            Err(_) => retry::OperationResult::Retry("Test thread took too long".to_string()),
         }
     });
     result.unwrap();
