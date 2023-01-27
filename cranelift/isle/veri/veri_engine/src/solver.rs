@@ -88,7 +88,7 @@ impl SolverCtx {
         // OUT:    [ same don't care bits |  defined extend  |   care bits     ]
         let mut unconstrained_bits = 0;
         if dest_width < self.bitwidth {
-            let unconstrained_bits = self
+            unconstrained_bits = self
                 .bitwidth
                 .checked_sub(delta)
                 .unwrap()
@@ -596,7 +596,7 @@ impl SolverCtx {
                     let xs = self.vir_expr_to_rsmt2_str(*x);
                     let extract = format!("((_ extract {} {}) {})", i, j, xs);
                     let new_width = i - j + 1;
-                    if (self.bitwidth < new_width) {
+                    if self.bitwidth < new_width {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                         format!("(concat {} {})", padding, extract)

@@ -245,16 +245,10 @@ fn test_ineg() {
     run_and_retry(|| test_from_file("./examples/ineg/ineg.isle", lte_64_success_result()))
 }
 
-/*
 #[test]
 fn test_mul() {
-    test_from_file("./examples/imul/imul.isle", lte_64_success_result());
-    test_from_file("./examples/imul/smulhi.isle", lte_64_success_result());
-    test_from_file("./examples/imul/smulhi_small.isle", lte_64_success_result());
-    test_from_file("./examples/imul/umulhi.isle", lte_64_success_result());
-    test_from_file("./examples/imul/umulhi_small.isle", lte_64_success_result());   
+    run_and_retry(|| test_from_file("./examples/imul/imul.isle", lte_64_success_result())); 
 }
-*/
 
 /*
 #[test]
