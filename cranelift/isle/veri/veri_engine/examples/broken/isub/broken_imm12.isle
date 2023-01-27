@@ -21,7 +21,7 @@
 ;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
-;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y))))
+;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (y))))
 ;;@ ))
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
