@@ -592,8 +592,13 @@ impl SolverCtx {
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
+                    assert!(i < self.bitwidth);
                     assert!(i < x_width.unwrap());
                     let xs = self.vir_expr_to_rsmt2_str(*x);
+                    // No-op if we are extracting exactly the full bitwidth
+                    if j == 0 && i == self.bitwidth - 1 {
+                        return xs;
+                    }
                     let extract = format!("((_ extract {} {}) {})", i, j, xs);
                     let new_width = i - j + 1;
                     if new_width < self.bitwidth {
