@@ -403,7 +403,7 @@ impl SolverCtx {
                     _ => (),
                 };
                 match op {
-                    BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
+                    BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd | BinaryOp::Lte | BinaryOp::Eq | BinaryOp::ConstrainEq => {
                         self.assume_comparable_types(&*x, &*y)
                     }
                     _ => (),
@@ -469,6 +469,9 @@ impl SolverCtx {
                         let amt_plus_extra = format!("(bvadd {} {})", ys, extra_shift);
                         return format!("(bvashr {} {})", shl_to_zero, amt_plus_extra);
                     }
+                    BinaryOp::ConstrainEq => {
+                        return format!("(= {} {})", self.vir_expr_to_rsmt2_str(*x), self.vir_expr_to_rsmt2_str(*y))
+                    }
                     _ => (),
                 };
                 let op_str = match op {
@@ -490,22 +493,35 @@ impl SolverCtx {
                 };
                 // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation.
-                match static_expr_width {
-                    Some(w) if w < self.bitwidth =>
-                    format!(
-                        "((_ zero_extend {padding}) ({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y})))",
-                        padding =  self.bitwidth.checked_sub(w).unwrap(),
-                        op = op_str,
-                        h = w - 1,
-                        x = self.vir_expr_to_rsmt2_str(*x),
-                        y = self.vir_expr_to_rsmt2_str(*y),
-                    ),
-                    _ => format!(
-                        "({} {} {})",
-                        op_str,
-                        self.vir_expr_to_rsmt2_str(*x),
-                        self.vir_expr_to_rsmt2_str(*y)
-                    )
+                let x_static_width = self.static_width(&x);
+                let y_static_width = self.static_width(&y);
+                if x_static_width != y_static_width {
+                    print!("WARNING: unexpected differing widths to binop, {:?} {:?}", &x, &y)
+                }
+
+                let x_sexpr = self.vir_expr_to_rsmt2_str(*x);
+                let y_sexpr = self.vir_expr_to_rsmt2_str(*y);
+
+                match x_static_width {
+                    Some(w) if w < self.bitwidth => {
+                        let r = format!(
+                            "({op} ((_ extract {h} 0) {x}) ((_ extract {h} 0) {y}))",
+                            op = op_str,
+                            h = w - 1,
+                            x = x_sexpr,
+                            y = y_sexpr,
+                        );
+                        if static_expr_width.is_some() {
+                            format!(
+                                "((_ zero_extend {padding}) {r})",
+                                padding = self.bitwidth.checked_sub(w).unwrap(),
+                                r = r,
+                            )
+                        } else {
+                            r
+                        }
+                    }
+                    _ => format!("({} {} {})", op_str, x_sexpr, y_sexpr),
                 }
             }
             Expr::BVIntToBV(w, x) => {
@@ -591,12 +607,12 @@ impl SolverCtx {
             Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
-                if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
-                    assert!(i < x_width.unwrap());
+                if let Type::BitVector(_) = self.get_type(&x).unwrap() {
+                    // assert!(i < x_width.unwrap());
                     let xs = self.vir_expr_to_rsmt2_str(*x);
                     let extract = format!("((_ extract {} {}) {})", i, j, xs);
                     let new_width = i - j + 1;
-                    if self.bitwidth < new_width {
+                    if new_width < self.bitwidth {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                         format!("(concat {} {})", padding, extract)
@@ -726,7 +742,7 @@ impl SolverCtx {
             // println!("{}", &a);
             solver.assert(a).unwrap();
 
-            // Uncomment to debug specific asserts
+            // // Uncomment to debug specific asserts
             // solver.push(2).unwrap();
             // let _ = match solver.check_sat() {
             //     Ok(true) => {

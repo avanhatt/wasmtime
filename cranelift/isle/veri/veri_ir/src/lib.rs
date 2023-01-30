@@ -164,6 +164,9 @@ pub enum BinaryOp {
     Eq,
     Lte,
 
+    // Constrain eq: constains full width, if applicable
+    ConstrainEq,
+
     // Bitvector operations
     BVMul,
     BVUDiv,

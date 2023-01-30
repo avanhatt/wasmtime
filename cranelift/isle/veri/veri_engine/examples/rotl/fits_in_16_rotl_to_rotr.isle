@@ -5,8 +5,17 @@
 ;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
-;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (- (a) (b)) (r))))
+;;@ (spec (sig (args ty, a, b) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (zero_ext (regwidth) (- (extract 31 0 (a)) (extract 31 0 (b)))) }
+;;@                        else
+;;@                        { (- (extract 63 0 (a)) (extract 63 0 (b))) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
+;;@ )
 (decl sub (Type Reg Reg) Reg)
 (extern constructor sub sub)
 

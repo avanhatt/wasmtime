@@ -7,9 +7,9 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::rule_tree::verify_rules_for_type_wih_rule_filter;
+use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_contains;
 use veri_engine_lib::termname::pattern_contains_termname;
 use veri_engine_lib::type_inference::type_all_rules;
-use veri_engine_lib::{rule_tree::verify_rules_for_type_with_lhs_contains};
 use veri_ir::{Counterexample, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
@@ -85,10 +85,9 @@ pub fn custom_result(f: &TestResultBuilder) -> TestResult {
 }
 
 /// Run the test with a 4 minute timeout, retrying 5 times if timeout hit, waiting 1ms between tries
-pub fn run_and_retry<T, F>(f: F) -> ()
+pub fn run_and_retry<F>(f: F) -> ()
 where
-    T: Send + 'static,
-    F: Fn() -> T,
+    F: Fn() -> (),
     F: Send + 'static + Copy,
 {
     let delay_before_retrying = retry::delay::Fixed::from_millis(1);
@@ -110,18 +109,24 @@ where
         // From: https://github.com/rust-lang/rfcs/issues/2798
         let (done_tx, done_rx) = mpsc::channel();
         let handle = thread::spawn(move || {
-            let val = f();
+            f();
             done_tx.send(()).expect("Unable to send completion signal");
-            retry::OperationResult::Ok(val)
         });
 
         match done_rx.recv_timeout(timeout_per_try) {
-            Ok(_) => handle.join().expect("Test thread panicked"),
-            Err(_) => retry::OperationResult::Retry("Test thread took too long".to_string()),
+            Ok(_) => match handle.join() {
+                Ok(_) => retry::OperationResult::Ok("Test thread succeeded"),
+                Err(e) => retry::OperationResult::Err(format!("Test thread panicked {:?}", e)),
+            },
+            Err(_) => match handle.join() {
+                Ok(_) => retry::OperationResult::Retry("Test thread took too long".to_string()),
+                Err(e) => retry::OperationResult::Err(format!("Test thread panicked {:?}", e)),
+            },
         }
     });
     result.unwrap();
 }
+
 
 fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
     test_with_filter(inputs, None, tr)

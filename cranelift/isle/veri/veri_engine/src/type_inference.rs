@@ -309,8 +309,7 @@ fn add_annotation_constraints(
             match c.ty {
                 annotation_ir::Type::BitVector => {
                     let ty = annotation_ir::Type::BitVectorWithWidth(dbg!(c.width));
-                    tree.concrete_constraints
-                        .insert(TypeExpr::Concrete(t, ty));
+                    tree.concrete_constraints.insert(TypeExpr::Concrete(t, ty));
                 }
                 _ => {
                     tree.concrete_constraints
@@ -1095,7 +1094,7 @@ fn add_rule_constraints(
         TypeVarConstruct::BindPattern => {
             assert_eq!(children.len(), 2);
             tree.assumptions.push(veri_ir::Expr::Binary(
-                veri_ir::BinaryOp::Eq,
+                veri_ir::BinaryOp::ConstrainEq,
                 Box::new(children[0].clone()),
                 Box::new(children[1].clone()),
             ));
@@ -1121,7 +1120,7 @@ fn add_rule_constraints(
             for (i, e) in children.iter().enumerate() {
                 if i != 0 {
                     tree.assumptions.push(veri_ir::Expr::Binary(
-                        veri_ir::BinaryOp::Eq,
+                        veri_ir::BinaryOp::ConstrainEq,
                         Box::new(first.clone()),
                         Box::new(e.clone()),
                     ))
@@ -1134,7 +1133,7 @@ fn add_rule_constraints(
                 .insert((curr.ident.clone(), curr.type_var));
             for (e, s) in children.iter().zip(bound) {
                 tree.assumptions.push(veri_ir::Expr::Binary(
-                    veri_ir::BinaryOp::Eq,
+                    veri_ir::BinaryOp::ConstrainEq,
                     Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
                         s.to_owned(),
                     ))),
@@ -1192,7 +1191,7 @@ fn add_rule_constraints(
                 tree.quantified_vars
                     .insert((arg_name.clone(), annotation_type_var));
                 tree.assumptions.push(veri_ir::Expr::Binary(
-                    veri_ir::BinaryOp::Eq,
+                    veri_ir::BinaryOp::ConstrainEq,
                     Box::new(child.clone()),
                     Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(arg_name))),
                 ))
@@ -1207,7 +1206,7 @@ fn add_rule_constraints(
             );
             tree.quantified_vars.insert((ret_name.clone(), ret_var));
             tree.assumptions.push(veri_ir::Expr::Binary(
-                veri_ir::BinaryOp::Eq,
+                veri_ir::BinaryOp::ConstrainEq,
                 Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Var(
                     curr.ident.clone(),
                 ))),
