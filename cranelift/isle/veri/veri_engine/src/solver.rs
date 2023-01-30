@@ -596,7 +596,7 @@ impl SolverCtx {
                     let xs = self.vir_expr_to_rsmt2_str(*x);
                     let extract = format!("((_ extract {} {}) {})", i, j, xs);
                     let new_width = i - j + 1;
-                    if self.bitwidth < new_width {
+                    if new_width < self.bitwidth {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                         format!("(concat {} {})", padding, extract)
