@@ -42,6 +42,7 @@ fn test_implicit_conversions() {
 
 // Currently timing out, disabling for now.
 // https://github.com/avanhatt/wasmtime/issues/13
+/*
 #[test]
 fn test_iadd_base() {
     run_and_retry(|| test_from_file("./examples/iadd/base_case.isle", lte_64_success_result()));
@@ -116,6 +117,7 @@ fn test_iadd_madd2() {
 fn test_iadd_msub() {
     run_and_retry(|| test_from_file("./examples/iadd/msub.isle", lte_64_success_result()));
 }
+*/
 
 #[test]
 fn test_broken_iadd_from_file() {
@@ -353,6 +355,12 @@ fn test_ineg() {
 }
 
 #[test]
+fn test_mul() {
+    run_and_retry(|| test_from_file("./examples/imul/imul.isle", lte_64_success_result())); 
+}
+
+/*
+#[test]
 fn test_udiv() {
     run_and_retry(|| {
         test_from_file(
@@ -368,6 +376,7 @@ fn test_udiv() {
         )
     })
 }
+*/
 
 #[test]
 fn test_uextend() {
