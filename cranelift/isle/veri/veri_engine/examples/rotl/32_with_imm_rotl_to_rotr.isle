@@ -38,7 +38,7 @@
 ;;@ (spec (sig (args ty, x) (r))
 ;;@   (assertions 
 ;;@     (= (r) (conv_to (widthof (r)) (x))),
-;;@     (= (0i65:bv) (& (x) (~ (63i64:bv))))
+;;@     (= (0i64:bv) (& (x) (~ (63i64:bv))))
 ;;@   )
 ;;@ )
 (decl pure imm_shift_from_imm64 (Type Imm64) ImmShift)
