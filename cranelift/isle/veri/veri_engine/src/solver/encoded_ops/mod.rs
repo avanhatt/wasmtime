@@ -223,6 +223,7 @@ mod tests {
     fn test_clz16_with_solver() {
         // TODO: fails
         // check_encoding_with_solver("clz", "#b0000000000000000", "#b0000000000010000", 16);
+        check_encoding_with_solver("clz", "#b0000000000000001", "#b0000000000001111", 16);
         check_encoding_with_solver("clz", "#b0111111111111111", "#b0000000000000001", 16);
         check_encoding_with_solver("clz", "#b1111111111111111", "#b0000000000000000", 16);
     }
