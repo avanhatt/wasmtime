@@ -709,7 +709,7 @@ impl SolverCtx {
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
-                    Some(32) => clz::a64clz32(self, es, tyvar),
+                    Some(32) => clz::clz32(self, es, tyvar),
                     Some(64) => clz::clz64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64CLZ width {}", w);

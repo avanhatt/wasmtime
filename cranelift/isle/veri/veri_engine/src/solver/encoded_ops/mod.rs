@@ -61,6 +61,12 @@ mod tests {
             ("clz", 16) => clz::clz16(&mut ctx, input_var, 0),
             ("clz", 32) => clz::clz32(&mut ctx, input_var, 0),
             ("clz", 64) => clz::clz64(&mut ctx, input_var, 0),
+
+            ("cls", 1) => cls::cls1(&mut ctx, 0),
+            ("cls", 8) => cls::cls8(&mut ctx, input_var, 0),
+            ("cls", 16) => cls::cls16(&mut ctx, input_var, 0),
+            ("cls", 32) => cls::cls32(&mut ctx, input_var, 0),
+            ("cls", 64) => cls::cls64(&mut ctx, input_var, 0),
             _ => unreachable!(),
         };
 
@@ -279,6 +285,85 @@ mod tests {
             "clz",
             "#b1111111111111111111111111111111111111111111111111111111111111111",
             "#b0000000000000000000000000000000000000000000000000000000000000000",
+            64,
+        );
+    }
+
+    #[test]
+    fn test_cls1_with_solver() {
+        check_encoding_with_solver("cls", "#b0", "#b0", 1);
+        check_encoding_with_solver("cls", "#b1", "#b0", 1);
+    }
+
+    #[test]
+    fn test_cls8_with_solver() {
+        check_encoding_with_solver("cls", "#b00000000", "#b00000111", 8);
+        check_encoding_with_solver("cls", "#b01111111", "#b00000000", 8);
+        check_encoding_with_solver("cls", "#b00111111", "#b00000001", 8);
+        check_encoding_with_solver("cls", "#b11000000", "#b00000001", 8);
+        check_encoding_with_solver("cls", "#b11111111", "#b00000111", 8);
+    }
+
+    #[test]
+    fn test_cls16_with_solver() {
+        check_encoding_with_solver("cls", "#b0000000000000000", "#b0000000000001111", 16);
+        check_encoding_with_solver("cls", "#b0111111111111111", "#b0000000000000000", 16);
+        check_encoding_with_solver("cls", "#b0011111111111111", "#b0000000000000001", 16);
+        check_encoding_with_solver("cls", "#b1111111111111111", "#b0000000000001111", 16);
+    }
+
+    #[test]
+    fn test_cls32_with_solver() {
+        check_encoding_with_solver(
+            "cls",
+            "#b00000000000000000000000000000000",
+            "#b00000000000000000000000000011111",
+            32,
+        );
+        check_encoding_with_solver(
+            "cls",
+            "#b01111111111111111111111111111111",
+            "#b00000000000000000000000000000000",
+            32,
+        );
+        check_encoding_with_solver(
+            "cls",
+            "#b00100000000000000000000000000000",
+            "#b00000000000000000000000000000001",
+            32,
+        );
+        check_encoding_with_solver(
+            "cls",
+            "#b11111111111111111111111111111111",
+            "#b00000000000000000000000000011111",
+            32,
+        );
+    }
+
+    #[test]
+    fn test_cls64_with_solver() {
+        check_encoding_with_solver(
+            "cls",
+            "#b0000000000000000000000000000000000000000000000000000000000000000",
+            "#b0000000000000000000000000000000000000000000000000000000000111111",
+            64,
+        );
+        check_encoding_with_solver(
+            "cls",
+            "#b0010000000000000000000000000000000000000000000000000000000000000",
+            "#b0000000000000000000000000000000000000000000000000000000000000001",
+            64,
+        );
+        check_encoding_with_solver(
+            "cls",
+            "#b0111111111111111111111111111111111111111111111111111111111111111",
+            "#b0000000000000000000000000000000000000000000000000000000000000000",
+            64,
+        );
+        check_encoding_with_solver(
+            "cls",
+            "#b1111111111111111111111111111111111111111111111111111111111111111",
+            "#b0000000000000000000000000000000000000000000000000000000000111111",
             64,
         );
     }
