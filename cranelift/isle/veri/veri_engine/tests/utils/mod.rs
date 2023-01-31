@@ -1,16 +1,16 @@
 use cranelift_isle::compile::create_envs;
-use cranelift_isle::lexer::Lexer;
 use cranelift_isle::sema::{Rule, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
+use std::time::Duration;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::rule_tree::verify_rules_for_type_wih_rule_filter;
 use veri_engine_lib::termname::pattern_contains_termname;
 use veri_engine_lib::type_inference::type_all_rules;
-use veri_engine_lib::{isle_files_to_terms, rule_tree::verify_rules_for_type_with_lhs_contains};
-use veri_ir::{Counterexample, Type, VerificationResult};
+use veri_engine_lib::{rule_tree::verify_rules_for_type_with_lhs_contains};
+use veri_ir::{Counterexample, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -84,9 +84,53 @@ pub fn custom_result(f: &TestResultBuilder) -> TestResult {
     Bitwidth::iter().map(|w| f(w)).collect()
 }
 
+/// Run the test with a 4 minute timeout, retrying 5 times if timeout hit, waiting 1ms between tries
+pub fn run_and_retry<F>(f: F) -> ()
+where
+    F: Fn() -> (),
+    F: Send + 'static + Copy,
+{
+    let delay_before_retrying = retry::delay::Fixed::from_millis(1);
+    let num_retries = 5;
+    let timeout_per_try = Duration::from_secs(4 * 60);
+
+    use std::{sync::mpsc, thread};
+    let result = retry::retry_with_index(delay_before_retrying, |current_try| {
+        if current_try > num_retries {
+            return retry::OperationResult::Err(format!(
+                "Test did not succeed within {} tries",
+                num_retries
+            ));
+        }
+        if current_try > 1 {
+            println!("Retrying test that timed out, try #{}", current_try);
+        }
+
+        // From: https://github.com/rust-lang/rfcs/issues/2798
+        let (done_tx, done_rx) = mpsc::channel();
+        let handle = thread::spawn(move || {
+            f();
+            done_tx.send(()).expect("Unable to send completion signal");
+        });
+
+        match done_rx.recv_timeout(timeout_per_try) {
+            Ok(_) => match handle.join() {
+                Ok(_) => retry::OperationResult::Ok("Test thread succeeded"),
+                Err(e) => retry::OperationResult::Err(format!("Test thread panicked {:?}", e)),
+            },
+            Err(_) => match handle.join() {
+                Ok(_) => retry::OperationResult::Retry("Test thread took too long".to_string()),
+                Err(e) => retry::OperationResult::Err(format!("Test thread panicked {:?}", e)),
+            },
+        }
+    });
+    result.unwrap();
+}
+
 fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
     test_with_filter(inputs, None, tr)
 }
+
 // TODO: waiting on output thoughts. re do previous?
 fn test_with_filter(inputs: Vec<PathBuf>, name_filter: Option<String>, tr: TestResult) -> () {
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
@@ -160,6 +204,7 @@ pub fn test_from_file(s: &str, tr: TestResult) -> () {
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
     let input = PathBuf::from(s);
+
     test(vec![prelude_isle, prelude_lower_isle, clif_isle, input], tr);
 }
 

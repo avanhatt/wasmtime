@@ -8,7 +8,7 @@ use isle::sema::{Pattern, Rule, RuleId, TermEnv, TermId, TypeEnv};
 use itertools::Itertools;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{
-    all_query_widths, BoundVar, RuleSemantics, RulePath, RuleTree, UndefinedTerm,
+    all_query_widths, BoundVar, RulePath, RuleSemantics, RuleTree, UndefinedTerm,
     VerificationResult,
 };
 
@@ -304,7 +304,7 @@ pub fn verify_rules_for_type_wih_rule_filter(
     let mut rules_checked = 0;
     for rule in &termenv.rules {
         if !filter(&rule, termenv, typeenv) {
-            println!("skipping rule that doesn't meet filter");
+            log::debug!("skipping rule that doesn't meet filter");
             continue;
         }
         let ctx = Context::new(termenv, typeenv, annotationenv, typesols, width);
