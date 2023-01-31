@@ -674,11 +674,13 @@ impl SolverCtx {
                     if j == 0 && i == self.bitwidth - 1 {
                         return xs;
                     }
-                    let extract =self.smt.extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
+                    let extract =
+                        self.smt
+                            .extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
                     let new_width = i - j + 1;
                     if new_width < self.bitwidth {
                         let padding =
-                        self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
+                            self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                         self.smt.concat(padding, extract)
                     } else {
                         extract

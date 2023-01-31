@@ -309,8 +309,7 @@ fn add_annotation_constraints(
             match c.ty {
                 annotation_ir::Type::BitVector => {
                     let ty = annotation_ir::Type::BitVectorWithWidth(dbg!(c.width));
-                    tree.concrete_constraints
-                        .insert(TypeExpr::Concrete(t, ty));
+                    tree.concrete_constraints.insert(TypeExpr::Concrete(t, ty));
                 }
                 _ => {
                     tree.concrete_constraints
@@ -1036,7 +1035,6 @@ fn add_isle_constraints(
         ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
         ("ImmExtend".to_owned(), annotation_ir::Type::Int),
-        ("ShiftOpAndAmt".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
         (
             "ShiftOpAndAmt".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(8),

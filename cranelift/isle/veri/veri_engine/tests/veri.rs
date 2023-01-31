@@ -356,73 +356,101 @@ fn test_ineg() {
 
 #[test]
 fn test_mul() {
-    run_and_retry(|| test_from_file("./examples/imul/imul.isle", lte_64_success_result())); 
+    run_and_retry(|| test_from_file("./examples/imul/imul.isle", lte_64_success_result()));
 }
-
 
 #[test]
 fn test_udiv() {
-    run_and_retry(||test_from_file("./examples/udiv/udiv.isle",
-        // for ease of commenting out until we debug further
-        vec![
-            (Bitwidth::I1, VerificationResult::Success),
-            (Bitwidth::I8, VerificationResult::Success),
-            // (Bitwidth::I16, VerificationResult::Success),
-            // (Bitwidth::I32, VerificationResult::Success),
-            (Bitwidth::I64, VerificationResult::Success),
-        ]))
+    run_and_retry(|| {
+        test_from_file(
+            "./examples/udiv/udiv.isle",
+            // for ease of commenting out until we debug further
+            vec![
+                (Bitwidth::I1, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
 }
 
 #[test]
 fn test_broken_udiv() {
-    run_and_retry(||test_from_file("./examples/broken/udiv/broken_udiv.isle",
-        vec![
-            (Bitwidth::I1, VerificationResult::Success),
-            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-            (Bitwidth::I16, VerificationResult::Failure(Counterexample {})),
-            (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
-            (Bitwidth::I64, VerificationResult::Success),
-        ]))
+    run_and_retry(|| {
+        test_from_file(
+            "./examples/broken/udiv/broken_udiv.isle",
+            vec![
+                (Bitwidth::I1, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
 }
 
 #[test]
 fn test_sdiv() {
-    run_and_retry(||test_from_file("./examples/sdiv/sdiv.isle", 
-    vec![
-        (Bitwidth::I1, VerificationResult::Success),
-        (Bitwidth::I8, VerificationResult::Success),
-        // Too slow rn
-        // (Bitwidth::I16, VerificationResult::Success),
-        // (Bitwidth::I32, VerificationResult::Success),
-        // (Bitwidth::I64, VerificationResult::Success),
-    ]))
+    run_and_retry(|| {
+        test_from_file(
+            "./examples/sdiv/sdiv.isle",
+            vec![
+                (Bitwidth::I1, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
+                // Too slow rn
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
 }
 
 fn test_sdiv32() {
-    run_and_retry(||test_from_file("./examples/sdiv/sdiv32.isle", 
-        vec![
-            (Bitwidth::I1, VerificationResult::InapplicableRule),
-            (Bitwidth::I8, VerificationResult::InapplicableRule),
-            (Bitwidth::I16, VerificationResult::InapplicableRule),
-            // Too slow rn
-            // (Bitwidth::I32, VerificationResult::Success),
-            // (Bitwidth::I64, VerificationResult::Success),
-        ]
-    ))
+    run_and_retry(|| {
+        test_from_file(
+            "./examples/sdiv/sdiv32.isle",
+            vec![
+                (Bitwidth::I1, VerificationResult::InapplicableRule),
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Too slow rn
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
 }
 
 #[test]
 fn test_broken_sdiv() {
-    run_and_retry(||test_from_file("./examples/broken/sdiv/broken_sdiv.isle", all_failure_result()));
-    run_and_retry(||test_from_file("./examples/broken/sdiv/broken_sdiv32.isle", 
-        vec![
-            (Bitwidth::I1, VerificationResult::InapplicableRule),
-            (Bitwidth::I8, VerificationResult::InapplicableRule),
-            (Bitwidth::I16, VerificationResult::InapplicableRule),
-            // (Bitwidth::I32, VerificationResult::Success),
-            // (Bitwidth::I64, VerificationResult::Success),
-        ]
-    ))
+    run_and_retry(|| {
+        test_from_file(
+            "./examples/broken/sdiv/broken_sdiv.isle",
+            all_failure_result(),
+        )
+    });
+    run_and_retry(|| {
+        test_from_file(
+            "./examples/broken/sdiv/broken_sdiv32.isle",
+            vec![
+                (Bitwidth::I1, VerificationResult::InapplicableRule),
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
 }
 
 #[test]
