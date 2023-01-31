@@ -1,0 +1,58 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+       (AluRRRShift
+           (shiftop ShiftOpAndAmt))
+))
+
+;; ASSUMING 64 BIT MODE!!!
+;; annotations will interpret this as an 8 bit field
+;; the two msb encode the type of shift as follows:
+;;   00: lsl
+;;   01: lsr
+;;   10: asr
+;;   11: invalid
+;; the rest will encode a 6-bit shift amount 
+(type ShiftOpAndAmt (primitive ShiftOpAndAmt))
+
+(type ALUOp
+  (enum
+    (Sub)
+))
+
+(decl alu_rrr_shift (ALUOp Type Reg Reg ShiftOpAndAmt) Reg)
+(extern constructor alu_rrr_shift alu_rrr_shift)
+
+;; Note that 192 = 0xc0
+;;@ (spec (sig (args ty, a, b, shift) (ret))
+;;@     (assertions (if (= (& (shift) (192i8:bv)) (0i8:bv)) {
+;;@                     (= (ret) (- (a) (shl (b) (zero_ext (widthof (b)) (extract 5 0 (shift))))))
+;;@                  } else {
+;;@                      (if (= (& (shift) (192i8:bv)) (64i8:bv)) {
+;;@                          (= (ret) (- (a) (shr (b) (zero_ext (widthof (b)) (extract 5 0 (shift))))))
+;;@                      } else {
+;;@                          (if (= (& (shift) (192i8:bv)) (128i8:bv)) {
+;;@                              (= (ret) (- (a) (ashr (b) (zero_ext (widthof (b)) (extract 5 0 (shift))))))
+;;@                          } else {
+;;@                                (= (true) (false))
+;;@                          })
+;;@                      })
+;;@                  })
+;;@ ))
+(decl sub_shift (Type Reg Reg ShiftOpAndAmt) Reg)
+(rule (sub_shift ty x y z) (alu_rrr_shift (ALUOp.Sub) ty x y z))
+
+;; Note that 192 = 0xc0
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assertions (= (& (a) (192i64:bv)) (0i64:bv)),
+;;@                 (= (ret) (extract 7 0 (a)))))
+(decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
+(extern constructor lshl_from_imm64 lshl_from_imm64)
+
+(rule -3 (lower (has_type (fits_in_64 ty)
+                       (isub x (ishl y (iconst k)))))
+      (if-let amt (lshl_from_imm64 ty k))
+      (sub_shift ty x y amt))
