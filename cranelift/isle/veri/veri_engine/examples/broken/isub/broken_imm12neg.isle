@@ -37,8 +37,8 @@
 ;;@                 )),
 ;;@                 (= (arg) (conv_to (widthof (arg)) (ret)))
 ;;@ ))
-(decl imm12_from_value (Imm12) Value)
-(extern extractor imm12_from_value imm12_from_value)
+(decl imm12_from_negated_value (Imm12) Value)
+(extern extractor imm12_from_negated_value imm12_from_negated_value)
 
-(rule 0 (lower (has_type (fits_in_64 ty) (isub x (imm12_from_value y))))
+(rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
       (sub_imm ty x y))

@@ -304,7 +304,7 @@ pub fn verify_rules_for_type_wih_rule_filter(
     let mut rules_checked = 0;
     for rule in &termenv.rules {
         if !filter(&rule, termenv, typeenv) {
-            println!("skipping rule that doesn't meet filter");
+            log::debug!("skipping rule that doesn't meet filter");
             continue;
         }
         let ctx = Context::new(termenv, typeenv, annotationenv, typesols, width);
