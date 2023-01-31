@@ -146,12 +146,15 @@ impl SolverCtx {
         //                             dest width
         //                                |
         // OUT:    [ same don't care bits |  defined extend  |   care bits     ]
-        let unconstrained_bits = self
-            .bitwidth
-            .checked_sub(delta)
-            .unwrap()
-            .checked_sub(source_width)
-            .unwrap();
+        let mut unconstrained_bits = 0;
+        if dest_width < self.bitwidth {
+            unconstrained_bits = self
+                .bitwidth
+                .checked_sub(delta)
+                .unwrap()
+                .checked_sub(source_width)
+                .unwrap();
+        }
 
         // If we are extending to the full register width, no padding needed
         if unconstrained_bits == 0 {
@@ -662,15 +665,22 @@ impl SolverCtx {
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
+                    assert!(i < self.bitwidth);
                     assert!(i < x_width.unwrap());
                     let xs = self.vir_expr_to_sexp(*x);
-                    let extract =
-                        self.smt
-                            .extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
+                    // No-op if we are extracting exactly the full bitwidth
+                    if j == 0 && i == self.bitwidth - 1 {
+                        return xs;
+                    }
+                    let extract =self.smt.extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
                     let new_width = i - j + 1;
-                    let padding =
+                    if new_width < self.bitwidth {
+                        let padding =
                         self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
-                    self.smt.concat(padding, extract)
+                        self.smt.concat(padding, extract)
+                    } else {
+                        extract
+                    }
                 } else {
                     unreachable!("Must perform extraction on bv with known width")
                 }

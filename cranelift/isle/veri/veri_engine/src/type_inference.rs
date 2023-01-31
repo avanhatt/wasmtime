@@ -308,8 +308,9 @@ fn add_annotation_constraints(
             let e = veri_ir::Expr::Terminal(veri_ir::Terminal::Const(c.value, t));
             match c.ty {
                 annotation_ir::Type::BitVector => {
-                    tree.bv_constraints
-                        .insert(TypeExpr::Concrete(t, c.ty.clone()));
+                    let ty = annotation_ir::Type::BitVectorWithWidth(dbg!(c.width));
+                    tree.concrete_constraints
+                        .insert(TypeExpr::Concrete(t, ty));
                 }
                 _ => {
                     tree.concrete_constraints
