@@ -37,3 +37,7 @@
 (assert (= y1_{id} (bvlshr x2_{id} #x0001)))
 (assert (ite (not (= y1_{id} (_ bv0 16))) (= ret5_{id} ret4_{id}) (= ret5_{id} (bvadd ret4_{id} (_ bv1 16)))))
 (assert (ite (not (= y1_{id} (_ bv0 16))) (= x1_{id} y1_{id}) (= x1_{id} x2_{id})))
+
+; last round
+(declare-fun ret6_{id} () (_ BitVec 16))
+(assert (ite (not (= x1_{id} (_ bv0 16))) (= ret6_{id} ret5_{id}) (= ret6_{id} (bvadd ret5_{id} (_ bv1 16)))))

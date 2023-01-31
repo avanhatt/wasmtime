@@ -939,7 +939,44 @@ pub fn clz64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         solver.smt.eq(x1, x2),
     ]));
 
-    ret6
+    // last round
+    let ret7 = solver.declare(
+        format!("ret7_{id}", id = id),
+        solver.smt.list(vec![
+            solver.smt.atoms().und,
+            solver.smt.atom("BitVec"),
+            solver.smt.numeral(64),
+        ]),
+    );
+    solver.assume(solver.smt.list(vec![
+        solver.smt.atom("ite"),
+        solver.smt.list(vec![
+            solver.smt.atom("not"),
+            solver.smt.eq(
+                x1,
+                solver.smt.list(vec![
+                    solver.smt.atoms().und,
+                    solver.smt.atom("bv0"),
+                    solver.smt.numeral(64),
+                ]),
+            ),
+        ]),
+        solver.smt.eq(ret7, ret6),
+        solver.smt.eq(
+            ret7,
+            solver.smt.list(vec![
+                solver.smt.atom("bvadd"),
+                ret6,
+                solver.smt.list(vec![
+                    solver.smt.atoms().und,
+                    solver.smt.atom("bv1"),
+                    solver.smt.numeral(64),
+                ]),
+            ]),
+        ),
+    ]));
+
+    ret7
 }
 
 pub fn clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
@@ -1329,8 +1366,45 @@ pub fn clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         solver.smt.eq(x1, x2),
     ]));
 
+    // last round
+    let ret6 = solver.declare(
+        format!("ret6_{id}", id = id),
+        solver.smt.list(vec![
+            solver.smt.atoms().und,
+            solver.smt.atom("BitVec"),
+            solver.smt.numeral(32),
+        ]),
+    );
+    solver.assume(solver.smt.list(vec![
+        solver.smt.atom("ite"),
+        solver.smt.list(vec![
+            solver.smt.atom("not"),
+            solver.smt.eq(
+                x1,
+                solver.smt.list(vec![
+                    solver.smt.atoms().und,
+                    solver.smt.atom("bv0"),
+                    solver.smt.numeral(32),
+                ]),
+            ),
+        ]),
+        solver.smt.eq(ret6, ret5),
+        solver.smt.eq(
+            ret6,
+            solver.smt.list(vec![
+                solver.smt.atom("bvadd"),
+                ret5,
+                solver.smt.list(vec![
+                    solver.smt.atoms().und,
+                    solver.smt.atom("bv1"),
+                    solver.smt.numeral(32),
+                ]),
+            ]),
+        ),
+    ]));
+
     let padding = solver.new_fresh_bits(solver.bitwidth - 32);
-    solver.smt.concat(padding, ret5)
+    solver.smt.concat(padding, ret6)
 }
 
 pub fn clz16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
@@ -1647,8 +1721,45 @@ pub fn clz16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         solver.smt.eq(x1, x2),
     ]));
 
+    // last round
+    let ret6 = solver.declare(
+        format!("ret6_{id}", id = id),
+        solver.smt.list(vec![
+            solver.smt.atoms().und,
+            solver.smt.atom("BitVec"),
+            solver.smt.numeral(16),
+        ]),
+    );
+    solver.assume(solver.smt.list(vec![
+        solver.smt.atom("ite"),
+        solver.smt.list(vec![
+            solver.smt.atom("not"),
+            solver.smt.eq(
+                x1,
+                solver.smt.list(vec![
+                    solver.smt.atoms().und,
+                    solver.smt.atom("bv0"),
+                    solver.smt.numeral(16),
+                ]),
+            ),
+        ]),
+        solver.smt.eq(ret6, ret5),
+        solver.smt.eq(
+            ret6,
+            solver.smt.list(vec![
+                solver.smt.atom("bvadd"),
+                ret5,
+                solver.smt.list(vec![
+                    solver.smt.atoms().und,
+                    solver.smt.atom("bv1"),
+                    solver.smt.numeral(16),
+                ]),
+            ]),
+        ),
+    ]));
+
     let padding = solver.new_fresh_bits(solver.bitwidth - 16);
-    solver.smt.concat(padding, ret5)
+    solver.smt.concat(padding, ret6)
 }
 
 pub fn clz8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
