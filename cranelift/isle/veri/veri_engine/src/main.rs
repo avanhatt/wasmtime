@@ -34,7 +34,8 @@ fn main() {
         .get_matches();
     let input = PathBuf::from(matches.value_of("INPUT").unwrap());
 
-    let inputs = vec![prelude_isle, prelude_lower_isle, clif_isle, input];
+    // let inputs = vec![prelude_isle, prelude_lower_isle, clif_isle, input];
+    let inputs = vec![input];
     let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
     // Parses to an AST, as a list of definitions
     let defs = isle::parser::parse(lexer).expect("should parse");
@@ -48,5 +49,5 @@ fn main() {
     let type_sols = type_all_rules(defs, &termenv, &typeenv, &annotation_env);
 
     // For now, verify rules rooted in `lower`
-    verify_rules_with_lhs_root("lower", &termenv, &typeenv, &annotation_env, &type_sols);
+    verify_rules_with_lhs_root("simplify", &termenv, &typeenv, &annotation_env, &type_sols);
 }
