@@ -156,6 +156,7 @@ fn type_annotations_using_rule<'a>(
     if !rule.iflets.is_empty() {
         print!("\n\tif-lets:");
         for iflet in &rule.iflets {
+            dbg!(&iflet.lhs);
             let iflet_lhs =
                 &mut create_parse_tree_pattern(rule, &iflet.lhs, &mut parse_tree, typeenv, termenv);
             let iflet_rhs =

@@ -1,0 +1,34 @@
+(type Type (primitive Type))
+(type Value (primitive Value))
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (x) (ret))))
+(decl simplify (Value) Value)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (| (x) (y)) (ret))))
+(decl bor (Type Value Value) Value)
+(extern extractor bor bor)
+(extern constructor bor bor)
+
+;;@ (spec (sig (args ty, x) (ret))
+;;@       (assertions (= (~ (x)) (ret))))
+(decl bnot (Type Value) Value)
+(extern extractor bnot bnot)
+(extern constructor bnot bnot)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (& (x) (y)) (ret))))
+(decl band (Type Value Value) Value)
+(extern extractor band band)
+(extern constructor band band)
+
+;; Duplicate the rule but swap the `bor` operands because `bor` is
+;; commutative. We could, of course, add a `simplify` rule to do the commutative
+;; swap for all `bor`s but this will bloat the e-graph with many e-nodes. It is
+;; cheaper to have additional rules, rather than additional e-nodes, because we
+;; amortize their cost via ISLE's smart codegen.
+(rule (simplify (bor ty
+                    z @ (bnot ty y)
+                    (band ty x y)))
+    (bor ty x z))
