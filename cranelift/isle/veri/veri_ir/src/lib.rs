@@ -229,8 +229,9 @@ pub enum Expr {
 }
 
 pub fn all_query_widths() -> Vec<usize> {
+    vec![8, 16, 32, 64]
     // vec![1, 8, 16, 32, 64]
-    vec![64]
+    // vec![64]
 }
 
 impl BoundVar {

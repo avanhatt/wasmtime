@@ -1901,7 +1901,9 @@ impl TermEnv {
                     }
                 };
                 if expected_ty.is_some() && expected_ty != Some(const_ty) {
-                    tyenv.report_error(pos, "Type mismatch for constant");
+                    tyenv.report_error(pos, format!("Type mismatch for constant {}, {}", 
+                    tyenv.types[expected_ty.unwrap().index()].name(tyenv),
+                    tyenv.types[const_ty.index()].name(tyenv)))
                 }
                 Some((Pattern::ConstPrim(const_ty, val), const_ty))
             }

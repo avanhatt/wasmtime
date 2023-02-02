@@ -38,7 +38,7 @@
 ;; Specify to this rule with constants
 ;;@ (spec (sig (args ty, arg) (ret))
 ;;@     (assertions (= (arg) (zero_ext (64) (ret))),
-;;@                 (= (ty) (widthof (arg)))
+;;@                 (= (ty) (widthof (ret)))
 ;;@ ))
 (decl iconst (Type Imm64) Value)
 (extern constructor iconst iconst)
@@ -51,8 +51,8 @@
 (extern extractor u64_from_imm64 u64_from_imm64)
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (if (= (x) (y)) { (1i64:bv) } else { (0i64:bv) }) (ret))))
-(decl pure u64_eq (u64 u64) u64)
+;;@       (assertions (= (if (= (x) (y)) { (true) } else { (false) }) (ret))))
+(decl pure u64_eq (u64 u64) bool)
 (extern constructor u64_eq u64_eq)
 
 ;;@ (spec (sig (args x, y) (ret))
@@ -65,8 +65,23 @@
 (decl pure u64_not (u64) u64)
 (extern constructor u64_not u64_not)
 
-;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (zero_ext (sign_ext (widthof (ty)) (1bv1))) (ret))))
+;;@ (spec (sig (args ty) (ret))
+;;@     (assertions (= (ret) (if (= (ty) (8i0:isleType)) {
+;;@                     (zero_ext (64) (sign_ext (8) (1i1:bv)))
+;;@                  } else { 
+;;@                      (if (= (ty) (16i0:isleType)) {
+;;@                          (zero_ext (64) (sign_ext (16) (1i1:bv)))
+;;@                      } else { 
+;;@                          (if (= (ty) (32i0:isleType)) {
+;;@                              (zero_ext (64) (sign_ext (32) (1i1:bv)))
+;;@                          } else { 
+;;@                              (sign_ext (64) (1i1:bv))
+;;@                          })
+;;@                      })
+;;@                  })
+;;@                 )
+;;@     )
+;;@ )
 (decl pure ty_mask (Type) u64)
 (extern constructor ty_mask ty_mask)
 
