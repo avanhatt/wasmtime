@@ -1,0 +1,102 @@
+;; VERI: relevant parts of prelude/definitions
+(type Type (primitive Type))
+(type Value (primitive Value))
+(type u64 (primitive u64))
+(type Imm64 (primitive Imm64))
+(type bool (primitive bool))
+(extern const $true bool)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (x) (ret))))
+(decl simplify (Value) Value)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (x) (ret))))
+(decl subsume (Value) Value)
+(extern constructor subsume subsume)
+
+;; An extractor that only matches types that can fit in 64 bits.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+(decl fits_in_64 (Type) Type)
+(extern extractor fits_in_64 fits_in_64)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (+ (x) (y)) (ret)),
+;;@                   (= (ty) (widthof (x))),
+;;@                   (= (ty) (widthof (y))),
+;;@))
+(decl iadd (Type Value Value) Value)
+(extern constructor iadd iadd)
+(extern extractor iadd iadd)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (- (x) (y)) (ret)),
+;;@                   (= (ty) (widthof (x))),
+;;@                   (= (ty) (widthof (y))),
+;;@))
+(decl isub (Type Value Value) Value)
+(extern constructor isub isub)
+(extern extractor isub isub)
+
+;; Specify to this rule with constants
+;;@ (spec (sig (args ty, arg) (ret))
+;;@     (assertions (= (arg) (zero_ext (64) (ret))),
+;;@                 (= (ty) (widthof (ret)))
+;;@ ))
+(decl iconst (Type Imm64) Value)
+(extern constructor iconst iconst)
+(extern extractor iconst iconst)
+
+;; Extract a `u64` from an `Imm64`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl u64_from_imm64 (u64) Imm64)
+(extern extractor u64_from_imm64 u64_from_imm64)
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (+ (x) (y)) (ret))))
+(decl pure u64_add (u64 u64) u64)
+(extern constructor u64_add u64_add)
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (- (x) (y)) (ret))))
+(decl pure u64_sub (u64 u64) u64)
+(extern constructor u64_sub u64_sub)
+
+;; Create a new Imm64, masked to the width of the given type.
+;;@ (spec (sig (args ty, x) (ret))
+;;@     (assertions (= (ret) (if (= (ty) (8i0:isleType)) {
+;;@                     (zero_ext (64) (extract 7 0 (x)))
+;;@                  } else { 
+;;@                      (if (= (ty) (16i0:isleType)) {
+;;@                          (zero_ext (64) (extract 15 0 (x)))
+;;@                      } else { 
+;;@                          (if (= (ty) (32i0:isleType)) {
+;;@                              (zero_ext (64) (extract 31 0 (x)))
+;;@                          } else { 
+;;@                              (x)
+;;@                          })
+;;@                      })
+;;@                  })
+;;@                 )
+;;@     )
+;;@ )
+(decl pure imm64_masked (Type u64) Imm64)
+(extern constructor imm64_masked imm64_masked)
+
+;; Constant propagation.
+
+(rule (simplify
+       (iadd (fits_in_64 ty)
+             ; NOTE: added "x @" to get around query width shortcoming
+             x @ (iconst ty (u64_from_imm64 k1))
+             (iconst ty (u64_from_imm64 k2))))
+      (subsume (iconst ty (imm64_masked ty (u64_add k1 k2)))))
+
+(rule (simplify
+       (isub (fits_in_64 ty)
+             ; NOTE: added "x @" to get around query width shortcoming
+             x @ (iconst ty (u64_from_imm64 k1))
+             (iconst ty (u64_from_imm64 k2))))
+      (subsume (iconst ty (imm64_masked ty (u64_sub k1 k2)))))

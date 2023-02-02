@@ -242,6 +242,9 @@ pub fn verify_rules_with_lhs_root(
             total_result = result;
         }
     }
+    if total_result != VerificationResult::Success {
+        panic!();
+    }
     return total_result;
 }
 
