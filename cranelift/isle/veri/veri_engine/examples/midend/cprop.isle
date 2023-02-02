@@ -47,6 +47,41 @@
 (extern constructor ineg ineg)
 (extern extractor ineg ineg)
 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (| (x) (y)) (ret)),
+;;@                   (= (ty) (widthof (x))),
+;;@                   (= (ty) (widthof (y)))
+;;@ ))
+(decl bor (Type Value Value) Value)
+(extern extractor bor bor)
+(extern constructor bor bor)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (xor (x) (y)) (ret)),
+;;@                   (= (ty) (widthof (x))),
+;;@                   (= (ty) (widthof (y)))
+;;@ ))
+(decl bxor (Type Value Value) Value)
+(extern extractor bxor bxor)
+(extern constructor bxor bxor)
+
+;;@ (spec (sig (args ty, x) (ret))
+;;@       (assertions (= (~ (x)) (ret)),
+;;@                   (= (ty) (widthof (x)))
+;;@ ))
+(decl bnot (Type Value) Value)
+(extern extractor bnot bnot)
+(extern constructor bnot bnot)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (& (x) (y)) (ret)),
+;;@                   (= (ty) (widthof (x))),
+;;@                   (= (ty) (widthof (y)))
+;;@ ))
+(decl band (Type Value Value) Value)
+(extern extractor band band)
+(extern constructor band band)
+
 ;; Specify to this rule with constants
 ;;@ (spec (sig (args ty, arg) (ret))
 ;;@     (assertions (= (arg) (zero_ext (64) (ret))),
@@ -93,6 +128,7 @@
 (decl pure imm64_masked (Type u64) Imm64)
 (extern constructor imm64_masked imm64_masked)
 
+;; ISLE starts
 ;; Constant propagation.
 
 (rule (simplify
