@@ -964,12 +964,12 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         }
     }
 
-    println!("Declaring quantified variables");
+    debug!("Declaring quantified variables");
     for v in &rule_sem.quantified_vars {
         let name = &v.name;
         let ty = ctx.tyctx.tymap[&v.tyvar].clone();
         let var_ty = ctx.vir_to_smt_ty(&ty);
-        println!("\t{} : {}", name, ctx.smt.display(var_ty));
+        debug!("\t{} : {}", name, ctx.smt.display(var_ty));
         if let Type::BitVector(w) = ty {
             let wide = ctx.widen_to_query_width(
                 v.tyvar,
@@ -982,23 +982,23 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         ctx.smt.declare_const(name, var_ty).unwrap();
     }
 
-    println!("Adding explicit assumptions");
+    debug!("Adding explicit assumptions");
     for a in &rule_sem.assumptions {
         let p = ctx.vir_expr_to_sexp(a.clone());
         assumptions.push(p)
     }
-    println!("Adding width assumptions");
+    debug!("Adding width assumptions");
     for a in &ctx.width_assumptions {
         assumptions.push(a.clone());
     }
-    println!("Adding additional assumptions");
+    debug!("Adding additional assumptions");
     for a in &ctx.additional_assumptions {
         assumptions.push(a.clone());
     }
 
-    println!("Declaring additional variables");
+    debug!("Declaring additional variables");
     for (name, ty) in &ctx.additional_decls {
-        println!("\t{} : {}", name, ctx.smt.display(*ty));
+        debug!("\t{} : {}", name, ctx.smt.display(*ty));
         ctx.smt.declare_const(name, *ty).unwrap();
     }
 

@@ -107,6 +107,26 @@
 (decl pure u64_sub (u64 u64) u64)
 (extern constructor u64_sub u64_sub)
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (| (x) (y)) (ret))))
+(decl pure u64_or (u64 u64) u64)
+(extern constructor u64_or u64_or)
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (& (x) (y)) (ret))))
+(decl pure u64_and (u64 u64) u64)
+(extern constructor u64_and u64_and)
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (xor (x) (y)) (ret))))
+(decl pure u64_xor (u64 u64) u64)
+(extern constructor u64_xor u64_xor)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (~ (x)) (ret))))
+(decl pure u64_not (u64) u64)
+(extern constructor u64_not u64_not)
+
 ;; Create a new Imm64, masked to the width of the given type.
 ;;@ (spec (sig (args ty, x) (ret))
 ;;@     (assertions (= (ret) (if (= (ty) (8i0:isleType)) {
@@ -166,28 +186,28 @@
 ;;       (if-let d (u64_udiv k1 k2))
 ;;       (subsume (iconst ty (imm64_masked ty d))))
 
-;; (rule (simplify
-;;        (bor (fits_in_64 ty)
-;;             (iconst ty (u64_from_imm64 k1))
-;;             (iconst ty (u64_from_imm64 k2))))
-;;       (subsume (iconst ty (imm64_masked ty (u64_or k1 k2)))))
+(rule (simplify
+       (bor (fits_in_64 ty)
+            x @ (iconst ty (u64_from_imm64 k1))
+            (iconst ty (u64_from_imm64 k2))))
+      (subsume (iconst ty (imm64_masked ty (u64_or k1 k2)))))
 
-;; (rule (simplify
-;;        (band (fits_in_64 ty)
-;;             (iconst ty (u64_from_imm64 k1))
-;;             (iconst ty (u64_from_imm64 k2))))
-;;       (subsume (iconst ty (imm64_masked ty (u64_and k1 k2)))))
+(rule (simplify
+       (band (fits_in_64 ty)
+            x @ (iconst ty (u64_from_imm64 k1))
+            (iconst ty (u64_from_imm64 k2))))
+      (subsume (iconst ty (imm64_masked ty (u64_and k1 k2)))))
 
-;; (rule (simplify
-;;        (bxor (fits_in_64 ty)
-;;             (iconst ty (u64_from_imm64 k1))
-;;             (iconst ty (u64_from_imm64 k2))))
-;;       (subsume (iconst ty (imm64_masked ty (u64_xor k1 k2)))))
+(rule (simplify
+       (bxor (fits_in_64 ty)
+            x @ (iconst ty (u64_from_imm64 k1))
+            (iconst ty (u64_from_imm64 k2))))
+      (subsume (iconst ty (imm64_masked ty (u64_xor k1 k2)))))
 
-;; (rule (simplify
-;;        (bnot (fits_in_64 ty)
-;;             (iconst ty (u64_from_imm64 k))))
-;;       (subsume (iconst ty (imm64_masked ty (u64_not k)))))
+(rule (simplify
+       (bnot (fits_in_64 ty)
+            x @ (iconst ty (u64_from_imm64 k))))
+      (subsume (iconst ty (imm64_masked ty (u64_not k)))))
 
 ;; (rule (simplify (ishl (fits_in_64 ty)
 ;;                       (iconst ty (u64_from_imm64 k1))
@@ -228,15 +248,15 @@
 ;;        (imul ty k @ (iconst ty _) x))
 ;;       (imul ty x k))
 
-;; (rule (simplify
-;;        (bor ty k @ (iconst ty _) x))
-;;       (bor ty x k))
-;; (rule (simplify
-;;        (band ty k @ (iconst ty _) x))
-;;       (band ty x k))
-;; (rule (simplify
-;;        (bxor ty k @ (iconst ty _) x))
-;;       (bxor ty x k))
+(rule (simplify
+       (bor ty k @ (iconst ty _) x))
+      (bor ty x k))
+(rule (simplify
+       (band ty k @ (iconst ty _) x))
+      (band ty x k))
+(rule (simplify
+       (bxor ty k @ (iconst ty _) x))
+      (bxor ty x k))
 
 ;; Canonicalize via associativity: reassociate to a right-heavy tree
 ;; for constants.
@@ -277,15 +297,15 @@
 ;; (rule (simplify
 ;;        (imul ty (imul ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
 ;;       (imul ty x (imul ty k1 k2)))
-;; (rule (simplify
-;;        (bor ty (bor ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
-;;       (bor ty x (bor ty k1 k2)))
-;; (rule (simplify
-;;        (band ty (band ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
-;;       (band ty x (band ty k1 k2)))
-;; (rule (simplify
-;;        (bxor ty (bxor ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
-;;       (bxor ty x (bxor ty k1 k2)))
+(rule (simplify
+       (bor ty (bor ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
+      (bor ty x (bor ty k1 k2)))
+(rule (simplify
+       (band ty (band ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
+      (band ty x (band ty k1 k2)))
+(rule (simplify
+       (bxor ty (bxor ty x k1 @ (iconst ty _)) k2 @ (iconst ty _)))
+      (bxor ty x (bxor ty k1 k2)))
 
 ;; (rule (simplify
 ;;        (select ty (iconst _ (u64_from_imm64 (u64_nonzero _))) x y))
