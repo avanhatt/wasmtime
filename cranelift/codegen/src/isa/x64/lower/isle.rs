@@ -263,6 +263,7 @@ impl Context for IsleContext<'_, '_, MInst, X64Backend> {
     fn simm32_from_value(&mut self, val: Value) -> Option<GprMemImm> {
         let inst = self.lower_ctx.dfg().value_def(val).inst()?;
         let constant: u64 = self.lower_ctx.get_constant(inst)?;
+        panic!("{:#x}", constant);
         let constant = constant as i64;
         to_simm32(constant)
     }

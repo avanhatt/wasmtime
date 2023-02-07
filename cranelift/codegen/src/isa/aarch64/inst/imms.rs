@@ -279,6 +279,7 @@ pub struct Imm12 {
 impl Imm12 {
     /// Compute a Imm12 from raw bits, if possible.
     pub fn maybe_from_u64(val: u64) -> Option<Imm12> {
+        panic!("{:?}", val);
         if val == 0 {
             Some(Imm12 {
                 bits: 0,
