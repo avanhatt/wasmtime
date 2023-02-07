@@ -7,9 +7,9 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::rule_tree::verify_rules_for_type_wih_rule_filter;
+use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_contains;
 use veri_engine_lib::termname::pattern_contains_termname;
 use veri_engine_lib::type_inference::type_all_rules;
-use veri_engine_lib::{rule_tree::verify_rules_for_type_with_lhs_contains};
 use veri_ir::{Counterexample, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:

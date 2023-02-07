@@ -309,8 +309,7 @@ fn add_annotation_constraints(
             match c.ty {
                 annotation_ir::Type::BitVector => {
                     let ty = annotation_ir::Type::BitVectorWithWidth(dbg!(c.width));
-                    tree.concrete_constraints
-                        .insert(TypeExpr::Concrete(t, ty));
+                    tree.concrete_constraints.insert(TypeExpr::Concrete(t, ty));
                 }
                 _ => {
                     tree.concrete_constraints
@@ -524,7 +523,7 @@ fn add_annotation_constraints(
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSDiv, Box::new(e1), Box::new(e2)),
                 t,
             )
-        }        
+        }
         annotation_ir::Expr::BVAdd(x, y, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
@@ -608,7 +607,7 @@ fn add_annotation_constraints(
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSrem, Box::new(e1), Box::new(e2)),
                 t,
             )
-        }        
+        }
 
         annotation_ir::Expr::BVAnd(x, y, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
