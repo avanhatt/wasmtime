@@ -4,11 +4,11 @@ use isle::sema::{TermEnv, TypeEnv};
 use std::path::PathBuf;
 
 pub mod interp;
-pub mod rule_tree;
 pub mod solver;
 pub mod termname;
-pub mod type_check;
 pub mod type_inference;
+pub mod verify;
+pub mod widths;
 
 pub const REG_WIDTH: usize = 64;
 

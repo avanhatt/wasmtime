@@ -1,12 +1,13 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
+use crate::termname::pattern_contains_termname;
 use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
-use isle::sema::{TermEnv, TypeEnv, VarId};
+use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::Expr;
 use veri_ir::{annotation_ir, TypeContext};
+use veri_ir::{Expr, Type};
 
 use crate::REG_WIDTH;
 
@@ -82,17 +83,42 @@ pub struct Solution {
     pub tyctx: TypeContext,
 }
 
-pub fn type_all_rules(
+pub fn type_rules_with_term_and_types(
     defs: Defs,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotation_env: &AnnotationEnv,
+    term: &String,
+    types: &Vec<Type>,
 ) -> HashMap<isle::sema::RuleId, Solution> {
     let decls = build_decl_map(defs);
 
     let mut solutions = HashMap::new();
-    for r in &termenv.rules {
-        if let Some(s) = type_annotations_using_rule(r, annotation_env, &decls, typeenv, termenv) {
+
+    for rule in &termenv.rules {
+        // Only type rules with the given term on the LHS
+        if !pattern_contains_termname(
+            // Hack for now: typeid not used
+            &Pattern::Term(
+                cranelift_isle::sema::TypeId(0),
+                rule.root_term,
+                rule.args.clone(),
+            ),
+            &term,
+            termenv,
+            typeenv,
+        ) {
+            continue;
+        }
+        if let Some(s) = type_annotations_using_rule(
+            rule,
+            annotation_env,
+            &decls,
+            typeenv,
+            termenv,
+            term,
+            &types,
+        ) {
             // Uncomment for debugging
             // for a in &s.annotation_infos {
             //     println!("{}", a.term);
@@ -101,7 +127,7 @@ pub fn type_all_rules(
             //     }
             //     println!();
             // }
-            solutions.insert(r.id, s);
+            solutions.insert(rule.id, s);
         }
     }
     solutions
@@ -137,6 +163,8 @@ fn type_annotations_using_rule<'a>(
     decls: &'a HashMap<String, isle::ast::Decl>,
     typeenv: &'a TypeEnv,
     termenv: &'a TermEnv,
+    term: &String,
+    types: &Vec<Type>,
 ) -> Option<Solution> {
     let mut parse_tree = RuleParseTree {
         varid_to_type_var_map: HashMap::new(),
@@ -156,8 +184,15 @@ fn type_annotations_using_rule<'a>(
     if !rule.iflets.is_empty() {
         print!("\n\tif-lets:");
         for iflet in &rule.iflets {
-            let iflet_lhs =
-                &mut create_parse_tree_pattern(rule, &iflet.lhs, &mut parse_tree, typeenv, termenv);
+            let iflet_lhs = &mut create_parse_tree_pattern(
+                rule,
+                &iflet.lhs,
+                &mut parse_tree,
+                typeenv,
+                termenv,
+                term,
+                types,
+            );
             let iflet_rhs =
                 &mut create_parse_tree_expr(rule, &iflet.rhs, &mut parse_tree, typeenv, termenv);
 
@@ -202,6 +237,8 @@ fn type_annotations_using_rule<'a>(
         &mut parse_tree,
         typeenv,
         termenv,
+        term,
+        types,
     );
     let rhs = &mut create_parse_tree_expr(rule, &rule.rhs, &mut parse_tree, typeenv, termenv);
 
@@ -309,8 +346,7 @@ fn add_annotation_constraints(
             match c.ty {
                 annotation_ir::Type::BitVector => {
                     let ty = annotation_ir::Type::BitVectorWithWidth(dbg!(c.width));
-                    tree.concrete_constraints
-                        .insert(TypeExpr::Concrete(t, ty));
+                    tree.concrete_constraints.insert(TypeExpr::Concrete(t, ty));
                 }
                 _ => {
                     tree.concrete_constraints
@@ -1473,12 +1509,23 @@ fn get_var_type_poly(
     None
 }
 
+fn annotation_type_for_vir_type(ty: &Type) -> annotation_ir::Type {
+    match ty {
+        Type::BitVector(Some(x)) => annotation_ir::Type::BitVectorWithWidth(*x),
+        Type::BitVector(None) => annotation_ir::Type::BitVector,
+        Type::Bool => annotation_ir::Type::Bool,
+        Type::Int => annotation_ir::Type::Int,
+    }
+}
+
 fn create_parse_tree_pattern(
     rule: &isle::sema::Rule,
     pattern: &isle::sema::Pattern,
     tree: &mut RuleParseTree,
     typeenv: &TypeEnv,
     termenv: &TermEnv,
+    term: &String,
+    types: &Vec<Type>,
 ) -> TypeVarNode {
     match pattern {
         isle::sema::Pattern::Term(_, term_id, args) => {
@@ -1487,8 +1534,16 @@ fn create_parse_tree_pattern(
 
             // process children first
             let mut children = vec![];
-            for arg in args {
-                let child = create_parse_tree_pattern(rule, arg, tree, typeenv, termenv);
+            for (i, arg) in args.iter().enumerate() {
+                let child =
+                    create_parse_tree_pattern(rule, arg, tree, typeenv, termenv, term, types);
+
+                if name == *term {
+                    tree.concrete_constraints.insert(TypeExpr::Concrete(
+                        child.type_var,
+                        annotation_type_for_vir_type(&types[i]),
+                    ));
+                }
                 children.push(child);
             }
             let type_var = tree.next_type_var;
@@ -1550,7 +1605,8 @@ fn create_parse_tree_pattern(
                 assertions: vec![],
             };
 
-            let subpat_node = create_parse_tree_pattern(rule, subpat, tree, typeenv, termenv);
+            let subpat_node =
+                create_parse_tree_pattern(rule, subpat, tree, typeenv, termenv, term, types);
 
             let bind_type_var = tree.next_type_var;
             tree.next_type_var += 1;
@@ -1620,7 +1676,7 @@ fn create_parse_tree_pattern(
             let mut children = vec![];
             let mut ty_vars = vec![];
             for p in subpats {
-                let child = create_parse_tree_pattern(rule, p, tree, typeenv, termenv);
+                let child = create_parse_tree_pattern(rule, p, tree, typeenv, termenv, term, types);
                 ty_vars.push(child.type_var);
                 children.push(child);
             }

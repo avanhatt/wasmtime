@@ -1,0 +1,50 @@
+use veri_ir::Type;
+
+use std::collections::HashMap;
+
+pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
+    let bv_types_8_to_64: Vec<Type> = vec![
+        Type::BitVector(Some(8)),
+        Type::BitVector(Some(16)),
+        Type::BitVector(Some(32)),
+        Type::BitVector(Some(64)),
+    ];
+
+    let bv_unary_8_to_65: Vec<Vec<Type>> = bv_types_8_to_64
+        .iter()
+        .copied()
+        .map(|x| vec![x.clone()])
+        .collect();
+
+    let bv_binary_8_to_65: Vec<Vec<Type>> = bv_types_8_to_64
+        .iter()
+        .copied()
+        .map(|x| vec![x.clone(), x.clone()])
+        .collect();
+
+    let mut widths = HashMap::new();
+
+    // Simple unary
+    widths.insert("ineg", bv_unary_8_to_65.clone());
+    widths.insert("cls", bv_unary_8_to_65.clone());
+    widths.insert("clz", bv_unary_8_to_65.clone());
+    widths.insert("ctz", bv_unary_8_to_65.clone());
+
+    // Unary with variable return width
+    widths.insert("sextend", bv_unary_8_to_65.clone());
+    widths.insert("uextend", bv_unary_8_to_65.clone());
+
+    // Binary
+    widths.insert("iadd", bv_binary_8_to_65.clone());
+    widths.insert("isub", bv_binary_8_to_65.clone());
+    widths.insert("imul", bv_binary_8_to_65.clone());
+    widths.insert("band", bv_binary_8_to_65.clone());
+    widths.insert("bor", bv_binary_8_to_65.clone());
+    widths.insert("bxor", bv_binary_8_to_65.clone());
+
+    // Binary with possibly differing widths
+    widths.insert("rotl", bv_binary_8_to_65.clone());
+    widths.insert("rotr", bv_binary_8_to_65.clone());
+
+    return widths;
+}

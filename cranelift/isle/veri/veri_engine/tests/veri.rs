@@ -356,7 +356,7 @@ fn test_ineg() {
 
 #[test]
 fn test_mul() {
-    run_and_retry(|| test_from_file("./examples/imul/imul.isle", lte_64_success_result())); 
+    run_and_retry(|| test_from_file("./examples/imul/imul.isle", lte_64_success_result()));
 }
 
 /*

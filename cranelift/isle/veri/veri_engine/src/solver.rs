@@ -4,7 +4,7 @@
 /// This uses the easy-smt crate to interact with any solver.
 use easy_smt::{Response, SExpr};
 use log::debug;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 use veri_ir::{
     BinaryOp, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext, UnaryOp,
     VerificationResult,
@@ -672,11 +672,13 @@ impl SolverCtx {
                     if j == 0 && i == self.bitwidth - 1 {
                         return xs;
                     }
-                    let extract =self.smt.extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
+                    let extract =
+                        self.smt
+                            .extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
                     let new_width = i - j + 1;
                     if new_width < self.bitwidth {
                         let padding =
-                        self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
+                            self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                         self.smt.concat(padding, extract)
                     } else {
                         extract
@@ -853,7 +855,7 @@ impl SolverCtx {
         (var_str, self.display_hex_to_bin(value))
     }
 
-    fn display_model(&mut self, model: SExpr) {
+    fn display_model(&mut self) {
         println!("Quantified variables:");
         let mut vars = vec![];
         for (name, atom) in &self.var_map {
@@ -890,8 +892,7 @@ impl SolverCtx {
 ///             <between rule assumptions>
 ///             <all but first rule's <LHS> = <RHS>>)
 ///          (= <first rule LHS> <first rule RHS>))))))
-pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationResult {
-    println!("Verifying with query width: {}", query_width);
+pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
         .solver("z3", ["-smt2", "-in"])
         .build()
@@ -911,24 +912,6 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
         fresh_bits_idx: 0,
     };
 
-    // Use the query width for any free variables with unspecified bitwidths
-    let mut query_width_used = false;
-    let mut query_bv_set_idxs = HashSet::new();
-    for v in &rule_sem.free_vars {
-        let ty = &ctx.tyctx.tymap[&v.tyvar];
-        if let Type::BitVector(None) = ty {
-            query_width_used = true;
-            ctx.tyctx
-                .tymap
-                .insert(v.tyvar, Type::BitVector(Some(query_width)));
-            let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&v.tyvar];
-            query_bv_set_idxs.insert(bv_set_idx);
-        }
-    }
-    if !query_width_used {
-        panic!("Query width unused, check rule!");
-    }
-
     for (_e, t) in &ctx.tyctx.tyvars {
         // dbg!(t);
         // dbg!(&_e);
@@ -946,16 +929,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
                         );
                     }
                     None => {
-                        let bv_set_idx = ctx.tyctx.bv_unknown_width_sets[&t];
-                        if query_bv_set_idxs.contains(&bv_set_idx) {
-                            ctx.tyctx
-                                .tymap
-                                .insert(*t, Type::BitVector(Some(query_width)));
-                            ctx.width_assumptions.push(
-                                ctx.smt
-                                    .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(query_width)),
-                            );
-                        }
+                        todo!()
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
@@ -1050,8 +1024,7 @@ pub fn run_solver(rule_sem: RuleSemantics, query_width: usize) -> VerificationRe
     match ctx.smt.check() {
         Ok(Response::Sat) => {
             println!("Verification failed");
-            let model = ctx.smt.get_model().unwrap();
-            ctx.display_model(model);
+            ctx.display_model();
             VerificationResult::Failure(Counterexample {})
         }
         Ok(Response::Unsat) => {

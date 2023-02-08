@@ -115,7 +115,7 @@ pub struct UndefinedTerm {
 }
 
 /// Verification type
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
 pub enum Type {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
