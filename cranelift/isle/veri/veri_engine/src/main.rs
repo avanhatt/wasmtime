@@ -1,6 +1,6 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
-use clap::{Parser, ArgAction};
+use clap::{ArgAction, Parser};
 use std::env;
 use std::path::PathBuf;
 use veri_engine_lib::verify::verify_rules;

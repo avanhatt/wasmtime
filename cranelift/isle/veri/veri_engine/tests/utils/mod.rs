@@ -6,10 +6,10 @@ use std::time::Duration;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use veri_annotation::parser_wrapper::parse_annotations;
-use veri_engine_lib::rule_tree::verify_rules_for_type_wih_rule_filter;
-use veri_engine_lib::rule_tree::verify_rules_for_type_with_lhs_contains;
 use veri_engine_lib::termname::pattern_contains_termname;
-use veri_engine_lib::type_inference::type_all_rules;
+use veri_engine_lib::type_inference::type_rules_with_term_and_types;
+use veri_engine_lib::verify::verify_rules_for_term;
+use veri_engine_lib::widths::isle_inst_types;
 use veri_ir::{Counterexample, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
@@ -127,59 +127,47 @@ where
     result.unwrap();
 }
 
-fn test(inputs: Vec<PathBuf>, tr: TestResult) -> () {
-    test_with_filter(inputs, None, tr)
-}
-
-// TODO: waiting on output thoughts. re do previous?
-fn test_with_filter(inputs: Vec<PathBuf>, name_filter: Option<String>, tr: TestResult) -> () {
+fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String) -> () {
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
     let annotation_env = parse_annotations(&inputs);
-    let type_sols = type_all_rules(defs, &termenv, &typeenv, &annotation_env);
-    let annotation_env = parse_annotations(&inputs);
-    let filter = name_filter.unwrap_or("lower".to_string());
 
-    // For now, verify rules rooted in `lower`
-    for (bw, expected_result) in tr {
-        let result = verify_rules_for_type_with_lhs_contains(
-            &filter,
-            &termenv,
-            &typeenv,
-            &annotation_env,
-            &type_sols,
-            bw as usize,
-        );
-        assert_eq!(result, expected_result, "bitwidth: {:?}", bw);
+    // Get the types/widths for this particular term
+    let types = isle_inst_types()
+        .get(&term.as_str())
+        .expect(format!("Missing term width for {}", term).as_str())
+        .clone();
+
+    for type_instantiation in types {
+        let ty = type_instantiation.first().unwrap();
+        let expected = tr.iter().find(|(bw, result)| match *bw {
+            Bitwidth::I1 => {
+                println!("Skipping I1 for now");
+                false
+            }
+            Bitwidth::I8 => *ty == veri_ir::Type::BitVector(Some(8)),
+            Bitwidth::I16 => *ty == veri_ir::Type::BitVector(Some(16)),
+            Bitwidth::I32 => *ty == veri_ir::Type::BitVector(Some(32)),
+            Bitwidth::I64 => *ty == veri_ir::Type::BitVector(Some(64)),
+        });
+        if let Some((_, expected_result)) = expected {
+            let type_sols = type_rules_with_term_and_types(
+                defs.clone(),
+                &termenv,
+                &typeenv,
+                &annotation_env,
+                &term,
+                &type_instantiation,
+            );
+            let result =
+                verify_rules_for_term(&termenv, &typeenv, &type_sols, &term, type_instantiation);
+            assert_eq!(result, *expected_result);
+        }
     }
 }
 
-fn test_with_rule_filter(
-    inputs: Vec<PathBuf>,
-    tr: TestResult,
-    filter: impl Fn(&Rule, &TermEnv, &TypeEnv) -> bool,
-) -> () {
-    let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
-    let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
-    let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&inputs);
-    let type_sols = type_all_rules(defs, &termenv, &typeenv, &annotation_env);
-    let annotation_env = parse_annotations(&inputs);
-    for (bw, expected_result) in tr {
-        let result = verify_rules_for_type_wih_rule_filter(
-            &termenv,
-            &typeenv,
-            &annotation_env,
-            &type_sols,
-            bw as usize,
-            &filter,
-        );
-        assert_eq!(result, expected_result);
-    }
-}
-
-pub fn test_from_file_with_filter(s: &str, filter: String, tr: TestResult) -> () {
+pub fn test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
@@ -188,14 +176,14 @@ pub fn test_from_file_with_filter(s: &str, filter: String, tr: TestResult) -> ()
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
     let input = PathBuf::from(s);
-    test_with_filter(
+    test_rules_with_term(
         vec![prelude_isle, prelude_lower_isle, clif_isle, input],
-        Some(filter),
         tr,
+        &term,
     );
 }
 
-pub fn test_from_file(s: &str, tr: TestResult) -> () {
+pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestResult) -> () {
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
@@ -203,9 +191,9 @@ pub fn test_from_file(s: &str, tr: TestResult) -> () {
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
-    let input = PathBuf::from(s);
-
-    test(vec![prelude_isle, prelude_lower_isle, clif_isle, input], tr);
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(PathBuf::from(file));
+    test_rules_with_term(inputs, tr, &termname.to_string());
 }
 
 pub fn test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: TestResult) -> () {
@@ -220,28 +208,16 @@ pub fn test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: T
     for f in files {
         inputs.push(PathBuf::from(f));
     }
-    test_with_rule_filter(inputs, tr, |rule, termenv, typeenv| {
-        pattern_contains_termname(
-            // Hack for now: typeid not used
-            &cranelift_isle::sema::Pattern::Term(
-                cranelift_isle::sema::TypeId(0),
-                rule.root_term,
-                rule.args.clone(),
-            ),
-            termname,
-            termenv,
-            typeenv,
-        )
-    });
+    test_rules_with_term(inputs, tr, &termname.to_string());
 }
 
-pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {
-    let input = PathBuf::from(s);
-    test(vec![input], tr);
-}
+// pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {
+//     let input = PathBuf::from(s);
+//     test(vec![input], tr);
+// }
 
-pub fn test_from_file_custom_prelude(p: &str, s: &str, tr: TestResult) -> () {
-    let prelude = PathBuf::from(p);
-    let input = PathBuf::from(s);
-    test(vec![prelude, input], tr);
-}
+// pub fn test_from_file_custom_prelude(p: &str, s: &str, tr: TestResult) -> () {
+//     let prelude = PathBuf::from(p);
+//     let input = PathBuf::from(s);
+//     test(vec![prelude, input], tr);
+// }

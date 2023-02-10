@@ -4,7 +4,7 @@
 /// This uses the easy-smt crate to interact with any solver.
 use easy_smt::{Response, SExpr};
 use log::debug;
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use veri_ir::{
     BinaryOp, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext, UnaryOp,
     VerificationResult,
@@ -929,7 +929,8 @@ pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
                         );
                     }
                     None => {
-                        todo!()
+                        dbg!(_e);
+                        panic!("Resolve all widths!")
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
