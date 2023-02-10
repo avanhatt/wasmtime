@@ -1345,11 +1345,10 @@ fn solve_constraints(
             }
             TypeExpr::WidthInt(v, w) => 
             {
-                dbg!("looking", w);
                 if let Some(c) = vals.get(&w) {
-                    dbg!("found");
                     let width: usize = (*c).try_into().unwrap();
                     let ty = annotation_ir::Type::BitVectorWithWidth(width);
+                    dbg!(&ty);
                     if !union_find.contains_key(&ty) {
                         union_find.insert(ty.clone(), HashSet::new());
                     }
