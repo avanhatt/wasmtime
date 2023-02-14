@@ -160,8 +160,14 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String) -> 
                 &term,
                 &type_instantiation,
             );
-            let result =
-                verify_rules_for_term(&termenv, &typeenv, &type_sols, &term, type_instantiation);
+            let result = verify_rules_for_term(
+                &termenv,
+                &typeenv,
+                &type_sols,
+                &term,
+                type_instantiation,
+                true,
+            );
             assert_eq!(result, *expected_result);
         }
     }
@@ -175,6 +181,7 @@ pub fn test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
+    println!("Verifying {} rules in file: {}", term, s);
     let input = PathBuf::from(s);
     test_rules_with_term(
         vec![prelude_isle, prelude_lower_isle, clif_isle, input],
@@ -184,6 +191,7 @@ pub fn test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
 }
 
 pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestResult) -> () {
+    println!("Verifying {} rules in file: {}", termname, file);
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");

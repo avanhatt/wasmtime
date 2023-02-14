@@ -60,7 +60,7 @@ enum TypeExpr {
     Concrete(u32, annotation_ir::Type),
     Variable(u32, u32),
     // The type variable of the first arg is equal to the value of the second
-    WidthInt(u32, u32), 
+    WidthInt(u32, u32),
 }
 
 #[derive(Debug)]
@@ -395,6 +395,7 @@ fn add_annotation_constraints(
                 .insert(TypeExpr::Concrete(tx, annotation_ir::Type::BitVector));
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::Int));
+            tree.concrete_constraints.insert(TypeExpr::WidthInt(tx, t));
             (veri_ir::Expr::WidthOf(Box::new(ex)), t)
         }
 
@@ -683,6 +684,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
             tree.var_constraints.insert(TypeExpr::Variable(t, xt));
+            tree.var_constraints.insert(TypeExpr::Variable(xt, at));
 
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVRotr, Box::new(xe), Box::new(ae)),
@@ -700,6 +702,7 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
             tree.var_constraints.insert(TypeExpr::Variable(t, xt));
+            tree.var_constraints.insert(TypeExpr::Variable(xt, at));
 
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVShl, Box::new(xe), Box::new(ae)),
@@ -770,19 +773,19 @@ fn add_annotation_constraints(
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(wt, annotation_ir::Type::Int));
 
-            if let Some(w) = const_fold_to_int(dbg!(&we)) {
+            if let Some(w) = const_fold_to_int(&we) {
                 tree.concrete_constraints.insert(TypeExpr::Concrete(
                     t,
                     annotation_ir::Type::BitVectorWithWidth(w.try_into().unwrap()),
                 ));
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
-    
+
                 (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
             } else {
-                tree.concrete_constraints.insert(dbg!(TypeExpr::WidthInt(t, wt)));
+                tree.concrete_constraints.insert(TypeExpr::WidthInt(t, wt));
                 tree.bv_constraints
-                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+                    .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
@@ -1239,7 +1242,7 @@ fn add_rule_constraints(
                 let rule_type_var = child.type_var;
                 let annotation_type_var = annotation_info.var_to_type_var[&arg.name];
 
-                // essentially constant propagate: if we know the value from the rule arg being 
+                // essentially constant propagate: if we know the value from the rule arg being
                 // provided as a literal, propagate this to the annotation.
                 if let Some(c) = tree.type_var_to_val_map.get(&rule_type_var) {
                     tree.type_var_to_val_map.insert(annotation_type_var, *c);
@@ -1332,115 +1335,117 @@ fn solve_constraints(
     let mut union_find = HashMap::new();
     let mut poly = 0;
 
-    // initialize union find with groups corresponding to concrete constraints
-    for c in concrete {
-        match c {
-            TypeExpr::Concrete(v, t) => {
-                if !union_find.contains_key(&t) {
-                    union_find.insert(t.clone(), HashSet::new());
-                }
-                if let Some(group) = union_find.get_mut(&t) {
-                    group.insert(v);
-                }
-            }
-            TypeExpr::WidthInt(v, w) => 
-            {
-                if let Some(c) = vals.get(&w) {
-                    let width: usize = (*c).try_into().unwrap();
-                    let ty = annotation_ir::Type::BitVectorWithWidth(width);
-                    dbg!(&ty);
-                    if !union_find.contains_key(&ty) {
-                        union_find.insert(ty.clone(), HashSet::new());
+    let mut iterate = || {
+        // initialize union find with groups corresponding to concrete constraints
+        for c in &concrete {
+            match c {
+                TypeExpr::Concrete(v, t) => {
+                    if !union_find.contains_key(t) {
+                        union_find.insert(t.clone(), HashSet::new());
                     }
-                    if let Some(group) = union_find.get_mut(&ty) {
-                        group.insert(v);
+                    if let Some(group) = union_find.get_mut(&t) {
+                        group.insert(*v);
                     }
                 }
-            }
-            _ => panic!(
-                "Non-concrete constraint found in concrete constraints: {:#?}",
-                c
-            ),
-        };
-    }
+                TypeExpr::WidthInt(v, w) => {
+                    if let Some(c) = vals.get(&w) {
+                        let width: usize = (*c).try_into().unwrap();
+                        let ty = annotation_ir::Type::BitVectorWithWidth(width);
+                        if !union_find.contains_key(&ty) {
+                            union_find.insert(ty.clone(), HashSet::new());
+                        }
+                        if let Some(group) = union_find.get_mut(&ty) {
+                            group.insert(*v);
+                        }
+                    }
+                }
+                _ => panic!(
+                    "Non-concrete constraint found in concrete constraints: {:#?}",
+                    c
+                ),
+            };
+        }
 
-    // process variable constraints as follows:
-    //   if t1 = t2 and only t1 has been typed, add t2 to the same set as t1
-    //   if t1 = t2 and only t2 has been typed, add t1 to the same set t2
-    //   if t1 = t2 and neither has been typed, create a new poly type and add both to the set
-    //   if t1 = t2 and both have been typed, union appropriately
-    for v in var {
-        match v {
-            TypeExpr::Variable(v1, v2) => {
-                let t1 = get_var_type(v1, &union_find);
-                let t2 = get_var_type(v2, &union_find);
+        // process variable constraints as follows:
+        //   if t1 = t2 and only t1 has been typed, add t2 to the same set as t1
+        //   if t1 = t2 and only t2 has been typed, add t1 to the same set t2
+        //   if t1 = t2 and neither has been typed, create a new poly type and add both to the set
+        //   if t1 = t2 and both have been typed, union appropriately
+        for v in &var {
+            match v {
+                TypeExpr::Variable(v1, v2) => {
+                    let t1 = get_var_type(*v1, &union_find);
+                    let t2 = get_var_type(*v2, &union_find);
 
-                match (t1, t2) {
-                    (Some(x), Some(y)) => {
-                        match (x.is_poly(), y.is_poly()) {
-                            (false, false) => {
-                                if x != y {
-                                    panic!(
+                    match (t1, t2) {
+                        (Some(x), Some(y)) => {
+                            match (x.is_poly(), y.is_poly()) {
+                                (false, false) => {
+                                    if x != y {
+                                        panic!(
                                         "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}",
                                         v, v1, x, v2, y
                                     )
+                                    }
                                 }
-                            }
-                            // union t1 and t2, keeping t2 as the leader
-                            (true, false) => {
-                                let g1 = union_find.remove(&x).expect("expected key in union find");
-                                let g2 =
-                                    union_find.get_mut(&y).expect("expected key in union find");
-                                g2.extend(g1.iter());
-                            }
-                            // union t1 and t2, keeping t1 as the leader
-                            (_, true) => {
-                                // guard against the case where x and y have the same poly type
-                                // so we remove the key and can't find it in the next line
-                                if x != y {
-                                    let g2 =
-                                        union_find.remove(&y).expect("expected key in union find");
+                                // union t1 and t2, keeping t2 as the leader
+                                (true, false) => {
                                     let g1 =
-                                        union_find.get_mut(&x).expect("expected key in union find");
-                                    g1.extend(g2.iter());
+                                        union_find.remove(&x).expect("expected key in union find");
+                                    let g2 =
+                                        union_find.get_mut(&y).expect("expected key in union find");
+                                    g2.extend(g1.iter());
                                 }
+                                // union t1 and t2, keeping t1 as the leader
+                                (_, true) => {
+                                    // guard against the case where x and y have the same poly type
+                                    // so we remove the key and can't find it in the next line
+                                    if x != y {
+                                        let g2 = union_find
+                                            .remove(&y)
+                                            .expect("expected key in union find");
+                                        let g1 = union_find
+                                            .get_mut(&x)
+                                            .expect("expected key in union find");
+                                        g1.extend(g2.iter());
+                                    }
+                                }
+                            };
+                        }
+                        (Some(x), None) => {
+                            if let Some(group) = union_find.get_mut(&x) {
+                                group.insert(*v2);
                             }
-                        };
-                    }
-                    (Some(x), None) => {
-                        if let Some(group) = union_find.get_mut(&x) {
-                            group.insert(v2);
                         }
-                    }
-                    (None, Some(x)) => {
-                        if let Some(group) = union_find.get_mut(&x) {
-                            group.insert(v1);
+                        (None, Some(x)) => {
+                            if let Some(group) = union_find.get_mut(&x) {
+                                group.insert(*v1);
+                            }
                         }
-                    }
-                    (None, None) => {
-                        let t = annotation_ir::Type::Poly(poly);
-                        union_find.insert(t.clone(), HashSet::new());
-                        if let Some(group) = union_find.get_mut(&t) {
-                            group.insert(v1);
-                            group.insert(v2);
+                        (None, None) => {
+                            let t = annotation_ir::Type::Poly(poly);
+                            union_find.insert(t.clone(), HashSet::new());
+                            if let Some(group) = union_find.get_mut(&t) {
+                                group.insert(*v1);
+                                group.insert(*v2);
+                            }
+                            poly += 1;
                         }
-                        poly += 1;
                     }
                 }
+                _ => panic!("Non-variable constraint found in var constraints: {:#?}", v),
             }
-            _ => panic!("Non-variable constraint found in var constraints: {:#?}", v),
         }
-    }
 
-    for b in bv {
-        match b {
-            TypeExpr::Concrete(v, ref t) => {
-                match t {
-                    annotation_ir::Type::BitVector => {
-                        // if there's a bv constraint and the var has already
-                        // been typed (with a width), ignore the constraint
-                        if let Some(var_type) = get_var_type_concrete(v, &union_find) {
-                            match var_type {
+        for b in &bv {
+            match b {
+                TypeExpr::Concrete(v, ref t) => {
+                    match t {
+                        annotation_ir::Type::BitVector => {
+                            // if there's a bv constraint and the var has already
+                            // been typed (with a width), ignore the constraint
+                            if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
+                                match var_type {
                                 annotation_ir::Type::BitVectorWithWidth(_) => {
                                     continue;
                                 }
@@ -1450,42 +1455,90 @@ fn solve_constraints(
                                 _ => panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}", var_type, b),
                             }
 
-                        // otherwise add it to a generic bv bucket
-                        } else {
-                            // if !union_find.contains_key(t) {
-                            //     union_find.insert(t.clone(), HashSet::new());
-                            // }
-                            // if let Some(group) = union_find.get_mut(t) {
-                            //     group.insert(v);
-                            // }
-                            let unknown_by_tyvar = annotation_ir::Type::BitVectorUnknown(v);
-                            let mut set = HashSet::new();
-                            set.insert(v);
-                            union_find.insert(unknown_by_tyvar.clone(), set);
+                            // otherwise add it to a generic bv bucket
+                            } else {
+                                // if !union_find.contains_key(t) {
+                                //     union_find.insert(t.clone(), HashSet::new());
+                                // }
+                                // if let Some(group) = union_find.get_mut(t) {
+                                //     group.insert(v);
+                                // }
+                                let unknown_by_tyvar = annotation_ir::Type::BitVectorUnknown(*v);
+                                let mut set = HashSet::new();
+                                set.insert(*v);
+                                union_find.insert(unknown_by_tyvar.clone(), set);
 
-                            // if this type var also has a polymorphic type, union
-                            if let Some(var_type) = get_var_type_poly(v, &union_find) {
-                                let poly_bucket = union_find
-                                    .remove(&var_type)
-                                    .expect("expected key in union find");
-                                let bv_bucket = union_find
-                                    .get_mut(&unknown_by_tyvar)
-                                    .expect("expected key in union find");
-                                bv_bucket.extend(poly_bucket.iter());
+                                // if this type var also has a polymorphic type, union
+                                if let Some(var_type) = get_var_type_poly(*v, &union_find) {
+                                    let poly_bucket = union_find
+                                        .remove(&var_type)
+                                        .expect("expected key in union find");
+                                    let bv_bucket = union_find
+                                        .get_mut(&unknown_by_tyvar)
+                                        .expect("expected key in union find");
+                                    bv_bucket.extend(poly_bucket.iter());
+                                }
                             }
                         }
+                        _ => panic!("Non-bv constraint found in bv constraints: {:#?}", b),
                     }
-                    _ => panic!("Non-bv constraint found in bv constraints: {:#?}", b),
+                }
+                TypeExpr::Variable(_, _) => {
+                    panic!("Non-bv constraint found in bv constraints: {:#?}", b)
+                }
+                TypeExpr::WidthInt(_, _) => {
+                    panic!("Non-bv constraint found in bv constraints: {:#?}", b)
                 }
             }
-            TypeExpr::Variable(_, _) => {
-                panic!("Non-bv constraint found in bv constraints: {:#?}", b)
-            }
-            TypeExpr::WidthInt(_, _) => {
-                panic!("Non-bv constraint found in bv constraints: {:#?}", b)
-            }
         }
-    }
+        for c in &concrete {
+            match c {
+                TypeExpr::WidthInt(v, w) => {
+                    if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
+                        match var_type {
+                            annotation_ir::Type::BitVectorWithWidth(w) => {
+                                let ty = annotation_ir::Type::BitVectorWithWidth(w);
+                                if !union_find.contains_key(&ty) {
+                                    union_find.insert(ty.clone(), HashSet::new());
+                                }
+                                if let Some(group) = union_find.get_mut(&ty) {
+                                    group.insert(*v);
+                                }
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+                _ => (),
+            };
+        }
+        for c in &concrete {
+            match c {
+                TypeExpr::WidthInt(v, w) => {
+                    if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
+                        match var_type {
+                            annotation_ir::Type::BitVectorWithWidth(w) => {
+                                let ty = annotation_ir::Type::BitVectorWithWidth(w);
+                                if !union_find.contains_key(&ty) {
+                                    union_find.insert(ty.clone(), HashSet::new());
+                                }
+                                if let Some(group) = union_find.get_mut(&ty) {
+                                    group.insert(*v);
+                                }
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+                _ => (),
+            };
+        }
+    };
+
+    iterate();
+    iterate();
+    iterate();
+    iterate();
 
     let mut result = HashMap::new();
     let mut bv_unknown_width_sets = HashMap::new();
@@ -1584,8 +1637,6 @@ fn create_parse_tree_pattern(
             for (i, arg) in args.iter().enumerate() {
                 let child =
                     create_parse_tree_pattern(rule, arg, tree, typeenv, termenv, term, types);
-                dbg!(&name);
-                dbg!(&term);
                 if name.eq(term) {
                     tree.concrete_constraints.insert(TypeExpr::Concrete(
                         child.type_var,

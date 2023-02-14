@@ -230,7 +230,7 @@ fn test_broken_iadd_from_file() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_msub.isle",
-            "iadd".to_string(),
+            "isub".to_string(),
             vec![
                 (Bitwidth::I1, VerificationResult::Success),
                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),

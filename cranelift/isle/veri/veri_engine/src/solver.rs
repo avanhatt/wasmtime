@@ -20,6 +20,7 @@ use crate::REG_WIDTH;
 
 pub struct SolverCtx {
     smt: easy_smt::Context,
+    dynwidths: bool,
     tyctx: TypeContext,
     pub bitwidth: usize,
     var_map: HashMap<String, SExpr>,
@@ -435,7 +436,11 @@ impl SolverCtx {
                         let var = *tyvar.unwrap();
                         let width = w.unwrap_or(self.bitwidth);
                         let narrow_decl = self.bv(i, width);
-                        self.widen_to_query_width(var, width, narrow_decl, None)
+                        if self.dynwidths {
+                            self.widen_to_query_width(var, width, narrow_decl, None)
+                        } else {
+                            narrow_decl
+                        }
                     }
                     Type::Int => self.smt.numeral(i),
                     Type::Bool => {
@@ -449,6 +454,7 @@ impl SolverCtx {
                 Terminal::True => self.smt.true_(),
                 Terminal::False => self.smt.false_(),
                 Terminal::Wildcard(_) => match ty.unwrap() {
+                    Type::BitVector(Some(w)) if !self.dynwidths => self.new_fresh_bits(*w),
                     Type::BitVector(_) => self.new_fresh_bits(self.bitwidth),
                     Type::Int => self.new_fresh_int(),
                     Type::Bool => self.new_fresh_bool(),
@@ -458,11 +464,15 @@ impl SolverCtx {
                 let op = match op {
                     UnaryOp::Not => "not",
                     UnaryOp::BVNeg => {
-                        self.assume_same_width_from_string(width.unwrap(), &*arg);
+                        if self.dynwidths {
+                            self.assume_same_width_from_string(width.unwrap(), &*arg);
+                        }
                         "bvneg"
                     }
                     UnaryOp::BVNot => {
-                        self.assume_same_width_from_string(width.unwrap(), &*arg);
+                        if self.dynwidths {
+                            self.assume_same_width_from_string(width.unwrap(), &*arg);
+                        }
                         "bvnot"
                     }
                 };
@@ -470,25 +480,29 @@ impl SolverCtx {
                 self.smt.list(vec![self.smt.atom(op), subexp])
             }
             Expr::Binary(op, x, y) => {
-                match op {
-                    BinaryOp::BVMul
-                    | BinaryOp::BVUDiv
-                    | BinaryOp::BVAdd
-                    | BinaryOp::BVSub
-                    | BinaryOp::BVAnd
-                    | BinaryOp::BVOr
-                    | BinaryOp::BVShl
-                    | BinaryOp::BVShr
-                    | BinaryOp::BVAShr
-                    | BinaryOp::BVRotl => self.assume_same_width_from_string(width.unwrap(), &*x),
-                    _ => (),
-                };
-                match op {
-                    BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
-                        self.assume_comparable_types(&*x, &*y)
-                    }
-                    _ => (),
-                };
+                if self.dynwidths {
+                    match op {
+                        BinaryOp::BVMul
+                        | BinaryOp::BVUDiv
+                        | BinaryOp::BVAdd
+                        | BinaryOp::BVSub
+                        | BinaryOp::BVAnd
+                        | BinaryOp::BVOr
+                        | BinaryOp::BVShl
+                        | BinaryOp::BVShr
+                        | BinaryOp::BVAShr
+                        | BinaryOp::BVRotl => {
+                            self.assume_same_width_from_string(width.unwrap(), &*x)
+                        }
+                        _ => (),
+                    };
+                    match op {
+                        BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
+                            self.assume_comparable_types(&*x, &*y)
+                        }
+                        _ => (),
+                    };
+                }
                 match op {
                     BinaryOp::BVRotl => {
                         let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
@@ -568,7 +582,7 @@ impl SolverCtx {
                 // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation.
                 match static_expr_width {
-                    Some(w) if w < self.bitwidth => {
+                    Some(w) if w < self.bitwidth && self.dynwidths => {
                         let h: i32 = (w - 1).try_into().unwrap();
                         let x_sexp = self.vir_expr_to_sexp(*x);
                         let y_sexp = self.vir_expr_to_sexp(*y);
@@ -797,12 +811,12 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
         for a in assumptions {
-            debug!("{}", self.smt.display(*a));
+            // debug!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            // solver.push(2).unwrap();
-            // let _ = match solver.check() {
+            // self.smt.push().unwrap();
+            // let _ = match self.smt.check() {
             //     Ok(Response::Sat) => {
             //         println!("Assertion list is feasible");
             //         true
@@ -812,11 +826,16 @@ impl SolverCtx {
             //         panic!();
             //         false
             //     }
+            //     Ok(Response::Unknown) => {
+            //         println!("Assertion list is unknown!");
+            //         panic!();
+            //         false
+            //     }
             //     Err(err) => {
             //         unreachable!("Error! {:?}", err);
             //     }
             // };
-            // solver.pop(2).unwrap();
+            // self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -892,7 +911,7 @@ impl SolverCtx {
 ///             <between rule assumptions>
 ///             <all but first rule's <LHS> = <RHS>>)
 ///          (= <first rule LHS> <first rule RHS>))))))
-pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
+pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
         .solver("z3", ["-smt2", "-in"])
         .build()
@@ -902,6 +921,8 @@ pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
 
     let mut ctx = SolverCtx {
         smt: solver,
+        // dynwidths: dynwidths,
+        dynwidths: true,
         tyctx: rule_sem.tyctx,
         bitwidth: REG_WIDTH,
         var_map: HashMap::new(),
@@ -911,6 +932,8 @@ pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
         additional_assumptions: vec![],
         fresh_bits_idx: 0,
     };
+
+    let mut some = false;
 
     for (_e, t) in &ctx.tyctx.tyvars {
         // dbg!(t);
@@ -930,7 +953,8 @@ pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
                     }
                     None => {
                         dbg!(_e);
-                        panic!("Resolve all widths!")
+                        some = true;
+                        // panic!("Resolve all widths!")
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
@@ -938,6 +962,10 @@ pub fn run_solver(rule_sem: RuleSemantics) -> VerificationResult {
             _ => (),
         }
     }
+
+    if some {
+        panic!()
+    };
 
     println!("Declaring quantified variables");
     for v in &rule_sem.quantified_vars {

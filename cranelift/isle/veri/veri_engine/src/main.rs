@@ -19,6 +19,10 @@ struct Args {
     /// Don't use the aarch64 and prelude ISLE files
     #[clap(short, long, action=ArgAction::SetTrue)]
     noaarch64: bool,
+
+    /// Allow dynamic widths for the solver query
+    #[clap(short, long, action=ArgAction::SetTrue)]
+    dynwidths: bool,
 }
 
 fn main() {
@@ -32,7 +36,6 @@ fn main() {
     dbg!(args.noaarch64);
 
     if dbg!(!args.noaarch64) {
-        print!("HEREEE");
         // TODO: clean up path logic
         inputs.push(cur_dir.join("../../../codegen/src").join("clif_lower.isle"));
         inputs.push(cur_dir.join("../../../codegen/src").join("prelude.isle"));
@@ -47,5 +50,5 @@ fn main() {
     }
 
     inputs.push(PathBuf::from(args.input));
-    verify_rules(inputs, args.term)
+    verify_rules(inputs, args.term, args.dynwidths)
 }
