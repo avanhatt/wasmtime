@@ -166,7 +166,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String) -> 
                 &type_sols,
                 &term,
                 type_instantiation,
-                true,
+                false,
             );
             assert_eq!(result, *expected_result);
         }

@@ -668,14 +668,37 @@ impl SolverCtx {
                 }
             }
             Expr::BVConvToVarWidth(x, y) => {
-                let expr_width = width.unwrap().clone();
-                let dyn_width = self.vir_expr_to_sexp(*x);
-                self.width_assumptions
-                    .push(self.smt.eq(expr_width, dyn_width));
-                self.vir_expr_to_sexp(*y)
+                if self.dynwidths {
+                    let expr_width = width.unwrap().clone();
+                    let dyn_width = self.vir_expr_to_sexp(*x);
+                    self.width_assumptions
+                        .push(self.smt.eq(expr_width, dyn_width));
+                    self.vir_expr_to_sexp(*y)
+                } else {
+                    let arg_width = self.static_width(&*y).unwrap();
+                    match ty {
+                        Some(Type::BitVector(Some(w))) => {
+                            if arg_width < *w {
+                                let padding =
+                                    self.new_fresh_bits(w.checked_sub(arg_width).unwrap());
+                                let ys = self.vir_expr_to_sexp(*y);
+                                self.smt.concat(padding, ys)
+                            } else {
+                                self.vir_expr_to_sexp(*y)
+                            }
+                        }
+                        _ => unreachable!(),
+                    }
+                }
             }
             Expr::UndefinedTerm(term) => self.smt.atom(term.ret.name),
-            Expr::WidthOf(x) => self.get_expr_width_var(&*x).unwrap().clone(),
+            Expr::WidthOf(x) => {
+                if self.dynwidths {
+                    self.get_expr_width_var(&*x).unwrap().clone()
+                } else {
+                    self.smt.numeral(self.static_width(&*x).unwrap())
+                }
+            } 
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
@@ -899,6 +922,54 @@ impl SolverCtx {
             println!("{}\n", x);
         }
     }
+
+    fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
+        let mut assumptions: Vec<SExpr> = vec![];
+        println!("Declaring quantified variables");
+        for v in &rule_sem.quantified_vars {
+            let name = &v.name;
+            let ty = self.tyctx.tymap[&v.tyvar].clone();
+            let var_ty = self.vir_to_smt_ty(&ty);
+            println!("\t{} : {}", name, self.smt.display(var_ty));
+            if let Type::BitVector(w) = ty {
+                if self.dynwidths {
+                    let wide = self.widen_to_query_width(
+                        v.tyvar,
+                        w.unwrap_or(self.bitwidth),
+                        self.smt.atom(name),
+                        Some(name.to_string()),
+                    );
+                    self.var_map.insert(name.clone(), wide);
+                } else {
+                    self.var_map.insert(name.clone(), self.smt.atom(name));
+                }
+            }
+            self.smt.declare_const(name, var_ty).unwrap();
+        }
+
+        println!("Adding explicit assumptions");
+        for a in &rule_sem.assumptions {
+            let p = self.vir_expr_to_sexp(a.clone());
+            assumptions.push(p)
+        }
+        if self.dynwidths {
+            println!("Adding width assumptions");
+            for a in &self.width_assumptions {
+                assumptions.push(a.clone());
+            }
+        }
+        println!("Adding additional assumptions");
+        for a in &self.additional_assumptions {
+            assumptions.push(a.clone());
+        }
+
+        println!("Declaring additional variables");
+        for (name, ty) in &self.additional_decls {
+            println!("\t{} : {}", name, self.smt.display(*ty));
+            self.smt.declare_const(name, *ty).unwrap();
+        }
+        assumptions
+    }
 }
 
 /// Overall query for single rule:
@@ -917,13 +988,11 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
         .build()
         .unwrap();
 
-    let mut assumptions: Vec<SExpr> = vec![];
-
     let mut ctx = SolverCtx {
         smt: solver,
-        // dynwidths: dynwidths,
+        // Always use dynamic widths at first
         dynwidths: true,
-        tyctx: rule_sem.tyctx,
+        tyctx: rule_sem.tyctx.clone(),
         bitwidth: REG_WIDTH,
         var_map: HashMap::new(),
         width_vars: HashMap::new(),
@@ -933,11 +1002,10 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
         fresh_bits_idx: 0,
     };
 
-    let mut some = false;
+    let mut some_dyn_width = false;
 
-    for (_e, t) in &ctx.tyctx.tyvars {
-        // dbg!(t);
-        // dbg!(&_e);
+    // Check whether the non-solver type inference was able to resolve all bitvector widths
+    for (e, t) in &ctx.tyctx.tyvars {
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
             Type::BitVector(w) => {
@@ -952,9 +1020,8 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
                         );
                     }
                     None => {
-                        dbg!(_e);
-                        some = true;
-                        // panic!("Resolve all widths!")
+                        debug!("Unresolved width: {:?} ({})", &e, *t);
+                        some_dyn_width = true;
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
@@ -963,46 +1030,71 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
         }
     }
 
-    if some {
-        panic!()
-    };
+    if some_dyn_width {
+        println!("Some unresolved widths after basic type inference");
+    }
 
-    println!("Declaring quantified variables");
-    for v in &rule_sem.quantified_vars {
-        let name = &v.name;
-        let ty = ctx.tyctx.tymap[&v.tyvar].clone();
-        let var_ty = ctx.vir_to_smt_ty(&ty);
-        println!("\t{} : {}", name, ctx.smt.display(var_ty));
-        if let Type::BitVector(w) = ty {
-            let wide = ctx.widen_to_query_width(
-                v.tyvar,
-                w.unwrap_or(ctx.bitwidth),
-                ctx.smt.atom(name),
-                Some(name.to_string()),
-            );
-            ctx.var_map.insert(name.clone(), wide);
+    let mut assumptions: Vec<SExpr> = ctx.declare_variables(&rule_sem);
+
+    if !dynwidths {
+        println!("Finding widths from the solver");
+        ctx.smt.push().unwrap();
+        for a in &assumptions {
+            ctx.smt.assert(*a).unwrap();
         }
-        ctx.smt.declare_const(name, var_ty).unwrap();
-    }
+        match ctx.smt.check() {
+            Ok(Response::Sat) => {
+                for (_e, t) in &ctx.tyctx.tyvars {
+                    let ty = &ctx.tyctx.tymap[&t];
+                    match ty {
+                        Type::BitVector(w) => {
+                        let width_name = format!("width__{}", t);
+                        let atom = ctx.smt.atom(&width_name);
+                        let width = ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
+                        let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
 
-    println!("Adding explicit assumptions");
-    for a in &rule_sem.assumptions {
-        let p = ctx.vir_expr_to_sexp(a.clone());
-        assumptions.push(p)
-    }
-    println!("Adding width assumptions");
-    for a in &ctx.width_assumptions {
-        assumptions.push(a.clone());
-    }
-    println!("Adding additional assumptions");
-    for a in &ctx.additional_assumptions {
-        assumptions.push(a.clone());
-    }
+                        println!("width: {}", width_int);
+                        ctx.tyctx
+                            .tymap
+                            .insert(*t, Type::BitVector(Some(width_int as usize)));
+                        }
+                        _ => ()
+                    }
+                }
+            }
+            Ok(Response::Unsat) => {
+                println!(
+                    "Rule not applicable as written for rule assumptions, skipping full query"
+                );
+                return VerificationResult::InapplicableRule;
+            }
+            Ok(Response::Unknown) => {
+                panic!("Solver said 'unk'");
+            }
+            Err(err) => {
+                unreachable!("Error! {:?}", err);
+            }
+        };
+        ctx.smt.pop().unwrap();
 
-    println!("Declaring additional variables");
-    for (name, ty) in &ctx.additional_decls {
-        println!("\t{} : {}", name, ctx.smt.display(*ty));
-        ctx.smt.declare_const(name, *ty).unwrap();
+        // Declare variables again, this time with all static widths
+        let solver = easy_smt::ContextBuilder::new()
+        .solver("z3", ["-smt2", "-in"])
+        .build()
+        .unwrap();
+        ctx = SolverCtx {
+            smt: solver,
+            dynwidths: false,
+            tyctx: rule_sem.tyctx.clone(),
+            bitwidth: REG_WIDTH,
+            var_map: HashMap::new(),
+            width_vars: HashMap::new(),
+            width_assumptions: vec![],
+            additional_decls: vec![],
+            additional_assumptions: vec![],
+            fresh_bits_idx: 0,
+        };
+        assumptions = ctx.declare_variables(&rule_sem);
     }
 
     // Check whether the assumptions are possible

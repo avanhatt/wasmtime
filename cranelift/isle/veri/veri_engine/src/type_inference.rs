@@ -269,7 +269,7 @@ fn type_annotations_using_rule<'a>(
                 parse_tree.concrete_constraints,
                 parse_tree.var_constraints,
                 parse_tree.bv_constraints,
-                &parse_tree.type_var_to_val_map,
+                &mut parse_tree.type_var_to_val_map,
             );
 
             let mut tymap = HashMap::new();
@@ -684,7 +684,6 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
             tree.var_constraints.insert(TypeExpr::Variable(t, xt));
-            tree.var_constraints.insert(TypeExpr::Variable(xt, at));
 
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVRotr, Box::new(xe), Box::new(ae)),
@@ -1329,7 +1328,7 @@ fn solve_constraints(
     concrete: HashSet<TypeExpr>,
     var: HashSet<TypeExpr>,
     bv: HashSet<TypeExpr>,
-    vals: &HashMap<u32, i128>,
+    vals: &mut HashMap<u32, i128>,
 ) -> (HashMap<u32, annotation_ir::Type>, HashMap<u32, u32>) {
     // maintain a union find that maps types to sets of type vars that have that type
     let mut union_find = HashMap::new();
@@ -1496,35 +1495,8 @@ fn solve_constraints(
                 TypeExpr::WidthInt(v, w) => {
                     if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
                         match var_type {
-                            annotation_ir::Type::BitVectorWithWidth(w) => {
-                                let ty = annotation_ir::Type::BitVectorWithWidth(w);
-                                if !union_find.contains_key(&ty) {
-                                    union_find.insert(ty.clone(), HashSet::new());
-                                }
-                                if let Some(group) = union_find.get_mut(&ty) {
-                                    group.insert(*v);
-                                }
-                            }
-                            _ => (),
-                        }
-                    }
-                }
-                _ => (),
-            };
-        }
-        for c in &concrete {
-            match c {
-                TypeExpr::WidthInt(v, w) => {
-                    if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
-                        match var_type {
-                            annotation_ir::Type::BitVectorWithWidth(w) => {
-                                let ty = annotation_ir::Type::BitVectorWithWidth(w);
-                                if !union_find.contains_key(&ty) {
-                                    union_find.insert(ty.clone(), HashSet::new());
-                                }
-                                if let Some(group) = union_find.get_mut(&ty) {
-                                    group.insert(*v);
-                                }
+                            annotation_ir::Type::BitVectorWithWidth(width) => {
+                                vals.insert(*w, width as i128);
                             }
                             _ => (),
                         }
@@ -1955,7 +1927,7 @@ fn test_solve_constraints() {
         (5, annotation_ir::Type::BitVectorWithWidth(8)),
         (6, annotation_ir::Type::BitVectorWithWidth(16)),
     ]);
-    let (sol, bvsets) = solve_constraints(concrete, var, bv, &HashMap::new());
+    let (sol, bvsets) = solve_constraints(concrete, var, bv, &mut HashMap::new());
     assert_eq!(expected, sol);
     assert!(bvsets.is_empty());
 
@@ -1987,7 +1959,7 @@ fn test_solve_constraints() {
         (8, annotation_ir::Type::BitVectorUnknown(7)),
     ]);
     let expected_bvsets = HashMap::from([(7, 0), (8, 0)]);
-    let (sol, bvsets) = solve_constraints(concrete, var, bv, &HashMap::new());
+    let (sol, bvsets) = solve_constraints(concrete, var, bv, &mut HashMap::new());
     assert_eq!(expected, sol);
     assert_eq!(expected_bvsets, bvsets);
 }
@@ -2011,5 +1983,5 @@ fn test_solve_constraints_ill_typed() {
         TypeExpr::Concrete(1, annotation_ir::Type::BitVector),
         TypeExpr::Concrete(4, annotation_ir::Type::BitVector),
     ]);
-    solve_constraints(concrete, var, bv, &HashMap::new());
+    solve_constraints(concrete, var, bv, &mut HashMap::new());
 }
