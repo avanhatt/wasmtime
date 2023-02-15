@@ -1025,26 +1025,26 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             debug!("{}", self.smt.display(*a));
-            println!("{}", self.smt.display(*a));
+            // println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            self.smt.push().unwrap();
-            match self.smt.check() {
-                Ok(Response::Sat) => {
-                    println!("Assertion list is feasible");
-                }
-                Ok(Response::Unsat) => {
-                    println!("Assertion list is infeasible!");
-                }
-                Ok(Response::Unknown) => {
-                    panic!("Assertion list is unknown!");
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-            self.smt.pop().unwrap();
+            // self.smt.push().unwrap();
+            // match self.smt.check() {
+            //     Ok(Response::Sat) => {
+            //         println!("Assertion list is feasible");
+            //     }
+            //     Ok(Response::Unsat) => {
+            //         println!("Assertion list is infeasible!");
+            //     }
+            //     Ok(Response::Unknown) => {
+            //         panic!("Assertion list is unknown!");
+            //     }
+            //     Err(err) => {
+            //         unreachable!("Error! {:?}", err);
+            //     }
+            // };
+            // self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -1174,6 +1174,8 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
         .build()
         .unwrap();
 
+    // We start with logic to determine the width of all bitvectors 
+
     let mut ctx = SolverCtx {
         smt: solver,
         // Always use dynamic widths at first
@@ -1225,6 +1227,8 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
 
     let mut assumptions: Vec<SExpr> = ctx.declare_variables(&rule_sem);
 
+    // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
+    // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms). 
     if !dynwidths {
         println!("Finding widths from the solver");
         ctx.smt.push().unwrap();
