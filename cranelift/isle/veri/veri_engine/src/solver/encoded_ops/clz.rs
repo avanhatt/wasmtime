@@ -503,7 +503,6 @@ pub fn clz64(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     ret7
 }
 
-
 pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = solver.smt.extract(31, 0, x);
 
@@ -931,7 +930,6 @@ pub fn a64clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let padding = solver.new_fresh_bits(solver.bitwidth - 32);
     solver.smt.concat(padding, ret6)
 }
-
 
 pub fn clz32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
     let x = solver.smt.extract(31, 0, x);

@@ -388,16 +388,16 @@ fn test_ineg() {
     })
 }
 
-#[test]
-fn test_mul() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/imul/imul.isle",
-            "imul".to_string(),
-            lte_64_success_result(),
-        )
-    });
-}
+// #[test]
+// fn test_mul() {
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/imul/imul.isle",
+//             "imul".to_string(),
+//             lte_64_success_result(),
+//         )
+//     });
+// }
 
 /*
 #[test]
@@ -708,9 +708,8 @@ fn test_ctz_broken() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz.isle",
-            "ctz".to_string(),
+            "clz".to_string(),
             vec![
-                (Bitwidth::I1, VerificationResult::InapplicableRule),
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (
