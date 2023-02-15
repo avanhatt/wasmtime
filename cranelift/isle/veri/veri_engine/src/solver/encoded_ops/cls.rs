@@ -26,6 +26,7 @@ pub fn a64cls32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
             x,
         ]),
     ));
+
     // total zeros counter
     let zret0 = solver.declare(
         format!("zret0_{id}", id = id),
@@ -2981,8 +2982,12 @@ pub fn cls32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         solver.smt.eq(cls32ret, clsret),
     ]));
 
-    let padding = solver.new_fresh_bits(solver.bitwidth - 32);
-    solver.smt.concat(padding, cls32ret)
+    if solver.dynwidths {
+        let padding = solver.new_fresh_bits(solver.bitwidth - 32);
+        solver.smt.concat(padding, cls32ret)
+    } else {
+        cls32ret
+    }
 }
 
 pub fn cls16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
@@ -3766,8 +3771,12 @@ pub fn cls16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         solver.smt.eq(cls16ret, clsret),
     ]));
 
-    let padding = solver.new_fresh_bits(solver.bitwidth - 16);
-    solver.smt.concat(padding, cls16ret)
+    if solver.dynwidths {
+        let padding = solver.new_fresh_bits(solver.bitwidth - 16);
+        solver.smt.concat(padding, cls16ret)
+    } else {
+        cls16ret
+    }
 }
 
 pub fn cls8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
@@ -4405,8 +4414,12 @@ pub fn cls8(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         solver.smt.eq(cls8ret, clsret),
     ]));
 
-    let padding = solver.new_fresh_bits(solver.bitwidth - 8);
-    solver.smt.concat(padding, cls8ret)
+    if solver.dynwidths {
+        let padding = solver.new_fresh_bits(solver.bitwidth - 8);
+        solver.smt.concat(padding, cls8ret)
+    } else {
+        cls8ret
+    }
 }
 
 pub fn cls1(solver: &mut SolverCtx, id: u32) -> SExpr {
@@ -4428,6 +4441,10 @@ pub fn cls1(solver: &mut SolverCtx, id: u32) -> SExpr {
         ]),
     ));
 
-    let padding = solver.new_fresh_bits(solver.bitwidth - 1);
-    solver.smt.concat(padding, cls1ret)
+    if solver.dynwidths {
+        let padding = solver.new_fresh_bits(solver.bitwidth - 1);
+        solver.smt.concat(padding, cls1ret)
+    } else {
+        cls1ret
+    }
 }

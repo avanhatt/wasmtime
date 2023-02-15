@@ -121,7 +121,19 @@ impl SolverCtx {
             return source;
         }
 
+
         let delta = dest_width - source_width;
+        if !self.dynwidths {
+            return self.smt.list(vec![
+                self.smt.list(vec![
+                    self.smt.atoms().und,
+                    self.smt.atom(op),
+                    self.smt.numeral(delta),
+                ]),
+                source,
+            ]);
+        }
+
         // Extract the relevant bits of the source (which is modeled with a wider,
         // register-width bitvector).
         let extract = self
@@ -290,7 +302,7 @@ impl SolverCtx {
                 let unconstrained_bits = self.bitwidth.checked_sub(possible_source).unwrap();
 
                 // If we are extending to the full register width, no padding needed
-                let after_padding = if unconstrained_bits == 0 {
+                let after_padding = if unconstrained_bits == 0 || !self.dynwidths {
                     rotate
                 } else {
                     let padding = self.smt.extract(
@@ -547,13 +559,17 @@ impl SolverCtx {
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
 
                         // Width math
-                        let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
-                        let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
-                        let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
-                        let shl_to_zero = self.smt.bvshl(xs, extra_shift);
+                        if self.dynwidths {
+                            let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
+                            let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
+                            let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
+                            let shl_to_zero = self.smt.bvshl(xs, extra_shift);
 
-                        let amt_plus_extra = self.smt.bvadd(ys, extra_shift);
-                        return self.smt.bvlshr(shl_to_zero, amt_plus_extra);
+                            let amt_plus_extra = self.smt.bvadd(ys, extra_shift);
+                            return self.smt.bvlshr(shl_to_zero, amt_plus_extra);
+                        } else {
+                            return self.smt.bvlshr(xs, ys);
+                        }
                     }
                     BinaryOp::BVAShr => {
                         let arg_width = if self.dynwidths {
@@ -568,13 +584,17 @@ impl SolverCtx {
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
 
                         // Width math
-                        let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
-                        let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
-                        let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
-                        let shl_to_zero = self.smt.bvshl(xs, extra_shift);
+                        if self.dynwidths {
+                            let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
+                            let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
+                            let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
+                            let shl_to_zero = self.smt.bvshl(xs, extra_shift);
 
-                        let amt_plus_extra = self.smt.bvadd(ys, extra_shift);
-                        return self.smt.bvashr(shl_to_zero, amt_plus_extra);
+                            let amt_plus_extra = self.smt.bvadd(ys, extra_shift);
+                            return self.smt.bvashr(shl_to_zero, amt_plus_extra);
+                        } else {
+                            return self.smt.bvashr(xs, ys);
+                        }
                     }
                     _ => (),
                 };
@@ -668,10 +688,8 @@ impl SolverCtx {
             Expr::BVZeroExtToVarWidth(i, x) => {
                 let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                 let static_arg_width = self.static_width(&*x);
-                let expr_width = width.unwrap().clone();
                 let is = self.vir_expr_to_sexp(*i);
                 let xs = self.vir_expr_to_sexp(*x);
-                self.width_assumptions.push(self.smt.eq(expr_width, is));
                 if let (Some(arg_size), Some(e_size)) = (static_arg_width, static_expr_width) {
                     self.extend_concrete(e_size, xs, arg_size, &"zero_extend")
                 } else {
@@ -679,11 +697,15 @@ impl SolverCtx {
                 }
             }
             Expr::BVSignExtTo(i, x) => {
-                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                let arg_width = if self.dynwidths {
+                    let expr_width = width.unwrap().clone();
+                    self.width_assumptions
+                        .push(self.smt.eq(expr_width, self.smt.numeral(i)));
+                    self.get_expr_width_var(&*x).unwrap().clone()
+                } else {
+                    self.smt.numeral(self.static_width(&*x).unwrap())
+                };
                 let static_width = self.static_width(&*x);
-                let expr_width = width.unwrap().clone();
-                self.width_assumptions
-                    .push(self.smt.eq(expr_width, self.smt.numeral(i)));
                 let xs = self.vir_expr_to_sexp(*x);
                 if let Some(size) = static_width {
                     self.extend_concrete(i, xs, size, &"sign_extend")
@@ -694,10 +716,8 @@ impl SolverCtx {
             Expr::BVSignExtToVarWidth(i, x) => {
                 let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                 let static_arg_width = self.static_width(&*x);
-                let expr_width = width.unwrap().clone();
                 let is = self.vir_expr_to_sexp(*i);
                 let xs = self.vir_expr_to_sexp(*x);
-                self.width_assumptions.push(self.smt.eq(expr_width, is));
                 if let (Some(arg_size), Some(e_size)) = (static_arg_width, static_expr_width) {
                     self.extend_concrete(e_size, xs, arg_size, &"sign_extend")
                 } else {
@@ -716,13 +736,12 @@ impl SolverCtx {
                     match ty {
                         Some(Type::BitVector(Some(w))) => {
                             if arg_width < *w {
-                        
                                 let padding =
                                     self.new_fresh_bits(w.checked_sub(arg_width).unwrap());
                                 let ys = self.vir_expr_to_sexp(*y);
                                 self.smt.concat(padding, ys)
-                            } else if *w < arg_width  {
-                                let new = (w-1).try_into().unwrap();
+                            } else if *w < arg_width {
+                                let new = (w - 1).try_into().unwrap();
                                 let ys = self.vir_expr_to_sexp(*y);
                                 self.smt.extract(new, 0, ys)
                             } else {
@@ -877,30 +896,31 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             debug!("{}", self.smt.display(*a));
+            println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            // self.smt.push().unwrap();
-            // let _ = match self.smt.check() {
-            //     Ok(Response::Sat) => {
-            //         println!("Assertion list is feasible");
-            //         true
-            //     }
-            //     Ok(Response::Unsat) => {
-            //         println!("Assertion list is infeasible!");
-            //         panic!();
-            //         false
-            //     }
-            //     Ok(Response::Unknown) => {
-            //         println!("Assertion list is unknown!");
-            //         panic!();
-            //         false
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            self.smt.push().unwrap();
+            let _ = match self.smt.check() {
+                Ok(Response::Sat) => {
+                    println!("Assertion list is feasible");
+                    true
+                }
+                Ok(Response::Unsat) => {
+                    println!("Assertion list is infeasible!");
+                    panic!();
+                    false
+                }
+                Ok(Response::Unknown) => {
+                    println!("Assertion list is unknown!");
+                    panic!();
+                    false
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
