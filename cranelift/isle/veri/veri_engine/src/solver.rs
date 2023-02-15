@@ -505,7 +505,11 @@ impl SolverCtx {
                 }
                 match op {
                     BinaryOp::BVRotl => {
-                        let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                        let arg_width = if self.dynwidths {
+                            self.get_expr_width_var(&*x).unwrap().clone()
+                        } else {
+                            self.smt.numeral(self.static_width(&*x).unwrap())
+                        };
                         let xs = self.vir_expr_to_sexp(*x);
                         let ys = self.vir_expr_to_sexp(*y);
                         return self.rotate_symbolic(xs, arg_width, ys, "rotate_left");
@@ -520,14 +524,22 @@ impl SolverCtx {
                         // );
                     }
                     BinaryOp::BVRotr => {
-                        let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                        let arg_width = if self.dynwidths {
+                            self.get_expr_width_var(&*x).unwrap().clone()
+                        } else {
+                            self.smt.numeral(self.static_width(&*x).unwrap())
+                        };
                         let xs = self.vir_expr_to_sexp(*x);
                         let ys = self.vir_expr_to_sexp(*y);
                         return self.rotate_symbolic(xs, arg_width, ys, "rotate_right");
                     }
                     // To shift right, we need to make sure the bits to the right get zeroed. Shift left first.
                     BinaryOp::BVShr => {
-                        let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                        let arg_width = if self.dynwidths {
+                            self.get_expr_width_var(&*x).unwrap().clone()
+                        } else {
+                            self.smt.numeral(self.static_width(&*x).unwrap())
+                        };
                         let xs = self.vir_expr_to_sexp(*x);
                         let ys = self.vir_expr_to_sexp(*y);
 
@@ -544,7 +556,11 @@ impl SolverCtx {
                         return self.smt.bvlshr(shl_to_zero, amt_plus_extra);
                     }
                     BinaryOp::BVAShr => {
-                        let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                        let arg_width = if self.dynwidths {
+                            self.get_expr_width_var(&*x).unwrap().clone()
+                        } else {
+                            self.smt.numeral(self.static_width(&*x).unwrap())
+                        };
                         let xs = self.vir_expr_to_sexp(*x);
                         let ys = self.vir_expr_to_sexp(*y);
 
@@ -616,11 +632,15 @@ impl SolverCtx {
                 self.vir_expr_to_sexp(*y)
             }
             Expr::BVZeroExtTo(i, x) => {
-                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
+                let arg_width = if self.dynwidths {
+                    let expr_width = width.unwrap().clone();
+                    self.width_assumptions
+                        .push(self.smt.eq(expr_width, self.smt.numeral(i)));
+                    self.get_expr_width_var(&*x).unwrap().clone()
+                } else {
+                    self.smt.numeral(self.static_width(&*x).unwrap())
+                };
                 let static_width = self.static_width(&*x);
-                let expr_width = width.unwrap().clone();
-                self.width_assumptions
-                    .push(self.smt.eq(expr_width, self.smt.numeral(i)));
                 let xs = self.vir_expr_to_sexp(*x);
                 if let Some(size) = static_width {
                     self.extend_concrete(i, xs, size, &"zero_extend")
@@ -698,7 +718,7 @@ impl SolverCtx {
                 } else {
                     self.smt.numeral(self.static_width(&*x).unwrap())
                 }
-            } 
+            }
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
@@ -1048,17 +1068,17 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
                     let ty = &ctx.tyctx.tymap[&t];
                     match ty {
                         Type::BitVector(w) => {
-                        let width_name = format!("width__{}", t);
-                        let atom = ctx.smt.atom(&width_name);
-                        let width = ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
-                        let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
+                            let width_name = format!("width__{}", t);
+                            let atom = ctx.smt.atom(&width_name);
+                            let width = ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
+                            let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
 
-                        println!("width: {}", width_int);
-                        ctx.tyctx
-                            .tymap
-                            .insert(*t, Type::BitVector(Some(width_int as usize)));
+                            println!("width: {}", width_int);
+                            ctx.tyctx
+                                .tymap
+                                .insert(*t, Type::BitVector(Some(width_int as usize)));
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
             }
@@ -1079,9 +1099,9 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
 
         // Declare variables again, this time with all static widths
         let solver = easy_smt::ContextBuilder::new()
-        .solver("z3", ["-smt2", "-in"])
-        .build()
-        .unwrap();
+            .solver("z3", ["-smt2", "-in"])
+            .build()
+            .unwrap();
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
