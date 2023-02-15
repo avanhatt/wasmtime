@@ -628,8 +628,25 @@ impl SolverCtx {
                 self.bv2nat(x_sexp)
             }
             Expr::BVConvTo(y) => {
-                // For static convto, width constraints are handling during inference
-                self.vir_expr_to_sexp(*y)
+                if self.dynwidths {
+                    // For static convto, width constraints are handling during inference
+                    self.vir_expr_to_sexp(*y)
+                } else {
+                    let arg_width = self.static_width(&*y).unwrap();
+                    match ty {
+                        Some(Type::BitVector(Some(w))) => {
+                            if arg_width < *w {
+                                let padding =
+                                    self.new_fresh_bits(w.checked_sub(arg_width).unwrap());
+                                let ys = self.vir_expr_to_sexp(*y);
+                                self.smt.concat(padding, ys)
+                            } else {
+                                self.vir_expr_to_sexp(*y)
+                            }
+                        }
+                        _ => unreachable!(),
+                    }
+                }
             }
             Expr::BVZeroExtTo(i, x) => {
                 let arg_width = if self.dynwidths {
@@ -854,31 +871,32 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
         for a in assumptions {
-            // debug!("{}", self.smt.display(*a));
+            debug!("{}", self.smt.display(*a));
+            println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            // self.smt.push().unwrap();
-            // let _ = match self.smt.check() {
-            //     Ok(Response::Sat) => {
-            //         println!("Assertion list is feasible");
-            //         true
-            //     }
-            //     Ok(Response::Unsat) => {
-            //         println!("Assertion list is infeasible!");
-            //         panic!();
-            //         false
-            //     }
-            //     Ok(Response::Unknown) => {
-            //         println!("Assertion list is unknown!");
-            //         panic!();
-            //         false
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            self.smt.push().unwrap();
+            let _ = match self.smt.check() {
+                Ok(Response::Sat) => {
+                    println!("Assertion list is feasible");
+                    true
+                }
+                Ok(Response::Unsat) => {
+                    println!("Assertion list is infeasible!");
+                    panic!();
+                    false
+                }
+                Ok(Response::Unknown) => {
+                    println!("Assertion list is unknown!");
+                    panic!();
+                    false
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
