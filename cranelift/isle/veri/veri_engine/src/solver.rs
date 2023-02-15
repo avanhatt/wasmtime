@@ -815,14 +815,14 @@ impl SolverCtx {
                 }
             }
             Expr::BVZeroExtToVarWidth(i, x) => {
-                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                 let static_arg_width = self.static_width(&*x);
+                let arg_width = self.get_expr_width_var(&*x);
                 let is = self.vir_expr_to_sexp(*i);
                 let xs = self.vir_expr_to_sexp(*x);
                 if let (Some(arg_size), Some(e_size)) = (static_arg_width, static_expr_width) {
                     self.extend_concrete(e_size, xs, arg_size, &"zero_extend")
                 } else {
-                    self.extend_symbolic(is, xs, arg_width, &"zero_extend")
+                    self.extend_symbolic(is, xs, arg_width.unwrap(), &"zero_extend")
                 }
             }
             Expr::BVSignExtTo(i, x) => {
@@ -1025,31 +1025,26 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             debug!("{}", self.smt.display(*a));
-            // println!("{}", self.smt.display(*a));
+            println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            // self.smt.push().unwrap();
-            // let _ = match self.smt.check() {
-            //     Ok(Response::Sat) => {
-            //         println!("Assertion list is feasible");
-            //         true
-            //     }
-            //     Ok(Response::Unsat) => {
-            //         println!("Assertion list is infeasible!");
-            //         panic!();
-            //         false
-            //     }
-            //     Ok(Response::Unknown) => {
-            //         println!("Assertion list is unknown!");
-            //         panic!();
-            //         false
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            self.smt.push().unwrap();
+            match self.smt.check() {
+                Ok(Response::Sat) => {
+                    println!("Assertion list is feasible");
+                }
+                Ok(Response::Unsat) => {
+                    println!("Assertion list is infeasible!");
+                }
+                Ok(Response::Unknown) => {
+                    panic!("Assertion list is unknown!");
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -1211,7 +1206,10 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
                         );
                     }
                     None => {
-                        debug!("Unresolved width: {:?} ({})", &e, *t);
+                        println!("Unresolved width: {:?} ({})", &e, *t);
+                        // Assume the width is greater than 0
+                        ctx.width_assumptions
+                            .push(ctx.smt.gt(ctx.smt.atom(&width_name), ctx.smt.numeral(0)));
                         some_dyn_width = true;
                     }
                 };
@@ -1235,7 +1233,7 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
         }
         match ctx.smt.check() {
             Ok(Response::Sat) => {
-                for (_e, t) in &ctx.tyctx.tyvars {
+                for (e, t) in &ctx.tyctx.tyvars {
                     let ty = &ctx.tyctx.tymap[&t];
                     match ty {
                         Type::BitVector(w) => {
@@ -1249,6 +1247,11 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
                                 Some(before_width) => assert_eq!(*before_width, width_int as usize),
                                 _ => (),
                             };
+
+                            // Check that the width is nonzero
+                            if width_int <= 0 {
+                                panic!("Unexpected, zero width! {} {:?}", t, e);
+                            }
 
                             println!("width: {}, {}", width_name, width_int);
                             ctx.tyctx
@@ -1282,7 +1285,7 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
-            tyctx: rule_sem.tyctx.clone(),
+            tyctx: ctx.tyctx.clone(),
             bitwidth: REG_WIDTH,
             var_map: HashMap::new(),
             width_vars: HashMap::new(),

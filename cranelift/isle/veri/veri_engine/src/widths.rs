@@ -57,5 +57,15 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
         ]],
     );
 
+    // (decl small_rotr_imm (Type Reg ImmShift) Reg)
+    widths.insert(
+        "small_rotr_imm",
+        vec![vec![
+            Type::Int,
+            Type::BitVector(Some(6)),
+            Type::BitVector(Some(64)),
+        ]],
+    );
+
     return widths;
 }

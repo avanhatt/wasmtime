@@ -2,7 +2,10 @@ mod utils;
 use utils::{
     all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result,
 };
-use utils::{run_and_retry, test_from_file_with_lhs_termname, Bitwidth};
+use utils::{
+    run_and_retry, test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth,
+    Bitwidth,
+};
 use veri_ir::{Counterexample, VerificationResult};
 
 // #[test]
@@ -421,7 +424,7 @@ fn test_udiv() {
 #[test]
 fn test_uextend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_dynwidth(
             "./examples/uextend/uextend.isle",
             "uextend".to_string(),
             all_success_result(),
@@ -432,7 +435,7 @@ fn test_uextend() {
 #[test]
 fn test_sextend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_dynwidth(
             "./examples/sextend/sextend.isle",
             "sextend".to_string(),
             all_success_result(),
@@ -446,7 +449,7 @@ fn test_broken_uextend() {
     // However, this should still work in the case where the query with
     // is the same as the register width (64).
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_dynwidth(
             "./examples/broken/broken_uextend.isle",
             "uextend".to_string(),
             custom_result(&|w| {

@@ -127,7 +127,7 @@ where
     result.unwrap();
 }
 
-fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String) -> () {
+fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dynwidth: bool) -> () {
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
@@ -166,7 +166,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String) -> 
                 &type_sols,
                 &term,
                 type_instantiation,
-                false,
+                dynwidth,
             );
             assert_eq!(result, *expected_result);
         }
@@ -187,6 +187,7 @@ pub fn test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
         vec![prelude_isle, prelude_lower_isle, clif_isle, input],
         tr,
         &term,
+        false,
     );
 }
 
@@ -201,7 +202,25 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         .join("prelude_lower.isle");
     let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
     inputs.push(PathBuf::from(file));
-    test_rules_with_term(inputs, tr, &termname.to_string());
+    test_rules_with_term(inputs, tr, &termname.to_string(), false);
+}
+
+pub fn test_from_file_with_lhs_termname_dynwidth(
+    file: &str,
+    termname: String,
+    tr: TestResult,
+) -> () {
+    println!("Verifying {} rules in file: {}", termname, file);
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let prelude_lower_isle = cur_dir
+        .join("../../../codegen/src")
+        .join("prelude_lower.isle");
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(PathBuf::from(file));
+    test_rules_with_term(inputs, tr, &termname.to_string(), true);
 }
 
 pub fn test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: TestResult) -> () {
@@ -216,7 +235,7 @@ pub fn test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: T
     for f in files {
         inputs.push(PathBuf::from(f));
     }
-    test_rules_with_term(inputs, tr, &termname.to_string());
+    test_rules_with_term(inputs, tr, &termname.to_string(), false);
 }
 
 // pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {

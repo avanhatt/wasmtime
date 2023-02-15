@@ -139,6 +139,8 @@ pub enum Type {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Terminal {
     Var(String),
+
+    // Value, type variable
     Const(i128, u32),
     True,
     False,
