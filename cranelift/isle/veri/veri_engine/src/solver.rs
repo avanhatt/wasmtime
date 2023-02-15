@@ -716,15 +716,20 @@ impl SolverCtx {
                     match ty {
                         Some(Type::BitVector(Some(w))) => {
                             if arg_width < *w {
+                        
                                 let padding =
                                     self.new_fresh_bits(w.checked_sub(arg_width).unwrap());
                                 let ys = self.vir_expr_to_sexp(*y);
                                 self.smt.concat(padding, ys)
+                            } else if *w < arg_width  {
+                                let new = (w-1).try_into().unwrap();
+                                let ys = self.vir_expr_to_sexp(*y);
+                                self.smt.extract(new, 0, ys)
                             } else {
                                 self.vir_expr_to_sexp(*y)
                             }
                         }
-                        _ => unreachable!(),
+                        _ => unreachable!("{:?}, {:?}", x, y),
                     }
                 }
             }
@@ -750,7 +755,7 @@ impl SolverCtx {
                         self.smt
                             .extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
                     let new_width = i - j + 1;
-                    if new_width < self.bitwidth {
+                    if new_width < self.bitwidth && self.dynwidths {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
                         self.smt.concat(padding, extract)
@@ -872,31 +877,30 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             debug!("{}", self.smt.display(*a));
-            println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            self.smt.push().unwrap();
-            let _ = match self.smt.check() {
-                Ok(Response::Sat) => {
-                    println!("Assertion list is feasible");
-                    true
-                }
-                Ok(Response::Unsat) => {
-                    println!("Assertion list is infeasible!");
-                    panic!();
-                    false
-                }
-                Ok(Response::Unknown) => {
-                    println!("Assertion list is unknown!");
-                    panic!();
-                    false
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-            self.smt.pop().unwrap();
+            // self.smt.push().unwrap();
+            // let _ = match self.smt.check() {
+            //     Ok(Response::Sat) => {
+            //         println!("Assertion list is feasible");
+            //         true
+            //     }
+            //     Ok(Response::Unsat) => {
+            //         println!("Assertion list is infeasible!");
+            //         panic!();
+            //         false
+            //     }
+            //     Ok(Response::Unknown) => {
+            //         println!("Assertion list is unknown!");
+            //         panic!();
+            //         false
+            //     }
+            //     Err(err) => {
+            //         unreachable!("Error! {:?}", err);
+            //     }
+            // };
+            // self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -1091,7 +1095,13 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
                             let width = ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
                             let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
 
-                            println!("width: {}", width_int);
+                            // Check that we haven't contradicted previous widths
+                            match w {
+                                Some(before_width) => assert_eq!(*before_width, width_int as usize),
+                                _ => (),
+                            };
+
+                            println!("width: {}, {}", width_name, width_int);
                             ctx.tyctx
                                 .tymap
                                 .insert(*t, Type::BitVector(Some(width_int as usize)));
