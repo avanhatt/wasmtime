@@ -275,28 +275,54 @@ fn test_broken_iadd_from_file() {
 }
 
 #[test]
-fn test_isub_from_file() {
-    test_from_file_with_lhs_termname(
-        "./examples/isub/base_case.isle",
-        "isub".to_string(),
-        lte_64_success_result(),
-    );
-    test_from_file_with_lhs_termname(
-        "./examples/isub/imm12.isle",
-        "isub".to_string(),
-        lte_64_success_result(),
-    );
-    test_from_file_with_lhs_termname(
-        "./examples/isub/imm12neg.isle",
-        "isub".to_string(),
-        lte_64_success_result(),
-    );
-    //test_from_file_with_lhs_termname("./examples/isub/extend.isle", lte_64_success_result());
-    test_from_file_with_lhs_termname(
-        "./examples/isub/shift.isle",
-        "isub".to_string(),
-        lte_64_success_result(),
-    );
+fn test_isub_base_case() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/isub/base_case.isle",
+            "isub".to_string(),
+            lte_64_success_result(),
+        )
+    })
+}
+
+#[test]
+fn test_isub_imm12() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/isub/imm12.isle",
+            "isub".to_string(),
+            lte_64_success_result(),
+        )
+    })
+}
+
+#[test]
+fn test_isub_imm12neg() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/isub/imm12neg.isle",
+            "isub".to_string(),
+            lte_64_success_result(),
+        );
+    })
+}
+
+#[test]
+fn test_isub_extend() {
+    run_and_retry(|| {
+        //test_from_file_with_lhs_termname("./examples/isub/extend.isle", lte_64_success_result());
+    })
+}
+
+#[test]
+fn test_isub_shift() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/isub/shift.isle",
+            "isub".to_string(),
+            lte_64_success_result(),
+        );
+    })
 }
 
 #[test]

@@ -29,10 +29,6 @@ pub struct RuleSemantics {
     pub assumptions: Vec<Expr>,
 
     pub tyctx: TypeContext,
-
-    //  TODO: remove
-    pub lhs_undefined_terms: Vec<UndefinedTerm>,
-    pub rhs_undefined_terms: Vec<UndefinedTerm>,
 }
 // TODO: can nuke this
 #[derive(Clone, Debug, PartialEq, Eq)]

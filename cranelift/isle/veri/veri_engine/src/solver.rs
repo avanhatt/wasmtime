@@ -2,6 +2,10 @@
 /// queries to that solver.
 ///
 /// This uses the easy-smt crate to interact with any solver.
+///
+use cranelift_isle as isle;
+use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
+
 use easy_smt::{Response, SExpr};
 use log::debug;
 use std::collections::HashMap;
@@ -1072,7 +1076,7 @@ impl SolverCtx {
         if val_str.starts_with(sexpr_hex_prefix) {
             let without_prefix = val_str.trim_start_matches("#x");
             let as_unsigned = u64::from_str_radix(without_prefix, 16).unwrap();
-            format!("{}\n{:#b}", self.smt.display(value), as_unsigned)
+            format!("{}|{:#b}", self.smt.display(value), as_unsigned)
         } else {
             val_str
         }
@@ -1083,16 +1087,163 @@ impl SolverCtx {
         (var_str, self.display_hex_to_bin(value))
     }
 
-    fn display_model(&mut self) {
+    fn display_isle_pattern(
+        &mut self,
+        termenv: &TermEnv,
+        typeenv: &TypeEnv,
+        vars: &Vec<(String, String)>,
+        rule: &Rule,
+        pat: &Pattern,
+    ) -> SExpr {
+        let mut to_sexpr = |p| self.display_isle_pattern(termenv, typeenv, vars, rule, p);
+
+        match pat {
+            isle::sema::Pattern::Term(_, term_id, args) => {
+                let sym = termenv.terms[term_id.index()].name;
+                let name = typeenv.syms[sym.index()].clone();
+
+                let mut sexprs = args.iter().map(|a| to_sexpr(a)).collect::<Vec<SExpr>>();
+
+                sexprs.insert(0, self.smt.atom(name));
+                self.smt.list(sexprs)
+            }
+            isle::sema::Pattern::Var(_, var_id) => {
+                let sym = rule.vars[var_id.index()].name;
+                let ident = typeenv.syms[sym.index()].clone();
+                let smt_ident_prefix = format!("{}__clif{}__", ident, var_id.index());
+
+                let var = self.display_var_from_smt_prefix(vars, &ident, &smt_ident_prefix);
+                self.smt.atom(var)
+            }
+            isle::sema::Pattern::BindPattern(_, var_id, subpat) => {
+                let sym = rule.vars[var_id.index()].name;
+                let ident = &typeenv.syms[sym.index()];
+                let smt_ident_prefix = format!("{}__clif{}__", ident, var_id.index(),);
+                let subpat_node = to_sexpr(subpat);
+
+                let var = self.display_var_from_smt_prefix(vars, ident, &smt_ident_prefix);
+
+                // Special case: elide bind patterns to wildcars
+                if matches!(**subpat, isle::sema::Pattern::Wildcard(_)) {
+                    self.smt.atom(var)
+                } else {
+                    self.smt
+                        .list(vec![self.smt.atom(var), self.smt.atom("@"), subpat_node])
+                }
+            }
+            isle::sema::Pattern::Wildcard(_) => self.smt.list(vec![self.smt.atom("_")]),
+            isle::sema::Pattern::ConstPrim(_, sym) => {
+                let name = typeenv.syms[sym.index()].clone();
+                self.smt.list(vec![self.smt.atom(name)])
+            }
+            isle::sema::Pattern::ConstInt(_, num) => {
+                let _smt_name_prefix = format!("{}__", num);
+                // TODO: look up BV vs int
+                self.smt.list(vec![self.smt.atom(num.to_string())])
+            }
+            isle::sema::Pattern::And(_, subpats) => {
+                let mut sexprs = subpats.iter().map(|a| to_sexpr(a)).collect::<Vec<SExpr>>();
+
+                sexprs.insert(0, self.smt.atom("and"));
+                self.smt.list(sexprs)
+            }
+        }
+    }
+
+    fn display_var_from_smt_prefix(
+        &self,
+        vars: &Vec<(String, String)>,
+        ident: &str,
+        prefix: &str,
+    ) -> String {
+        let matches: Vec<&(String, String)> =
+            vars.iter().filter(|(v, _)| v.starts_with(prefix)).collect();
+        assert_eq!(matches.len(), 1);
+        let model = &matches.first().unwrap().1;
+        format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model)
+    }
+
+    fn display_isle_expr(
+        &self,
+        termenv: &TermEnv,
+        typeenv: &TypeEnv,
+        vars: &Vec<(String, String)>,
+        rule: &Rule,
+        expr: &isle::sema::Expr,
+    ) -> SExpr {
+        let to_sexpr = |e| self.display_isle_expr(termenv, typeenv, vars, rule, e);
+
+        match expr {
+            isle::sema::Expr::Term(_, term_id, args) => {
+                let sym = termenv.terms[term_id.index()].name;
+                let name = typeenv.syms[sym.index()].clone();
+
+                let mut sexprs = args.iter().map(|a| to_sexpr(a)).collect::<Vec<SExpr>>();
+
+                sexprs.insert(0, self.smt.atom(name));
+                self.smt.list(sexprs)
+            }
+            isle::sema::Expr::Var(_, var_id) => {
+                let sym = rule.vars[var_id.index()].name;
+                let ident = typeenv.syms[sym.index()].clone();
+                let smt_ident_prefix = format!("{}__clif{}__", ident, var_id.index());
+
+                let var = self.display_var_from_smt_prefix(vars, &ident, &smt_ident_prefix);
+                self.smt.atom(var)
+            }
+            isle::sema::Expr::ConstPrim(_, sym) => {
+                let name = typeenv.syms[sym.index()].clone();
+                self.smt.list(vec![self.smt.atom(name)])
+            }
+            isle::sema::Expr::ConstInt(_, num) => {
+                let _smt_name_prefix = format!("{}__", num);
+                // TODO: look up BV vs int
+                self.smt.list(vec![self.smt.atom(num.to_string())])
+            }
+            isle::sema::Expr::Let { bindings, body, .. } => {
+                let mut sexprs = vec![];
+                for (varid, _, expr) in bindings {
+                    let sym = rule.vars[varid.index()].name;
+                    let ident = typeenv.syms[sym.index()].clone();
+                    let smt_prefix = format!("{}__clif{}__", ident, varid.index());
+                    let var = self.display_var_from_smt_prefix(vars, &ident, &smt_prefix);
+
+                    sexprs.push(self.smt.list(vec![self.smt.atom(var), to_sexpr(expr)]));
+                }
+                self.smt.list(vec![
+                    self.smt.atom("let"),
+                    self.smt.list(sexprs),
+                    to_sexpr(body),
+                ])
+            }
+        }
+    }
+
+    fn display_model(
+        &mut self,
+        termenv: &TermEnv,
+        typeenv: &TypeEnv,
+        rule: &Rule,
+        lhs_sexpr: SExpr,
+        rhs_sexpr: SExpr,
+    ) {
         println!("Quantified variables:");
         let mut vars = vec![];
+        let mut lhs_value = None;
+        let mut rhs_value = None;
         for (name, atom) in &self.var_map {
             let solution = self
                 .smt
                 .get_value(vec![self.smt.atom(name), *atom])
                 .unwrap();
             for (variable, value) in solution {
-                vars.push(self.display_value(variable, value));
+                let display = self.display_value(variable, value);
+                vars.push(display.clone());
+                if variable == lhs_sexpr {
+                    lhs_value = Some(display.1);
+                } else if variable == rhs_sexpr {
+                    rhs_value = Some(display.1);
+                }
             }
         }
         for (name, _) in &self.additional_decls {
@@ -1103,10 +1254,34 @@ impl SolverCtx {
         }
         vars.sort_by_key(|x| x.0.clone());
         vars.dedup();
-        for (v, x) in vars {
+        for (v, x) in &vars {
             println!("{}", v);
             println!("{}\n", x);
         }
+
+        println!("Counterexample summary");
+        let lhs = self.display_isle_pattern(
+            termenv,
+            typeenv,
+            &vars,
+            rule,
+            &Pattern::Term(
+                cranelift_isle::sema::TypeId(0),
+                rule.root_term,
+                rule.args.clone(),
+            ),
+        );
+        println!("{}", self.smt.display(lhs));
+
+        println!("=>");
+        let rhs = self.display_isle_expr(termenv, typeenv, &vars, rule, &rule.rhs);
+        println!("{}", self.smt.display(rhs));
+
+        println!(
+            "\n{} => {}",
+            lhs_value.unwrap(),
+            rhs_value.unwrap(),
+        );
     }
 
     fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
@@ -1168,7 +1343,13 @@ impl SolverCtx {
 ///             <between rule assumptions>
 ///             <all but first rule's <LHS> = <RHS>>)
 ///          (= <first rule LHS> <first rule RHS>))))))
-pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResult {
+pub fn run_solver(
+    rule_sem: RuleSemantics,
+    rule: &Rule,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    dynwidths: bool,
+) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
         .solver("z3", ["-smt2", "-in"])
         .build()
@@ -1349,7 +1530,7 @@ pub fn run_solver(rule_sem: RuleSemantics, dynwidths: bool) -> VerificationResul
     match ctx.smt.check() {
         Ok(Response::Sat) => {
             println!("Verification failed");
-            ctx.display_model();
+            ctx.display_model(termenv, typeenv, rule, lhs, rhs);
             VerificationResult::Failure(Counterexample {})
         }
         Ok(Response::Unsat) => {

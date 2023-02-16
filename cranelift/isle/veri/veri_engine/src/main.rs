@@ -33,9 +33,7 @@ fn main() {
     let args = Args::parse();
     let mut inputs = vec![];
 
-    dbg!(args.noaarch64);
-
-    if dbg!(!args.noaarch64) {
+    if !args.noaarch64 {
         // TODO: clean up path logic
         inputs.push(cur_dir.join("../../../codegen/src").join("clif_lower.isle"));
         inputs.push(cur_dir.join("../../../codegen/src").join("prelude.isle"));
