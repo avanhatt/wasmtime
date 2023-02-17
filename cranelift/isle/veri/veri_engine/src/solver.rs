@@ -1158,7 +1158,11 @@ impl SolverCtx {
     ) -> String {
         let matches: Vec<&(String, String)> =
             vars.iter().filter(|(v, _)| v.starts_with(prefix)).collect();
-        assert_eq!(matches.len(), 1);
+        if matches.len() != 1 {
+            println!("Can't find match for: {}", prefix);
+            println!("{:?}", vars);
+            panic!();
+        }
         let model = &matches.first().unwrap().1;
         format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model)
     }
@@ -1278,7 +1282,7 @@ impl SolverCtx {
         println!("{}", self.smt.display(rhs));
 
         println!(
-            "\n{} => {}",
+            "\n{} => {}\n",
             lhs_value.unwrap(),
             rhs_value.unwrap(),
         );
@@ -1304,6 +1308,8 @@ impl SolverCtx {
                 } else {
                     self.var_map.insert(name.clone(), self.smt.atom(name));
                 }
+            } else {
+                self.var_map.insert(name.clone(), self.smt.atom(name));
             }
             self.smt.declare_const(name, var_ty).unwrap();
         }

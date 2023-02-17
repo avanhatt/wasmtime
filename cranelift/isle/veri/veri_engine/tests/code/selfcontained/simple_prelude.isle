@@ -36,8 +36,14 @@
         (decl iadd (Value Value) Inst)
         (extern extractor iadd iadd)
     
-        ;;@ (spec (sig (args imm_arg) (ret))
-        ;;@ (assertions (= (- (conv_to (widthof (ret)) (imm_arg))) (ret))))
+;; Note that 4094 = 0xffe and 16773119 = 0xffefff
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (|| (<= (bv2int (- (zero_ext (regwidth) (arg)))) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (- (zero_ext (regwidth) (arg)))) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (arg)))) (0i3:bv))
+;;@                 )),
+;;@                 (= (ret) (conv_to (widthof (ret)) (- (zero_ext (regwidth) (arg)))))
+;;@ ))
         (decl imm12_from_negated_value (Imm12) Value)
         (extern extractor imm12_from_negated_value imm12_from_negated_value)
     

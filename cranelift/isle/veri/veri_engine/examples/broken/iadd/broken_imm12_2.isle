@@ -35,7 +35,7 @@
 ;;@                     (&& (<= (bv2int (arg)) (16773119i0:isleType))
 ;;@                         (= (extract 2 0 (arg)) (0i3:bv))
 ;;@                 )),
-;;@                 (= (-(arg)) (conv_to (widthof (arg)) (ret)))
+;;@                 (= (ret) (conv_to (widthof (ret)) (zero_ext (regwidth) (arg))))
 ;;@ ))
 (decl imm12_from_value (Imm12) Value)
 (extern extractor imm12_from_value imm12_from_value)
