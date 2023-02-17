@@ -1024,11 +1024,16 @@ impl SolverCtx {
     }
 
     // Checks whether the assumption list is always false
-    fn check_assumptions_feasibility(&mut self, assumptions: &Vec<SExpr>) -> bool {
+    fn check_assumptions_feasibility(
+        &mut self,
+        assumptions: &Vec<SExpr>,
+        lhs: SExpr,
+        rhs: SExpr,
+    ) -> bool {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
         for a in assumptions {
-            debug!("{}", self.smt.display(*a));
+            // debug!("{}", self.smt.display(*a));
             // println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
@@ -1052,8 +1057,37 @@ impl SolverCtx {
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
-                println!("Assertion list is feasible");
-                true
+                // Check that there is a model with distinct LHS and RHS
+                let mut not_all_same = vec![];
+                for (name, atom) in &self.var_map {
+                    let solution = self
+                        .smt
+                        .get_value(vec![self.smt.atom(name), *atom])
+                        .unwrap();
+                    for (variable, value) in solution {
+                        if variable == lhs || variable == rhs {
+                            not_all_same.push(self.smt.not(self.smt.eq(variable, value)));
+                        }
+                    }
+                }
+                self.smt.assert(self.smt.and_many(not_all_same)).unwrap();
+                match self.smt.check() {
+                    Ok(Response::Sat) => {
+                        println!("Assertion list is feasible for two distinct inputs!");
+                        let model = self.smt.get_model().unwrap();
+                        println!("{}", self.smt.display(model));
+                        true
+                    }
+                    Ok(Response::Unsat) => {
+                        panic!("Assertion list is only feasible for one input!")
+                    }
+                    Ok(Response::Unknown) => {
+                        panic!("Solver said 'unk'");
+                    }
+                    Err(err) => {
+                        unreachable!("Error! {:?}", err);
+                    }
+                }
             }
             Ok(Response::Unsat) => {
                 println!("Assertion list is infeasible!");
@@ -1158,13 +1192,25 @@ impl SolverCtx {
     ) -> String {
         let matches: Vec<&(String, String)> =
             vars.iter().filter(|(v, _)| v.starts_with(prefix)).collect();
-        if matches.len() != 1 {
+        if matches.len() == 0 {
             println!("Can't find match for: {}", prefix);
             println!("{:?}", vars);
             panic!();
+        } else if matches.len() == 3 {
+            assert!(self.dynwidths, "Only expect multiple matches with dynamic widths");
+            for (name, model) in matches {
+                if name.contains("narrow") {
+                    return format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model);
+                }
+            }
+            panic!("narrow not found");
+        } else if matches.len() == 1 {
+            let model = &matches.first().unwrap().1;
+            format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model)
+        } else {
+            dbg!(matches);
+            panic!("Unexpected number of matches!")
         }
-        let model = &matches.first().unwrap().1;
-        format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model)
     }
 
     fn display_isle_expr(
@@ -1281,11 +1327,7 @@ impl SolverCtx {
         let rhs = self.display_isle_expr(termenv, typeenv, &vars, rule, &rule.rhs);
         println!("{}", self.smt.display(rhs));
 
-        println!(
-            "\n{} => {}\n",
-            lhs_value.unwrap(),
-            rhs_value.unwrap(),
-        );
+        println!("\n{} => {}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
     fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
@@ -1488,8 +1530,11 @@ pub fn run_solver(
         assumptions = ctx.declare_variables(&rule_sem);
     }
 
+    let lhs = ctx.vir_expr_to_sexp(rule_sem.lhs.clone());
+    let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
+
     // Check whether the assumptions are possible
-    if !ctx.check_assumptions_feasibility(&assumptions) {
+    if !ctx.check_assumptions_feasibility(&assumptions, lhs.clone(), rhs.clone()) {
         println!("Rule not applicable as written for rule assumptions, skipping full query");
         return VerificationResult::InapplicableRule;
     }
@@ -1513,9 +1558,6 @@ pub fn run_solver(
             REG_WIDTH
         }
     };
-
-    let lhs = ctx.vir_expr_to_sexp(rule_sem.lhs);
-    let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs);
 
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);

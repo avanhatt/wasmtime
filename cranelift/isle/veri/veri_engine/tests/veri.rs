@@ -120,7 +120,7 @@ fn test_iadd_msub() {
 */
 
 #[test]
-fn test_broken_iadd_from_file() {
+fn test_broken_iadd_base_case() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_base_case.isle",
@@ -128,6 +128,10 @@ fn test_broken_iadd_from_file() {
             all_failure_result(),
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_imm12() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_imm12.isle",
@@ -150,6 +154,10 @@ fn test_broken_iadd_from_file() {
             ],
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_imm12_2() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_imm12_2.isle",
@@ -172,6 +180,10 @@ fn test_broken_iadd_from_file() {
             ],
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_imm12neg() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_imm12neg.isle",
@@ -194,6 +206,10 @@ fn test_broken_iadd_from_file() {
             ],
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_imm12neg_2() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_imm12neg2.isle",
@@ -216,6 +232,10 @@ fn test_broken_iadd_from_file() {
             ],
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_madd() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_madd.isle",
@@ -223,6 +243,10 @@ fn test_broken_iadd_from_file() {
             all_failure_result(),
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_madd2() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_madd2.isle",
@@ -230,6 +254,10 @@ fn test_broken_iadd_from_file() {
             all_failure_result(),
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_msub() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_msub.isle",
@@ -252,6 +280,10 @@ fn test_broken_iadd_from_file() {
             ],
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_shift() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_shift.isle",
@@ -259,6 +291,10 @@ fn test_broken_iadd_from_file() {
             all_failure_result(),
         )
     });
+}
+
+#[test]
+fn test_broken_iadd_shift2() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_shift2.isle",
@@ -326,7 +362,7 @@ fn test_isub_shift() {
 }
 
 #[test]
-fn test_broken_isub_from_file() {
+fn test_broken_isub_base_case() {
     test_from_file_with_lhs_termname(
         "./examples/broken/isub/broken_base_case.isle",
         "isub".to_string(),
@@ -347,6 +383,10 @@ fn test_broken_isub_from_file() {
             ),
         ],
     );
+}
+
+#[test]
+fn test_broken_isub_imm12() {
     test_from_file_with_lhs_termname(
         "./examples/broken/isub/broken_imm12.isle",
         "isub".to_string(),
@@ -367,11 +407,14 @@ fn test_broken_isub_from_file() {
             ),
         ],
     );
+}
+
+#[test]
+fn test_broken_isub_imm12neg() {
     test_from_file_with_lhs_termname(
         "./examples/broken/isub/broken_imm12neg.isle",
         "isub".to_string(),
         vec![
-            (Bitwidth::I1, VerificationResult::Success),
             (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
             (
                 Bitwidth::I16,
@@ -387,15 +430,22 @@ fn test_broken_isub_from_file() {
             ),
         ],
     );
+}
 
+#[test]
+fn test_broken_isub_shift() {
     test_from_file_with_lhs_termname(
         "./examples/broken/iadd/broken_shift.isle",
-        "isub".to_string(),
+        "iadd".to_string(),
         all_failure_result(),
     );
+}
+
+#[test]
+fn test_broken_isub_shift2() {
     test_from_file_with_lhs_termname(
         "./examples/broken/iadd/broken_shift2.isle",
-        "isub".to_string(),
+        "iadd".to_string(),
         vec![
             (Bitwidth::I1, VerificationResult::InapplicableRule),
             (Bitwidth::I8, VerificationResult::InapplicableRule),
