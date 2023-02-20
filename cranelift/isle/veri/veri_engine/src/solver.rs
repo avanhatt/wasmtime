@@ -781,7 +781,7 @@ impl SolverCtx {
                 self.bv2nat(x_sexp)
             }
             Expr::BVConvTo(y) => {
-                if self.dynwidths {
+                let r = if self.dynwidths {
                     // For static convto, width constraints are handling during inference
                     self.vir_expr_to_sexp(*y)
                 } else {
@@ -799,7 +799,9 @@ impl SolverCtx {
                         }
                         _ => unreachable!(),
                     }
-                }
+                };
+                dbg!(format!("{}", self.smt.display(r)));
+                r
             }
             Expr::BVZeroExtTo(i, x) => {
                 let arg_width = if self.dynwidths {
@@ -897,15 +899,15 @@ impl SolverCtx {
                 assert!(i >= j);
                 if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
                     assert!(i < self.bitwidth);
-                    assert!(i < x_width.unwrap());
                     let xs = self.vir_expr_to_sexp(*x);
                     // No-op if we are extracting exactly the full bitwidth
-                    if j == 0 && i == self.bitwidth - 1 {
+                    if j == 0 && i == self.bitwidth - 1 && self.dynwidths {
                         return xs;
                     }
                     let extract =
                         self.smt
                             .extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
+                    dbg!(format!("{}", self.smt.display(extract)));
                     let new_width = i - j + 1;
                     if new_width < self.bitwidth && self.dynwidths {
                         let padding =
@@ -1034,26 +1036,26 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             // debug!("{}", self.smt.display(*a));
-            // println!("{}", self.smt.display(*a));
+            println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            // self.smt.push().unwrap();
-            // match self.smt.check() {
-            //     Ok(Response::Sat) => {
-            //         println!("Assertion list is feasible");
-            //     }
-            //     Ok(Response::Unsat) => {
-            //         println!("Assertion list is infeasible!");
-            //     }
-            //     Ok(Response::Unknown) => {
-            //         panic!("Assertion list is unknown!");
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            self.smt.push().unwrap();
+            match self.smt.check() {
+                Ok(Response::Sat) => {
+                    println!("Assertion list is feasible");
+                }
+                Ok(Response::Unsat) => {
+                    println!("Assertion list is infeasible!");
+                }
+                Ok(Response::Unknown) => {
+                    panic!("Assertion list is unknown!");
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -1197,7 +1199,10 @@ impl SolverCtx {
             println!("{:?}", vars);
             panic!();
         } else if matches.len() == 3 {
-            assert!(self.dynwidths, "Only expect multiple matches with dynamic widths");
+            assert!(
+                self.dynwidths,
+                "Only expect multiple matches with dynamic widths"
+            );
             for (name, model) in matches {
                 if name.contains("narrow") {
                     return format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model);

@@ -270,6 +270,7 @@ fn type_annotations_using_rule<'a>(
                 parse_tree.var_constraints,
                 parse_tree.bv_constraints,
                 &mut parse_tree.type_var_to_val_map,
+                Some(&parse_tree.ty_vars),
             );
 
             let mut tymap = HashMap::new();
@@ -667,7 +668,6 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(at, annotation_ir::Type::BitVector));
             tree.var_constraints.insert(TypeExpr::Variable(t, xt));
-            tree.var_constraints.insert(TypeExpr::Variable(xt, at));
 
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVRotl, Box::new(xe), Box::new(ae)),
@@ -769,6 +769,7 @@ fn add_annotation_constraints(
             let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
+            tree.next_type_var += 1;
 
             // In the dynamic case, we don't know the width at this point
             tree.concrete_constraints
@@ -790,8 +791,6 @@ fn add_annotation_constraints(
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
-                tree.next_type_var += 1;
-
                 (
                     veri_ir::Expr::BVConvToVarWidth(Box::new(we), Box::new(e1)),
                     t,
@@ -802,6 +801,7 @@ fn add_annotation_constraints(
             let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
+            tree.next_type_var += 1;
 
             // In the dynamic case, we don't know the width at this point
             tree.concrete_constraints
@@ -811,8 +811,6 @@ fn add_annotation_constraints(
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
 
-            tree.next_type_var += 1;
-
             (
                 veri_ir::Expr::BVSignExtToVarWidth(Box::new(we), Box::new(e1)),
                 t,
@@ -821,6 +819,7 @@ fn add_annotation_constraints(
         annotation_ir::Expr::BVZeroExtTo(w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
+            tree.next_type_var += 1;
 
             let width = match *w {
                 veri_ir::annotation_ir::Width::Const(c) => c,
@@ -834,14 +833,13 @@ fn add_annotation_constraints(
                 annotation_ir::Type::BitVectorWithWidth(width),
             ));
 
-            tree.next_type_var += 1;
-
             (veri_ir::Expr::BVZeroExtTo(width, Box::new(e1)), t)
         }
         annotation_ir::Expr::BVZeroExtToVarWidth(w, x, _) => {
             let (we, wt) = add_annotation_constraints(*w, tree, annotation_info);
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let t = tree.next_type_var;
+            tree.next_type_var += 1;
 
             // In the dynamic case, we don't know the width at this point
             tree.concrete_constraints
@@ -850,8 +848,6 @@ fn add_annotation_constraints(
                 .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
             tree.bv_constraints
                 .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
-
-            tree.next_type_var += 1;
 
             (
                 veri_ir::Expr::BVZeroExtToVarWidth(Box::new(we), Box::new(e1)),
@@ -1331,6 +1327,7 @@ fn solve_constraints(
     var: HashSet<TypeExpr>,
     bv: HashSet<TypeExpr>,
     vals: &mut HashMap<u32, i128>,
+    ty_vars: Option<&HashMap<veri_ir::Expr, u32>>,
 ) -> (HashMap<u32, annotation_ir::Type>, HashMap<u32, u32>) {
     // maintain a union find that maps types to sets of type vars that have that type
     let mut union_find = HashMap::new();
@@ -1383,10 +1380,25 @@ fn solve_constraints(
                             match (x.is_poly(), y.is_poly()) {
                                 (false, false) => {
                                     if x != y {
+                                        let e1 = ty_vars
+                                            .unwrap()
+                                            .iter()
+                                            .find_map(
+                                                |(k, &v)| if v == *v1 { Some(k) } else { None },
+                                            )
+                                            .unwrap();
+                                        let e2 = ty_vars
+                                            .unwrap() 
+                                            .iter()
+                                            .find_map(
+                                                |(k, &v)| if v == *v2 { Some(k) } else { None },
+                                            )
+                                            .unwrap();
+
                                         panic!(
-                                        "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}",
-                                        v, v1, x, v2, y
-                                    )
+                                        "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}\n{:?}\n{:?}\n",
+                                        v, v1, x, v2, y, e1, e2
+                                        );
                                     }
                                 }
                                 // union t1 and t2, keeping t2 as the leader
@@ -1873,6 +1885,9 @@ fn create_parse_tree_expr(
                 let ty_var = tree.next_type_var;
                 tree.next_type_var += 1;
 
+                tree.var_constraints
+                    .insert(TypeExpr::Variable(ty_var, subpat_node.type_var));
+
                 tree.varid_to_type_var_map.insert(varid.clone(), ty_var);
                 children.push(subpat_node);
                 let ident = format!("{}__clif{}__{}", var, varid.index(), ty_var);
@@ -1929,7 +1944,7 @@ fn test_solve_constraints() {
         (5, annotation_ir::Type::BitVectorWithWidth(8)),
         (6, annotation_ir::Type::BitVectorWithWidth(16)),
     ]);
-    let (sol, bvsets) = solve_constraints(concrete, var, bv, &mut HashMap::new());
+    let (sol, bvsets) = solve_constraints(concrete, var, bv, &mut HashMap::new(), None);
     assert_eq!(expected, sol);
     assert!(bvsets.is_empty());
 
@@ -1961,7 +1976,7 @@ fn test_solve_constraints() {
         (8, annotation_ir::Type::BitVectorUnknown(7)),
     ]);
     let expected_bvsets = HashMap::from([(7, 0), (8, 0)]);
-    let (sol, bvsets) = solve_constraints(concrete, var, bv, &mut HashMap::new());
+    let (sol, bvsets) = solve_constraints(concrete, var, bv, &mut HashMap::new(), None);
     assert_eq!(expected, sol);
     assert_eq!(expected_bvsets, bvsets);
 }
@@ -1985,5 +2000,5 @@ fn test_solve_constraints_ill_typed() {
         TypeExpr::Concrete(1, annotation_ir::Type::BitVector),
         TypeExpr::Concrete(4, annotation_ir::Type::BitVector),
     ]);
-    solve_constraints(concrete, var, bv, &mut HashMap::new());
+    solve_constraints(concrete, var, bv, &mut HashMap::new(), None);
 }

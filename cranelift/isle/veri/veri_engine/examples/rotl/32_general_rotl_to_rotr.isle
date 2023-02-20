@@ -21,9 +21,9 @@
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (rotr (conv_to (32i0:isleType) (x)) (conv_to (32i0:isleType) (y))) }
+;;@                        { (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y)))) }
 ;;@                        else
-;;@                        { (rotr (conv_to (64i0:isleType) (x)) (conv_to (64i0:isleType) (y))) }
+;;@                        { (rotr (x) (y)) }
 ;;@                    )
 ;;@                 ),
 ;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))

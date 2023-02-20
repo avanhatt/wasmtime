@@ -141,7 +141,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
 
     for type_instantiation in types {
         let ty = type_instantiation.first().unwrap();
-        let expected = tr.iter().find(|(bw, result)| match *bw {
+        let expected = tr.iter().find(|(bw, _)| match *bw {
             Bitwidth::I1 => {
                 println!("Skipping I1 for now");
                 false
