@@ -118,7 +118,7 @@
 ;;
 ;; As a side effect, this marks the value as used.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
 (decl put_in_regs (Value) ValueRegs)
 (extern constructor put_in_regs put_in_regs)
 

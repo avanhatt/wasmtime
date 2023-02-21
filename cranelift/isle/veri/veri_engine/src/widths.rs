@@ -1,6 +1,32 @@
-use veri_ir::Type;
+use veri_ir::{Expr, Type};
 
 use std::collections::HashMap;
+
+pub fn only_width_logic(e: Expr) -> bool {
+    match e {
+        Expr::Terminal(_) => todo!(),
+        Expr::Unary(_, _) => todo!(),
+        Expr::Binary(_, _, _) => todo!(),
+        Expr::CLZ(_) => todo!(),
+        Expr::A64CLZ(_, _) => todo!(),
+        Expr::CLS(_) => todo!(),
+        Expr::A64CLS(_, _) => todo!(),
+        Expr::Rev(_) => todo!(),
+        Expr::A64Rev(_, _) => todo!(),
+        Expr::Conditional(_, _, _) => todo!(),
+        Expr::BVExtract(_, _, _) => todo!(),
+        Expr::BVIntToBV(_, _) => todo!(),
+        Expr::BVToInt(_) => todo!(),
+        Expr::BVZeroExtTo(_, _) => todo!(),
+        Expr::BVZeroExtToVarWidth(_, _) => todo!(),
+        Expr::BVSignExtTo(_, _) => todo!(),
+        Expr::BVSignExtToVarWidth(_, _) => todo!(),
+        Expr::BVConvTo(_) => todo!(),
+        Expr::BVConvToVarWidth(_, _) => todo!(),
+        Expr::WidthOf(_) => todo!(),
+        Expr::UndefinedTerm(_) => todo!(),
+    }
+}
 
 pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
     let bv_types_8_to_64: Vec<Type> = vec![

@@ -1388,7 +1388,7 @@ fn solve_constraints(
                                             )
                                             .unwrap();
                                         let e2 = ty_vars
-                                            .unwrap() 
+                                            .unwrap()
                                             .iter()
                                             .find_map(
                                                 |(k, &v)| if v == *v2 { Some(k) } else { None },
@@ -1396,8 +1396,8 @@ fn solve_constraints(
                                             .unwrap();
 
                                         panic!(
-                                        "type conflict at constraint {:#?}: t{} has type {:#?}, t{} has type {:#?}\n{:?}\n{:?}\n",
-                                        v, v1, x, v2, y, e1, e2
+                                        "type conflict at constraint {:#?}:\nt{}:{:?}\n has type {:#?},\nt{}:{:?}\n has type {:#?}",
+                                        v, v1, e1, x, v2, e2, y
                                         );
                                     }
                                 }

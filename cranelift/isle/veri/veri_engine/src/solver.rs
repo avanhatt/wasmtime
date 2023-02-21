@@ -253,88 +253,63 @@ impl SolverCtx {
         amount: SExpr,
         op: &str,
     ) -> SExpr {
-        let mut some_match = vec![];
-        let mut ite_str = source.clone();
+        let (s, a) = if self.dynwidths {
+            // Extract the relevant bits of the source (which is modeled with a wider,
+            // register-width bitvector).
+            let extract_source = self.smt.extract(
+                source_width.checked_sub(1).unwrap().try_into().unwrap(),
+                0,
+                source,
+            );
 
-        // Special case: if we are asked to rotate by 0, just return the source
-        let const_width = if self.dynwidths {
-            self.bitwidth
+            let extract_amount = self.smt.extract(
+                source_width.checked_sub(1).unwrap().try_into().unwrap(),
+                0,
+                amount,
+            );
+            (extract_source, extract_amount)
         } else {
-            source_width
+            (source, amount)
         };
-        let matching = self.smt.eq(self.bv(0, const_width), amount);
-        some_match.push(matching.clone());
-        ite_str = self.smt.ite(matching, source, ite_str);
 
-        // For now, ignore rotates beyond the source width. This is safe because
-        // we will fail the rule feasibility check if this is violated.
-        // Possible amounts to rotate by
-        for possible_rotate in 1..source_width {
-            // Statement meaning the symbolic case matches this concrete case
-            let matching = self.smt.eq(self.bv(possible_rotate, const_width), amount);
-            some_match.push(matching);
+        // Do the rotate itself.
+        let rotate = match op {
+            "rotate_right" => self.smt.bvor(
+                self.smt.bvshl(s, a),
+                self.smt.bvlshr(
+                    s,
+                    self.smt.bvsub(self.bv(source_width, source_width), a),
+                ),
+            ),
+            _ => unreachable!(),
+        };
 
-            let rotate = if self.dynwidths {
-                // Extract the relevant bits of the source (which is modeled with a wider,
-                // register-width bitvector).
-                let extract = self.smt.extract(
-                    source_width.checked_sub(1).unwrap().try_into().unwrap(),
-                    0,
-                    source,
-                );
-                // Do the rotate itself.
-                let rotate = self.smt.list(vec![
-                    self.smt.list(vec![
-                        self.smt.atoms().und,
-                        self.smt.atom(op),
-                        self.smt.numeral(possible_rotate),
-                    ]),
-                    extract,
-                ]);
+        // Pad the extended result back to the full register bitwidth. Use the bits
+        // that were already in the source register. That is, given:
+        //                       reg - source width              source width
+        //                                |                           |
+        // SOURCE: [               don't care bits           |   care bits    ]
+        //
+        //                             dest width
+        //                                |
+        // OUT:    [ same don't care bits                   |   care bits     ]
+        let unconstrained_bits = self.bitwidth.checked_sub(source_width).unwrap();
 
-                // Pad the extended result back to the full register bitwidth. Use the bits
-                // that were already in the source register. That is, given:
-                //                       reg - source width              source width
-                //                                |                           |
-                // SOURCE: [               don't care bits           |   care bits    ]
-                //
-                //                             dest width
-                //                                |
-                // OUT:    [ same don't care bits                   |   care bits     ]
-                let unconstrained_bits = self.bitwidth.checked_sub(source_width).unwrap();
-
-                // If we are extending to the full register width, no padding needed
-                if unconstrained_bits == 0 {
-                    rotate
-                } else {
-                    let padding = self.smt.extract(
-                        self.bitwidth.checked_sub(1).unwrap().try_into().unwrap(),
-                        self.bitwidth
-                            .checked_sub(unconstrained_bits)
-                            .unwrap()
-                            .try_into()
-                            .unwrap(),
-                        source,
-                    );
-                    self.smt.concat(padding, rotate)
-                }
-            } else {
-                // Do the rotate itself.
-                self.smt.list(vec![
-                    self.smt.list(vec![
-                        self.smt.atoms().und,
-                        self.smt.atom(op),
-                        self.smt.numeral(possible_rotate),
-                    ]),
-                    source,
-                ])
-            };
-
-            ite_str = self.smt.ite(matching, rotate, ite_str);
+        // If we are extending to the full register width, no padding needed
+        if unconstrained_bits == 0 || !self.dynwidths {
+            rotate
+        } else {
+            let padding = self.smt.extract(
+                self.bitwidth.checked_sub(1).unwrap().try_into().unwrap(),
+                self.bitwidth
+                    .checked_sub(unconstrained_bits)
+                    .unwrap()
+                    .try_into()
+                    .unwrap(),
+                source,
+            );
+            self.smt.concat(padding, rotate)
         }
-        let some_shift_matches = self.smt.or_many(some_match);
-        self.width_assumptions.push(some_shift_matches);
-        ite_str
     }
 
     // SMTLIB only supports rotates by concrete amounts, but we
@@ -349,6 +324,7 @@ impl SolverCtx {
         amount: SExpr,
         op: &str,
     ) -> SExpr {
+        return source;
         let mut some_match = vec![];
         let mut ite_str = source.clone();
 
@@ -359,75 +335,58 @@ impl SolverCtx {
 
         // Possible starting widths
         for possible_source in 1..self.bitwidth + 1 {
-            // For now, ignore rotates beyond the source width. This is safe because
-            // we will fail the rule feasibility check if this is violated.
-            // Possible amounts to rotate by
-            for possible_rotate in 1..possible_source {
-                // Statement meaning the symbolic case matches this concrete case
-                let matching = self.smt.and(
-                    self.smt.eq(self.bv(possible_rotate, self.bitwidth), amount),
-                    self.smt.eq(self.smt.numeral(possible_source), source_width),
+            // Statement meaning the symbolic case matches this concrete case
+            let matching = self.smt.eq(self.smt.numeral(possible_source), source_width);
+            some_match.push(matching);
+
+            // Extract the relevant bits of the source (which is modeled with a wider,
+            // register-width bitvector).
+            let extract = self.smt.extract(
+                possible_source.checked_sub(1).unwrap().try_into().unwrap(),
+                0,
+                source,
+            );
+
+            let rotate = match op {
+                "rotate_right" => self.smt.bvor(
+                    self.smt.bvshl(source, amount),
+                    self.smt.bvlshr(
+                        source,
+                        self.smt
+                            .bvsub(self.bv(possible_source, possible_source), amount),
+                    ),
+                ),
+                _ => unreachable!(),
+            };
+
+            // Pad the extended result back to the full register bitwidth. Use the bits
+            // that were already in the source register. That is, given:
+            //                       reg - source width              source width
+            //                                |                           |
+            // SOURCE: [               don't care bits           |   care bits    ]
+            //
+            //                             dest width
+            //                                |
+            // OUT:    [ same don't care bits                   |   care bits     ]
+            let unconstrained_bits = self.bitwidth.checked_sub(possible_source).unwrap();
+
+            // If we are extending to the full register width, no padding needed
+            let rotate = if unconstrained_bits == 0 {
+                rotate
+            } else {
+                let padding = self.smt.extract(
+                    self.bitwidth.checked_sub(1).unwrap().try_into().unwrap(),
+                    self.bitwidth
+                        .checked_sub(unconstrained_bits)
+                        .unwrap()
+                        .try_into()
+                        .unwrap(),
+                    source,
                 );
-                some_match.push(matching);
+                self.smt.concat(padding, rotate)
+            };
 
-                let rotate = if self.dynwidths {
-                    // Extract the relevant bits of the source (which is modeled with a wider,
-                    // register-width bitvector).
-                    let extract = self.smt.extract(
-                        possible_source.checked_sub(1).unwrap().try_into().unwrap(),
-                        0,
-                        source,
-                    );
-                    // Do the rotate itself.
-                    let rotate = self.smt.list(vec![
-                        self.smt.list(vec![
-                            self.smt.atoms().und,
-                            self.smt.atom(op),
-                            self.smt.numeral(possible_rotate),
-                        ]),
-                        extract,
-                    ]);
-
-                    // Pad the extended result back to the full register bitwidth. Use the bits
-                    // that were already in the source register. That is, given:
-                    //                       reg - source width              source width
-                    //                                |                           |
-                    // SOURCE: [               don't care bits           |   care bits    ]
-                    //
-                    //                             dest width
-                    //                                |
-                    // OUT:    [ same don't care bits                   |   care bits     ]
-                    let unconstrained_bits = self.bitwidth.checked_sub(possible_source).unwrap();
-
-                    // If we are extending to the full register width, no padding needed
-                    if unconstrained_bits == 0 {
-                        rotate
-                    } else {
-                        let padding = self.smt.extract(
-                            self.bitwidth.checked_sub(1).unwrap().try_into().unwrap(),
-                            self.bitwidth
-                                .checked_sub(unconstrained_bits)
-                                .unwrap()
-                                .try_into()
-                                .unwrap(),
-                            source,
-                        );
-                        self.smt.concat(padding, rotate)
-                    }
-                } else {
-                    // Do the rotate itself.
-                    self.smt.list(vec![
-                        self.smt.list(vec![
-                            self.smt.atoms().und,
-                            self.smt.atom(op),
-                            self.smt.numeral(possible_rotate),
-                        ]),
-                        source,
-                    ])
-                };
-
-                ite_str = self.smt.ite(matching, rotate, ite_str);
-            }
+            ite_str = self.smt.ite(matching, rotate, ite_str);
         }
         let some_shift_matches = self.smt.or_many(some_match);
         self.width_assumptions.push(some_shift_matches);
@@ -526,7 +485,7 @@ impl SolverCtx {
         self.width_assumptions.push(self.smt.eq(xw, yw));
     }
 
-    pub fn assume_same_width_from_string(&mut self, x: SExpr, y: &Expr) {
+    pub fn assume_same_width_from_sexpr(&mut self, x: SExpr, y: &Expr) {
         let yw = self.get_expr_width_var(&y).unwrap().clone();
         self.width_assumptions.push(self.smt.eq(x, yw));
     }
@@ -587,13 +546,13 @@ impl SolverCtx {
                     UnaryOp::Not => "not",
                     UnaryOp::BVNeg => {
                         if self.dynwidths {
-                            self.assume_same_width_from_string(width.unwrap(), &*arg);
+                            self.assume_same_width_from_sexpr(width.unwrap(), &*arg);
                         }
                         "bvneg"
                     }
                     UnaryOp::BVNot => {
                         if self.dynwidths {
-                            self.assume_same_width_from_string(width.unwrap(), &*arg);
+                            self.assume_same_width_from_sexpr(width.unwrap(), &*arg);
                         }
                         "bvnot"
                     }
@@ -613,8 +572,10 @@ impl SolverCtx {
                         | BinaryOp::BVShl
                         | BinaryOp::BVShr
                         | BinaryOp::BVAShr
-                        | BinaryOp::BVRotl => {
-                            self.assume_same_width_from_string(width.unwrap(), &*x)
+                        | BinaryOp::BVRotl
+                        | BinaryOp::BVRotl
+                        | BinaryOp::BVRotr => {
+                            self.assume_same_width_from_sexpr(width.unwrap(), &*x)
                         }
                         _ => (),
                     };
@@ -781,7 +742,7 @@ impl SolverCtx {
                 self.bv2nat(x_sexp)
             }
             Expr::BVConvTo(y) => {
-                let r = if self.dynwidths {
+                if self.dynwidths {
                     // For static convto, width constraints are handling during inference
                     self.vir_expr_to_sexp(*y)
                 } else {
@@ -799,9 +760,7 @@ impl SolverCtx {
                         }
                         _ => unreachable!(),
                     }
-                };
-                dbg!(format!("{}", self.smt.display(r)));
-                r
+                }
             }
             Expr::BVZeroExtTo(i, x) => {
                 let arg_width = if self.dynwidths {
@@ -907,7 +866,6 @@ impl SolverCtx {
                     let extract =
                         self.smt
                             .extract(i.try_into().unwrap(), j.try_into().unwrap(), xs);
-                    dbg!(format!("{}", self.smt.display(extract)));
                     let new_width = i - j + 1;
                     if new_width < self.bitwidth && self.dynwidths {
                         let padding =
@@ -1036,26 +994,26 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             // debug!("{}", self.smt.display(*a));
-            println!("{}", self.smt.display(*a));
+            // println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            self.smt.push().unwrap();
-            match self.smt.check() {
-                Ok(Response::Sat) => {
-                    println!("Assertion list is feasible");
-                }
-                Ok(Response::Unsat) => {
-                    println!("Assertion list is infeasible!");
-                }
-                Ok(Response::Unknown) => {
-                    panic!("Assertion list is unknown!");
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-            self.smt.pop().unwrap();
+            // self.smt.push().unwrap();
+            // match self.smt.check() {
+            //     Ok(Response::Sat) => {
+            //         println!("Assertion list is feasible");
+            //     }
+            //     Ok(Response::Unsat) => {
+            //         println!("Assertion list is infeasible!");
+            //     }
+            //     Ok(Response::Unknown) => {
+            //         panic!("Assertion list is unknown!");
+            //     }
+            //     Err(err) => {
+            //         unreachable!("Error! {:?}", err);
+            //     }
+            // };
+            // self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -1213,7 +1171,6 @@ impl SolverCtx {
             let model = &matches.first().unwrap().1;
             format!("[{}|{}]", self.smt.display(self.smt.atom(ident)), model)
         } else {
-            dbg!(matches);
             panic!("Unexpected number of matches!")
         }
     }
@@ -1467,6 +1424,7 @@ pub fn run_solver(
         println!("Finding widths from the solver");
         ctx.smt.push().unwrap();
         for a in &assumptions {
+            // println!("{}", ctx.smt.display(*a));
             ctx.smt.assert(*a).unwrap();
         }
         match ctx.smt.check() {
