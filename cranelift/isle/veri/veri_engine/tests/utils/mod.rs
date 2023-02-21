@@ -1,12 +1,10 @@
 use cranelift_isle::compile::create_envs;
-use cranelift_isle::sema::{Rule, TermEnv, TypeEnv};
 use std::env;
 use std::path::PathBuf;
 use std::time::Duration;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use veri_annotation::parser_wrapper::parse_annotations;
-use veri_engine_lib::termname::pattern_contains_termname;
 use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
@@ -32,7 +30,7 @@ type TestResult = Vec<Result>;
 type TestResultBuilder = dyn Fn(Bitwidth) -> (Bitwidth, VerificationResult);
 
 // Some examples of functions we might need
-
+#[allow(dead_code)]
 pub fn just_8_result() -> TestResult {
     vec![(Bitwidth::I8, VerificationResult::Success)]
 }
@@ -173,7 +171,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
     }
 }
 
-pub fn test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
+pub fn _test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
@@ -223,7 +221,7 @@ pub fn test_from_file_with_lhs_termname_dynwidth(
     test_rules_with_term(inputs, tr, &termname.to_string(), true);
 }
 
-pub fn test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: TestResult) -> () {
+pub fn _test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: TestResult) -> () {
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");

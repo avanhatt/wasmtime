@@ -242,10 +242,29 @@ impl SolverCtx {
         ite_str
     }
 
-    // SMTLIB only supports rotates by concrete amounts, but we
-    // need symbolic ones. This method essentially does if-conversion over possible
-    // concrete forms, outputting nested ITE blocks.
-    // For safety, we add an assertion that some arm of this ITE must match.
+    fn encode_rotate(&self, op: &str, source: SExpr, amount: SExpr, width: usize) -> SExpr {
+        // SMT bitvector rotate_left requires that the rotate amount be
+        // statically specified. Instead, to use a dynamic amount, desugar
+        // to shifts and bit arithmetic.
+        let width_as_bv = self.bv(width, width);
+        let wrapped_amount = self.smt.bvurem(amount, width_as_bv);
+        let wrapped_delta = self.smt.bvsub(width_as_bv, wrapped_amount);
+        match op {
+            "rotate_left" => self.smt.bvor(
+                self.smt.bvshl(source, wrapped_amount),
+                self.smt.bvlshr(source, wrapped_delta),
+            ),
+            "rotate_right" => self.smt.bvor(
+                self.smt.bvshl(source, wrapped_delta),
+                self.smt.bvlshr(source, wrapped_amount),
+            ),
+            _ => unreachable!(),
+        }
+    }
+
+    // SMT bitvector rotate requires that the rotate amount be
+    // statically specified. Instead, to use a dynamic amount, desugar
+    // to shifts and bit arithmetic.
     fn rotate_symbolic(
         &mut self,
         source: SExpr,
@@ -273,16 +292,7 @@ impl SolverCtx {
         };
 
         // Do the rotate itself.
-        let rotate = match op {
-            "rotate_right" => self.smt.bvor(
-                self.smt.bvshl(s, a),
-                self.smt.bvlshr(
-                    s,
-                    self.smt.bvsub(self.bv(source_width, source_width), a),
-                ),
-            ),
-            _ => unreachable!(),
-        };
+        let rotate = self.encode_rotate(op, s, a, source_width);
 
         // Pad the extended result back to the full register bitwidth. Use the bits
         // that were already in the source register. That is, given:
@@ -297,6 +307,7 @@ impl SolverCtx {
 
         // If we are extending to the full register width, no padding needed
         if unconstrained_bits == 0 || !self.dynwidths {
+            println!("{}", self.smt.display(rotate));
             rotate
         } else {
             let padding = self.smt.extract(
@@ -347,17 +358,10 @@ impl SolverCtx {
                 source,
             );
 
-            let rotate = match op {
-                "rotate_right" => self.smt.bvor(
-                    self.smt.bvshl(source, amount),
-                    self.smt.bvlshr(
-                        source,
-                        self.smt
-                            .bvsub(self.bv(possible_source, possible_source), amount),
-                    ),
-                ),
-                _ => unreachable!(),
-            };
+            // SMT bitvector rotate_left requires that the rotate amount be
+            // statically specified. Instead, to use a dynamic amount, desugar
+            // to shifts and bit arithmetic.
+            let rotate = self.encode_rotate(op, source, amount, possible_source);
 
             // Pad the extended result back to the full register bitwidth. Use the bits
             // that were already in the source register. That is, given:
@@ -607,16 +611,6 @@ impl SolverCtx {
                                 );
                             }
                         }
-
-                        // // SMT bitvector rotate_left requires that the rotate amount be
-                        // // statically specified. Instead, to use a dynamic amount, desugar
-                        // // to shifts and bit arithmetic.
-                        // return format!(
-                        //     "(bvor (bvshl {x} {y}) (bvlshr {x} (bvsub {width} {y})))",
-                        //     x = self.vir_expr_to_sexp(*x),
-                        //     y = self.vir_expr_to_sexp(*y),
-                        //     width = format!("(_ bv{} {})", self.bitwidth, self.bitwidth)
-                        // );
                     }
                     BinaryOp::BVRotr => {
                         let source_width = self.static_width(&*x);
@@ -624,6 +618,7 @@ impl SolverCtx {
                             Some(w) => {
                                 let xs = self.vir_expr_to_sexp(*x);
                                 let ys = self.vir_expr_to_sexp(*y);
+                                println!("{}", self.smt.display(ys));
                                 return self.rotate_symbolic(xs, w, ys, "rotate_right");
                             }
                             None => {
@@ -784,6 +779,10 @@ impl SolverCtx {
                 let arg_width = self.get_expr_width_var(&*x);
                 let is = self.vir_expr_to_sexp(*i);
                 let xs = self.vir_expr_to_sexp(*x);
+                if self.dynwidths {
+                    let expr_width = width.unwrap().clone();
+                    self.width_assumptions.push(self.smt.eq(expr_width, is));
+                }
                 if let (Some(arg_size), Some(e_size)) = (static_arg_width, static_expr_width) {
                     self.extend_concrete(e_size, xs, arg_size, &"zero_extend")
                 } else {
@@ -812,6 +811,10 @@ impl SolverCtx {
                 let static_arg_width = self.static_width(&*x);
                 let is = self.vir_expr_to_sexp(*i);
                 let xs = self.vir_expr_to_sexp(*x);
+                if self.dynwidths {
+                    let expr_width = width.unwrap().clone();
+                    self.width_assumptions.push(self.smt.eq(expr_width, is));
+                }
                 if let (Some(arg_size), Some(e_size)) = (static_arg_width, static_expr_width) {
                     self.extend_concrete(e_size, xs, arg_size, &"sign_extend")
                 } else {
@@ -1000,12 +1003,8 @@ impl SolverCtx {
             // Uncomment to debug specific asserts
             // self.smt.push().unwrap();
             // match self.smt.check() {
-            //     Ok(Response::Sat) => {
-            //         println!("Assertion list is feasible");
-            //     }
-            //     Ok(Response::Unsat) => {
-            //         println!("Assertion list is infeasible!");
-            //     }
+            //     Ok(Response::Sat) => (),
+            //     Ok(Response::Unsat) => (),
             //     Ok(Response::Unknown) => {
             //         panic!("Assertion list is unknown!");
             //     }
@@ -1034,8 +1033,6 @@ impl SolverCtx {
                 match self.smt.check() {
                     Ok(Response::Sat) => {
                         println!("Assertion list is feasible for two distinct inputs!");
-                        let model = self.smt.get_model().unwrap();
-                        println!("{}", self.smt.display(model));
                         true
                     }
                     Ok(Response::Unsat) => {

@@ -144,10 +144,7 @@
 
 ;;@ (spec (sig (args t, x, y) (ret))
 ;;@       (assertions 
-;;@          (= (rotr (x) (y)) (ret)),
-;;@          (= (widthof (x)) (t)), 
-;;@          (<= (widthof (x)) (16i128: isleType)), 
-;;@          (<= (widthof (y)) (16i128: isleType)), 
+;;@          (= (zero_ext (regwidth) (rotr (conv_to (t) (x)) (zero_ext (t) (y)))) (ret)),
 ;;@       )
 ;;@ )
 (decl small_rotr_imm (Type Reg ImmShift) Reg)
