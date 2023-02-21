@@ -11,7 +11,7 @@ use log::debug;
 use std::collections::HashMap;
 use veri_ir::{
     BinaryOp, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext, UnaryOp,
-    VerificationResult,
+    VerificationResult, ConcreteTest
 };
 
 mod encoded_ops;
@@ -335,7 +335,6 @@ impl SolverCtx {
         amount: SExpr,
         op: &str,
     ) -> SExpr {
-        return source;
         let mut some_match = vec![];
         let mut ite_str = source.clone();
 
@@ -361,7 +360,7 @@ impl SolverCtx {
             // SMT bitvector rotate_left requires that the rotate amount be
             // statically specified. Instead, to use a dynamic amount, desugar
             // to shifts and bit arithmetic.
-            let rotate = self.encode_rotate(op, source, amount, possible_source);
+            let rotate = self.encode_rotate(op, extract, amount, possible_source);
 
             // Pad the extended result back to the full register bitwidth. Use the bits
             // that were already in the source register. That is, given:
@@ -576,7 +575,6 @@ impl SolverCtx {
                         | BinaryOp::BVShl
                         | BinaryOp::BVShr
                         | BinaryOp::BVAShr
-                        | BinaryOp::BVRotl
                         | BinaryOp::BVRotl
                         | BinaryOp::BVRotr => {
                             self.assume_same_width_from_sexpr(width.unwrap(), &*x)
@@ -1343,19 +1341,13 @@ impl SolverCtx {
 /// Overall query for single rule:
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
-/// Overall query for multiple rules (out of date):
-/// <declare vars>
-/// (not (=> (and
-///             <all rules' assumptions>
-///             <between rule assumptions>
-///             <all but first rule's <LHS> = <RHS>>)
-///          (= <first rule LHS> <first rule RHS>))))))
 pub fn run_solver(
     rule_sem: RuleSemantics,
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     dynwidths: bool,
+    _concrete: &Option<ConcreteTest>
 ) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
         .solver("z3", ["-smt2", "-in"])

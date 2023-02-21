@@ -8,7 +8,7 @@ use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
-use veri_ir::{Counterexample, VerificationResult};
+use veri_ir::{Counterexample, VerificationResult, ConcreteTest};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -165,6 +165,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
                 &term,
                 type_instantiation,
                 dynwidth,
+                &None,
             );
             assert_eq!(result, *expected_result);
         }
@@ -201,6 +202,46 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
     let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
     inputs.push(PathBuf::from(file));
     test_rules_with_term(inputs, tr, &termname.to_string(), false);
+}
+
+pub fn test_concrete_input_from_file_with_lhs_termname(file: &str, termname: String, dynwidth: bool, concrete: ConcreteTest) -> () {
+    println!("Verifying concrete input {} rule in file: {}", termname, file);
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let prelude_lower_isle = cur_dir
+        .join("../../../codegen/src")
+        .join("prelude_lower.isle");
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(PathBuf::from(file));
+
+    let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
+    let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+    let annotation_env = parse_annotations(&inputs);
+
+    // Get the types/widths for this particular term
+    let types = concrete.inputs.iter().map(|i| i.ty.clone()).collect();
+
+    let type_sols = type_rules_with_term_and_types(
+        defs.clone(),
+        &termenv,
+        &typeenv,
+        &annotation_env,
+        &termname,
+        &types,
+    );
+    let result = verify_rules_for_term(
+        &termenv,
+        &typeenv,
+        &type_sols,
+        &termname,
+        types,
+        dynwidth,
+        &Some(concrete)
+    );
+    assert_eq!(result, VerificationResult::Success);
 }
 
 pub fn test_from_file_with_lhs_termname_dynwidth(

@@ -30,22 +30,20 @@ pub struct RuleSemantics {
 
     pub tyctx: TypeContext,
 }
-// TODO: can nuke this
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct RulePath {
-    pub rules: Vec<RuleSemantics>,
-    pub undefined_term_pairs: Vec<(UndefinedTerm, UndefinedTerm)>,
-}
 
-/// A structure linking rules that share intermediate terms. A path from a root
-/// RuleSemantics to a leaf of the tree represents a valid rewriting if all
-/// assumptions along the path are feasible.
-#[derive(Clone, Debug)]
-pub struct RuleTree {
-    pub value: RuleSemantics,
-    // maybe want an RC cell instead of a Box
-    pub children: HashMap<BoundVar, Vec<RuleTree>>,
-    pub height: usize,
+// Used for providing concrete inputs to test rule semantics
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConcreteInput {
+    pub name: String,
+    // SMTLIB-formatted bitvector literal
+    pub literal: String,
+    pub ty: Type,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConcreteTest {
+    // List of name, bitvector literal, widths
+    pub inputs: Vec<ConcreteInput>,
+    pub output: String,
 }
 
 /// Verification IR annotations for an ISLE term consist of the function

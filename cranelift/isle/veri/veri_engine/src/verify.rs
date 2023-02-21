@@ -10,7 +10,7 @@ use veri_annotation::parser_wrapper::parse_annotations;
 use crate::solver::run_solver;
 use crate::type_inference::Solution;
 use crate::{interp::Context, termname::pattern_contains_termname};
-use veri_ir::{RuleSemantics, Type, VerificationResult};
+use veri_ir::{RuleSemantics, Type, VerificationResult, ConcreteTest};
 
 pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
     let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
@@ -46,6 +46,7 @@ pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
             &term,
             type_instantiation,
             dynwidths,
+            &None,
         );
     }
 }
@@ -57,6 +58,7 @@ pub fn verify_rules_for_term(
     term: &String,
     types: Vec<Type>,
     dynwidths: bool,
+    concrete: &Option<ConcreteTest>
 ) -> VerificationResult {
     let mut rules_checked = 0;
     for rule in &termenv.rules {
@@ -89,7 +91,7 @@ pub fn verify_rules_for_term(
             tyctx: sol.tyctx.to_owned(),
         };
         println!("Verifying rule with term {term} and types {:?}", types);
-        let result = run_solver(rule_sem, rule, termenv, typeenv, dynwidths);
+        let result = run_solver(rule_sem, rule, termenv, typeenv, dynwidths, concrete);
         rules_checked += 1;
         if result != VerificationResult::Success {
             return result;
