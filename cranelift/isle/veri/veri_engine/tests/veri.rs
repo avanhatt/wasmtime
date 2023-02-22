@@ -3,11 +3,10 @@ use utils::{
     all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result,
 };
 use utils::{
-    run_and_retry, test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth,
-    test_concrete_input_from_file_with_lhs_termname,
-    Bitwidth,
+    run_and_retry, test_concrete_input_from_file_with_lhs_termname,
+    test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
-use veri_ir::{Counterexample, VerificationResult, ConcreteInput, ConcreteTest};
+use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 
 // #[test]
 // fn test_iadds() {
@@ -48,20 +47,20 @@ fn test_iadd_base_concrete() {
             "./examples/iadd/base_case.isle",
             "iadd".to_string(),
             false,
-            ConcreteTest{
+            ConcreteTest {
                 termname: "iadd".to_string(),
                 args: vec![
-                    ConcreteInput{ 
+                    ConcreteInput {
                         literal: "#b00000001".to_string(),
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
-                    ConcreteInput{ 
+                    ConcreteInput {
                         literal: "#b00000001".to_string(),
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000010".to_string()
-            }
+                output: "#b00000010".to_string(),
+            },
         )
     });
 }
@@ -79,7 +78,7 @@ fn test_iadd_base() {
 
 // Currently timing out, disabling for now.
 // https://github.com/avanhatt/wasmtime/issues/13
-/* 
+/*
 #[test]
 fn test_iadd_imm12() {
     run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/imm12.isle", lte_64_success_result()));
@@ -371,20 +370,20 @@ fn test_isub_imm12_concrete() {
             "./examples/isub/imm12.isle",
             "isub".to_string(),
             false,
-            ConcreteTest{
+            ConcreteTest {
                 termname: "isub".to_string(),
                 args: vec![
-                    ConcreteInput{ 
+                    ConcreteInput {
                         literal: "#b00000001".to_string(),
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
-                    ConcreteInput{ 
+                    ConcreteInput {
                         literal: "#b11111111".to_string(),
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000010".to_string()
-            }
+                output: "#b00000010".to_string(),
+            },
         )
     });
 }
@@ -408,24 +407,28 @@ fn test_isub_imm12neg_concrete() {
             "./examples/isub/imm12neg.isle",
             "isub".to_string(),
             false,
-            ConcreteTest{
+            ConcreteTest {
                 termname: "isub".to_string(),
                 args: vec![
-                    ConcreteInput{ 
-                        literal: "#b0000000000000000000000000000000000000000000000000000000000000001".to_string(),
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000001"
+                                .to_string(),
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
-                    ConcreteInput{ 
-                        literal: "#b1111111111111111111111111111111111111111111111111111111111111111".to_string(),
+                    ConcreteInput {
+                        literal:
+                            "#b1111111111111111111111111111111111111111111111111111111111111111"
+                                .to_string(),
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000010".to_string()
-            }
+                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                    .to_string(),
+            },
         )
     });
 }
-
 
 #[test]
 fn test_isub_extend() {

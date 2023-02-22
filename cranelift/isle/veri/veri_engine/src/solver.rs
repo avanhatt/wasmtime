@@ -713,13 +713,11 @@ impl SolverCtx {
                     BinaryOp::Eq => "=",
                     BinaryOp::Lte => "<=",
                     // TODO: this comparison only works for Ints!!
-                    BinaryOp::Lt => {
-                        match self.get_type(&x) {
-                            Some(Type::Int) => "<",
-                            Some(Type::BitVector(_)) => "bvult",
-                            _ => unreachable!()
-                        }
-                    }
+                    BinaryOp::Lt => match self.get_type(&x) {
+                        Some(Type::Int) => "<",
+                        Some(Type::BitVector(_)) => "bvult",
+                        _ => unreachable!(),
+                    },
                     BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVAdd => "bvadd",
@@ -1566,7 +1564,7 @@ pub fn run_solver(
     if let Some(concrete) = concrete {
         // Check that our expected output is valid
         for a in assumptions {
-            ctx.smt.assert(a).unwrap();;
+            ctx.smt.assert(a).unwrap();
         }
         ctx.smt.push().unwrap();
         ctx.smt
