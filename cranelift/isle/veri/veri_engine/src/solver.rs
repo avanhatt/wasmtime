@@ -1010,22 +1010,22 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             // debug!("{}", self.smt.display(*a));
-            println!("{}", self.smt.display(*a));
+            // println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            self.smt.push().unwrap();
-            match self.smt.check() {
-                Ok(Response::Sat) => (),
-                Ok(Response::Unsat) => (),
-                Ok(Response::Unknown) => {
-                    panic!("Assertion list is unknown!");
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-            self.smt.pop().unwrap();
+            // self.smt.push().unwrap();
+            // match self.smt.check() {
+            //     Ok(Response::Sat) => (),
+            //     Ok(Response::Unsat) => (),
+            //     Ok(Response::Unknown) => {
+            //         panic!("Assertion list is unknown!");
+            //     }
+            //     Err(err) => {
+            //         unreachable!("Error! {:?}", err);
+            //     }
+            // };
+            // self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
