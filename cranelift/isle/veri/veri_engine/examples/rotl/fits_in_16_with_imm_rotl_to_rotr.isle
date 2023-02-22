@@ -99,7 +99,7 @@
 
 ;;@ (spec (sig (args ty, x) (r))
 ;;@   (assertions 
-;;@     (= (& (- (int2bv 6 (ty)) (x)) (- (int2bv 6 (ty)) (1i6:bv 6))) (r))
+;;@     (= (- (x)) (r))
 ;;@   )
 ;;@ )
 (decl negate_imm_shift (Type ImmShift) ImmShift)
@@ -137,9 +137,6 @@
 (rule -1 (lower (has_type (fits_in_16 ty) (rotl x (iconst k))))
       (if-let n (imm_shift_from_imm64 ty k))
       (small_rotr_imm ty (put_in_reg_zext32 x) (negate_imm_shift ty n)))
-
-	;; LHS: fits_in_16 iconst def_inst rotl has_type lower
-	;; RHS: put_in_reg_zext32 negate_imm_shift small_rotr_imm output_reg
 
 ;;@ (spec (sig (args t, x, y) (ret))
 ;;@       (assertions 

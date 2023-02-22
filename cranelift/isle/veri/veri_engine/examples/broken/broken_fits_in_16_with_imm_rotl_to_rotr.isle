@@ -99,7 +99,7 @@
 
 ;;@ (spec (sig (args ty, x) (r))
 ;;@   (assertions 
-;;@     (= (& (- (int2bv 6 (ty)) (x)) (- (int2bv 6 (ty)) (1i6:bv 6))) (r))
+;;@     (= (- (x)) (r))
 ;;@   )
 ;;@ )
 (decl negate_imm_shift (Type ImmShift) ImmShift)
