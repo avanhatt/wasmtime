@@ -15,14 +15,10 @@
     (Sub)
 ))
 
-;; BROKEN: add instead of sub
+;; BROKEN: * instead of -
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
-;;@                         (= (extract 2 0 (y)) (0i3:bv))
-;;@                 )),
-;;@                 (= (ret) (+ (x) (zero_ext (regwidth) (y))))
+;;@     (assertions (= (ret) (* (x) (zero_ext (regwidth) (y))))
 ;;@ ))
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
@@ -30,11 +26,11 @@
 (decl alu_rr_imm12 (ALUOp Type Reg Imm12) Reg)
 (extern constructor alu_rr_imm12 alu_rr_imm12)
 
-;; Note that 4094 = 0xffe and 16773119 = 0xffefff
+;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (|| (<= (bv2int (- (zero_ext (regwidth) (arg)))) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (- (zero_ext (regwidth) (arg)))) (16773119i0:isleType))
-;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (arg)))) (0i3:bv))
+;;@     (assertions (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
+;;@                     (&& (< (- (zero_ext (regwidth) (ret))) (16773120i64:bv))
+;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) (0i3:bv))
 ;;@                 )),
 ;;@                 (= (ret) (conv_to (widthof (ret)) (- (zero_ext (regwidth) (arg)))))
 ;;@ ))

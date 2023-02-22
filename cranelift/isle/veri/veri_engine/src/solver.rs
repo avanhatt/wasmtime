@@ -1077,6 +1077,8 @@ impl SolverCtx {
             }
             Ok(Response::Unsat) => {
                 println!("Assertion list is infeasible!");
+                // let unsat = self.smt.get_unsat_core().unwrap();
+                // println!("Unsat core:\n{}", self.smt.display(unsat));
                 false
             }
             Ok(Response::Unknown) => {
@@ -1380,11 +1382,13 @@ pub fn run_solver(
     dynwidths: bool,
     concrete: &Option<ConcreteTest>,
 ) -> VerificationResult {
-    let solver = easy_smt::ContextBuilder::new()
+    let mut solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
         .solver("z3", ["-smt2", "-in"])
         .build()
         .unwrap();
+
+    // solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
 
     // We start with logic to determine the width of all bitvectors
     let mut ctx = SolverCtx {
@@ -1501,11 +1505,12 @@ pub fn run_solver(
         }
 
         // Declare variables again, this time with all static widths
-        let solver = easy_smt::ContextBuilder::new()
+        let mut solver = easy_smt::ContextBuilder::new()
             .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
             .solver("z3", ["-smt2", "-in"])
             .build()
             .unwrap();
+        // solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
