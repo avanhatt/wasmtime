@@ -17,10 +17,7 @@
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
-;;@                         (= (extract 2 0 (y)) (0i3:bv))
-;;@                 )),
+;;@     (assertions 
 ;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y))))
 ;;@ ))
 (decl sub_imm (Type Reg Imm12) Reg)
@@ -31,11 +28,8 @@
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (|| (<= (bv2int (arg)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (arg)) (16773119i0:isleType))
-;;@                         (= (extract 2 0 (arg)) (0i3:bv))
-;;@                 )),
-;;@                 (= (ret) (conv_to (widthof (ret)) (zero_ext (regwidth) (arg))))
+;;@     (assertions 
+;;@                 (= (ret) (conv_to (widthof (ret)) (zero_ext (regwidth) (arg)))
 ;;@ ))
 (decl imm12_from_value (Imm12) Value)
 (extern extractor imm12_from_value imm12_from_value)

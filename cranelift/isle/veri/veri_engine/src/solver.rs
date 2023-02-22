@@ -711,8 +711,15 @@ impl SolverCtx {
                     BinaryOp::Or => "or",
                     BinaryOp::Imp => "=>",
                     BinaryOp::Eq => "=",
-                    // TODO: this comparison only works for Ints!!
                     BinaryOp::Lte => "<=",
+                    // TODO: this comparison only works for Ints!!
+                    BinaryOp::Lt => {
+                        match self.get_type(&x) {
+                            Some(Type::Int) => "<",
+                            Some(Type::BitVector(_)) => "bvult",
+                            _ => unreachable!()
+                        }
+                    }
                     BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVAdd => "bvadd",
@@ -1374,6 +1381,7 @@ pub fn run_solver(
     concrete: &Option<ConcreteTest>,
 ) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
+        .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
         .solver("z3", ["-smt2", "-in"])
         .build()
         .unwrap();
@@ -1494,6 +1502,7 @@ pub fn run_solver(
 
         // Declare variables again, this time with all static widths
         let solver = easy_smt::ContextBuilder::new()
+            .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
             .solver("z3", ["-smt2", "-in"])
             .build()
             .unwrap();

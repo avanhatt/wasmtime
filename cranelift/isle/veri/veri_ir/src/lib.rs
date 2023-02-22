@@ -162,6 +162,7 @@ pub enum BinaryOp {
     Imp,
     Eq,
     Lte,
+    Lt,
 
     // Bitvector operations
     BVMul,

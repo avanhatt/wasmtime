@@ -31,11 +31,11 @@
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (|| (<= (bv2int (- (zero_ext (regwidth) (arg)))) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (- (zero_ext (regwidth) (arg)))) (16773119i0:isleType))
-;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (arg)))) (0i3:bv))
+;;@     (assertions (|| (<= (bv2int (arg)) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (arg)) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (arg)) (0i3:bv))
 ;;@                 )),
-;;@                 (= (ret) (conv_to (widthof (ret)) (- (zero_ext (regwidth) (arg)))))
+;;@                 (= (-(arg)) (conv_to (widthof (arg)) (ret)))
 ;;@ ))
 (decl imm12_from_negated_value (Imm12) Value)
 (extern extractor imm12_from_negated_value imm12_from_negated_value)

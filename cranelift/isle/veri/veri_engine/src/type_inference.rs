@@ -749,6 +749,21 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::Lt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::Lt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
 
         annotation_ir::Expr::BVConvTo(w, x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
