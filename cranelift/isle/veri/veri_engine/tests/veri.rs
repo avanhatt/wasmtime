@@ -365,6 +365,31 @@ fn test_isub_imm12() {
 }
 
 #[test]
+fn test_isub_imm12_concrete() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/isub/imm12.isle",
+            "isub".to_string(),
+            false,
+            ConcreteTest{
+                termname: "isub".to_string(),
+                args: vec![
+                    ConcreteInput{ 
+                        literal: "#b00000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput{ 
+                        literal: "#b11111111".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                ],
+                output: "#b00000010".to_string()
+            }
+        )
+    });
+}
+
+#[test]
 fn test_isub_imm12neg() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
@@ -374,6 +399,33 @@ fn test_isub_imm12neg() {
         );
     })
 }
+
+// BROKEN
+#[test]
+fn test_isub_imm12neg_concrete() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/isub/imm12neg.isle",
+            "isub".to_string(),
+            false,
+            ConcreteTest{
+                termname: "isub".to_string(),
+                args: vec![
+                    ConcreteInput{ 
+                        literal: "#b0000000000000000000000000000000000000000000000000000000000000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput{ 
+                        literal: "#b1111111111111111111111111111111111111111111111111111111111111111".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                ],
+                output: "#b0000000000000000000000000000000000000000000000000000000000000010".to_string()
+            }
+        )
+    });
+}
+
 
 #[test]
 fn test_isub_extend() {

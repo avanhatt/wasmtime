@@ -1575,6 +1575,7 @@ pub fn run_solver(
                 ctx.display_hex_to_bin(val)
             );
         } else {
+            println!("Expected concrete result matched: {}", concrete.output);
             ctx.smt.pop().unwrap();
         }
 
