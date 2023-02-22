@@ -8,7 +8,7 @@ use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
-use veri_ir::{Counterexample, VerificationResult, ConcreteTest};
+use veri_ir::{ConcreteTest, Counterexample, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -204,8 +204,16 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
     test_rules_with_term(inputs, tr, &termname.to_string(), false);
 }
 
-pub fn test_concrete_input_from_file_with_lhs_termname(file: &str, termname: String, dynwidth: bool, concrete: ConcreteTest) -> () {
-    println!("Verifying concrete input {} rule in file: {}", termname, file);
+pub fn test_concrete_input_from_file_with_lhs_termname(
+    file: &str,
+    termname: String,
+    dynwidth: bool,
+    concrete: ConcreteTest,
+) -> () {
+    println!(
+        "Verifying concrete input {} rule in file: {}",
+        termname, file
+    );
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
     let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
@@ -239,7 +247,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(file: &str, termname: Str
         &termname,
         types,
         dynwidth,
-        &Some(concrete)
+        &Some(concrete),
     );
     assert_eq!(result, VerificationResult::Success);
 }

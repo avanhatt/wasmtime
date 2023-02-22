@@ -10,8 +10,8 @@ use easy_smt::{Response, SExpr};
 use log::debug;
 use std::collections::HashMap;
 use veri_ir::{
-    BinaryOp, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext, UnaryOp,
-    VerificationResult, ConcreteTest
+    BinaryOp, ConcreteTest, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext,
+    UnaryOp, VerificationResult,
 };
 
 mod encoded_ops;
@@ -246,6 +246,7 @@ impl SolverCtx {
         // SMT bitvector rotate_left requires that the rotate amount be
         // statically specified. Instead, to use a dynamic amount, desugar
         // to shifts and bit arithmetic.
+        dbg!(width);
         let width_as_bv = self.bv(width, width);
         let wrapped_amount = self.smt.bvurem(amount, width_as_bv);
         let wrapped_delta = self.smt.bvsub(width_as_bv, wrapped_amount);
@@ -351,16 +352,21 @@ impl SolverCtx {
 
             // Extract the relevant bits of the source (which is modeled with a wider,
             // register-width bitvector).
-            let extract = self.smt.extract(
+            let extract_source = self.smt.extract(
                 possible_source.checked_sub(1).unwrap().try_into().unwrap(),
                 0,
                 source,
+            );
+            let extract_amount = self.smt.extract(
+                possible_source.checked_sub(1).unwrap().try_into().unwrap(),
+                0,
+                amount,
             );
 
             // SMT bitvector rotate_left requires that the rotate amount be
             // statically specified. Instead, to use a dynamic amount, desugar
             // to shifts and bit arithmetic.
-            let rotate = self.encode_rotate(op, extract, amount, possible_source);
+            let rotate = self.encode_rotate(op, extract_source, extract_amount, possible_source);
 
             // Pad the extended result back to the full register bitwidth. Use the bits
             // that were already in the source register. That is, given:
@@ -1347,7 +1353,7 @@ pub fn run_solver(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     dynwidths: bool,
-    _concrete: &Option<ConcreteTest>
+    concrete: &Option<ConcreteTest>,
 ) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
         .solver("z3", ["-smt2", "-in"])
@@ -1355,7 +1361,6 @@ pub fn run_solver(
         .unwrap();
 
     // We start with logic to determine the width of all bitvectors
-
     let mut ctx = SolverCtx {
         smt: solver,
         // Always use dynamic widths at first
@@ -1401,66 +1406,67 @@ pub fn run_solver(
         }
     }
 
-    if some_dyn_width {
-        println!("Some unresolved widths after basic type inference");
-    }
-
     let mut assumptions: Vec<SExpr> = ctx.declare_variables(&rule_sem);
 
     // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
     // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms).
     if !dynwidths {
-        println!("Finding widths from the solver");
-        ctx.smt.push().unwrap();
-        for a in &assumptions {
-            // println!("{}", ctx.smt.display(*a));
-            ctx.smt.assert(*a).unwrap();
-        }
-        match ctx.smt.check() {
-            Ok(Response::Sat) => {
-                for (e, t) in &ctx.tyctx.tyvars {
-                    let ty = &ctx.tyctx.tymap[&t];
-                    match ty {
-                        Type::BitVector(w) => {
-                            let width_name = format!("width__{}", t);
-                            let atom = ctx.smt.atom(&width_name);
-                            let width = ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
-                            let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
+        if some_dyn_width {
+            println!("Some unresolved widths after basic type inference");
+            println!("Finding widths from the solver");
+            ctx.smt.push().unwrap();
+            for a in &assumptions {
+                ctx.smt.assert(*a).unwrap();
+            }
+            match ctx.smt.check() {
+                Ok(Response::Sat) => {
+                    for (e, t) in &ctx.tyctx.tyvars {
+                        let ty = &ctx.tyctx.tymap[&t];
+                        match ty {
+                            Type::BitVector(w) => {
+                                let width_name = format!("width__{}", t);
+                                let atom = ctx.smt.atom(&width_name);
+                                let width =
+                                    ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
+                                let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
 
-                            // Check that we haven't contradicted previous widths
-                            match w {
-                                Some(before_width) => assert_eq!(*before_width, width_int as usize),
-                                _ => (),
-                            };
+                                // Check that we haven't contradicted previous widths
+                                match w {
+                                    Some(before_width) => {
+                                        assert_eq!(*before_width, width_int as usize)
+                                    }
+                                    _ => (),
+                                };
 
-                            // Check that the width is nonzero
-                            if width_int <= 0 {
-                                panic!("Unexpected, zero width! {} {:?}", t, e);
+                                // Check that the width is nonzero
+                                if width_int <= 0 {
+                                    panic!("Unexpected, zero width! {} {:?}", t, e);
+                                }
+
+                                println!("width: {}, {}", width_name, width_int);
+                                ctx.tyctx
+                                    .tymap
+                                    .insert(*t, Type::BitVector(Some(width_int as usize)));
                             }
-
-                            println!("width: {}, {}", width_name, width_int);
-                            ctx.tyctx
-                                .tymap
-                                .insert(*t, Type::BitVector(Some(width_int as usize)));
+                            _ => (),
                         }
-                        _ => (),
                     }
                 }
-            }
-            Ok(Response::Unsat) => {
-                println!(
-                    "Rule not applicable as written for rule assumptions, skipping full query"
-                );
-                return VerificationResult::InapplicableRule;
-            }
-            Ok(Response::Unknown) => {
-                panic!("Solver said 'unk'");
-            }
-            Err(err) => {
-                unreachable!("Error! {:?}", err);
-            }
-        };
-        ctx.smt.pop().unwrap();
+                Ok(Response::Unsat) => {
+                    println!(
+                        "Rule not applicable as written for rule assumptions, skipping full query"
+                    );
+                    return VerificationResult::InapplicableRule;
+                }
+                Ok(Response::Unknown) => {
+                    panic!("Solver said 'unk'");
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            ctx.smt.pop().unwrap();
+        }
 
         // Declare variables again, this time with all static widths
         let solver = easy_smt::ContextBuilder::new()
