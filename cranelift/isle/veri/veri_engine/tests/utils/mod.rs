@@ -157,6 +157,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
                 &annotation_env,
                 &term,
                 &type_instantiation,
+                &None,
             );
             let result = verify_rules_for_term(
                 &termenv,
@@ -230,7 +231,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     let annotation_env = parse_annotations(&inputs);
 
     // Get the types/widths for this particular term
-    let types = concrete.inputs.iter().map(|i| i.ty.clone()).collect();
+    let types = concrete.args.iter().map(|i| i.ty.clone()).collect();
 
     let type_sols = type_rules_with_term_and_types(
         defs.clone(),
@@ -239,6 +240,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         &annotation_env,
         &termname,
         &types,
+        &Some(concrete.clone()),
     );
     let result = verify_rules_for_term(
         &termenv,

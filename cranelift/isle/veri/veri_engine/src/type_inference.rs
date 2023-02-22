@@ -6,8 +6,7 @@ use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::{annotation_ir, TypeContext};
-use veri_ir::{Expr, Type};
+use veri_ir::{annotation_ir, ConcreteTest, Expr, Type, TypeContext};
 
 use crate::REG_WIDTH;
 
@@ -31,6 +30,7 @@ struct RuleParseTree<'a> {
     quantified_vars: HashSet<(String, u32)>,
     free_vars: HashSet<(String, u32)>,
     assumptions: Vec<Expr>,
+    concrete: Option<ConcreteTest>,
 }
 
 #[derive(Clone, Debug)]
@@ -92,6 +92,7 @@ pub fn type_rules_with_term_and_types(
     annotation_env: &AnnotationEnv,
     term: &String,
     types: &Vec<Type>,
+    concrete: &Option<ConcreteTest>,
 ) -> HashMap<isle::sema::RuleId, Solution> {
     let decls = build_decl_map(defs);
 
@@ -120,6 +121,7 @@ pub fn type_rules_with_term_and_types(
             termenv,
             term,
             &types,
+            concrete,
         ) {
             // Uncomment for debugging
             // for a in &s.annotation_infos {
@@ -167,6 +169,7 @@ fn type_annotations_using_rule<'a>(
     termenv: &'a TermEnv,
     term: &String,
     types: &Vec<Type>,
+    concrete: &'a Option<ConcreteTest>,
 ) -> Option<Solution> {
     let mut parse_tree = RuleParseTree {
         varid_to_type_var_map: HashMap::new(),
@@ -180,6 +183,7 @@ fn type_annotations_using_rule<'a>(
         quantified_vars: HashSet::new(),
         free_vars: HashSet::new(),
         assumptions: vec![],
+        concrete: concrete.clone(),
     };
 
     let mut annotation_infos = vec![];
@@ -1213,6 +1217,21 @@ fn add_rule_constraints(
                 return None;
             }
             let annotation = a.unwrap();
+
+            // Test code only: support providing concrete inputs
+            if let Some(concrete) = &tree.concrete {
+                if concrete.termname.eq(t) {
+                    for (child, input) in children.iter().zip(&concrete.args) {
+                        tree.assumptions.push(veri_ir::Expr::Binary(
+                            veri_ir::BinaryOp::Eq,
+                            Box::new(child.clone()),
+                            Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Literal(
+                                input.literal.clone(),
+                            ))),
+                        ))
+                    }
+                }
+            }
 
             // use a fresh mapping for each term
             // keep the same mapping between assertions in the same annotation

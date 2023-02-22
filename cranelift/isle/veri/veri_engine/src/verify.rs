@@ -38,6 +38,7 @@ pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
             &annotation_env,
             &term,
             &type_instantiation,
+            &None,
         );
         verify_rules_for_term(
             &termenv,

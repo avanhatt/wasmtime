@@ -4,9 +4,10 @@ use utils::{
 };
 use utils::{
     run_and_retry, test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth,
+    test_concrete_input_from_file_with_lhs_termname,
     Bitwidth,
 };
-use veri_ir::{Counterexample, VerificationResult};
+use veri_ir::{Counterexample, VerificationResult, ConcreteInput, ConcreteTest};
 
 // #[test]
 // fn test_iadds() {
@@ -40,14 +41,45 @@ fn test_implicit_conversions() {
     */
 }
 
-// Currently timing out, disabling for now.
-// https://github.com/avanhatt/wasmtime/issues/13
-/*
 #[test]
-fn test_iadd_base() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/base_case.isle", lte_64_success_result()));
+fn test_iadd_base_concrete() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/iadd/base_case.isle",
+            "iadd".to_string(),
+            false,
+            ConcreteTest{
+                termname: "iadd".to_string(),
+                args: vec![
+                    ConcreteInput{ 
+                        literal: "#b00000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput{ 
+                        literal: "#b00000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                ],
+                output: "#b00000010".to_string()
+            }
+        )
+    });
 }
 
+#[test]
+fn test_iadd_base() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/base_case.isle",
+            "iadd".to_string(),
+            lte_64_success_result(),
+        )
+    });
+}
+
+// Currently timing out, disabling for now.
+// https://github.com/avanhatt/wasmtime/issues/13
+/* 
 #[test]
 fn test_iadd_imm12() {
     run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/imm12.isle", lte_64_success_result()));

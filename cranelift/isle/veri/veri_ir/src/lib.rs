@@ -34,15 +34,15 @@ pub struct RuleSemantics {
 // Used for providing concrete inputs to test rule semantics
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConcreteInput {
-    pub name: String,
     // SMTLIB-formatted bitvector literal
     pub literal: String,
     pub ty: Type,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConcreteTest {
+    pub termname: String,
     // List of name, bitvector literal, widths
-    pub inputs: Vec<ConcreteInput>,
+    pub args: Vec<ConcreteInput>,
     pub output: String,
 }
 
@@ -133,6 +133,9 @@ pub enum Type {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Terminal {
     Var(String),
+
+    // Literal SMT value, for testing
+    Literal(String),
 
     // Value, type variable
     Const(i128, u32),

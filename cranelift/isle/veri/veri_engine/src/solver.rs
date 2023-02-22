@@ -123,7 +123,14 @@ impl SolverCtx {
     ) -> SExpr {
         if dest_width < source_width {
             self.additional_assumptions.push(self.smt.false_());
-            return self.bv(0, if self.dynwidths { self.bitwidth } else { dest_width } );
+            return self.bv(
+                0,
+                if self.dynwidths {
+                    self.bitwidth
+                } else {
+                    dest_width
+                },
+            );
         }
 
         let delta = dest_width - source_width;
@@ -525,6 +532,7 @@ impl SolverCtx {
         let static_expr_width = self.static_width(&e);
         match e {
             Expr::Terminal(t) => match t {
+                Terminal::Literal(v) => self.smt.atom(v),
                 Terminal::Var(v) => match self.var_map.get(&v) {
                     Some(o) => *o,
                     None => self.smt.atom(v),
@@ -1049,7 +1057,8 @@ impl SolverCtx {
                         true
                     }
                     Ok(Response::Unsat) => {
-                        panic!("Assertion list is only feasible for one input!")
+                        println!("Assertion list is only feasible for one input!");
+                        true
                     }
                     Ok(Response::Unknown) => {
                         panic!("Solver said 'unk'");
@@ -1416,7 +1425,7 @@ pub fn run_solver(
         }
     }
 
-    let mut assumptions: Vec<SExpr> = vec![];
+    let mut assumptions: Vec<SExpr>;
 
     // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
     // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms).
@@ -1538,6 +1547,59 @@ pub fn run_solver(
 
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
+
+    // Test code only: test against concrete input/output
+    if let Some(concrete) = concrete {
+        // Check that our expected output is valid
+        for a in assumptions {
+            ctx.smt.assert(a).unwrap();;
+        }
+        ctx.smt.push().unwrap();
+        ctx.smt
+            .assert(
+                ctx.smt
+                    .eq(rhs_care_bits, ctx.smt.atom(concrete.output.clone())),
+            )
+            .unwrap();
+        if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
+            // Bad! This is a bug!
+            // Pop the output assertion
+            ctx.smt.pop().unwrap();
+            // Try again
+            assert!(matches!(ctx.smt.check(), Ok(Response::Sat)));
+            // Get the value for what output is to panic with a useful message
+            let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+            panic!(
+                "Expected {}, got {}",
+                concrete.output,
+                ctx.display_hex_to_bin(val)
+            );
+        } else {
+            ctx.smt.pop().unwrap();
+        }
+
+        // Check that there is no other possible output
+        ctx.smt.push().unwrap();
+        ctx.smt
+            .assert(
+                ctx.smt.not(
+                    ctx.smt
+                        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.clone())),
+                ),
+            )
+            .unwrap();
+        if !matches!(ctx.smt.check(), Ok(Response::Unsat)) {
+            // Get the value for what output is to panic with a useful message
+            let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+            panic!(
+                "Expected ONLY {}, got POSSIBLE {}",
+                concrete.output,
+                ctx.display_hex_to_bin(val)
+            );
+        }
+        ctx.smt.pop().unwrap();
+        return VerificationResult::Success;
+    }
 
     let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
     println!(
