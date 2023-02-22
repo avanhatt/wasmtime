@@ -25,6 +25,7 @@ use crate::REG_WIDTH;
 pub struct SolverCtx {
     smt: easy_smt::Context,
     dynwidths: bool,
+    onlywidths: bool,
     tyctx: TypeContext,
     pub bitwidth: usize,
     var_map: HashMap<String, SExpr>,
@@ -122,7 +123,7 @@ impl SolverCtx {
     ) -> SExpr {
         if dest_width < source_width {
             self.additional_assumptions.push(self.smt.false_());
-            return source;
+            return self.bv(0, if self.dynwidths { self.bitwidth } else { dest_width } );
         }
 
         let delta = dest_width - source_width;
@@ -201,6 +202,9 @@ impl SolverCtx {
         source_width: SExpr,
         op: &str,
     ) -> SExpr {
+        if self.onlywidths {
+            return source;
+        }
         // Symbolic expression for amount to shift
         let shift = self.smt.sub(dest_width, source_width);
 
@@ -246,7 +250,6 @@ impl SolverCtx {
         // SMT bitvector rotate_left requires that the rotate amount be
         // statically specified. Instead, to use a dynamic amount, desugar
         // to shifts and bit arithmetic.
-        dbg!(width);
         let width_as_bv = self.bv(width, width);
         let wrapped_amount = self.smt.bvurem(amount, width_as_bv);
         let wrapped_delta = self.smt.bvsub(width_as_bv, wrapped_amount);
@@ -273,6 +276,9 @@ impl SolverCtx {
         amount: SExpr,
         op: &str,
     ) -> SExpr {
+        if self.onlywidths {
+            return source;
+        }
         let (s, a) = if self.dynwidths {
             // Extract the relevant bits of the source (which is modeled with a wider,
             // register-width bitvector).
@@ -308,7 +314,6 @@ impl SolverCtx {
 
         // If we are extending to the full register width, no padding needed
         if unconstrained_bits == 0 || !self.dynwidths {
-            println!("{}", self.smt.display(rotate));
             rotate
         } else {
             let padding = self.smt.extract(
@@ -336,6 +341,9 @@ impl SolverCtx {
         amount: SExpr,
         op: &str,
     ) -> SExpr {
+        if self.onlywidths {
+            return source;
+        }
         let mut some_match = vec![];
         let mut ite_str = source.clone();
 
@@ -345,7 +353,7 @@ impl SolverCtx {
         ite_str = self.smt.ite(matching, source, ite_str);
 
         // Possible starting widths
-        for possible_source in 1..self.bitwidth + 1 {
+        for possible_source in [8usize, 16, 32, 64] {
             // Statement meaning the symbolic case matches this concrete case
             let matching = self.smt.eq(self.smt.numeral(possible_source), source_width);
             some_match.push(matching);
@@ -622,7 +630,6 @@ impl SolverCtx {
                             Some(w) => {
                                 let xs = self.vir_expr_to_sexp(*x);
                                 let ys = self.vir_expr_to_sexp(*y);
-                                println!("{}", self.smt.display(ys));
                                 return self.rotate_symbolic(xs, w, ys, "rotate_right");
                             }
                             None => {
@@ -877,7 +884,9 @@ impl SolverCtx {
                     if new_width < self.bitwidth && self.dynwidths {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
-                        self.smt.concat(padding, extract)
+                        let r = self.smt.concat(padding, extract);
+                        println!("BVExtract {}", self.smt.display(r));
+                        r
                     } else {
                         extract
                     }
@@ -1001,22 +1010,22 @@ impl SolverCtx {
         self.smt.push().unwrap();
         for a in assumptions {
             // debug!("{}", self.smt.display(*a));
-            // println!("{}", self.smt.display(*a));
+            println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
-            // self.smt.push().unwrap();
-            // match self.smt.check() {
-            //     Ok(Response::Sat) => (),
-            //     Ok(Response::Unsat) => (),
-            //     Ok(Response::Unknown) => {
-            //         panic!("Assertion list is unknown!");
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            self.smt.push().unwrap();
+            match self.smt.check() {
+                Ok(Response::Sat) => (),
+                Ok(Response::Unsat) => (),
+                Ok(Response::Unknown) => {
+                    panic!("Assertion list is unknown!");
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
@@ -1365,6 +1374,7 @@ pub fn run_solver(
         smt: solver,
         // Always use dynamic widths at first
         dynwidths: true,
+        onlywidths: false,
         tyctx: rule_sem.tyctx.clone(),
         bitwidth: REG_WIDTH,
         var_map: HashMap::new(),
@@ -1406,7 +1416,7 @@ pub fn run_solver(
         }
     }
 
-    let mut assumptions: Vec<SExpr> = ctx.declare_variables(&rule_sem);
+    let mut assumptions: Vec<SExpr> = vec![];
 
     // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
     // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms).
@@ -1414,8 +1424,11 @@ pub fn run_solver(
         if some_dyn_width {
             println!("Some unresolved widths after basic type inference");
             println!("Finding widths from the solver");
+            ctx.onlywidths = true;
+            assumptions = ctx.declare_variables(&rule_sem);
             ctx.smt.push().unwrap();
             for a in &assumptions {
+                println!("{}", ctx.smt.display(*a));
                 ctx.smt.assert(*a).unwrap();
             }
             match ctx.smt.check() {
@@ -1466,6 +1479,8 @@ pub fn run_solver(
                 }
             };
             ctx.smt.pop().unwrap();
+        } else {
+            println!("All widths statically known, not asking solver.");
         }
 
         // Declare variables again, this time with all static widths
@@ -1476,6 +1491,7 @@ pub fn run_solver(
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
+            onlywidths: false,
             tyctx: ctx.tyctx.clone(),
             bitwidth: REG_WIDTH,
             var_map: HashMap::new(),
@@ -1485,6 +1501,9 @@ pub fn run_solver(
             additional_assumptions: vec![],
             fresh_bits_idx: 0,
         };
+        assumptions = ctx.declare_variables(&rule_sem);
+    } else {
+        // onlywidths == false
         assumptions = ctx.declare_variables(&rule_sem);
     }
 
