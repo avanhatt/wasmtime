@@ -167,6 +167,7 @@ pub enum Expr {
     Imp(Box<Expr>, Box<Expr>, u32),
     Eq(Box<Expr>, Box<Expr>, u32),
     Lte(Box<Expr>, Box<Expr>, u32),
+    Lt(Box<Expr>, Box<Expr>, u32),
 
     // Bitvector operations
     //      Note: these follow the naming conventions of the SMT theory of bitvectors:
@@ -269,6 +270,7 @@ impl Expr {
             | Expr::BVShl(_, _, t)
             | Expr::BVShr(_, _, t)
             | Expr::BVAShr(_, _, t)
+            | Expr::Lt(_, _, t)
             | Expr::BVZeroExtTo(_, _, t)
             | Expr::BVZeroExtToVarWidth(_, _, t)
             | Expr::BVSignExtTo(_, _, t)

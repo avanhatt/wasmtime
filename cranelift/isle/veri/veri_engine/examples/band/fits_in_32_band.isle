@@ -61,15 +61,15 @@
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@     (assertions (= (ret) (if (= (op) (0i64:bv)) {
-;;@                     (& (conv_to (t) (a)) (conv_to (t) (b)))
+;;@                     (& (a) (b))
 ;;@                  } else { 
 ;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (| (conv_to (t) (a)) (conv_to (t) (b)))
+;;@                          (| (a) (b))
 ;;@                      } else { 
 ;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (xor (conv_to (t) (a)) (conv_to (t) (b)))
+;;@                              (xor (a) (b))
 ;;@                          } else { 
-;;@                              (conv_to (t) (0i64:bv))
+;;@                              (a)
 ;;@                          })
 ;;@                      })
 ;;@                  }))
@@ -79,3 +79,5 @@
 
 (rule -1 (lower (has_type (fits_in_32 ty) (band x y)))
       (alu_rs_imm_logic_commutative (ALUOp.And) ty x y))
+
+;; Should we approach this as a dependent types problem? 
