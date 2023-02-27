@@ -1,5 +1,5 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
-use crate::type_inference::Solution;
+use crate::type_inference::RuleSemantics;
 use veri_ir::{BoundVar, Expr};
 
 use std::collections::HashMap;
@@ -34,11 +34,11 @@ pub struct Context<'ctx> {
     pub var_map: HashMap<VarId, BoundVar>,
 
     // For type checking
-    pub typesols: &'ctx HashMap<RuleId, Solution>,
+    pub typesols: &'ctx HashMap<RuleId, RuleSemantics>,
 }
 
 impl<'ctx> Context<'ctx> {
-    pub fn new(typesols: &'ctx HashMap<RuleId, Solution>) -> Context<'ctx> {
+    pub fn new(typesols: &'ctx HashMap<RuleId, RuleSemantics>) -> Context<'ctx> {
         Context {
             quantified_vars: vec![],
             free_vars: vec![],

@@ -6,11 +6,12 @@
 use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 
+use crate::type_inference::RuleSemantics;
 use easy_smt::{Response, SExpr};
 use std::collections::HashMap;
 use veri_ir::{
-    BinaryOp, ConcreteTest, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext,
-    UnaryOp, VerificationResult,
+    BinaryOp, ConcreteTest, Counterexample, Expr, Terminal, Type, TypeContext, UnaryOp,
+    VerificationResult,
 };
 
 mod encoded_ops;
@@ -1058,8 +1059,7 @@ impl SolverCtx {
     fn check_assumptions_feasibility(
         &mut self,
         assumptions: &Vec<SExpr>,
-        lhs: SExpr,
-        rhs: SExpr,
+        term_input_bs: &Vec<String>,
     ) -> bool {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
@@ -1083,28 +1083,37 @@ impl SolverCtx {
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
-                // Check that there is a model with distinct LHS and RHS
+                // Check that there is a model with distinct bitvector inputs
                 let mut not_all_same = vec![];
-                for (name, atom) in &self.var_map {
-                    let solution = self
-                        .smt
-                        .get_value(vec![self.smt.atom(name), *atom])
-                        .unwrap();
-                    for (variable, value) in solution {
-                        if variable == lhs || variable == rhs {
-                            not_all_same.push(self.smt.not(self.smt.eq(variable, value)));
-                        }
+                let atoms: Vec<SExpr> = term_input_bs.iter().map(|n| self.smt.atom(n)).collect();
+                for atom in &atoms {
+                    println!("{}", self.smt.display(*atom));
+                }
+                let solution = self
+                    .smt
+                    .get_value(atoms)
+                    .unwrap();
+                assert_eq!(term_input_bs.len(), solution.len());
+                for (variable, value) in solution {
+                    for input in term_input_bs {
+                        not_all_same.push(self.smt.not(self.smt.eq(variable, value)));
                     }
                 }
-                self.smt.assert(self.smt.and_many(not_all_same)).unwrap();
+                if not_all_same.len() == 1 {
+                    self.smt.assert(not_all_same[0]).unwrap();
+                } else if not_all_same.len() > 1 {
+                    self.smt.assert(self.smt.and_many(not_all_same)).unwrap();
+                } else {
+                    unreachable!("must have some BV inputs");
+                }
                 match self.smt.check() {
                     Ok(Response::Sat) => {
                         println!("Assertion list is feasible for two distinct inputs!");
                         true
                     }
                     Ok(Response::Unsat) => {
-                        println!("Assertion list is only feasible for one input!");
-                        true
+                        println!("Assertion list is only feasible for one input with distinct BV values!");
+                        false
                     }
                     Ok(Response::Unknown) => {
                         panic!("Solver said 'unk'");
@@ -1415,7 +1424,7 @@ impl SolverCtx {
 /// <declare vars>
 /// (not (=> <assumptions> (= <LHS> <RHS>))))))
 pub fn run_solver(
-    rule_sem: RuleSemantics,
+    rule_sem: &RuleSemantics,
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
@@ -1575,7 +1584,7 @@ pub fn run_solver(
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
 
     // Check whether the assumptions are possible
-    if !ctx.check_assumptions_feasibility(&assumptions, lhs.clone(), rhs.clone()) {
+    if !ctx.check_assumptions_feasibility(&assumptions, &rule_sem.term_input_bvs) {
         println!("Rule not applicable as written for rule assumptions, skipping full query");
         return VerificationResult::InapplicableRule;
     }
