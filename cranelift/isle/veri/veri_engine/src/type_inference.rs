@@ -29,6 +29,8 @@ struct RuleParseTree<'a> {
     ty_vars: HashMap<veri_ir::Expr, u32>,
     quantified_vars: HashSet<(String, u32)>,
     free_vars: HashSet<(String, u32)>,
+    // Used to check distinct models
+    term_input_bvs: Vec<String>,
     assumptions: Vec<Expr>,
     concrete: Option<ConcreteTest>,
 }
@@ -71,7 +73,7 @@ pub struct AnnotationTypeInfo {
 }
 
 #[derive(Debug)]
-pub struct Solution {
+pub struct RuleSemantics {
     pub annotation_infos: Vec<AnnotationTypeInfo>,
 
     // map of type var to solved type
@@ -81,6 +83,7 @@ pub struct Solution {
     pub rhs: veri_ir::Expr,
     pub quantified_vars: Vec<veri_ir::BoundVar>,
     pub free_vars: Vec<veri_ir::BoundVar>,
+    pub term_input_bvs: Vec<String>,
     pub assumptions: Vec<Expr>,
     pub tyctx: TypeContext,
 }
@@ -93,7 +96,7 @@ pub fn type_rules_with_term_and_types(
     term: &String,
     types: &Vec<Type>,
     concrete: &Option<ConcreteTest>,
-) -> HashMap<isle::sema::RuleId, Solution> {
+) -> HashMap<isle::sema::RuleId, RuleSemantics> {
     let decls = build_decl_map(defs);
 
     let mut solutions = HashMap::new();
@@ -170,7 +173,7 @@ fn type_annotations_using_rule<'a>(
     term: &String,
     types: &Vec<Type>,
     concrete: &'a Option<ConcreteTest>,
-) -> Option<Solution> {
+) -> Option<RuleSemantics> {
     let mut parse_tree = RuleParseTree {
         varid_to_type_var_map: HashMap::new(),
         type_var_to_val_map: HashMap::new(),
@@ -182,6 +185,7 @@ fn type_annotations_using_rule<'a>(
         ty_vars: HashMap::new(),
         quantified_vars: HashSet::new(),
         free_vars: HashSet::new(),
+        term_input_bvs: vec![],
         assumptions: vec![],
         concrete: concrete.clone(),
     };
@@ -311,7 +315,7 @@ fn type_annotations_using_rule<'a>(
                 }
             }
 
-            Some(Solution {
+            Some(RuleSemantics {
                 annotation_infos,
                 type_var_to_type: solution,
                 lhs: lhs_expr,
@@ -319,6 +323,7 @@ fn type_annotations_using_rule<'a>(
                 assumptions: parse_tree.assumptions,
                 quantified_vars,
                 free_vars,
+                term_input_bvs: parse_tree.term_input_bvs,
                 tyctx: TypeContext {
                     tyvars: parse_tree.ty_vars.clone(),
                     tymap,
@@ -1657,11 +1662,18 @@ fn create_parse_tree_pattern(
             for (i, arg) in args.iter().enumerate() {
                 let child =
                     create_parse_tree_pattern(rule, arg, tree, typeenv, termenv, term, types);
+
+                // Our specified input term, use external types
                 if name.eq(term) {
                     tree.concrete_constraints.insert(TypeExpr::Concrete(
                         child.type_var,
                         annotation_type_for_vir_type(&types[i]),
                     ));
+
+                    // If this is a bitvector, mark the name for the assumption feasibility check
+                    if matches!(&types[i], Type::BitVector(_)) {
+                        tree.term_input_bvs.push(child.ident.clone());
+                    }
                 }
                 children.push(child);
             }
@@ -1736,8 +1748,6 @@ fn create_parse_tree_pattern(
                 .insert(TypeExpr::Variable(bind_type_var, type_var));
             tree.var_constraints
                 .insert(TypeExpr::Variable(bind_type_var, subpat_node.type_var));
-
-            let ident = format!("bind_{}", ident);
 
             TypeVarNode {
                 ident,

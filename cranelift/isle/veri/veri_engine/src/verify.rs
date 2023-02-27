@@ -8,9 +8,9 @@ use std::path::PathBuf;
 use veri_annotation::parser_wrapper::parse_annotations;
 
 use crate::solver::run_solver;
-use crate::type_inference::Solution;
+use crate::type_inference::RuleSemantics;
 use crate::{interp::Context, termname::pattern_contains_termname};
-use veri_ir::{ConcreteTest, RuleSemantics, Type, VerificationResult};
+use veri_ir::{ConcreteTest, Type, VerificationResult};
 
 pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
     let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
@@ -55,7 +55,7 @@ pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
 pub fn verify_rules_for_term(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
-    typesols: &HashMap<RuleId, Solution>,
+    typesols: &HashMap<RuleId, RuleSemantics>,
     term: &String,
     types: Vec<Type>,
     dynwidths: bool,
@@ -82,15 +82,7 @@ pub fn verify_rules_for_term(
         if ctx.typesols.get(&rule.id).is_none() {
             continue;
         }
-        let sol = &ctx.typesols[&rule.id];
-        let rule_sem = RuleSemantics {
-            lhs: sol.lhs.clone(),
-            rhs: sol.rhs.clone(),
-            assumptions: sol.assumptions.clone(),
-            quantified_vars: sol.quantified_vars.clone(),
-            free_vars: sol.free_vars.clone(),
-            tyctx: sol.tyctx.to_owned(),
-        };
+        let rule_sem = &ctx.typesols[&rule.id];
         println!("Verifying rule with term {term} and types {:?}", types);
         let result = run_solver(rule_sem, rule, termenv, typeenv, dynwidths, concrete);
         rules_checked += 1;
