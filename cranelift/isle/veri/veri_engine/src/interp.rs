@@ -1,13 +1,12 @@
 /// Interpret and build an assumption context from the LHS and RHS of rules.
 use crate::type_inference::Solution;
-use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{BoundVar, Expr};
 
 use std::collections::HashMap;
 use std::fmt::Debug;
 
 use cranelift_isle as isle;
-use isle::sema::{RuleId, TermEnv, TypeEnv, VarId};
+use isle::sema::{RuleId, VarId};
 
 /// Assumption consist of single verification IR expressions, which must have
 /// boolean type.
@@ -39,13 +38,7 @@ pub struct Context<'ctx> {
 }
 
 impl<'ctx> Context<'ctx> {
-    pub fn new(
-        _termenv: &'ctx TermEnv,
-        _typeenv: &'ctx TypeEnv,
-        _annotation_env: &'ctx AnnotationEnv,
-        typesols: &'ctx HashMap<RuleId, Solution>,
-        _width: usize,
-    ) -> Context<'ctx> {
+    pub fn new(typesols: &'ctx HashMap<RuleId, Solution>) -> Context<'ctx> {
         Context {
             quantified_vars: vec![],
             free_vars: vec![],
