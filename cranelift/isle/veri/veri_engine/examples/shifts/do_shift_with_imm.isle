@@ -1,0 +1,125 @@
+(type ImmShift (primitive ImmShift))
+
+;; Instruction formats.
+(type MInst
+  (enum
+))
+
+;;@ (spec (sig (args) (ret))
+;;@       (assertions (= (0i64:bv) (ret))))
+;;decl ALUOp.Lsl
+
+;;@ (spec (sig (args) (ret))
+;;@       (assertions (= (1i64:bv) (ret))))
+;;decl ALUOp.Lsr
+
+;;@ (spec (sig (args) (ret))
+;;@       (assertions (= (2i64:bv) (ret))))
+;;decl ALUOp.Asr
+
+;; An ALU operation. This can be paired with several instruction formats
+;; below (see `Inst`) in any combination.
+(type ALUOp
+  (enum
+    (Add)
+    (Sub)
+    (Orr)
+    (OrrNot)
+    (And)
+    (AndS)
+    (AndNot)
+    ;; XOR (AArch64 calls this "EOR")
+    (Eor)
+    ;; XNOR (AArch64 calls this "EOR-NOT")
+    (EorNot)
+    ;; Add, setting flags
+    (AddS)
+    ;; Sub, setting flags
+    (SubS)
+    ;; Signed multiply, high-word result
+    (SMulH)
+    ;; Unsigned multiply, high-word result
+    (UMulH)
+    (SDiv)
+    (UDiv)
+    (RotR)
+    (Lsr)
+    (Asr)
+    (Lsl)
+    ;; Add with carry
+    (Adc)
+    ;; Add with carry, settings flags
+    (AdcS)
+    ;; Subtract with carry
+    (Sbc)
+    ;; Subtract with carry, settings flags
+    (SbcS)
+))
+
+;; Add an assertion that the value fits, using the constand with 56 1's then 6 0's (~63)
+;;@ (spec (sig (args ty, x) (r))
+;;@   (assertions 
+;;@     (= (r) (conv_to (widthof (r)) (x))),
+;;@     (= (0i65:bv) (& (x) (~ (63i64:bv))))
+;;@   )
+;;@ )
+(decl pure imm_shift_from_imm64 (Type Imm64) ImmShift)
+(extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
+
+;;@ (spec (sig (args op, t, a, b) (ret))
+;;@     (assertions (= (ret) (conv_to (t) (if (= (op) (0i64:bv)) {
+;;@                     (shl (a) (b))
+;;@                  } else { 
+;;@                      (if (= (op) (1i64:bv)) {
+;;@                          (shr (a) (b))
+;;@                      } else { 
+;;@                          (if (= (op) (2i64:bv)) {
+;;@                              (ashr (a) (b))
+;;@                          } else { 
+;;@                              (64i64:bv)
+;;@                          })
+;;@                      })
+;;@                  }))),
+;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@                  (|| (= (t) (1i8: isleType)) 
+;;@                  (|| (= (t) (8i8: isleType))
+;;@                  (|| (= (t) (16i8: isleType))
+;;@                  (|| (= (t) (32i8: isleType))
+;;@                      (= (t) (64i8: isleType))))))
+;;@     ))
+(decl do_shift (ALUOp Type Reg Value) Reg)
+(extern extractor do_shift do_shift)
+
+;; types get bucketed for <= 32, <= 64
+;; (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)})
+
+;;@ (spec (sig (args op, t, a, b) (ret))
+;;@     (assertions (if (= (op) (0i64:bv)) {
+;;@                     (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
+;;@                                   (zero_ext (regwidth) (b))))
+;;@                  } else { 
+;;@                      (if (= (op) (1i64:bv)) {
+;;@                          (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
+;;@                                   (zero_ext (regwidth) (b))))
+;;@                      } else { 
+;;@                          (if (= (op) (2i64:bv)) {
+;;@                              (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
+;;@                                   (zero_ext  (regwidth) (b))))
+;;@                          } else { 
+;;@                              (= (ret) (0i64:bv))
+;;@                          })
+;;@                      })
+;;@                  }),
+;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@                  (|| (= (t) (1i8: isleType)) 
+;;@                  (|| (= (t) (8i8: isleType))
+;;@                  (|| (= (t) (16i8: isleType))
+;;@                  (|| (= (t) (32i8: isleType))
+;;@                      (= (t) (64i8: isleType))))))
+;;@     ))
+(decl alu_rr_imm_shift (ALUOp Type Reg ImmShift) Reg)
+(extern constructor alu_rr_imm_shift alu_rr_imm_shift)
+
+(rule 1 (do_shift op ty x (iconst k))
+      (if-let shift (imm_shift_from_imm64 ty k))
+      (alu_rr_imm_shift op ty x shift))

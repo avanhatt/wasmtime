@@ -660,7 +660,16 @@ impl SolverCtx {
                             self.smt.numeral(self.static_width(&*x).unwrap())
                         };
                         let xs = self.vir_expr_to_sexp(*x);
-                        let ys = self.vir_expr_to_sexp(*y);
+                        // The shift arg needs to be extracted to the right width
+                        let y_static_width = self.static_width(&y);
+                        let y_rec = self.vir_expr_to_sexp(*y);
+                        let extract = self.smt.extract(
+                            y_static_width.unwrap().checked_sub(1).unwrap().try_into().unwrap(),
+                            0,
+                            y_rec,
+                        );
+                        let ys = self.zero_extend(self.bitwidth - y_static_width.unwrap(), extract);
+
 
                         // Strategy: shift left by (bitwidth - arg width) to zero bits to the right
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
@@ -685,7 +694,15 @@ impl SolverCtx {
                             self.smt.numeral(self.static_width(&*x).unwrap())
                         };
                         let xs = self.vir_expr_to_sexp(*x);
-                        let ys = self.vir_expr_to_sexp(*y);
+                        // The shift arg needs to be extracted to the right width
+                        let y_static_width = self.static_width(&y);
+                        let y_rec = self.vir_expr_to_sexp(*y);
+                        let extract = self.smt.extract(
+                            y_static_width.unwrap().checked_sub(1).unwrap().try_into().unwrap(),
+                            0,
+                            y_rec,
+                        );
+                        let ys = self.zero_extend(self.bitwidth - y_static_width.unwrap(), extract);
 
                         // Strategy: shift left by (bitwidth - arg width) to eliminate bits to the left
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
@@ -898,9 +915,7 @@ impl SolverCtx {
                     if new_width < self.bitwidth && self.dynwidths {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
-                        let r = self.smt.concat(padding, extract);
-                        println!("BVExtract {}", self.smt.display(r));
-                        r
+                        self.smt.concat(padding, extract)
                     } else {
                         extract
                     }
@@ -909,10 +924,10 @@ impl SolverCtx {
                 }
             }
             Expr::Conditional(c, t, e) => {
-                let c_sexp = self.vir_expr_to_sexp(*c);
-                let t_sexp = self.vir_expr_to_sexp(*t);
-                let e_sexp = self.vir_expr_to_sexp(*e);
-                self.smt.ite(c_sexp, t_sexp, e_sexp)
+                let cs = self.vir_expr_to_sexp(*c);
+                let ts = self.vir_expr_to_sexp(*t);
+                let es = self.vir_expr_to_sexp(*e);
+                self.smt.ite(cs, ts, es)
             }
             Expr::CLZ(e) => {
                 let tyvar = *tyvar.unwrap();
