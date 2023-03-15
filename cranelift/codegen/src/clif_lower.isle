@@ -1065,8 +1065,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (<= (bv2int (b)) (widthof (a))),
-;;@                 (= (ret) (shl (a) (b)))))
+;;@     (assertions (= (ret) (shl (a) (b)))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
@@ -1074,8 +1073,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (<= (bv2int (b)) (widthof (a))),
-;;@                 (= (ret) (shr (a) (b)))))
+;;@     (assertions (= (ret) (shr (a) (b)))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
@@ -1083,8 +1081,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (<= (bv2int (b)) (widthof (a))),
-;;@                 (= (ret) (ashr (a) (b)))))
+;;@     (assertions (= (ret) (ashr (a) (b)))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)

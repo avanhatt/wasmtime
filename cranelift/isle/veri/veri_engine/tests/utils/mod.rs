@@ -18,7 +18,6 @@ use veri_ir::{ConcreteTest, Counterexample, VerificationResult};
 
 #[derive(Debug, EnumIter, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 pub enum Bitwidth {
-    I1 = 1,
     I8 = 8,
     I16 = 16,
     I32 = 32,
@@ -140,10 +139,6 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
     for type_instantiation in types {
         let ty = type_instantiation.first().unwrap();
         let expected = tr.iter().find(|(bw, _)| match *bw {
-            Bitwidth::I1 => {
-                println!("Skipping I1 for now");
-                false
-            }
             Bitwidth::I8 => *ty == veri_ir::Type::BitVector(Some(8)),
             Bitwidth::I16 => *ty == veri_ir::Type::BitVector(Some(16)),
             Bitwidth::I32 => *ty == veri_ir::Type::BitVector(Some(32)),

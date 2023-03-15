@@ -63,16 +63,12 @@
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@     (assertions (= (ret) (conv_to (t) (if (= (op) (0i64:bv)) {
-;;@                     (shl (a) (b))
+;;@                     (shl (a) (zero_ext (widthof (a)) (b)))
 ;;@                  } else { 
 ;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (shr (a) (b))
+;;@                          (shr (a) (zero_ext (widthof (a)) (b)))
 ;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (ashr (a) (b))
-;;@                          } else { 
-;;@                              (64i64:bv)
-;;@                          })
+;;@                          (ashr (a) (zero_ext (widthof (a)) (b)))
 ;;@                      })
 ;;@                  }))),
 ;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
