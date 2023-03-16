@@ -99,15 +99,6 @@ pub struct BoundVar {
     pub tyvar: u32,
 }
 
-/// An ISLE term that does not yet have a defined semantics (that is, a
-/// term that has no annotation).
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct UndefinedTerm {
-    pub name: String,
-    pub ret: BoundVar,
-    pub args: Vec<Expr>,
-}
-
 /// Verification type
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
 pub enum Type {
@@ -223,13 +214,6 @@ pub enum Expr {
     BVConvToVarWidth(Box<Expr>, Box<Expr>),
 
     WidthOf(Box<Expr>),
-
-    // Undefined terms
-    UndefinedTerm(UndefinedTerm),
-}
-
-pub fn all_query_widths() -> Vec<usize> {
-    vec![1, 8, 16, 32, 64]
 }
 
 impl BoundVar {

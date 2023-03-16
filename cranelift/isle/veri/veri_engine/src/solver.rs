@@ -7,7 +7,6 @@ use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 
 use easy_smt::{Response, SExpr};
-use log::debug;
 use std::collections::HashMap;
 use veri_ir::{
     BinaryOp, ConcreteTest, Counterexample, Expr, RuleSemantics, Terminal, Type, TypeContext,
@@ -417,7 +416,7 @@ impl SolverCtx {
         ite_str
     }
 
-    pub fn widen_to_query_width(
+    pub fn widen_to_register_width(
         &mut self,
         tyvar: u32,
         narrow_width: usize,
@@ -543,7 +542,7 @@ impl SolverCtx {
                         let width = w.unwrap_or(self.bitwidth);
                         let narrow_decl = self.bv(i, width);
                         if self.dynwidths {
-                            self.widen_to_query_width(var, width, narrow_decl, None)
+                            self.widen_to_register_width(var, width, narrow_decl, None)
                         } else {
                             narrow_decl
                         }
@@ -711,11 +710,14 @@ impl SolverCtx {
                     BinaryOp::Or => "or",
                     BinaryOp::Imp => "=>",
                     BinaryOp::Eq => "=",
-                    BinaryOp::Lte => "<=",
-                    // TODO: this comparison only works for Ints!!
-                    BinaryOp::Lt => match self.get_type(&x) {
-                        Some(Type::Int) => "<",
-                        Some(Type::BitVector(_)) => "bvult",
+                    BinaryOp::Lte => match (self.get_type(&x), self.get_type(&y)) {
+                        (Some(Type::Int), Some(Type::Int)) => "<=",
+                        (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => "bvule",
+                        _ => unreachable!(),
+                    },
+                    BinaryOp::Lt => match (self.get_type(&x), self.get_type(&y)) {
+                        (Some(Type::Int), Some(Type::Int)) => "<",
+                        (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => "bvult",
                         _ => unreachable!(),
                     },
                     BinaryOp::BVMul => "bvmul",
@@ -831,8 +833,8 @@ impl SolverCtx {
                 }
             }
             Expr::BVSignExtToVarWidth(i, x) => {
-                let arg_width = self.get_expr_width_var(&*x).unwrap().clone();
                 let static_arg_width = self.static_width(&*x);
+                let arg_width = self.get_expr_width_var(&*x);
                 let is = self.vir_expr_to_sexp(*i);
                 let xs = self.vir_expr_to_sexp(*x);
                 if self.dynwidths {
@@ -842,7 +844,7 @@ impl SolverCtx {
                 if let (Some(arg_size), Some(e_size)) = (static_arg_width, static_expr_width) {
                     self.extend_concrete(e_size, xs, arg_size, &"sign_extend")
                 } else {
-                    self.extend_symbolic(is, xs, arg_width, &"sign_extend")
+                    self.extend_symbolic(is, xs, arg_width.unwrap(), &"sign_extend")
                 }
             }
             Expr::BVConvToVarWidth(x, y) => {
@@ -873,7 +875,6 @@ impl SolverCtx {
                     }
                 }
             }
-            Expr::UndefinedTerm(term) => self.smt.atom(term.ret.name),
             Expr::WidthOf(x) => {
                 if self.dynwidths {
                     self.get_expr_width_var(&*x).unwrap().clone()
@@ -883,7 +884,7 @@ impl SolverCtx {
             }
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
-                if let Type::BitVector(x_width) = self.get_type(&x).unwrap() {
+                if self.get_type(&x).is_some() {
                     assert!(i < self.bitwidth);
                     let xs = self.vir_expr_to_sexp(*x);
                     // No-op if we are extracting exactly the full bitwidth
@@ -1022,11 +1023,10 @@ impl SolverCtx {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
         for a in assumptions {
-            // debug!("{}", self.smt.display(*a));
-            // println!("{}", self.smt.display(*a));
             self.smt.assert(*a).unwrap();
 
             // Uncomment to debug specific asserts
+            // println!("{}", self.smt.display(*a));
             // self.smt.push().unwrap();
             // match self.smt.check() {
             //     Ok(Response::Sat) => (),
@@ -1315,7 +1315,8 @@ impl SolverCtx {
         let rhs = self.display_isle_expr(termenv, typeenv, &vars, rule, &rule.rhs);
         println!("{}", self.smt.display(rhs));
 
-        println!("\n{} => {}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
+        // TODO AVH: left pad bin representation
+        println!("\n{} =>\n{}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
     fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
@@ -1328,7 +1329,7 @@ impl SolverCtx {
             println!("\t{} : {}", name, self.smt.display(var_ty));
             if let Type::BitVector(w) = ty {
                 if self.dynwidths {
-                    let wide = self.widen_to_query_width(
+                    let wide = self.widen_to_register_width(
                         v.tyvar,
                         w.unwrap_or(self.bitwidth),
                         self.smt.atom(name),
@@ -1380,7 +1381,7 @@ pub fn run_solver(
     dynwidths: bool,
     concrete: &Option<ConcreteTest>,
 ) -> VerificationResult {
-    let mut solver = easy_smt::ContextBuilder::new()
+    let solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
         .solver("z3", ["-smt2", "-in"])
         .build()
@@ -1503,7 +1504,7 @@ pub fn run_solver(
         }
 
         // Declare variables again, this time with all static widths
-        let mut solver = easy_smt::ContextBuilder::new()
+        let solver = easy_smt::ContextBuilder::new()
             .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
             .solver("z3", ["-smt2", "-in"])
             .build()

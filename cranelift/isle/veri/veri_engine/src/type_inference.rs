@@ -1539,19 +1539,13 @@ fn solve_constraints(
             }
         }
         for c in &concrete {
-            match c {
-                TypeExpr::WidthInt(v, w) => {
-                    if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
-                        match var_type {
-                            annotation_ir::Type::BitVectorWithWidth(width) => {
-                                vals.insert(*w, width as i128);
-                            }
-                            _ => (),
-                        }
-                    }
+            if let TypeExpr::WidthInt(v, w) = c {
+                if let Some(annotation_ir::Type::BitVectorWithWidth(width)) =
+                    get_var_type_concrete(*v, &union_find)
+                {
+                    vals.insert(*w, width as i128);
                 }
-                _ => (),
-            };
+            }
         }
     };
 
@@ -1682,7 +1676,7 @@ fn create_parse_tree_pattern(
 
             let type_var = tree
                 .varid_to_type_var_map
-                .entry(var_id.clone())
+                .entry(*var_id)
                 .or_insert(tree.next_type_var);
             if *type_var == tree.next_type_var {
                 tree.next_type_var += 1;
@@ -1702,7 +1696,7 @@ fn create_parse_tree_pattern(
 
             let type_var = *tree
                 .varid_to_type_var_map
-                .entry(var_id.clone())
+                .entry(*var_id)
                 .or_insert(tree.next_type_var);
             if type_var == tree.next_type_var {
                 tree.next_type_var += 1;
@@ -1785,7 +1779,7 @@ fn create_parse_tree_pattern(
             let name = format!("{}__{}", num, type_var);
             TypeVarNode {
                 ident: name,
-                construct: TypeVarConstruct::Const(*num as i128),
+                construct: TypeVarConstruct::Const(*num),
                 type_var,
                 children: vec![],
                 assertions: vec![],
@@ -1861,7 +1855,7 @@ fn create_parse_tree_expr(
 
             let type_var = tree
                 .varid_to_type_var_map
-                .entry(var_id.clone())
+                .entry(*var_id)
                 .or_insert(tree.next_type_var);
             if *type_var == tree.next_type_var {
                 tree.next_type_var += 1;
@@ -1889,7 +1883,7 @@ fn create_parse_tree_expr(
             };
             let name = format!("{}__{}", name, type_var);
             TypeVarNode {
-                ident: name.clone(),
+                ident: name,
                 construct: TypeVarConstruct::Const(val),
                 type_var,
                 children: vec![],
@@ -1902,7 +1896,7 @@ fn create_parse_tree_expr(
             let name = format!("{}__{}", num, type_var);
             TypeVarNode {
                 ident: name,
-                construct: TypeVarConstruct::Const(*num as i128),
+                construct: TypeVarConstruct::Const(*num),
                 type_var,
                 children: vec![],
                 assertions: vec![],
@@ -1922,7 +1916,7 @@ fn create_parse_tree_expr(
                 tree.var_constraints
                     .insert(TypeExpr::Variable(ty_var, subpat_node.type_var));
 
-                tree.varid_to_type_var_map.insert(varid.clone(), ty_var);
+                tree.varid_to_type_var_map.insert(*varid, ty_var);
                 children.push(subpat_node);
                 let ident = format!("{}__clif{}__{}", var, varid.index(), ty_var);
                 tree.quantified_vars.insert((ident.clone(), ty_var));
@@ -1942,7 +1936,7 @@ fn create_parse_tree_expr(
                 .insert(TypeExpr::Variable(type_var, body_var));
 
             TypeVarNode {
-                ident: name.to_string(),
+                ident: name,
                 construct: TypeVarConstruct::Let(bound),
                 type_var,
                 children,

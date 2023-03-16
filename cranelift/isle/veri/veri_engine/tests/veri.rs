@@ -1,7 +1,5 @@
 mod utils;
-use utils::{
-    all_failure_result, all_success_result, custom_result, just_8_result, lte_64_success_result,
-};
+use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
 use utils::{
     run_and_retry, test_concrete_input_from_file_with_lhs_termname,
     test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
