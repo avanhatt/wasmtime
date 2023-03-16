@@ -710,7 +710,6 @@ impl SolverCtx {
                     BinaryOp::Or => "or",
                     BinaryOp::Imp => "=>",
                     BinaryOp::Eq => "=",
-                    // BinaryOp::Lte => "<=",
                     BinaryOp::Lte => match (self.get_type(&x), self.get_type(&y)) {
                         (Some(Type::Int), Some(Type::Int)) => "<=",
                         (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => "bvule",
