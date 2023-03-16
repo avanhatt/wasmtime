@@ -1,4 +1,4 @@
-use veri_ir::{Expr, Type};
+use veri_ir::Type;
 
 use std::collections::HashMap;
 
@@ -10,16 +10,13 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
         Type::BitVector(Some(64)),
     ];
 
-    let bv_unary_8_to_65: Vec<Vec<Type>> = bv_types_8_to_64
-        .iter()
-        .copied()
-        .map(|x| vec![x.clone()])
-        .collect();
+    let bv_unary_8_to_65: Vec<Vec<Type>> =
+        bv_types_8_to_64.iter().copied().map(|x| vec![x]).collect();
 
     let bv_binary_8_to_65: Vec<Vec<Type>> = bv_types_8_to_64
         .iter()
         .copied()
-        .map(|x| vec![x.clone(), x.clone()])
+        .map(|x| vec![x, x])
         .collect();
 
     let mut widths = HashMap::new();
@@ -67,5 +64,5 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
         ]],
     );
 
-    return widths;
+    widths
 }

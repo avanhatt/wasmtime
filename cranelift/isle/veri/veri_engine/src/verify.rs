@@ -71,7 +71,7 @@ pub fn verify_rules_for_term(
                 rule.root_term,
                 rule.args.clone(),
             ),
-            &term,
+            term,
             termenv,
             typeenv,
         ) {
