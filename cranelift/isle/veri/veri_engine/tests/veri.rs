@@ -76,25 +76,48 @@ fn test_iadd_base() {
 
 // Currently timing out, disabling for now.
 // https://github.com/avanhatt/wasmtime/issues/13
-/*
 #[test]
 fn test_iadd_imm12() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/imm12.isle", lte_64_success_result()));
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12.isle",
+            "iadd".to_string(),
+            lte_64_success_result(),
+        )
+    });
 }
 
 #[test]
 fn test_iadd_imm12_2() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/imm12_2.isle", lte_64_success_result()));
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12_2.isle",
+            "iadd".to_string(),
+            lte_64_success_result(),
+        )
+    });
 }
 
 #[test]
 fn test_iadd_imm12neg() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/imm12neg.isle", lte_64_success_result()));
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12neg.isle",
+            "iadd".to_string(),
+            lte_64_success_result(),
+        )
+    });
 }
 
 #[test]
 fn test_iadd_imm12neg2() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/imm12neg2.isle", lte_64_success_result()));
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12neg2.isle",
+            "iadd".to_string(),
+            lte_64_success_result(),
+        )
+    });
 }
 
 // Currently timing out, disabling for now.
@@ -107,44 +130,57 @@ fn test_iadd_imm12neg2() {
 
 #[test]
 fn test_iadd_shift() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/shift.isle", lte_64_success_result()));
-}
-
-#[test]
-fn test_iadd_madd() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/madd.isle",
-            vec![
-                    (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
+            "./examples/iadd/shift.isle",
+            "iadd".to_string(),
+            lte_64_success_result(),
         )
     });
 }
 
-#[test]
-fn test_iadd_madd2() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/madd2.isle",
-            vec![
-                    (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    });
-}
+// #[test]
+// fn test_iadd_madd() {
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/iadd/madd.isle",
+//             "iadd".to_string(),
+//             vec![
+//                 (Bitwidth::I8, VerificationResult::Success),
+//                 (Bitwidth::I16, VerificationResult::Success),
+//                 (Bitwidth::I32, VerificationResult::Success),
+//                 (Bitwidth::I64, VerificationResult::Success),
+//             ],
+//         )
+//     });
+// }
 
-#[test]
-fn test_iadd_msub() {
-    run_and_retry(|| test_from_file_with_lhs_termname("./examples/iadd/msub.isle", lte_64_success_result()));
-}
-*/
+// #[test]
+// fn test_iadd_madd2() {
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/iadd/madd2.isle",
+//             "iadd".to_string(),
+//             vec![
+//                 (Bitwidth::I8, VerificationResult::Success),
+//                 (Bitwidth::I16, VerificationResult::Success),
+//                 (Bitwidth::I32, VerificationResult::Success),
+//                 (Bitwidth::I64, VerificationResult::Success),
+//             ],
+//         )
+//     });
+// }
+
+// #[test]
+// fn test_isub_msub() {
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/isub/msub.isle",
+//             "isub".to_string(),
+//             lte_64_success_result(),
+//         )
+//     });
+// }
 
 #[test]
 fn test_broken_iadd_base_case() {
@@ -321,12 +357,7 @@ fn test_broken_iadd_shift2() {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_shift2.isle",
             "iadd".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
+            all_failure_result(),
         )
     });
 }
@@ -513,20 +544,6 @@ fn test_broken_isub_shift() {
         "./examples/broken/isub/broken_shift.isle",
         "isub".to_string(),
         all_failure_result(),
-    );
-}
-
-#[test]
-fn test_broken_isub_shift2() {
-    test_from_file_with_lhs_termname(
-        "./examples/broken/iadd/broken_shift2.isle",
-        "iadd".to_string(),
-        vec![
-            (Bitwidth::I8, VerificationResult::InapplicableRule),
-            (Bitwidth::I16, VerificationResult::InapplicableRule),
-            (Bitwidth::I32, VerificationResult::InapplicableRule),
-            (Bitwidth::I64, VerificationResult::InapplicableRule),
-        ],
     );
 }
 
@@ -1530,7 +1547,6 @@ fn test_ushr_to_do_shift_fits_in_32_concrete() {
     )
 }
 
-
 #[test]
 fn test_do_shift_with_imm() {
     test_from_file_with_lhs_termname(
@@ -1618,12 +1634,34 @@ fn test_broken_sshr_to_do_shift_fits_in_32() {
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
             ),
-            (
-                Bitwidth::I32,
-                VerificationResult::Failure(Counterexample {}),
-            ),
+            // The rule only sign/zero extends to 32 bits, so this case should succeed
+            (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
+    )
+}
+
+#[test]
+fn test_broken_sshr_to_do_shift_fits_in_32_concrete() {
+    test_concrete_input_from_file_with_lhs_termname(
+        "./examples/broken/shifts/broken_sshr_to_do_shift_fits_in_32.isle",
+        "sshr".to_string(),
+        false,
+        ConcreteTest {
+            termname: "sshr".to_string(),
+            args: vec![
+                ConcreteInput {
+                    literal: "#b10100000".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
+                ConcreteInput {
+                    literal: "#b00000001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
+            ],
+            // Wrong output:
+            output: "#b01010000".to_string(),
+        },
     )
 }
 
@@ -1638,10 +1676,8 @@ fn test_broken_ushr_to_do_shift_fits_in_32() {
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
             ),
-            (
-                Bitwidth::I32,
-                VerificationResult::Failure(Counterexample {}),
-            ),
+            // The rule only sign/zero extends to 32 bits, so this case should succeed
+            (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )

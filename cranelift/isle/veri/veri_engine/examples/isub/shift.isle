@@ -43,7 +43,6 @@
 (decl sub_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (sub_shift ty x y z) (alu_rrr_shift (ALUOp.Sub) ty x y z))
 
-;; Note that 192 = 0xc0
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (extract 63 8 (a)) (0i56:bv)),
 ;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))

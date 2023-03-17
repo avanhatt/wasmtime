@@ -26,12 +26,13 @@
 (decl alu_rrr_shift (ALUOp Type Reg Reg ShiftOpAndAmt) Reg)
 (extern constructor alu_rrr_shift alu_rrr_shift)
 
+;; BROKEN: swapped shl, shr
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
 ;;@     (assertions (if (= (extract 9 8 (shift)) (0i2:bv)) {
-;;@                     (= (ret) (- (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
+;;@                     (= (ret) (- (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
 ;;@                  } else {
 ;;@                      (if (= (extract 9 8 (shift)) (1i2:bv)) {
-;;@                          (= (ret) (- (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
+;;@                          (= (ret) (- (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
 ;;@                      } else {
 ;;@                          (= (ret) (- (a) (ashr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
 ;;@                      })
@@ -43,10 +44,9 @@
 (decl sub_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (sub_shift ty x y z) (alu_rrr_shift (ALUOp.Sub) ty x y z))
 
-;; BROKEN: sign extend instead of zero extend
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (extract 63 8 (a)) (0i56:bv)),
-;;@                 (= (ret) (sign_ext (10) (extract 7 0 (a))))))
+;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))
 (decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 

@@ -81,3 +81,4 @@
 ;; Shift for i64.
 (rule (lower (has_type $I64 (ishl x y)))
       (do_shift (ALUOp.Lsl) $I64 x y))
+      
