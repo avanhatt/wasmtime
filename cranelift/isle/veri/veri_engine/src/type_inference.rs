@@ -5,6 +5,7 @@ use crate::termname::pattern_contains_termname;
 use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
+use itertools::izip;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{annotation_ir, ConcreteTest, Expr, Type, TypeContext};
 
@@ -1095,7 +1096,7 @@ fn add_isle_constraints(
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
         (
             "ShiftOpAndAmt".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(8),
+            annotation_ir::Type::BitVectorWithWidth(10),
         ),
     ]);
 
@@ -1236,14 +1237,25 @@ fn add_rule_constraints(
             // Test code only: support providing concrete inputs
             if let Some(concrete) = &tree.concrete {
                 if concrete.termname.eq(t) {
-                    for (child, input) in children.iter().zip(&concrete.args) {
-                        tree.assumptions.push(veri_ir::Expr::Binary(
+                    for (child, node, input) in
+                        izip!(&children, curr.children.iter(), &concrete.args)
+                    {
+                        let type_var = tree.next_type_var;
+                        tree.next_type_var += 1;
+                        let lit = veri_ir::Expr::Terminal(veri_ir::Terminal::Literal(
+                            input.literal.clone(),
+                            type_var,
+                        ));
+                        tree.var_constraints
+                            .insert(TypeExpr::Variable(node.type_var, type_var));
+                        tree.ty_vars.insert(lit.clone(), type_var);
+                        let eq = veri_ir::Expr::Binary(
                             veri_ir::BinaryOp::Eq,
                             Box::new(child.clone()),
-                            Box::new(veri_ir::Expr::Terminal(veri_ir::Terminal::Literal(
-                                input.literal.clone(),
-                            ))),
-                        ))
+                            Box::new(lit),
+                        );
+                        curr.assertions.push(eq.clone());
+                        tree.assumptions.push(eq)
                     }
                 }
             }
