@@ -9,13 +9,13 @@
 ))
 
 ;; ASSUMING 64 BIT MODE!!!
-;; annotations will interpret this as an 8 bit field
+;; annotations will interpret this as an 10 bit field
 ;; the two msb encode the type of shift as follows:
 ;;   00: lsl
 ;;   01: lsr
 ;;   10: asr
 ;;   11: invalid
-;; the rest will encode a 6-bit shift amount 
+;; the rest will encode a 8-bit shift amount 
 (type ShiftOpAndAmt (primitive ShiftOpAndAmt))
 
 (type ALUOp
@@ -26,29 +26,27 @@
 (decl alu_rrr_shift (ALUOp Type Reg Reg ShiftOpAndAmt) Reg)
 (extern constructor alu_rrr_shift alu_rrr_shift)
 
-;; Note that 192 = 0xc0
+;; BROKEN: swapped shl, shr
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
-;;@     (assertions (if (= (& (shift) (192i8:bv)) (0i8:bv)) {
-;;@                     (= (ret) (- (a) (shl (b) (zero_ext (widthof (b)) (extract 5 0 (shift))))))
+;;@     (assertions (if (= (extract 9 8 (shift)) (0i2:bv)) {
+;;@                     (= (ret) (- (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
 ;;@                  } else {
-;;@                      (if (= (& (shift) (192i8:bv)) (64i8:bv)) {
-;;@                          (= (ret) (- (a) (shr (b) (zero_ext (widthof (b)) (extract 5 0 (shift))))))
+;;@                      (if (= (extract 9 8 (shift)) (1i2:bv)) {
+;;@                          (= (ret) (- (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
 ;;@                      } else {
-;;@                          (if (= (& (shift) (192i8:bv)) (128i8:bv)) {
-;;@                              (= (ret) (- (a) (ashr (b) (zero_ext (widthof (b)) (extract 5 0 (shift))))))
-;;@                          } else {
-;;@                                (= (true) (false))
-;;@                          })
+;;@                          (= (ret) (- (a) (ashr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
 ;;@                      })
-;;@                  })
+;;@                  }),
+;;@                 (|| (= (extract 9 8 (shift)) (0i2:bv)) 
+;;@                     (|| (= (extract 9 8 (shift)) (1i2:bv)) 
+;;@                         (= (extract 9 8 (shift)) (2i2:bv))))
 ;;@ ))
 (decl sub_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (sub_shift ty x y z) (alu_rrr_shift (ALUOp.Sub) ty x y z))
 
-;; Note that 192 = 0xc0
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assertions (= (& (a) (192i64:bv)) (1i64:bv)),
-;;@                 (= (ret) (extract 7 0 (a)))))
+;;@     (assertions (= (extract 63 8 (a)) (0i56:bv)),
+;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))
 (decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 

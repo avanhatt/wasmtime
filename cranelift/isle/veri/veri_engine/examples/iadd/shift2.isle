@@ -45,8 +45,8 @@
 (rule (add_shift ty x y z) (alu_rrr_shift (ALUOp.Add) ty x y z))
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assertions (= (& (a) (192i64:bv)) (0i64:bv)),
-;;@                 (= (ret) (extract 7 0 (a)))))
+;;@     (assertions (= (extract 63 8 (a)) (0i56:bv)),
+;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))
 (decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 

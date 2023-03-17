@@ -125,8 +125,8 @@ pub enum Type {
 pub enum Terminal {
     Var(String),
 
-    // Literal SMT value, for testing
-    Literal(String),
+    // Literal SMT value, for testing (plus type variable)
+    Literal(String, u32),
 
     // Value, type variable
     Const(i128, u32),
@@ -186,7 +186,7 @@ pub enum Expr {
     CLS(Box<Expr>),
     A64CLS(Box<Expr>, Box<Expr>),
     Rev(Box<Expr>),
-    A64Rev(Box<Expr>, Box<Expr>),  
+    A64Rev(Box<Expr>, Box<Expr>),
 
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),

@@ -531,7 +531,14 @@ impl SolverCtx {
         let static_expr_width = self.static_width(&e);
         match e {
             Expr::Terminal(t) => match t {
-                Terminal::Literal(v) => self.smt.atom(v),
+                Terminal::Literal(v, tyvar) => {
+                    let lit = self.smt.atom(v);
+                    if self.dynwidths {
+                        self.widen_to_register_width(tyvar, static_expr_width.unwrap(), lit, None)
+                    } else {
+                        lit
+                    }
+                }
                 Terminal::Var(v) => match self.var_map.get(&v) {
                     Some(o) => *o,
                     None => self.smt.atom(v),
@@ -602,12 +609,7 @@ impl SolverCtx {
                         }
                         _ => (),
                     };
-                    match op {
-                        BinaryOp::BVAdd | BinaryOp::BVSub | BinaryOp::BVAnd => {
-                            self.assume_comparable_types(&*x, &*y)
-                        }
-                        _ => (),
-                    };
+                    self.assume_comparable_types(&*x, &*y);
                 }
                 match op {
                     BinaryOp::BVRotl => {
@@ -660,13 +662,27 @@ impl SolverCtx {
                             self.smt.numeral(self.static_width(&*x).unwrap())
                         };
                         let xs = self.vir_expr_to_sexp(*x);
-                        let ys = self.vir_expr_to_sexp(*y);
 
                         // Strategy: shift left by (bitwidth - arg width) to zero bits to the right
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
 
                         // Width math
                         if self.dynwidths {
+                            // The shift arg needs to be extracted to the right width
+                            let y_static_width = self.static_width(&y);
+                            let y_rec = self.vir_expr_to_sexp(*y);
+                            let extract = self.smt.extract(
+                                y_static_width
+                                    .unwrap()
+                                    .checked_sub(1)
+                                    .unwrap()
+                                    .try_into()
+                                    .unwrap(),
+                                0,
+                                y_rec,
+                            );
+                            let ys =
+                                self.zero_extend(self.bitwidth - y_static_width.unwrap(), extract);
                             let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
                             let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
                             let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
@@ -675,6 +691,7 @@ impl SolverCtx {
                             let amt_plus_extra = self.smt.bvadd(ys, extra_shift);
                             return self.smt.bvlshr(shl_to_zero, amt_plus_extra);
                         } else {
+                            let ys = self.vir_expr_to_sexp(*y);
                             return self.smt.bvlshr(xs, ys);
                         }
                     }
@@ -685,21 +702,37 @@ impl SolverCtx {
                             self.smt.numeral(self.static_width(&*x).unwrap())
                         };
                         let xs = self.vir_expr_to_sexp(*x);
-                        let ys = self.vir_expr_to_sexp(*y);
 
                         // Strategy: shift left by (bitwidth - arg width) to eliminate bits to the left
                         // of the bits in the argument size. Then shift right by (amt + (bitwidth - arg width))
 
                         // Width math
                         if self.dynwidths {
+                            // The shift arg needs to be extracted to the right width
+                            let y_static_width = self.static_width(&y);
+                            let ys = self.vir_expr_to_sexp(*y);
+                            let extract = self.smt.extract(
+                                y_static_width
+                                    .unwrap()
+                                    .checked_sub(1)
+                                    .unwrap()
+                                    .try_into()
+                                    .unwrap(),
+                                0,
+                                ys,
+                            );
+                            let ysext =
+                                self.zero_extend(self.bitwidth - y_static_width.unwrap(), extract);
+
                             let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
                             let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
                             let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
                             let shl_to_zero = self.smt.bvshl(xs, extra_shift);
 
-                            let amt_plus_extra = self.smt.bvadd(ys, extra_shift);
+                            let amt_plus_extra = self.smt.bvadd(ysext, extra_shift);
                             return self.smt.bvashr(shl_to_zero, amt_plus_extra);
                         } else {
+                            let ys = self.vir_expr_to_sexp(*y);
                             return self.smt.bvashr(xs, ys);
                         }
                     }
@@ -851,6 +884,8 @@ impl SolverCtx {
                 if self.dynwidths {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
+                    dbg!(self.smt.display(expr_width).to_string());
+                    dbg!(self.smt.display(dyn_width).to_string());
                     self.width_assumptions
                         .push(self.smt.eq(expr_width, dyn_width));
                     self.vir_expr_to_sexp(*y)
@@ -898,9 +933,7 @@ impl SolverCtx {
                     if new_width < self.bitwidth && self.dynwidths {
                         let padding =
                             self.new_fresh_bits(self.bitwidth.checked_sub(new_width).unwrap());
-                        let r = self.smt.concat(padding, extract);
-                        println!("BVExtract {}", self.smt.display(r));
-                        r
+                        self.smt.concat(padding, extract)
                     } else {
                         extract
                     }
@@ -909,10 +942,16 @@ impl SolverCtx {
                 }
             }
             Expr::Conditional(c, t, e) => {
-                let c_sexp = self.vir_expr_to_sexp(*c);
-                let t_sexp = self.vir_expr_to_sexp(*t);
-                let e_sexp = self.vir_expr_to_sexp(*e);
-                self.smt.ite(c_sexp, t_sexp, e_sexp)
+                if self.dynwidths {
+                    if matches!(ty, Some(Type::BitVector(_))) {
+                        self.assume_same_width_from_sexpr(width.clone().unwrap(), &*t);
+                        self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                    }
+                }
+                let cs = self.vir_expr_to_sexp(*c);
+                let ts = self.vir_expr_to_sexp(*t);
+                let es = self.vir_expr_to_sexp(*e);
+                self.smt.ite(cs, ts, es)
             }
             Expr::CLZ(e) => {
                 let tyvar = *tyvar.unwrap();
@@ -1378,7 +1417,7 @@ pub fn run_solver(
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
-    dynwidths: bool,
+    dynwidths_arg: bool,
     concrete: &Option<ConcreteTest>,
 ) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
@@ -1440,13 +1479,14 @@ pub fn run_solver(
 
     // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
     // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms).
-    if !dynwidths {
+    if !dynwidths_arg {
         if some_dyn_width {
             println!("Some unresolved widths after basic type inference");
             println!("Finding widths from the solver");
             ctx.onlywidths = true;
             assumptions = ctx.declare_variables(&rule_sem);
             ctx.smt.push().unwrap();
+            println!("All assumptions to determine widths:");
             for a in &assumptions {
                 println!("{}", ctx.smt.display(*a));
                 ctx.smt.assert(*a).unwrap();
@@ -1605,6 +1645,7 @@ pub fn run_solver(
         if !matches!(ctx.smt.check(), Ok(Response::Unsat)) {
             // Get the value for what output is to panic with a useful message
             let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+            ctx.display_model(termenv, typeenv, rule, lhs, rhs);
             panic!(
                 "Expected ONLY {}, got POSSIBLE {}",
                 concrete.output,

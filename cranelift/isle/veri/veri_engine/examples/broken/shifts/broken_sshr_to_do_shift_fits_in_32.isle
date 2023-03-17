@@ -1,0 +1,94 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;; Instruction formats.
+(type MInst
+  (enum
+))
+
+;;@ (spec (sig (args) (ret))
+;;@       (assertions (= (0i64:bv) (ret))))
+;;decl ALUOp.Lsl
+
+;;@ (spec (sig (args) (ret))
+;;@       (assertions (= (1i64:bv) (ret))))
+;;decl ALUOp.Lsr
+
+;;@ (spec (sig (args) (ret))
+;;@       (assertions (= (2i64:bv) (ret))))
+;;decl ALUOp.Asr
+
+;; An ALU operation. This can be paired with several instruction formats
+;; below (see `Inst`) in any combination.
+(type ALUOp
+  (enum
+    (Add)
+    (Sub)
+    (Orr)
+    (OrrNot)
+    (And)
+    (AndS)
+    (AndNot)
+    ;; XOR (AArch64 calls this "EOR")
+    (Eor)
+    ;; XNOR (AArch64 calls this "EOR-NOT")
+    (EorNot)
+    ;; Add, setting flags
+    (AddS)
+    ;; Sub, setting flags
+    (SubS)
+    ;; Signed multiply, high-word result
+    (SMulH)
+    ;; Unsigned multiply, high-word result
+    (UMulH)
+    (SDiv)
+    (UDiv)
+    (RotR)
+    (Lsr)
+    (Asr)
+    (Lsl)
+    ;; Add with carry
+    (Adc)
+    ;; Add with carry, settings flags
+    (AdcS)
+    ;; Subtract with carry
+    (Sbc)
+    ;; Subtract with carry, settings flags
+    (SbcS)
+))
+
+;;@ (spec (sig (args op, t, a, b) (ret))
+;;@     (assertions (= (ret) (conv_to (t) (if (= (op) (0i64:bv)) {
+;;@                     (shl (a) (zero_ext (widthof (a)) (b)))
+;;@                  } else { 
+;;@                      (if (= (op) (1i64:bv)) {
+;;@                          (shr (a) (zero_ext (widthof (a)) (b)))
+;;@                      } else { 
+;;@                          (ashr (a) (zero_ext (widthof (a)) (b)))
+;;@                      })
+;;@                  }))),
+;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@                  (|| (= (t) (1i8: isleType)) 
+;;@                  (|| (= (t) (8i8: isleType))
+;;@                  (|| (= (t) (16i8: isleType))
+;;@                  (|| (= (t) (32i8: isleType))
+;;@                      (= (t) (64i8: isleType))))))
+;;@     ))
+(decl do_shift (ALUOp Type Reg Value) Reg)
+(extern constructor do_shift do_shift)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (sign_ext (32) (x)) (ret))))
+(decl put_in_reg_sext32 (Value) Reg)
+(extern constructor put_in_reg_sext32 put_in_reg_sext32)
+
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (zero_ext (32) (x)) (ret))))
+(decl put_in_reg_zext32 (Value) Reg)
+(extern constructor put_in_reg_zext32 put_in_reg_zext32)
+
+;; BROKEN: zext32 instead of sext32
+;; Shift for i64.
+(rule -2 (lower (has_type (fits_in_32 ty) (sshr x y)))
+      (do_shift (ALUOp.Asr) ty (put_in_reg_zext32 x) y))
