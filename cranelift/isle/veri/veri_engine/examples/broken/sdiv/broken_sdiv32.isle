@@ -12,6 +12,7 @@
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
 
+;; BROKEN: zero-extends instead of sign-extends
 ;; Place a `Value` into a register, sign extending it to 64-bits
 ;;@ (spec (sig (args x) (ret))
 ;;@       (assertions (= (zero_ext (64) (x)) (ret))))
@@ -39,8 +40,8 @@
 ;;@       (assertions (= (x) (ret)),
 ;;@                   (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))),
 ;;@       (if (= (ty) (32i0:isleType)) {
-;;@            (! (&& (= (0i32:bv) (y))
-;;@                   (= (2147483648i32:bv) (y))))           
+;;@            (! (&& (= (0i32:bv) (extract 31 0 (y)))
+;;@                   (= (2147483648i32:bv) (extract 31 0 (y)))))          
 ;;@        } else {
 ;;@            (! (&& (= (0i64:bv) (y))
 ;;@                   (= (9223372036854775808i64:bv) (y))))
