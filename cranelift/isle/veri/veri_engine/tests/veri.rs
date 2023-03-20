@@ -574,9 +574,10 @@ fn test_udiv() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/udiv/udiv.isle",
+            "udiv".to_string(),
             // for ease of commenting out until we debug further
             vec![
-                    (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
                 // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
@@ -588,10 +589,10 @@ fn test_udiv() {
 #[test]
 fn test_broken_udiv() {
     run_and_retry(|| {
-        test_from_file(
+        test_from_file_with_lhs_termname(
             "./examples/broken/udiv/broken_udiv.isle",
+            "udiv".to_string(),
             vec![
-                (Bitwidth::I1, VerificationResult::Success),
                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
                 (
                     Bitwidth::I16,
@@ -610,10 +611,10 @@ fn test_broken_udiv() {
 #[test]
 fn test_sdiv() {
     run_and_retry(|| {
-        test_from_file(
+        test_from_file_with_lhs_termname(
             "./examples/sdiv/sdiv.isle",
+            "sdiv".to_string(),
             vec![
-                (Bitwidth::I1, VerificationResult::Success),
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow rn
                 // (Bitwidth::I16, VerificationResult::Success),
@@ -626,10 +627,10 @@ fn test_sdiv() {
 
 fn test_sdiv32() {
     run_and_retry(|| {
-        test_from_file(
+        test_from_file_with_lhs_termname(
             "./examples/sdiv/sdiv32.isle",
+            "sdiv".to_string(),
             vec![
-                (Bitwidth::I1, VerificationResult::InapplicableRule),
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
                 // Too slow rn
@@ -643,16 +644,17 @@ fn test_sdiv32() {
 #[test]
 fn test_broken_sdiv() {
     run_and_retry(|| {
-        test_from_file(
+        test_from_file_with_lhs_termname(
             "./examples/broken/sdiv/broken_sdiv.isle",
+            "sdiv".to_string(),
             all_failure_result(),
         )
     });
     run_and_retry(|| {
-        test_from_file(
+        test_from_file_with_lhs_termname(
             "./examples/broken/sdiv/broken_sdiv32.isle",
+            "sdiv".to_string(),
             vec![
-                (Bitwidth::I1, VerificationResult::InapplicableRule),
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
                 // (Bitwidth::I32, VerificationResult::Success),
