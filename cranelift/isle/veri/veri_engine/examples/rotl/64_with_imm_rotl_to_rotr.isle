@@ -21,10 +21,16 @@
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
-;;@ (spec (sig (args t, x, y) (ret))
-;;@       (assertions 
-;;@          (= (rotr (conv_to (t) (x)) (conv_to (t) (y))) (ret)),
-;;@       )
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (= (ty) (32i0:isleType))
+;;@                        { (zero_ext (regwidth) (rotr (extract 31 0 (x)) (zero_ext (32i0:isleType) (y)))) }
+;;@                        else
+;;@                        { (rotr (x) (zero_ext (regwidth) (y))) }
+;;@                    )
+;;@                 ),
+;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@     )
 ;;@ )
 (decl a64_rotr_imm (Type Reg ImmShift) Reg)
 (extern constructor a64_rotr_imm a64_rotr_imm)

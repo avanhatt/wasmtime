@@ -28,7 +28,13 @@
 
 ;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (
+;;@          if (<= (32i0:isleType) (widthof (arg))) {
+;;@              (= (ret) (conv_to (regwidth) (arg)))
+;;@          } else {              
+;;@              (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
+;;@          })
+;;@ ))
 (decl put_in_reg_zext32 (Value) Reg)
 (extern constructor put_in_reg_zext32 put_in_reg_zext32)
 
@@ -81,10 +87,7 @@
 
 ;;@ (spec (sig (args t, x, y) (ret))
 ;;@       (assertions 
-;;@          (= (rotr (x) (y)) (ret)),
-;;@          (= (widthof (x)) (t)), 
-;;@          (<= (widthof (x)) (16i128: isleType)), 
-;;@          (<= (widthof (y)) (16i128: isleType)), 
+;;@          (= (zero_ext (regwidth) (rotr (conv_to (t) (x)) (conv_to (t) (y)))) (ret)),
 ;;@       )
 ;;@ )
 (decl small_rotr (Type Reg Reg) Reg)

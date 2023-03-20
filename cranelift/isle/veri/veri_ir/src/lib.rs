@@ -29,27 +29,21 @@ pub struct RuleSemantics {
     pub assumptions: Vec<Expr>,
 
     pub tyctx: TypeContext,
-
-    //  TODO: remove
-    pub lhs_undefined_terms: Vec<UndefinedTerm>,
-    pub rhs_undefined_terms: Vec<UndefinedTerm>,
 }
-// TODO: can nuke this
+
+// Used for providing concrete inputs to test rule semantics
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct RulePath {
-    pub rules: Vec<RuleSemantics>,
-    pub undefined_term_pairs: Vec<(UndefinedTerm, UndefinedTerm)>,
+pub struct ConcreteInput {
+    // SMTLIB-formatted bitvector literal
+    pub literal: String,
+    pub ty: Type,
 }
-
-/// A structure linking rules that share intermediate terms. A path from a root
-/// RuleSemantics to a leaf of the tree represents a valid rewriting if all
-/// assumptions along the path are feasible.
-#[derive(Clone, Debug)]
-pub struct RuleTree {
-    pub value: RuleSemantics,
-    // maybe want an RC cell instead of a Box
-    pub children: HashMap<BoundVar, Vec<RuleTree>>,
-    pub height: usize,
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConcreteTest {
+    pub termname: String,
+    // List of name, bitvector literal, widths
+    pub args: Vec<ConcreteInput>,
+    pub output: String,
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
@@ -105,17 +99,8 @@ pub struct BoundVar {
     pub tyvar: u32,
 }
 
-/// An ISLE term that does not yet have a defined semantics (that is, a
-/// term that has no annotation).
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct UndefinedTerm {
-    pub name: String,
-    pub ret: BoundVar,
-    pub args: Vec<Expr>,
-}
-
 /// Verification type
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
 pub enum Type {
     /// The expression is a bitvector, currently modeled in the
     /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -139,6 +124,11 @@ pub enum Type {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Terminal {
     Var(String),
+
+    // Literal SMT value, for testing (plus type variable)
+    Literal(String, u32),
+
+    // Value, type variable
     Const(i128, u32),
     True,
     False,
@@ -163,6 +153,7 @@ pub enum BinaryOp {
     Imp,
     Eq,
     Lte,
+    Lt,
 
     // Bitvector operations
     BVMul,
@@ -196,7 +187,7 @@ pub enum Expr {
     CLS(Box<Expr>),
     A64CLS(Box<Expr>, Box<Expr>),
     Rev(Box<Expr>),
-    A64Rev(Box<Expr>, Box<Expr>),  
+    A64Rev(Box<Expr>, Box<Expr>),
 
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
@@ -224,13 +215,6 @@ pub enum Expr {
     BVConvToVarWidth(Box<Expr>, Box<Expr>),
 
     WidthOf(Box<Expr>),
-
-    // Undefined terms
-    UndefinedTerm(UndefinedTerm),
-}
-
-pub fn all_query_widths() -> Vec<usize> {
-    vec![1, 8, 16, 32, 64]
 }
 
 impl BoundVar {
