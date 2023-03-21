@@ -578,8 +578,8 @@ fn test_udiv() {
             // for ease of commenting out until we debug further
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
-                // (Bitwidth::I16, VerificationResult::Success),
-                // (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
@@ -625,15 +625,16 @@ fn test_sdiv() {
     })
 }
 
-fn test_sdiv32() {
+#[test]
+fn test_sdiv_safe_const() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/sdiv/sdiv32.isle",
+            "./examples/sdiv/sdiv_safe_const.isle",
             "sdiv".to_string(),
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I8, VerificationResult::Success),
                 // Too slow rn
+                // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
                 // (Bitwidth::I64, VerificationResult::Success),
             ],

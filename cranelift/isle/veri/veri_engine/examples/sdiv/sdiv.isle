@@ -9,39 +9,8 @@
     (SDiv)
 ))
 
-;; Model ImmExtend as an Int, where
-;; Sign == 1 and Zero == 0
-(type ImmExtend
-  (enum
-    (Zero)
-    ;;(Sign)
-))
-
-;;@ (spec (sig (args) (ret))
-;;@     (assertions (= (1i0: isleType) (ret))))
-(decl ImmExtend.Sign () ImmExtend)
-(extern constructor ImmExtend.Sign ImmExtend.Sign)
-
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
-
-;;@ (spec (sig (args ty, x, y) (ret))
-;;@       (assertions (= (sdiv (x) (y)) (ret)),
-;;@                   (= (ty) (64i0: isleType))
-;;@ ))
-(decl a64_sdiv (Type Reg Reg) Reg)
-(rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
-
-;;@ (spec (sig (args ty, ext, x) (ret))
-;;@       (assertions (|| (= (ext) (0i0:isleType)) (= (ext) (1i0:isleType))),
-;;@                   (if (= (ext) (0i0:isleType)) {
-;;@                        (= (ret) (zero_ext (regwidth) (conv_to (ty) (x))))
-;;@                    } else {
-;;@                        (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))
-;;@                    })
-;;@ ))
-(decl imm (Type ImmExtend u64) Reg)
-(extern constructor imm imm)
 
 ;; Place a `Value` into a register, sign extending it to 64-bits
 ;;@ (spec (sig (args x) (ret))
@@ -50,6 +19,7 @@
 (extern constructor put_in_reg_sext64 put_in_reg_sext64)
 ;; (rule 1 (put_in_reg_sext64 val @ (value_type (fits_in_32 ty)))
 ;;       (extend val $true (ty_bits ty) 64))
+;;
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
 ;;@ (spec (sig (args x) (ret))
@@ -57,25 +27,67 @@
 ;;@                   (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_sext64 (Value) Reg)
 (extern constructor put_nonzero_in_reg_sext64 put_nonzero_in_reg_sext64)
+
 ;; (rule -1 (put_nonzero_in_reg_sext64 val)
 ;;       (trap_if_zero_divisor (put_in_reg_sext64 val)))
-
-;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
-;;@ (spec (sig (args x) (ret))
-;;@       (assertions (= (x) (ret)),
-;;@                   (! (= (0i64:bv) (ret))),
-;;@                   (! (= (18446744073709551615i64:bv) (ret)))
-;;@ ))
-(decl safe_divisor_from_imm64 (u64) Imm64)
-(extern extractor safe_divisor_from_imm64 safe_divisor_from_imm64)
-
+;;
+;; Note that this has a special case where if the `Value` is a constant that's
+;; not zero we can skip the zero check.
+;;(rule (put_nonzero_in_reg_sext64 (and (value_type ty)
+;;                                      (iconst (nonzero_u64_from_imm64 n))))
+;;      (imm ty (ImmExtend.Sign) n))
 ;; Note that this has a special case where if the `Value` is a constant that's
 ;; not zero we can skip the zero check.
 ;;(rule (put_nonzero_in_reg_sext64 (and (value_type ty)
 ;;                                      (iconst (nonzero_u64_from_imm64 n))))
 ;;      (imm ty (ImmExtend.Sign) n))
 
-;; Special case for `sdiv` where no checks are needed due to division by a
-;; constant meaning the checks are always passed.
-(rule 1 (lower (has_type (fits_in_64 ty) (sdiv x (iconst (safe_divisor_from_imm64 y)))))
-      (a64_sdiv $I64 (put_in_reg_sext64 x) (imm ty (ImmExtend.Sign) y)))
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (sdiv (x) (y)) (ret)),
+;;@                   (= (ty) (64i0: isleType))
+;;@ ))
+(decl a64_sdiv (Type Reg Reg) Reg)
+(rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
+
+;; Verification note: operand type converts to 32/64, so no explicit
+;; check for those types needed
+;; Check for signed overflow. The only case is min_value / -1.
+;; The following checks must be done in 32-bit or 64-bit, depending
+;; on the input type.
+;; 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (x) (ret)),
+;;@       (if (= (ty) (32i0:isleType)) {
+;;@            (! (&& (= (0i32:bv) (extract 31 0 (y)))
+;;@                   (= (2147483648i32:bv) (extract 31 0 (y)))))          
+;;@        } else {
+;;@            (! (&& (= (0i64:bv) (y))
+;;@                   (= (9223372036854775808i64:bv) (y))))
+;;@        })
+;;@ ))
+(decl trap_if_div_overflow (Type Reg Reg) Reg)
+(extern constructor trap_if_div_overflow trap_if_div_overflow)
+
+;; (rule (trap_if_div_overflow ty x y)
+;;       (let (
+;;           ;; Check RHS is -1.
+;;           (_ Unit (emit (MInst.AluRRImm12 (ALUOp.AddS) (operand_size ty) (writable_zero_reg) y (u8_into_imm12 1))))
+
+;;           ;; Check LHS is min_value, by subtracting 1 and branching if
+;;           ;; there is overflow.
+;;           (_ Unit (emit (MInst.CCmpImm (size_from_ty ty)
+;;                                        x
+;;                                        (u8_into_uimm5 1)
+;;                                        (nzcv $false $false $false $false)
+;;                                        (Cond.Eq))))
+;;           (_ Unit (emit (MInst.TrapIf (cond_br_cond (Cond.Vs))
+;;                                       (trap_code_integer_overflow))))
+;;         )
+;;         x))
+
+(rule (lower (has_type (fits_in_64 ty) (sdiv x y)))
+      (let ((x64 Reg (put_in_reg_sext64 x))
+            (y64 Reg (put_nonzero_in_reg_sext64 y))
+            (valid_x64 Reg (trap_if_div_overflow ty x64 y64))
+            (result Reg (a64_sdiv $I64 valid_x64 y64)))
+        result))
