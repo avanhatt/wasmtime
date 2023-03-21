@@ -420,9 +420,38 @@ fn test_isub_imm12neg() {
     })
 }
 
-// BROKEN
 #[test]
-fn test_isub_imm12neg_concrete() {
+fn test_isub_imm12neg_concrete32() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/isub/imm12neg.isle",
+            "isub".to_string(),
+            false,
+            ConcreteTest {
+                termname: "isub".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000001"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput {
+                        literal:
+                            "#b1111111111111111111111111111111111111111111111111111111111111111"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                ],
+                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                    .to_string(),
+            },
+        )
+    });
+}
+
+#[test]
+fn test_isub_imm12neg_concrete_64() {
     run_and_retry(|| {
         test_concrete_input_from_file_with_lhs_termname(
             "./examples/isub/imm12neg.isle",

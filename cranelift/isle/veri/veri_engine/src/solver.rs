@@ -7,6 +7,7 @@ use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 
 use crate::type_inference::RuleSemantics;
+use crate::Config;
 use easy_smt::{Response, SExpr};
 use std::collections::HashMap;
 use veri_ir::{
@@ -1060,6 +1061,7 @@ impl SolverCtx {
         &mut self,
         assumptions: &Vec<SExpr>,
         term_input_bs: &Vec<String>,
+        config: &Config,
     ) -> bool {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
@@ -1083,21 +1085,21 @@ impl SolverCtx {
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
+                if !config.distinct_check {
+                    println!("Assertion list is feasible for at least one input!");
+                    self.smt.pop().unwrap();
+                    return true;
+                }
                 // Check that there is a model with distinct bitvector inputs
                 let mut not_all_same = vec![];
                 let atoms: Vec<SExpr> = term_input_bs.iter().map(|n| self.smt.atom(n)).collect();
                 for atom in &atoms {
                     println!("{}", self.smt.display(*atom));
                 }
-                let solution = self
-                    .smt
-                    .get_value(atoms)
-                    .unwrap();
+                let solution = self.smt.get_value(atoms).unwrap();
                 assert_eq!(term_input_bs.len(), solution.len());
                 for (variable, value) in solution {
-                    for input in term_input_bs {
-                        not_all_same.push(self.smt.not(self.smt.eq(variable, value)));
-                    }
+                    not_all_same.push(self.smt.not(self.smt.eq(variable, value)));
                 }
                 if not_all_same.len() == 1 {
                     self.smt.assert(not_all_same[0]).unwrap();
@@ -1428,8 +1430,8 @@ pub fn run_solver(
     rule: &Rule,
     termenv: &TermEnv,
     typeenv: &TypeEnv,
-    dynwidths_arg: bool,
     concrete: &Option<ConcreteTest>,
+    config: &Config,
 ) -> VerificationResult {
     let solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
@@ -1490,7 +1492,7 @@ pub fn run_solver(
 
     // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
     // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms).
-    if !dynwidths_arg {
+    if !config.dyn_width {
         if some_dyn_width {
             println!("Some unresolved widths after basic type inference");
             println!("Finding widths from the solver");
@@ -1584,7 +1586,7 @@ pub fn run_solver(
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
 
     // Check whether the assumptions are possible
-    if !ctx.check_assumptions_feasibility(&assumptions, &rule_sem.term_input_bvs) {
+    if !ctx.check_assumptions_feasibility(&assumptions, &rule_sem.term_input_bvs, config) {
         println!("Rule not applicable as written for rule assumptions, skipping full query");
         return VerificationResult::InapplicableRule;
     }

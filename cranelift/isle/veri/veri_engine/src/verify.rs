@@ -1,5 +1,6 @@
 use crate::type_inference::type_rules_with_term_and_types;
 use crate::widths::isle_inst_types;
+use crate::Config;
 use cranelift_isle as isle;
 use isle::compile::create_envs;
 use isle::sema::{Pattern, RuleId, TermEnv, TypeEnv};
@@ -12,7 +13,7 @@ use crate::type_inference::RuleSemantics;
 use crate::{interp::Context, termname::pattern_contains_termname};
 use veri_ir::{ConcreteTest, Type, VerificationResult};
 
-pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
+pub fn verify_rules(inputs: Vec<PathBuf>, config: &Config) {
     let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
 
     // Parses to an AST, as a list of definitions
@@ -26,8 +27,8 @@ pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
 
     // Get the types/widths for this particular term
     let types = isle_inst_types()
-        .get(&term.as_str())
-        .expect(format!("Missing term width for {}", term).as_str())
+        .get(&config.term as &str)
+        .expect(format!("Missing term width for {}", config.term).as_str())
         .clone();
 
     for type_instantiation in types {
@@ -36,7 +37,7 @@ pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
             &termenv,
             &typeenv,
             &annotation_env,
-            &term,
+            &config.term,
             &type_instantiation,
             &None,
         );
@@ -44,10 +45,9 @@ pub fn verify_rules(inputs: Vec<PathBuf>, term: String, dynwidths: bool) {
             &termenv,
             &typeenv,
             &type_sols,
-            &term,
             type_instantiation,
-            dynwidths,
             &None,
+            config,
         );
     }
 }
@@ -56,10 +56,9 @@ pub fn verify_rules_for_term(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     typesols: &HashMap<RuleId, RuleSemantics>,
-    term: &String,
     types: Vec<Type>,
-    dynwidths: bool,
     concrete: &Option<ConcreteTest>,
+    config: &Config,
 ) -> VerificationResult {
     let mut rules_checked = 0;
     for rule in &termenv.rules {
@@ -71,7 +70,7 @@ pub fn verify_rules_for_term(
                 rule.root_term,
                 rule.args.clone(),
             ),
-            term,
+            &config.term,
             termenv,
             typeenv,
         ) {
@@ -83,8 +82,11 @@ pub fn verify_rules_for_term(
             continue;
         }
         let rule_sem = &ctx.typesols[&rule.id];
-        println!("Verifying rule with term {term} and types {:?}", types);
-        let result = run_solver(rule_sem, rule, termenv, typeenv, dynwidths, concrete);
+        println!(
+            "Verifying rule with term {} and types {:?}",
+            config.term, types
+        );
+        let result = run_solver(rule_sem, rule, termenv, typeenv, concrete, config);
         rules_checked += 1;
         if result != VerificationResult::Success {
             return result;
