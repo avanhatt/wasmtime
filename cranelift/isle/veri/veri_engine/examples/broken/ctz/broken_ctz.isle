@@ -45,5 +45,6 @@
 (decl rbit (Type Reg) Reg)
 (rule (rbit ty x) (bit_rr (BitOp.RBit) ty x))
 
+;; Broken: starts with clz instead of ctz
 (rule -1 (lower (has_type ty (clz x)))
       (a64_clz ty (rbit ty x)))

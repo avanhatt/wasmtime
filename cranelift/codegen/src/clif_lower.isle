@@ -695,7 +695,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (arg) (zero_ext (64) (ret)))))
 (decl iconst (Imm64) Inst)
 (extractor
     (iconst N)
@@ -860,6 +860,8 @@
     (inst_data (InstructionData.Binary (Opcode.Udiv) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assertions (= (sdiv (x) (y)) (ret))))
 (decl sdiv (Value Value) Inst)
 (extractor
     (sdiv x y)
@@ -1073,20 +1075,23 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (<= (bv2int (b)) (widthof (a))),
-;;@                 (= (ret) (shl (a) (b)))))
+;;@     (assertions (= (ret) (shl (a) (b)))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
     (inst_data (InstructionData.Binary (Opcode.Ishl) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args a, b) (ret))
+;;@     (assertions (= (ret) (shr (a) (b)))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
     (inst_data (InstructionData.Binary (Opcode.Ushr) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args a, b) (ret))
+;;@     (assertions (= (ret) (ashr (a) (b)))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)

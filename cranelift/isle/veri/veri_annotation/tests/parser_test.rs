@@ -99,6 +99,14 @@ fn test_expr() {
     assert!(parser::ExprParser::new()
         .parse("(if (a) {(+ (b) (c))} else {(d)})")
         .is_ok());
+
+    // nested conditionals
+    assert!(parser::ExprParser::new()
+        .parse("(if (a) {(+ (if (x) {(+ (b) (c))} else {(d)}) (c))} else {(d)})")
+        .is_ok());
+    assert!(parser::ExprParser::new()
+        .parse("(if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)})")
+        .is_ok());
 }
 
 #[test]

@@ -17,6 +17,8 @@ mod tests {
             .unwrap();
         SolverCtx {
             smt: smt,
+            dynwidths: true,
+            onlywidths: false,
             tyctx: TypeContext {
                 tyvars: HashMap::new(),
                 tymap: HashMap::new(),

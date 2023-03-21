@@ -87,6 +87,7 @@ pub Expr: Box<Expr> = {
     "(" "=>" <u:Expr> <v:Expr> ")" => Box::new(Expr::Imp(u, v, 0)),
     "(" "=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Eq(u, v, 0)),
     "(" "<=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lte(u, v, 0)),
+    "(" "<" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lt(u, v, 0)),
 
     "(" "-" <u:Expr> ")" => Box::new(Expr::BVNeg(u, 0)),
     "(" "~" <u:Expr> ")" => Box::new(Expr::BVNot(u, 0)),
@@ -99,7 +100,7 @@ pub Expr: Box<Expr> = {
 
     "(" "*" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVMul(u, v, 0)),
     "(" "/" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),
-    "(" "sdiv" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),
+    "(" "sdiv" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSDiv(u, v, 0)),
     "(" "+" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVAdd(u, v, 0)),
     "(" "-" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSub(u, v, 0)),
     "(" "urem" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUrem(u, v, 0)),
