@@ -1,6 +1,6 @@
+use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use itertools::Itertools;
 
 use crate::termname::pattern_contains_termname;
 use cranelift_isle as isle;
@@ -295,7 +295,10 @@ fn type_annotations_using_rule<'a>(
                     let ty = convert_type(ty);
                     parse_tree.ty_vars.insert(expr, *t);
                     tymap.insert(*t, ty.clone());
-                    quantified_vars.push(veri_ir::BoundVar { name: s.clone(), tyvar: *t });
+                    quantified_vars.push(veri_ir::BoundVar {
+                        name: s.clone(),
+                        tyvar: *t,
+                    });
                 } else {
                     panic!("missing type variable {} in solution for: {:?}", t, expr);
                 }
