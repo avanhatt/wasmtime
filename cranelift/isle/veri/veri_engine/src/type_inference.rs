@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
@@ -288,13 +289,16 @@ fn type_annotations_using_rule<'a>(
                 }
             }
             let mut quantified_vars = vec![];
-            for (s, t) in parse_tree.quantified_vars {
+            for (s, t) in parse_tree.quantified_vars.iter().sorted() {
                 let expr = veri_ir::Expr::Terminal(veri_ir::Terminal::Var(s.clone()));
-                if let Some(ty) = solution.get(&t) {
+                if let Some(ty) = solution.get(t) {
                     let ty = convert_type(ty);
-                    parse_tree.ty_vars.insert(expr, t);
-                    tymap.insert(t, ty.clone());
-                    quantified_vars.push(veri_ir::BoundVar { name: s, tyvar: t });
+                    parse_tree.ty_vars.insert(expr, *t);
+                    tymap.insert(*t, ty.clone());
+                    quantified_vars.push(veri_ir::BoundVar {
+                        name: s.clone(),
+                        tyvar: *t,
+                    });
                 } else {
                     panic!("missing type variable {} in solution for: {:?}", t, expr);
                 }
@@ -501,7 +505,6 @@ fn add_annotation_constraints(
                 t,
             )
         }
-
         annotation_ir::Expr::BVNot(x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
 
@@ -554,6 +557,27 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUDiv, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+        annotation_ir::Expr::BVSDiv(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t1));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSDiv, Box::new(e1), Box::new(e2)),
                 t,
             )
         }
@@ -1094,6 +1118,7 @@ fn add_isle_constraints(
         ("Value".to_owned(), annotation_ir::Type::BitVector),
         ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
+        ("ImmExtend".to_owned(), annotation_ir::Type::Int),
         (
             "ShiftOpAndAmt".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(10),

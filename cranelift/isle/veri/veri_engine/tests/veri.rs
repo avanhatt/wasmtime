@@ -558,34 +558,119 @@ fn test_ineg() {
     })
 }
 
-// #[test]
-// fn test_mul() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/imul/imul.isle",
-//             "imul".to_string(),
-//             lte_64_success_result(),
-//         )
-//     });
-// }
+#[test]
+fn test_mul() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/imul/imul.isle",
+            "imul".to_string(),
+            // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
 
-/*
 #[test]
 fn test_udiv() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/udiv/udiv.isle",
-            // for ease of commenting out until we debug further
+            "udiv".to_string(),
+            // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
-                    (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
                 // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_broken_udiv() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/broken/udiv/broken_udiv.isle",
+            "udiv".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
 }
-*/
+
+#[test]
+fn test_sdiv() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/sdiv/sdiv.isle",
+            "sdiv".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_sdiv_safe_const() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/sdiv/sdiv_safe_const.isle",
+            "sdiv".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_broken_sdiv() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/broken/sdiv/broken_sdiv.isle",
+            "sdiv".to_string(),
+            all_failure_result(),
+        )
+    });
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/broken/sdiv/broken_sdiv32.isle",
+            "sdiv".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
 
 #[test]
 fn test_uextend() {

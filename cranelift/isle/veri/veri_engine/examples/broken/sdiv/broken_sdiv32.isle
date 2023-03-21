@@ -1,0 +1,58 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst (enum))
+
+(type ALUOp
+  (enum
+    (SDiv)
+))
+
+(decl alu_rrr (ALUOp Type Reg Reg) Reg)
+(extern constructor alu_rrr alu_rrr)
+
+;; BROKEN: zero-extends instead of sign-extends
+;; Place a `Value` into a register, sign extending it to 64-bits
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (zero_ext (64) (x)) (ret))))
+(decl put_in_reg_sext64 (Value) Reg)
+(extern constructor put_in_reg_sext64 put_in_reg_sext64)
+
+;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
+;;@ (spec (sig (args x) (ret))
+;;@       (assertions (= (sign_ext (64) (x)) (ret)),
+;;@                   (! (= (0i64:bv) (ret)))))
+(decl put_nonzero_in_reg_sext64 (Value) Reg)
+(extern constructor put_nonzero_in_reg_sext64 put_nonzero_in_reg_sext64)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (sdiv (x) (y)) (ret)),
+;;@                   (= (ty) (64i0: isleType))
+;;@ ))
+(decl a64_sdiv (Type Reg Reg) Reg)
+(rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
+
+;; Check for signed overflow. The only case is min_value / -1.
+;; The following checks must be done in 32-bit or 64-bit, depending
+;; on the input type.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assertions (= (x) (ret)),
+;;@                   (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))),
+;;@       (if (= (ty) (32i0:isleType)) {
+;;@            (! (&& (= (0i32:bv) (extract 31 0 (y)))
+;;@                   (= (2147483648i32:bv) (extract 31 0 (y)))))          
+;;@        } else {
+;;@            (! (&& (= (0i64:bv) (y))
+;;@                   (= (9223372036854775808i64:bv) (y))))
+;;@        })
+;;@ ))
+(decl trap_if_div_overflow (Type Reg Reg) Reg)
+(extern constructor trap_if_div_overflow trap_if_div_overflow)
+
+(rule (lower (has_type (fits_in_64 ty) (sdiv x y)))
+      (let ((x64 Reg (put_in_reg_sext64 x))
+            (y64 Reg (put_nonzero_in_reg_sext64 y))
+            (valid_x64 Reg (trap_if_div_overflow ty x64 y64))
+            (result Reg (a64_sdiv $I64 valid_x64 y64)))
+        result))
