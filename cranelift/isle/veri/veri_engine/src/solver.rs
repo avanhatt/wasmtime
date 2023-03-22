@@ -1062,7 +1062,7 @@ impl SolverCtx {
         assumptions: &Vec<SExpr>,
         term_input_bs: &Vec<String>,
         config: &Config,
-    ) -> bool {
+    ) -> VerificationResult {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
         for a in assumptions {
@@ -1088,7 +1088,7 @@ impl SolverCtx {
                 if !config.distinct_check {
                     println!("Assertion list is feasible for at least one input!");
                     self.smt.pop().unwrap();
-                    return true;
+                    return VerificationResult::Success;
                 }
                 // Check that there is a model with distinct bitvector inputs
                 let mut not_all_same = vec![];
@@ -1111,11 +1111,11 @@ impl SolverCtx {
                 match self.smt.check() {
                     Ok(Response::Sat) => {
                         println!("Assertion list is feasible for two distinct inputs!");
-                        true
+                        VerificationResult::Success
                     }
                     Ok(Response::Unsat) => {
                         println!("Assertion list is only feasible for one input with distinct BV values!");
-                        false
+                        VerificationResult::NoDistinctModels
                     }
                     Ok(Response::Unknown) => {
                         panic!("Solver said 'unk'");
@@ -1129,7 +1129,7 @@ impl SolverCtx {
                 println!("Assertion list is infeasible!");
                 // let unsat = self.smt.get_unsat_core().unwrap();
                 // println!("Unsat core:\n{}", self.smt.display(unsat));
-                false
+                VerificationResult::InapplicableRule
             }
             Ok(Response::Unknown) => {
                 panic!("Solver said 'unk'");
@@ -1586,9 +1586,11 @@ pub fn run_solver(
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
 
     // Check whether the assumptions are possible
-    if !ctx.check_assumptions_feasibility(&assumptions, &rule_sem.term_input_bvs, config) {
+    let feasibility =
+        ctx.check_assumptions_feasibility(&assumptions, &rule_sem.term_input_bvs, config);
+    if feasibility != VerificationResult::Success {
         println!("Rule not applicable as written for rule assumptions, skipping full query");
-        return VerificationResult::InapplicableRule;
+        return feasibility;
     }
 
     // Correctness query

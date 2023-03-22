@@ -220,4 +220,7 @@ pub enum VerificationResult {
     Success,
     Failure(Counterexample),
     Unknown,
+    // Optional: heuristic that a rule is bad if there is only
+    // a single model with distinct bitvector inputs
+    NoDistinctModels,
 }
