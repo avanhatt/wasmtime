@@ -101,6 +101,8 @@
 (decl pure u32_as_u64 (u32) u64)
 (extern constructor u32_as_u64 u32_as_u64)
 
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
 (decl pure i64_as_u64 (i64) u64)
 (extern constructor i64_as_u64 i64_as_u64)
 

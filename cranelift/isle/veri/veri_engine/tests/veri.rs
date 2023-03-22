@@ -6,38 +6,6 @@ use utils::{
 };
 use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 
-// #[test]
-// fn test_iadds() {
-/*test_from_file_custom_prelude(
-    "./tests/code/selfcontained/simple_prelude.isle",
-    "./tests/code/selfcontained/simple_iadd.isle",
-    lte_64_success_result(),
-);
-
-test_from_file_custom_prelude(
-    "./tests/code/selfcontained/simple_prelude.isle",
-    "./tests/code/selfcontained/iadd_to_sub.isle",
-    lte_64_success_result(),
-);*/
-// }
-
-#[test]
-fn test_implicit_conversions() {
-    // test_from_file_custom_prelude(
-    //     "./tests/code/selfcontained/prelude.isle",
-    //     "./tests/code/selfcontained/simple_iadd_implicit_conv.isle",
-    //     lte_64_success_result(),
-    // );
-
-    /*
-    test_from_file_custom_prelude(
-        "./tests/code/selfcontained/prelude.isle",
-        "./tests/code/selfcontained/iadd_to_sub_implicit_conv.isle",
-        lte_64_success_result()
-    );
-    */
-}
-
 #[test]
 fn test_iadd_base_concrete() {
     run_and_retry(|| {
@@ -74,8 +42,6 @@ fn test_iadd_base() {
     });
 }
 
-// Currently timing out, disabling for now.
-// https://github.com/avanhatt/wasmtime/issues/13
 #[test]
 fn test_iadd_imm12() {
     run_and_retry(|| {
@@ -99,23 +65,66 @@ fn test_iadd_imm12_2() {
 }
 
 #[test]
-fn test_iadd_imm12neg() {
+fn test_iadd_imm12neg_not_distinct() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/iadd/imm12neg.isle",
             "iadd".to_string(),
-            lte_64_success_result(),
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
         )
     });
 }
 
 #[test]
-fn test_iadd_imm12neg2() {
+fn test_imm12_from_negated_value() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12_from_negated_value.isle",
+            "imm12_from_negated_value".to_string(),
+            all_success_result(),
+        )
+    });
+}
+
+#[test]
+fn test_iadd_imm12neg_new() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12neg_new.isle",
+            "iadd".to_string(),
+            all_success_result(),
+        )
+    });
+}
+
+#[test]
+fn test_iadd_imm12neg2_new() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/imm12neg2_new.isle",
+            "iadd".to_string(),
+            all_success_result(),
+        )
+    });
+}
+
+#[test]
+fn test_iadd_imm12neg2_not_distinct() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/iadd/imm12neg2.isle",
             "iadd".to_string(),
-            lte_64_success_result(),
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
         )
     });
 }
@@ -124,8 +133,24 @@ fn test_iadd_imm12neg2() {
 // https://github.com/avanhatt/wasmtime/issues/13
 // #[test]
 // fn test_iadd_extend() {
-//test_from_file_with_lhs_termname("./examples/iadd/extend.isle", lte_64_success_result());
-//test_from_file_with_lhs_termname("./examples/iadd/extend2.isle", lte_64_success_result());
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/iadd/extend.isle",
+//             "iadd".to_string(),
+//             lte_64_success_result(),
+//         )
+//     });
+// }
+
+// #[test]
+// fn test_iadd_extend2() {
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/iadd/extend2.isle",
+//             "iadd".to_string(),
+//             lte_64_success_result(),
+//         )
+//     });
 // }
 
 #[test]
@@ -139,48 +164,56 @@ fn test_iadd_shift() {
     });
 }
 
-// #[test]
-// fn test_iadd_madd() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/iadd/madd.isle",
-//             "iadd".to_string(),
-//             vec![
-//                 (Bitwidth::I8, VerificationResult::Success),
-//                 (Bitwidth::I16, VerificationResult::Success),
-//                 (Bitwidth::I32, VerificationResult::Success),
-//                 (Bitwidth::I64, VerificationResult::Success),
-//             ],
-//         )
-//     });
-// }
+#[test]
+fn test_iadd_madd() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/madd.isle",
+            "iadd".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
 
-// #[test]
-// fn test_iadd_madd2() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/iadd/madd2.isle",
-//             "iadd".to_string(),
-//             vec![
-//                 (Bitwidth::I8, VerificationResult::Success),
-//                 (Bitwidth::I16, VerificationResult::Success),
-//                 (Bitwidth::I32, VerificationResult::Success),
-//                 (Bitwidth::I64, VerificationResult::Success),
-//             ],
-//         )
-//     });
-// }
+#[test]
+fn test_iadd_madd2() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/madd2.isle",
+            "iadd".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
 
-// #[test]
-// fn test_isub_msub() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/isub/msub.isle",
-//             "isub".to_string(),
-//             lte_64_success_result(),
-//         )
-//     });
-// }
+#[test]
+fn test_isub_msub() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/isub/msub.isle",
+            "isub".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
 
 #[test]
 fn test_broken_iadd_base_case() {
@@ -244,21 +277,15 @@ fn test_broken_iadd_imm12_2() {
 }
 
 #[test]
-fn test_broken_iadd_imm12neg() {
+fn test_broken_iadd_imm12neg_not_distinct() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_imm12neg.isle",
             "iadd".to_string(),
             vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (
-                    Bitwidth::I32,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
                 (
                     Bitwidth::I64,
                     VerificationResult::Failure(Counterexample {}),
@@ -269,21 +296,15 @@ fn test_broken_iadd_imm12neg() {
 }
 
 #[test]
-fn test_broken_iadd_imm12neg_2() {
+fn test_broken_iadd_imm12neg_2_not_distinct() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_imm12neg2.isle",
             "iadd".to_string(),
             vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (
-                    Bitwidth::I32,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
                 (
                     Bitwidth::I64,
                     VerificationResult::Failure(Counterexample {}),
@@ -410,19 +431,64 @@ fn test_isub_imm12_concrete() {
 }
 
 #[test]
-fn test_isub_imm12neg() {
+fn test_isub_imm12neg_not_distinct() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/isub/imm12neg.isle",
             "isub".to_string(),
-            lte_64_success_result(),
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
         );
     })
 }
 
-// BROKEN
 #[test]
-fn test_isub_imm12neg_concrete() {
+fn test_isub_imm12neg_new() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/isub/imm12neg_new.isle",
+            "isub".to_string(),
+            all_success_result(),
+        );
+    })
+}
+
+#[test]
+fn test_isub_imm12neg_concrete32() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/isub/imm12neg.isle",
+            "isub".to_string(),
+            false,
+            ConcreteTest {
+                termname: "isub".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000001"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput {
+                        literal:
+                            "#b1111111111111111111111111111111111111111111111111111111111111111"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                ],
+                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                    .to_string(),
+            },
+        )
+    });
+}
+
+#[test]
+fn test_isub_imm12neg_concrete_64() {
     run_and_retry(|| {
         test_concrete_input_from_file_with_lhs_termname(
             "./examples/isub/imm12neg.isle",
@@ -516,20 +582,14 @@ fn test_broken_isub_imm12() {
 }
 
 #[test]
-fn test_broken_isub_imm12neg() {
+fn test_broken_isub_imm12neg_not_distinct() {
     test_from_file_with_lhs_termname(
         "./examples/broken/isub/broken_imm12neg.isle",
         "isub".to_string(),
         vec![
-            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-            (
-                Bitwidth::I16,
-                VerificationResult::Failure(Counterexample {}),
-            ),
-            (
-                Bitwidth::I32,
-                VerificationResult::Failure(Counterexample {}),
-            ),
+            (Bitwidth::I8, VerificationResult::NoDistinctModels),
+            (Bitwidth::I16, VerificationResult::NoDistinctModels),
+            (Bitwidth::I32, VerificationResult::NoDistinctModels),
             (
                 Bitwidth::I64,
                 VerificationResult::Failure(Counterexample {}),
@@ -731,7 +791,10 @@ fn test_clz() {
             ],
         )
     });
+}
 
+#[test]
+fn test_clz8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/clz/clz8.isle",
@@ -744,7 +807,10 @@ fn test_clz() {
             ],
         )
     });
+}
 
+#[test]
+fn test_clz16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/clz/clz16.isle",
@@ -779,7 +845,10 @@ fn test_clz_broken() {
             ],
         )
     });
+}
 
+#[test]
+fn test_clz8_broken() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz8.isle",
@@ -792,7 +861,10 @@ fn test_clz_broken() {
             ],
         )
     });
+}
 
+#[test]
+fn test_clz_broken16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz16.isle",
@@ -824,7 +896,10 @@ fn test_cls() {
             ],
         )
     });
+}
 
+#[test]
+fn test_cls8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/cls/cls8.isle",
@@ -837,7 +912,10 @@ fn test_cls() {
             ],
         )
     });
+}
 
+#[test]
+fn test_cls16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/cls/cls16.isle",
@@ -869,7 +947,10 @@ fn test_cls_broken() {
             ],
         )
     });
+}
 
+#[test]
+fn test_cls8_broken() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls8.isle",
@@ -882,7 +963,10 @@ fn test_cls_broken() {
             ],
         )
     });
+}
 
+#[test]
+fn test_cls16_broken() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls16.isle",
@@ -914,7 +998,10 @@ fn test_ctz() {
             ],
         )
     });
+}
 
+#[test]
+fn test_ctz8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/ctz/ctz8.isle",
@@ -927,7 +1014,10 @@ fn test_ctz() {
             ],
         )
     });
+}
 
+#[test]
+fn test_ctz16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/ctz/ctz16.isle",
@@ -962,7 +1052,10 @@ fn test_ctz_broken() {
             ],
         )
     });
+}
 
+#[test]
+fn test_ctz8_broken() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz8.isle",
@@ -975,7 +1068,10 @@ fn test_ctz_broken() {
             ],
         )
     });
+}
 
+#[test]
+fn test_ctz16_broken() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz16.isle",
@@ -1026,6 +1122,10 @@ fn test_small_rotr_to_shifts_broken() {
             ],
         )
     });
+}
+
+#[test]
+fn test_small_rotr_to_shifts_broken2() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/broken_rule_or_small_rotr.isle",
@@ -1276,36 +1376,33 @@ fn test_32_with_imm_rotr() {
     })
 }
 
-// TODO: reenable.
-// #[test]
-// fn test_64_rotr() {
-//     test_from_file_with_lhs_termname(
-//         "./examples/64_rotr.isle",
-//         "rotr".to_string(),
-//         vec![
-//             (Bitwidth::I8, VerificationResult::InapplicableRule),
-//             (Bitwidth::I16, VerificationResult::InapplicableRule),
-//             (Bitwidth::I32, VerificationResult::InapplicableRule),
-//             (Bitwidth::I64, VerificationResult::Success),
-//         ],
-//     )
-// }
+#[test]
+fn test_64_rotr() {
+    test_from_file_with_lhs_termname(
+        "./examples/rotr/64_rotr.isle",
+        "rotr".to_string(),
+        vec![
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
+    )
+}
 
-// Test timing out, reenable with
-// https://github.com/avanhatt/wasmtime/issues/14
-// #[test]
-// fn test_64_with_imm_rotr() {
-//     test_from_file_with_lhs_termname(
-//         "./examples/64_with_imm_rotr.isle",
-//         "rotr".to_string(),
-//         vec![
-//             (Bitwidth::I8, VerificationResult::InapplicableRule),
-//             (Bitwidth::I16, VerificationResult::InapplicableRule),
-//             (Bitwidth::I32, VerificationResult::InapplicableRule),
-//             (Bitwidth::I64, VerificationResult::Success),
-//         ],
-//     )
-// }
+#[test]
+fn test_64_with_imm_rotr() {
+    test_from_file_with_lhs_termname(
+        "./examples/rotr/64_with_imm_rotr.isle",
+        "rotr".to_string(),
+        vec![
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
+    )
+}
 
 #[test]
 fn test_fits_in_32_band() {
@@ -1791,9 +1888,4 @@ fn test_if_let() {
         "iadd".to_string(),
         all_success_result(),
     );
-}
-
-#[test]
-fn test_let() {
-    // test_from_file_self_contained("./tests/code/selfcontained/let.isle", just_8_result());
 }

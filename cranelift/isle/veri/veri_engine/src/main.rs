@@ -4,6 +4,7 @@ use clap::{ArgAction, Parser};
 use std::env;
 use std::path::PathBuf;
 use veri_engine_lib::verify::verify_rules;
+use veri_engine_lib::Config;
 
 #[derive(Parser)]
 #[clap(about, version, author)]
@@ -19,6 +20,10 @@ struct Args {
     /// Don't use the aarch64 and prelude ISLE files
     #[clap(short, long, action=ArgAction::SetTrue)]
     noaarch64: bool,
+
+    /// Don't check for distinct possible models
+    #[clap(short, long, action=ArgAction::SetTrue)]
+    nodistinct: bool,
 
     /// Allow dynamic widths for the solver query
     #[clap(short, long, action=ArgAction::SetTrue)]
@@ -48,5 +53,10 @@ fn main() {
     }
 
     inputs.push(PathBuf::from(args.input));
-    verify_rules(inputs, args.term, args.dynwidths)
+    let config = Config {
+        dyn_width: args.dynwidths,
+        term: args.term,
+        distinct_check: !args.nodistinct,
+    };
+    verify_rules(inputs, &config)
 }

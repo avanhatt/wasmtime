@@ -100,5 +100,15 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
         ],
     );
 
+    widths.insert(
+        "imm12_from_negated_value",
+        vec![
+            vec![Type::BitVector(Some(8))],
+            vec![Type::BitVector(Some(16))],
+            vec![Type::BitVector(Some(32))],
+            vec![Type::BitVector(Some(64))],
+        ],
+    );
+
     return widths;
 }
