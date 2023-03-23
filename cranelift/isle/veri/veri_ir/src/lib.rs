@@ -17,20 +17,6 @@ pub struct TypeContext {
     pub bv_unknown_width_sets: HashMap<u32, u32>,
 }
 
-/// Packaged semantics for a single rule, included metadata on which terms
-/// are not yet defined.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct RuleSemantics {
-    pub lhs: Expr,
-    pub rhs: Expr,
-
-    pub quantified_vars: Vec<BoundVar>,
-    pub free_vars: Vec<BoundVar>,
-    pub assumptions: Vec<Expr>,
-
-    pub tyctx: TypeContext,
-}
-
 // Used for providing concrete inputs to test rule semantics
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConcreteInput {
@@ -236,4 +222,7 @@ pub enum VerificationResult {
     Success,
     Failure(Counterexample),
     Unknown,
+    // Optional: heuristic that a rule is bad if there is only
+    // a single model with distinct bitvector inputs
+    NoDistinctModels,
 }

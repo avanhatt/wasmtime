@@ -8,6 +8,7 @@ use veri_annotation::parser_wrapper::parse_annotations;
 use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
+use veri_engine_lib::Config;
 use veri_ir::{ConcreteTest, Counterexample, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
@@ -136,6 +137,12 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
         .expect(format!("Missing term width for {}", term).as_str())
         .clone();
 
+    let config = Config {
+        dyn_width: dynwidth,
+        term: term.clone(),
+        distinct_check: true,
+    };
+
     for type_instantiation in types {
         let ty = type_instantiation.first().unwrap();
         let expected = tr.iter().find(|(bw, _)| match *bw {
@@ -158,10 +165,9 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
                 &termenv,
                 &typeenv,
                 &type_sols,
-                &term,
                 type_instantiation,
-                dynwidth,
                 &None,
+                &config,
             );
             assert_eq!(result, *expected_result);
         }
@@ -225,6 +231,12 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     let (typeenv, termenv) = create_envs(&defs).unwrap();
     let annotation_env = parse_annotations(&inputs);
 
+    let config = Config {
+        dyn_width: dynwidth,
+        term: termname.clone(),
+        distinct_check: false,
+    };
+
     // Get the types/widths for this particular term
     let types = concrete.args.iter().map(|i| i.ty.clone()).collect();
 
@@ -241,10 +253,9 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         &termenv,
         &typeenv,
         &type_sols,
-        &termname,
         types,
-        dynwidth,
         &Some(concrete),
+        &config,
     );
     assert_eq!(result, VerificationResult::Success);
 }
