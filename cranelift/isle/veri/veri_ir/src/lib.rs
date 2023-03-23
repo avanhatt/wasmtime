@@ -147,6 +147,8 @@ pub enum BinaryOp {
     BVSDiv,
     BVAdd,
     BVSub,
+    BVUrem,
+    BVSrem,
     BVAnd,
     BVOr,
     BVXor,

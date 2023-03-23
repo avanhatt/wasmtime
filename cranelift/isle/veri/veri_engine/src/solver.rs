@@ -599,6 +599,8 @@ impl SolverCtx {
                         BinaryOp::BVMul
                         | BinaryOp::BVUDiv
                         | BinaryOp::BVSDiv
+                        | BinaryOp::BVUrem
+                        | BinaryOp::BVSrem
                         | BinaryOp::BVAdd
                         | BinaryOp::BVSub
                         | BinaryOp::BVAnd
@@ -761,6 +763,8 @@ impl SolverCtx {
                     BinaryOp::BVSDiv => "bvsdiv",
                     BinaryOp::BVAdd => "bvadd",
                     BinaryOp::BVSub => "bvsub",
+                    BinaryOp::BVUrem => "bvurem",
+                    BinaryOp::BVSrem => "bvsrem",
                     BinaryOp::BVAnd => "bvand",
                     BinaryOp::BVOr => "bvor",
                     BinaryOp::BVXor => "bvxor",

@@ -188,6 +188,8 @@ pub enum Expr {
     BVSDiv(Box<Expr>, Box<Expr>, u32),
     BVAdd(Box<Expr>, Box<Expr>, u32),
     BVSub(Box<Expr>, Box<Expr>, u32),
+    BVUrem(Box<Expr>, Box<Expr>, u32),
+    BVSrem(Box<Expr>, Box<Expr>, u32),
     BVAnd(Box<Expr>, Box<Expr>, u32),
     BVOr(Box<Expr>, Box<Expr>, u32),
     BVXor(Box<Expr>, Box<Expr>, u32),
@@ -264,6 +266,8 @@ impl Expr {
             | Expr::BVSDiv(_, _, t)
             | Expr::BVAdd(_, _, t)
             | Expr::BVSub(_, _, t)
+            | Expr::BVUrem(_, _, t)
+            | Expr::BVSrem(_, _, t)
             | Expr::BVAnd(_, _, t)
             | Expr::BVOr(_, _, t)
             | Expr::BVXor(_, _, t)

@@ -43,6 +43,8 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
     widths.insert("ishl", bv_binary_8_to_64.clone());
     widths.insert("udiv", bv_binary_8_to_64.clone());
     widths.insert("sdiv", bv_binary_8_to_64.clone());
+    widths.insert("srem", bv_binary_8_to_64.clone());
+    widths.insert("urem", bv_binary_8_to_64.clone());
 
     // Binary with possibly differing widths
     widths.insert("rotl", bv_binary_8_to_64.clone());
