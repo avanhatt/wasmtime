@@ -961,6 +961,47 @@ impl SolverCtx {
                 let es = self.vir_expr_to_sexp(*e);
                 self.smt.ite(cs, ts, es)
             }
+            Expr::Switch(c, cases) => {
+                if self.dynwidths {
+                    if matches!(ty, Some(Type::BitVector(_))) {
+                        for (_, b) in &cases {
+                            self.assume_same_width_from_sexpr(width.clone().unwrap(), b);
+                        }
+                    }
+                    let cty = self.get_type(&c);
+                    if matches!(cty, Some(Type::BitVector(_))) {
+                        let cwidth = self.get_expr_width_var(&c).map(|s| s.clone());
+                        for (m, _) in &cases {
+                            self.assume_same_width_from_sexpr(cwidth.clone().unwrap(), m);
+                        }
+                    }
+                }
+                let cs = self.vir_expr_to_sexp(*c);
+                let mut case_sexprs: Vec<(SExpr, SExpr)> = cases
+                    .iter()
+                    .map(|(m, b)| {
+                        (
+                            self.vir_expr_to_sexp(m.clone()),
+                            self.vir_expr_to_sexp(b.clone()),
+                        )
+                    })
+                    .collect();
+
+                // Assert that some case must match
+                let some_case_matches: Vec<SExpr> = case_sexprs
+                    .iter()
+                    .map(|(m, _)| self.smt.eq(cs, *m))
+                    .collect();
+                self.additional_assumptions
+                    .push(self.smt.or_many(some_case_matches.clone()));
+
+                let (_, last_body) = case_sexprs.remove(case_sexprs.len() - 1);
+
+                // Reverse to keep the order of the switch
+                case_sexprs.iter().rev().fold(last_body, |acc, (m, b)| {
+                    self.smt.ite(self.smt.eq(cs, *m), *b, acc)
+                })
+            }
             Expr::CLZ(e) => {
                 let tyvar = *tyvar.unwrap();
                 let es = self.vir_expr_to_sexp(*e);

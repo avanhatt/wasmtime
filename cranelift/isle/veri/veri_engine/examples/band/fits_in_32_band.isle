@@ -60,19 +60,16 @@
 ))
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (= (ret) (if (= (op) (0i64:bv)) {
+;;@     (assertions (= (ret) (if (= (op) (0i64:bv)) 
 ;;@                     (& (a) (b))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
+;;@                      (if (= (op) (1i64:bv)) 
 ;;@                          (| (a) (b))
-;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
+;;@                          (if (= (op) (2i64:bv)) 
 ;;@                              (xor (a) (b))
-;;@                          } else { 
 ;;@                              (a)
-;;@                          })
-;;@                      })
-;;@                  }))
+;;@                          )
+;;@                      )
+;;@                  ))
 ;;@     ))
 (decl alu_rs_imm_logic_commutative (ALUOp Type Value Value) Reg)
 (extern constructor alu_rs_imm_logic_commutative alu_rs_imm_logic_commutative)

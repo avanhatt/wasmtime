@@ -1028,6 +1028,25 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::Switch(c, cases, _) => {
+            let (c_expr, c_t) = add_annotation_constraints(*c, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            let mut case_exprs = vec![];
+            for (m, b) in cases {
+                let (case_expr, case_t) =
+                    add_annotation_constraints(m.clone(), tree, annotation_info);
+                let (body_expr, body_t) =
+                    add_annotation_constraints(b.clone(), tree, annotation_info);
+
+                tree.var_constraints.insert(TypeExpr::Variable(c_t, case_t));
+                tree.var_constraints.insert(TypeExpr::Variable(t, body_t));
+                case_exprs.push((case_expr, body_expr));
+            }
+            (veri_ir::Expr::Switch(Box::new(c_expr), case_exprs), t)
+        }
         annotation_ir::Expr::CLZ(x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
 

@@ -224,6 +224,9 @@ pub enum Expr {
 
     // Conditional if-then-else
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>, u32),
+
+    // Switch
+    Switch(Box<Expr>, Vec<(Expr, Expr)>, u32),
 }
 
 impl Expr {
@@ -285,8 +288,9 @@ impl Expr {
             | Expr::BVToInt(_, t)
             | Expr::BVConvTo(_, _, t)
             | Expr::BVConvToVarWidth(_, _, t)
+            | Expr::BVExtract(_, _, _, t)
             | Expr::Conditional(_, _, _, t)
-            | Expr::BVExtract(_, _, _, t) => *t,
+            | Expr::Switch(_, _, t)  => *t,
         }
     }
 }

@@ -732,7 +732,6 @@ fn test_broken_sdiv() {
     })
 }
 
-
 #[test]
 fn test_srem() {
     run_and_retry(|| {
@@ -792,7 +791,6 @@ fn test_urem() {
     })
 }
 
-
 #[test]
 fn test_urem_concrete() {
     run_and_retry(|| {
@@ -817,7 +815,6 @@ fn test_urem_concrete() {
         )
     });
 }
-
 
 #[test]
 fn test_uextend() {

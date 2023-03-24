@@ -180,6 +180,9 @@ pub enum Expr {
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
 
+    // Switch
+    Switch(Box<Expr>, Vec<(Expr, Expr)>),
+
     // Conversions
     // Extract specified bits
     BVExtract(usize, usize, Box<Expr>),
