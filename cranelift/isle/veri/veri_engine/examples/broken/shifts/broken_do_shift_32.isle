@@ -56,15 +56,15 @@
 
 ;; BROKEN: no restriction on op in annotation
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (= (ret) (conv_to (t) (if (= (op) (0i64:bv)) {
-;;@                     (shl (a) (zero_ext (widthof (a)) (b)))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (shr (a) (zero_ext (widthof (a)) (b)))
-;;@                      } else { 
-;;@                          (ashr (a) (zero_ext (widthof (a)) (b)))
-;;@                      })
-;;@                  }))),
+;;@   (assertions 
+;;@     (= (ret) 
+;;@        (conv_to 
+;;@          (t) 
+;;@          (switch (op) 
+;;@                  ((0i64:bv) (shl (a) (zero_ext (widthof (a)) (b))))
+;;@                  ((1i64:bv) (shr (a) (zero_ext (widthof (a)) (b))))
+;;@                  ((2i64:bv) (ashr (a) (zero_ext (widthof (a)) (b))))
+;;@                  ))),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
 ;;@                  (|| (= (t) (16i8: isleType))
@@ -75,19 +75,12 @@
 
 ;; BROKEN: no restriction on op in annotation
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (if (= (op) (0i64:bv)) {
-;;@                     (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) (b)))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) (b)))
-;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) (b)))
-;;@                          } else { 
-;;@                              (= (ret) (0i64:bv))
-;;@                          })
-;;@                      })
-;;@                  }),
+;;@     (assertions 
+;;@       (switch (op)
+;;@               ((0i64:bv) (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) (b))))
+;;@               ((1i64:bv) (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) (b))))
+;;@               ((2i64:bv) (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) (b))))
+;;@       ),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
 ;;@                  (|| (= (t) (16i8: isleType))

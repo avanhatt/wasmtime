@@ -55,21 +55,13 @@
     (SbcS)
 ))
 
-;; BROKEN: wrapped 0 and 1
+;; BROKEN: swapped 0 and 1
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (= (ret) (if (= (op) (1i64:bv)) {
-;;@                     (& (a) (b))
-;;@                  } else { 
-;;@                      (if (= (op) (0i64:bv)) {
-;;@                          (| (a) (b))
-;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (xor (a) (b))
-;;@                          } else { 
-;;@                              (a)
-;;@                          })
-;;@                      })
-;;@                  }))
+;;@     (assertions (= (ret) (switch (op) 
+;;@                     ((1i64:bv) (& (a) (b)))
+;;@                     ((0i64:bv) (| (a) (b)))
+;;@                     ((2i64:bv) (xor (a) (b)))
+;;@                  ))
 ;;@     ))
 (decl alu_rs_imm_logic_commutative (ALUOp Type Value Value) Reg)
 (extern constructor alu_rs_imm_logic_commutative alu_rs_imm_logic_commutative)

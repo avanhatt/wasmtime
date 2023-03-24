@@ -15,11 +15,10 @@
 ))
 
 ;;@ (spec (sig (args a, b, c, d) (ret))
-;;@     (assertions (if (b) {
+;;@     (assertions (if (b) 
 ;;@                     (= (ret) (sign_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
-;;@                  } else { 
-;;@                      (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
-;;@                  })
+;;@                     (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
+;;@                 )
 ;;@     ))
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)

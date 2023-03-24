@@ -38,14 +38,12 @@
 ;; on the input type.
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@       (assertions (= (x) (ret)),
-;;@                   (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))),
-;;@       (if (= (ty) (32i0:isleType)) {
-;;@            (! (&& (= (0i32:bv) (extract 31 0 (y)))
-;;@                   (= (2147483648i32:bv) (extract 31 0 (y)))))          
-;;@        } else {
-;;@            (! (&& (= (0i64:bv) (y))
-;;@                   (= (9223372036854775808i64:bv) (y))))
-;;@        })
+;;@       (if (= (ty) (32i0:isleType)) 
+;;@           (! (&& (= (0i32:bv) (extract 31 0 (y)))
+;;@                  (= (2147483648i32:bv) (extract 31 0 (y)))))          
+;;@           (! (&& (= (0i64:bv) (y))
+;;@                  (= (9223372036854775808i64:bv) (y))))
+;;@       )
 ;;@ ))
 (decl trap_if_div_overflow (Type Reg Reg) Reg)
 (extern constructor trap_if_div_overflow trap_if_div_overflow)

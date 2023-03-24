@@ -128,7 +128,7 @@ pub Expr: Box<Expr> = {
     "(" "conv_to" <n:Expr> <v:Expr> ")" => 
         Box::new(Expr::BVConvToVarWidth(n, v, 0)),
 
-    "(" "if" <c:Expr> "{" <e1:Expr> "}" "else" "{" <e2:Expr> "}" ")" =>
+    "(" "if" <c:Expr> <e1:Expr> <e2:Expr> ")" =>
         Box::new(Expr::Conditional(c, e1, e2, 0)),
 
     "(" "switch" <c:Expr> <l:Pair+> ")" => Box::new(Expr::Switch(c, l, 0)),
