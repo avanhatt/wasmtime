@@ -716,9 +716,18 @@ fn test_broken_sdiv_safe_const() {
             "sdiv".to_string(),
             vec![
                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (Bitwidth::I16, VerificationResult::Failure(Counterexample {})),
-                (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
-                (Bitwidth::I64, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
             ],
         )
     });
@@ -732,8 +741,14 @@ fn test_broken_sdiv() {
             "sdiv".to_string(),
             vec![
                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (Bitwidth::I16, VerificationResult::Failure(Counterexample {})),
-                (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
@@ -1908,7 +1923,10 @@ fn test_broken_sshr_to_do_shift_fits_in_32() {
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
             ),
-            (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )
@@ -1949,7 +1967,10 @@ fn test_broken_ushr_to_do_shift_fits_in_32() {
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
             ),
-            (Bitwidth::I32, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )

@@ -677,16 +677,11 @@ impl SolverCtx {
                             let y_static_width = self.static_width(&y).unwrap_or(8);
                             let y_rec = self.vir_expr_to_sexp(*y);
                             let extract = self.smt.extract(
-                                y_static_width
-                                    .checked_sub(1)
-                                    .unwrap()
-                                    .try_into()
-                                    .unwrap(),
+                                y_static_width.checked_sub(1).unwrap().try_into().unwrap(),
                                 0,
                                 y_rec,
                             );
-                            let ys =
-                                self.zero_extend(self.bitwidth - y_static_width, extract);
+                            let ys = self.zero_extend(self.bitwidth - y_static_width, extract);
                             let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
                             let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
                             let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
@@ -716,16 +711,11 @@ impl SolverCtx {
                             let y_static_width = self.static_width(&y).unwrap_or(8);
                             let ys = self.vir_expr_to_sexp(*y);
                             let extract = self.smt.extract(
-                                y_static_width
-                                    .checked_sub(1)
-                                    .unwrap()
-                                    .try_into()
-                                    .unwrap(),
+                                y_static_width.checked_sub(1).unwrap().try_into().unwrap(),
                                 0,
                                 ys,
                             );
-                            let ysext =
-                                self.zero_extend(self.bitwidth - y_static_width, extract);
+                            let ysext = self.zero_extend(self.bitwidth - y_static_width, extract);
 
                             let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
                             let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
@@ -756,6 +746,14 @@ impl SolverCtx {
                         (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => "bvult",
                         _ => unreachable!(),
                     },
+                    BinaryOp::BVSgt => "bvsgt",
+                    BinaryOp::BVSgte => "bvsge",
+                    BinaryOp::BVSlt => "bvslt",
+                    BinaryOp::BVSlte => "bvsle",
+                    BinaryOp::BVUgt => "bvugt",
+                    BinaryOp::BVUgte => "bvuge",
+                    BinaryOp::BVUlt => "bvult",
+                    BinaryOp::BVUlte => "bvule",
                     BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVSDiv => "bvsdiv",

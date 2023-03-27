@@ -50,6 +50,32 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
     widths.insert("rotl", bv_binary_8_to_64.clone());
     widths.insert("rotr", bv_binary_8_to_64.clone());
 
+    widths.insert(
+        "icmp",
+        vec![
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(8)),
+            ],
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(16)),
+                Type::BitVector(Some(16)),
+            ],
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(32)),
+                Type::BitVector(Some(32)),
+            ],
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(64)),
+                Type::BitVector(Some(64)),
+            ],
+        ],
+    );
+
     // Intermediate terms
     // (decl small_rotr (Type Reg Reg) Reg)
     widths.insert(

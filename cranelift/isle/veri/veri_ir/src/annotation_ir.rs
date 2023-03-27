@@ -169,6 +169,15 @@ pub enum Expr {
     Lte(Box<Expr>, Box<Expr>, u32),
     Lt(Box<Expr>, Box<Expr>, u32),
 
+    BVSgt(Box<Expr>, Box<Expr>, u32),
+    BVSgte(Box<Expr>, Box<Expr>, u32),
+    BVSlt(Box<Expr>, Box<Expr>, u32),
+    BVSlte(Box<Expr>, Box<Expr>, u32),
+    BVUgt(Box<Expr>, Box<Expr>, u32),
+    BVUgte(Box<Expr>, Box<Expr>, u32),
+    BVUlt(Box<Expr>, Box<Expr>, u32),
+    BVUlte(Box<Expr>, Box<Expr>, u32),
+
     // Bitvector operations
     //      Note: these follow the naming conventions of the SMT theory of bitvectors:
     //      https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -264,6 +273,14 @@ impl Expr {
             | Expr::Imp(_, _, t)
             | Expr::Eq(_, _, t)
             | Expr::Lte(_, _, t)
+            | Expr::BVSgt(_, _, t)
+            | Expr::BVSgte(_, _, t)
+            | Expr::BVSlt(_, _, t)
+            | Expr::BVSlte(_, _, t)
+            | Expr::BVUgt(_, _, t)
+            | Expr::BVUgte(_, _, t)
+            | Expr::BVUlt(_, _, t)
+            | Expr::BVUlte(_, _, t)
             | Expr::BVMul(_, _, t)
             | Expr::BVUDiv(_, _, t)
             | Expr::BVSDiv(_, _, t)

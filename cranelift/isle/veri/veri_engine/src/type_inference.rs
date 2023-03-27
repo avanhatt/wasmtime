@@ -494,6 +494,150 @@ fn add_annotation_constraints(
             )
         }
 
+        annotation_ir::Expr::BVSgt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSgt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSgte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSgte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSlt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSlt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSlte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSlte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUgt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUgt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUgte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUgte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUlt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUlt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUlte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(8),
+            ));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUlte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
         annotation_ir::Expr::BVNeg(x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
 
@@ -1984,6 +2128,7 @@ fn create_parse_tree_expr(
             tree.next_type_var += 1;
             let name = typeenv.syms[sym.index()].clone();
             let val = match name.as_str() {
+                "I8" => 8,
                 "I64" => 64,
                 "I32" => 32,
                 "false" => 0,

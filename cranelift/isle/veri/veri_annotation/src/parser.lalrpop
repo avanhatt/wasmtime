@@ -93,6 +93,15 @@ pub Expr: Box<Expr> = {
     "(" "<=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lte(u, v, 0)),
     "(" "<" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lt(u, v, 0)),
 
+    "(" "sgt" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSgt(u, v, 0)),
+    "(" "sgte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSgte(u, v, 0)),
+    "(" "slt" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSlt(u, v, 0)),
+    "(" "slte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSlte(u, v, 0)),
+    "(" "ugt" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUgt(u, v, 0)),
+    "(" "ugte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUgte(u, v, 0)),
+    "(" "ult" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUlt(u, v, 0)),
+    "(" "ulte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUlte(u, v, 0)),
+
     "(" "-" <u:Expr> ")" => Box::new(Expr::BVNeg(u, 0)),
     "(" "~" <u:Expr> ")" => Box::new(Expr::BVNot(u, 0)),
     "(" "clz" <u:Expr> ")" => Box::new(Expr::CLZ(u, 0)),

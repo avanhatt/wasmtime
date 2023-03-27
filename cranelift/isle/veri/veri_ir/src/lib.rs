@@ -142,6 +142,15 @@ pub enum BinaryOp {
     Lt,
 
     // Bitvector operations
+    BVSgt,
+    BVSgte,
+    BVSlt,
+    BVSlte,
+    BVUgt,
+    BVUgte,
+    BVUlt,
+    BVUlte,
+
     BVMul,
     BVUDiv,
     BVSDiv,
