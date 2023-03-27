@@ -54,7 +54,6 @@
 ;;@     )
 ;;@ )
 (decl a64_clz (Type Reg) Reg)
-(decl a64_clz (Type Reg) Reg)
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 
 (decl extend (Reg bool u8 u8) Reg)

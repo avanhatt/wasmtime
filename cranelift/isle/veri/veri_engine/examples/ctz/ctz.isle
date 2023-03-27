@@ -28,15 +28,13 @@
 ;;@     )
 ;;@ )
 (decl a64_clz (Type Reg) Reg)
-(decl a64_clz (Type Reg) Reg)
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (a64rev (32i0:isleType) (a)) }
-;;@                        else
-;;@                        { (a64rev (64i0:isleType) (a)) }
+;;@                        (a64rev (32i0:isleType) (a))
+;;@                        (a64rev (64i0:isleType) (a))
 ;;@                    )
 ;;@                 ),
 ;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))

@@ -87,25 +87,17 @@
 (extern extractor do_shift do_shift)
 
 ;; types get bucketed for <= 32, <= 64
-;; (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)})
+;; (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType))
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (if (= (op) (0i64:bv)) {
-;;@                     (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
+;;@     (assertions (= (ret) (switch (op)
+;;@                    ((0i64:bv) (shl (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) 
 ;;@                                   (zero_ext (regwidth) (b))))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
+;;@                    ((1i64:bv) (shr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) 
 ;;@                                   (zero_ext (regwidth) (b))))
-;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
+;;@                    ((2i64:bv) (ashr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) 
 ;;@                                   (zero_ext  (regwidth) (b))))
-;;@                          } else { 
-;;@                              (= (ret) (0i64:bv))
-;;@                          })
-;;@                      })
-;;@                  }),
+;;@                  )),
 ;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
