@@ -1,0 +1,4 @@
+(rule 1 (lower_icmp cond rn rm (fits_in_16 ty))
+      (if (signed_cond_code cond))
+      (let ((rn Reg (put_in_reg_sext32 rn)))
+      (flags_and_cc (cmp_extend (operand_size ty) rn rm (lower_extend_op ty $true)) cond)))

@@ -1,0 +1,3 @@
+(rule -4 (lower_icmp cond rn rm ty)
+      (if (ty_int_ref_scalar_64 ty))
+      (flags_and_cc (cmp (operand_size ty) rn rm) cond))

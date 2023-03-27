@@ -1,0 +1,12 @@
+;; We get better encodings when testing against an immediate that's even instead
+;; of odd, so rewrite comparisons to use even immediates:
+;;
+;;         A >= B + 1
+;;     ==> A - 1 >= B
+;;     ==> A > B
+(rule (lower_icmp_const (IntCC.SignedGreaterThanOrEqual) a b ty)
+      (if (ty_int_ref_scalar_64 ty))
+      (if-let $true (u64_is_odd b))
+      (if-let (imm12_from_u64 imm) (u64_sub b 1))
+  (flags_and_cc (cmp_imm (operand_size ty) a imm) (IntCC.SignedGreaterThan)))
+  

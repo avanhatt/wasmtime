@@ -1,0 +1,9 @@
+
+
+
+
+;; Integers <= 64-bits.
+(rule -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
+      (if (ty_int_ref_scalar_64 in_ty))
+      (let ((cc Cond (cond_code cond)))
+        (flags_and_cc_to_bool (lower_icmp cond rn rm in_ty))))

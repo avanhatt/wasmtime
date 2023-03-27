@@ -1,0 +1,6 @@
+
+
+
+
+(rule -1 (lower (icmp cond x @ (value_type in_ty) y))
+      (lower_icmp_into_reg cond x y in_ty $I8))

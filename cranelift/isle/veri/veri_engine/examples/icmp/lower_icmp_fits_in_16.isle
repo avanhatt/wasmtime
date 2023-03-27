@@ -1,0 +1,3 @@
+(rule -2 (lower_icmp cond rn rm (fits_in_16 ty))
+      (let ((rn Reg (put_in_reg_zext32 rn)))
+      (flags_and_cc (cmp_extend (operand_size ty) rn rm (lower_extend_op ty $false)) cond)))
