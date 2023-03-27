@@ -7,7 +7,7 @@
   (enum)
 )
 
-;;@ (spec (sig (args c, x, y, xt, yt) (ret))
+;;@ (spec (sig (args c, x, y, in_ty, out_ty) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
 ;;@        (switch (c)
@@ -22,14 +22,13 @@
 ;;@          ((8i8:bv8) (if (ult (x) (y)) (0i8:bv8) (1i8:bv8)))
 ;;@          ((9i8:bv8) (if (ulte (x) (y)) (0i8:bv8) (1i8:bv8)))
 ;;@        )),
-;;@        (|| (= (xt) (8i8: isleType))
-;;@        (|| (= (xt) (16i8: isleType))
-;;@        (|| (= (xt) (32i8: isleType))
-;;@        (= (xt) (64i8: isleType))))),
-;;@        (|| (= (yt) (8i8: isleType))
-;;@        (|| (= (yt) (16i8: isleType))
-;;@        (|| (= (yt) (32i8: isleType))
-;;@        (= (yt) (64i8: isleType)))))
+;;@        (|| (= (in_ty) (8i8: isleType))
+;;@        (|| (= (in_ty) (16i8: isleType))
+;;@        (|| (= (in_ty) (32i8: isleType))
+;;@        (= (in_ty) (64i8: isleType))))),
+;;@        (= (in_ty) (widthof (x))),
+;;@        (= (in_ty) (widthof (y))),
+;;@        (= (out_ty) (8i8: isleType)),
 ;;@ ))
 (decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
 (extern constructor lower_icmp_into_reg lower_icmp_into_reg)

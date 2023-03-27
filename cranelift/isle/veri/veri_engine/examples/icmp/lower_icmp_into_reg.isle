@@ -1,5 +1,29 @@
-
-
+;;@ (spec (sig (args c, x, y, xt, yt) (ret))
+;;@   (assertions 
+;;@     (= (ret) 
+;;@        (switch (c)
+;;@          ((0i8:bv8) (if (= (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((1i8:bv8) (if (! (= (x) (y))) (0i8:bv8) (1i8:bv8)))
+;;@          ((2i8:bv8) (if (sgt (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((3i8:bv8) (if (sgte (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((4i8:bv8) (if (slt (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((5i8:bv8) (if (slte (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((6i8:bv8) (if (ugt (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((7i8:bv8) (if (ugte (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((8i8:bv8) (if (ult (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((9i8:bv8) (if (ulte (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@        )),
+;;@        (|| (= (xt) (8i8: isleType))
+;;@        (|| (= (xt) (16i8: isleType))
+;;@        (|| (= (xt) (32i8: isleType))
+;;@        (= (xt) (64i8: isleType))))),
+;;@        (|| (= (yt) (8i8: isleType))
+;;@        (|| (= (yt) (16i8: isleType))
+;;@        (|| (= (yt) (32i8: isleType))
+;;@        (= (yt) (64i8: isleType)))))
+;;@ ))
+(decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
+(extern extractor lower_icmp_into_reg lower_icmp_into_reg)
 
 
 ;; Integers <= 64-bits.
