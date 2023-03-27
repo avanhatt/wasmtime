@@ -61,13 +61,11 @@
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
-;;@        (conv_to 
-;;@          (t) 
 ;;@          (switch (op) 
-;;@                  ((0i64:bv) (shl (a) (zero_ext (widthof (a)) (b))))
-;;@                  ((1i64:bv) (shr (a) (zero_ext (widthof (a)) (b))))
-;;@                  ((2i64:bv) (ashr (a) (zero_ext (widthof (a)) (b))))
-;;@                  ))),
+;;@                  ((0i64:bv) (shl (conv_to (t) (a)) (conv_to (t) (b))))
+;;@                  ((1i64:bv) (shr (conv_to (t) (a)) (conv_to (t) (b))))
+;;@                  ((2i64:bv) (ashr (conv_to (t) (a)) (conv_to (t) (b))))
+;;@                  )),
 ;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
@@ -89,12 +87,7 @@
 (decl put_in_reg_zext32 (Value) Reg)
 (extern constructor put_in_reg_zext32 put_in_reg_zext32)
 
-;;@ (spec (sig (args x) (ret))
-;;@       (assertions (= (sign_ext (32) (x)) (ret))))
-(decl put_in_reg_sext32 (Value) Reg)
-(extern constructor put_in_reg_sext32 put_in_reg_sext32)
-
-;; BROKEN: sext32 instead of zext32
+;; BROKEN: wrong op
 ;; Shift for i8/i16/i32.
 (rule -1 (lower (has_type (fits_in_32 ty) (ushr x y)))
-      (do_shift (ALUOp.Lsr) ty (put_in_reg_sext32 x) y))
+      (do_shift (ALUOp.Lsl) ty (put_in_reg_zext32 x) y))

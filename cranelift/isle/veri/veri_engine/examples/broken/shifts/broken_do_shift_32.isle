@@ -58,13 +58,11 @@
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
-;;@        (conv_to 
-;;@          (t) 
 ;;@          (switch (op) 
-;;@                  ((0i64:bv) (shl (a) (zero_ext (widthof (a)) (b))))
-;;@                  ((1i64:bv) (shr (a) (zero_ext (widthof (a)) (b))))
-;;@                  ((2i64:bv) (ashr (a) (zero_ext (widthof (a)) (b))))
-;;@                  ))),
+;;@                  ((0i64:bv) (shl (conv_to (t) (a)) (b)))
+;;@                  ((1i64:bv) (shr (conv_to (t) (a)) (b)))
+;;@                  ((2i64:bv) (ashr (conv_to (t) (a)) (b)))
+;;@                  )),
 ;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
 ;;@                  (|| (= (t) (16i8: isleType))

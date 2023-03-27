@@ -62,10 +62,11 @@
             (_ Unit (emit (MInst.Extend dst rn signed from_bits to_bits))))
         dst))
 
+;; BROKEN: swapped order in comparison
 ;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (
-;;@          if (<= (32i0:isleType) (widthof (arg))) 
+;;@          if (<= (widthof (arg)) (32i0:isleType)) 
 ;;@             (= (ret) (conv_to (regwidth) (arg)))             
 ;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
 ;;@          )
