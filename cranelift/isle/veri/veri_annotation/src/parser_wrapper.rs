@@ -7,13 +7,15 @@ use veri_ir::annotation_ir::TermAnnotation;
 fn get_term(isle: &str) -> &str {
     assert!(isle.contains("decl"));
     let tokens: Vec<&str> = isle.split(' ').collect();
-    let first_token = tokens[1];
+    let mut term_idx = 1;
     // Stopgap for now
-    if first_token != "pure" {
-        first_token
-    } else {
-        tokens[2]
+    if tokens[term_idx] == "pure" {
+        term_idx += 1;
     }
+    if tokens[term_idx] == "partial" {
+        term_idx += 1;
+    }
+    tokens[term_idx]
 }
 
 #[derive(Clone, Debug)]

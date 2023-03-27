@@ -76,6 +76,40 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<Vec<Type>>> {
         ],
     );
 
+    widths.insert(
+        "lower_icmp_into_reg",
+        vec![
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(8)),
+                Type::Int,
+                Type::Int,
+            ],
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(16)),
+                Type::BitVector(Some(16)),
+                Type::Int,
+                Type::Int,
+            ],
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(32)),
+                Type::BitVector(Some(32)),
+                Type::Int,
+                Type::Int,
+            ],
+            vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(64)),
+                Type::BitVector(Some(64)),
+                Type::Int,
+                Type::Int,
+            ],
+        ],
+    );
+
     // Intermediate terms
     // (decl small_rotr (Type Reg Reg) Reg)
     widths.insert(

@@ -2,10 +2,14 @@
 ;;@     (assertions (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
-
 (type MInst
   (enum)
 )
+
+;; A pure constructor that only matches scalar integers, and references that can
+;; fit in 64 bits.
+(decl pure partial ty_int_ref_scalar_64 (Type) Type)
+(extern constructor ty_int_ref_scalar_64 ty_int_ref_scalar_64)
 
 ;;@ (spec (sig (args c, x, y, in_ty, out_ty) (ret))
 ;;@   (assertions 
@@ -26,6 +30,7 @@
 ;;@        (|| (= (in_ty) (16i8: isleType))
 ;;@        (|| (= (in_ty) (32i8: isleType))
 ;;@        (= (in_ty) (64i8: isleType))))),
+;;@
 ;;@        (= (in_ty) (widthof (x))),
 ;;@        (= (in_ty) (widthof (y))),
 ;;@        (= (out_ty) (8i8: isleType)),

@@ -264,6 +264,8 @@
 
 ;; A pure constructor that only matches scalar integers, and references that can
 ;; fit in 64 bits.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
 (decl pure partial ty_int_ref_scalar_64 (Type) Type)
 (extern constructor ty_int_ref_scalar_64 ty_int_ref_scalar_64)
 
