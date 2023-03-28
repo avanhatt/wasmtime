@@ -67,7 +67,7 @@
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
-;;@        (& (shl (8i12:bv12) (zero_ext (12i8: isleType) (extract 67 64 (subs (in_ty) (x) (y)))))
+;;@        (& (shl (8i12:bv12) (zero_ext (12i8: isleType) (extract 67 64 (subs (64i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y))))))
 ;;@           (zero_ext (12i8: isleType) (c)))
 ;;@     ),
 ;;@

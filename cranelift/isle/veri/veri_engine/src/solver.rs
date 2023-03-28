@@ -1152,6 +1152,7 @@ impl SolverCtx {
             // };
             // self.smt.pop().unwrap();
         }
+        print!("done");
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
                 if !config.distinct_check {
@@ -1216,7 +1217,7 @@ impl SolverCtx {
         let val_str = self.smt.display(value).to_string();
         if val_str.starts_with(sexpr_hex_prefix) {
             let without_prefix = val_str.trim_start_matches("#x");
-            let as_unsigned = u64::from_str_radix(without_prefix, 16).unwrap();
+            let as_unsigned = u128::from_str_radix(without_prefix, 16).unwrap();
             format!("{}|{:#b}", self.smt.display(value), as_unsigned)
         } else {
             val_str
