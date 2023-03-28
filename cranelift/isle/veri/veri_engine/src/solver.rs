@@ -938,7 +938,6 @@ impl SolverCtx {
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if self.get_type(&x).is_some() {
-                    assert!(i < self.bitwidth);
                     let xs = self.vir_expr_to_sexp(*x);
                     // No-op if we are extracting exactly the full bitwidth
                     if j == 0 && i == self.bitwidth - 1 && self.dynwidths {
