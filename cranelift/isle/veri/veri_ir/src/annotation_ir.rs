@@ -191,6 +191,7 @@ pub enum Expr {
     Rev(Box<Expr>, u32),
     A64Rev(Box<Expr>, Box<Expr>, u32),
 
+
     // Binary operators
     BVMul(Box<Expr>, Box<Expr>, u32),
     BVUDiv(Box<Expr>, Box<Expr>, u32),
@@ -207,6 +208,9 @@ pub enum Expr {
     BVShl(Box<Expr>, Box<Expr>, u32),
     BVShr(Box<Expr>, Box<Expr>, u32),
     BVAShr(Box<Expr>, Box<Expr>, u32),
+
+    // Includes type
+    BVSubs(Box<Expr>, Box<Expr>, Box<Expr>, u32),
 
     // Conversions
     // Zero extend, static and dynamic width
@@ -306,6 +310,7 @@ impl Expr {
             | Expr::BVConvTo(_, _, t)
             | Expr::BVConvToVarWidth(_, _, t)
             | Expr::BVExtract(_, _, _, t)
+            | Expr::BVSubs(_, _, _, t)
             | Expr::Conditional(_, _, _, t)
             | Expr::Switch(_, _, t)  => *t,
         }

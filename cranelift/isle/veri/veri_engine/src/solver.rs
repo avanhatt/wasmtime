@@ -20,6 +20,7 @@ mod encoded_ops;
 use encoded_ops::cls;
 use encoded_ops::clz;
 use encoded_ops::rev;
+use encoded_ops::subs;
 
 use crate::REG_WIDTH;
 
@@ -108,6 +109,19 @@ impl SolverCtx {
             self.smt.list(vec![
                 self.smt.atoms().und,
                 self.smt.atom("zero_extend"),
+                self.smt.numeral(padding),
+            ]),
+            value,
+        ])
+    }
+
+    /// Sign-extend an SMT bit vector to a wider bit vector by adding `padding` zeroes to the
+    /// front.
+    fn sign_extend(&self, padding: usize, value: SExpr) -> SExpr {
+        self.smt.list(vec![
+            self.smt.list(vec![
+                self.smt.atoms().und,
+                self.smt.atom("sign_extend"),
                 self.smt.numeral(padding),
             ]),
             value,
@@ -1093,6 +1107,21 @@ impl SolverCtx {
                         es
                     }
                 }
+            }
+            Expr::BVSubs(ty, x, y) => {
+                let tyvar = *tyvar.unwrap();
+                let ety = self.vir_expr_to_sexp(*ty);
+                let ex = self.vir_expr_to_sexp(*x);
+                let ey = self.vir_expr_to_sexp(*y);
+
+                let encoded_32 = subs::subs(self, 32, ex, ey, tyvar);
+                let encoded_64 = subs::subs(self, 64, ex, ey, tyvar);
+
+                self.smt.ite(
+                    self.smt.eq(ety, self.smt.numeral(32)),
+                    encoded_32,
+                    encoded_64,
+                )
             }
         }
     }

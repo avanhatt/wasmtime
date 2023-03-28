@@ -12,6 +12,8 @@ pub mod widths;
 
 pub const REG_WIDTH: usize = 64;
 
+pub const FLAGS_WIDTH: usize = 4;
+
 pub struct Config {
     pub term: String,
     pub dyn_width: bool,

@@ -10,7 +10,7 @@ use itertools::izip;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{annotation_ir, ConcreteTest, Expr, Type, TypeContext};
 
-use crate::REG_WIDTH;
+use crate::{FLAGS_WIDTH, REG_WIDTH};
 
 #[derive(Clone, Debug)]
 struct RuleParseTree<'a> {
@@ -1281,6 +1281,31 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (veri_ir::Expr::A64Rev(Box::new(e0), Box::new(e1)), t)
         }
+        annotation_ir::Expr::BVSubs(ty, x, y, _) => {
+            let (e0, t0) = add_annotation_constraints(*ty, tree, annotation_info);
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(FLAGS_WIDTH + 4),
+            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t0, annotation_ir::Type::Int));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::BVSubs(Box::new(e0), Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
@@ -1323,7 +1348,7 @@ fn add_isle_constraints(
             "MoveWideConst".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(16),
         ),
-        ("OperandSize".to_owned(), annotation_ir::Type::BitVector),
+        ("OperandSize".to_owned(), annotation_ir::Type::Int),
         ("Reg".to_owned(), annotation_ir::Type::BitVector),
         ("Inst".to_owned(), annotation_ir::Type::BitVector),
         ("Value".to_owned(), annotation_ir::Type::BitVector),
@@ -1741,14 +1766,23 @@ fn solve_constraints(
                             // been typed (with a width), ignore the constraint
                             if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
                                 match var_type {
-                                annotation_ir::Type::BitVectorWithWidth(_) => {
-                                    continue;
+                                    annotation_ir::Type::BitVectorWithWidth(_) => {
+                                        continue;
+                                    }
+                                    annotation_ir::Type::BitVectorUnknown(_) => {
+                                        continue;
+                                    }
+                                    _ => {
+                                        let e = ty_vars
+                                            .unwrap()
+                                            .iter()
+                                            .find_map(
+                                                |(k, &u)| if u == *v { Some(k) } else { None },
+                                            )
+                                            .unwrap();
+                                        panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}\n{:?}", var_type, b, e)
+                                    }
                                 }
-                                annotation_ir::Type::BitVectorUnknown(_) => {
-                                    continue;
-                                }
-                                _ => panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}", var_type, b),
-                            }
 
                             // otherwise add it to a generic bv bucket
                             } else {

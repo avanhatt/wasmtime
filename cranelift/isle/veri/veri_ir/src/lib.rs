@@ -186,6 +186,8 @@ pub enum Expr {
     Rev(Box<Expr>),
     A64Rev(Box<Expr>, Box<Expr>),
 
+    BVSubs(Box<Expr>, Box<Expr>, Box<Expr>),
+
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
 

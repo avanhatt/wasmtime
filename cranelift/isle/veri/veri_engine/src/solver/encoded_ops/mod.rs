@@ -1,6 +1,7 @@
 pub mod cls;
 pub mod clz;
 pub mod rev;
+pub mod subs;
 
 #[cfg(test)]
 mod tests {
