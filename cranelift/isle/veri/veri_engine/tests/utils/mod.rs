@@ -143,6 +143,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
         distinct_check: true,
     };
 
+    // AVH TODO: tests should probably specify more types
     for type_instantiation in types {
         let ty = type_instantiation.first().unwrap();
         let expected = tr.iter().find(|(bw, _)| match *bw {
@@ -170,6 +171,8 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
                 &config,
             );
             assert_eq!(result, *expected_result);
+        } else {
+            println!("WARNING: Test skips type {:?}", expected);
         }
     }
 }

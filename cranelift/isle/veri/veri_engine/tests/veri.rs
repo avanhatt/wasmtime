@@ -2002,6 +2002,22 @@ fn test_if_let() {
 }
 
 #[test]
+fn test_lower_icmp_into_reg() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_into_reg.isle",
+            "lower_icmp_into_reg".to_string(),
+            vec![
+                // (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
 fn test_lower_icmp_into_reg_concrete_eq1() {
     run_and_retry(|| {
         test_concrete_input_from_file_with_lhs_termname(

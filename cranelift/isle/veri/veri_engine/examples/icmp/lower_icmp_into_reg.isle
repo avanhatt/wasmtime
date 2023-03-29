@@ -72,7 +72,7 @@
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
-;;@        (& (shl (8i12:bv12) (zero_ext (12i8: isleType) (extract 67 64 (subs (64i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y))))))
+;;@        (| (shl (zero_ext (12i8: isleType) (extract 67 64 (subs (64i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y))))) (8i12:bv12))
 ;;@           (zero_ext (12i8: isleType) (c)))
 ;;@     ),
 ;;@
@@ -87,9 +87,6 @@
 (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
 (extern constructor lower_icmp lower_icmp)
 
-
-;; flags_32_121
-;; #xb|0b1011
 ;; Code      Meaning (for cmp or subs)              Flags Tested
 ;; eq        Equal.                                  Z==1
 ;; ne        Not equal.                              Z==0

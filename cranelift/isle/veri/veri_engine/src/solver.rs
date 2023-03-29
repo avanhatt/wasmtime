@@ -1227,8 +1227,7 @@ impl SolverCtx {
                 16 => format!("{}|{:#068b}", self.smt.display(value), as_unsigned),
                 17 => format!("{}|{:#070b}", self.smt.display(value), as_unsigned),
                 32 => format!("{}|{:#0130b}", self.smt.display(value), as_unsigned),
-                x => {
-                    dbg!(x);
+                x_ => {
                     format!("{}|{:#b}", self.smt.display(value), as_unsigned)
                 }
             }

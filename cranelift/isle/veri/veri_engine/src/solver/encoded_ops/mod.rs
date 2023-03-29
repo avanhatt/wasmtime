@@ -125,8 +125,11 @@ mod tests {
 
             // Get the value for what output is to panic with a useful message
             let val = ctx.smt.get_value(vec![output_care_bits]).unwrap()[0].1;
-            panic!("Multiple possible outputs! Expected only {}, got {}", output, ctx.display_hex_to_bin(val));
-
+            panic!(
+                "Multiple possible outputs! Expected only {}, got {}",
+                output,
+                ctx.display_hex_to_bin(val)
+            );
         }
         ctx.smt.pop().unwrap();
     }
