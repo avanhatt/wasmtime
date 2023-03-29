@@ -1707,6 +1707,7 @@ pub fn run_solver(
             assert!(matches!(ctx.smt.check(), Ok(Response::Sat)));
             // Get the value for what output is to panic with a useful message
             let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+            ctx.display_model(termenv, typeenv, rule, lhs, rhs);
             panic!(
                 "Expected {}, got {}",
                 concrete.output,

@@ -6,11 +6,6 @@
   (enum)
 )
 
-;; A pure constructor that only matches scalar integers, and references that can
-;; fit in 64 bits.
-(decl pure partial ty_int_ref_scalar_64 (Type) Type)
-(extern constructor ty_int_ref_scalar_64 ty_int_ref_scalar_64)
-
 ;;@ (spec (sig (args c, x, y, in_ty, out_ty) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
@@ -34,6 +29,8 @@
 ;;@        (= (in_ty) (widthof (x))),
 ;;@        (= (in_ty) (widthof (y))),
 ;;@        (= (out_ty) (8i8: isleType)),
+;;@
+;;@        (= (c) (0i8:bv8)),
 ;;@ ))
 (decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
 (extern constructor lower_icmp_into_reg lower_icmp_into_reg)

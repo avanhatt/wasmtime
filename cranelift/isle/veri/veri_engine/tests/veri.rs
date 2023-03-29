@@ -2000,3 +2000,77 @@ fn test_if_let() {
         all_success_result(),
     );
 }
+
+#[test]
+fn test_lower_icmp_into_reg_concrete_eq1() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_into_reg.isle",
+            "lower_icmp_into_reg".to_string(),
+            false,
+            ConcreteTest {
+                termname: "lower_icmp_into_reg".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                ],
+                output: "#b00000000".to_string(),
+            },
+        )
+    });
+}
+
+#[test]
+fn test_lower_icmp_into_reg_concrete_eq2() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_into_reg.isle",
+            "lower_icmp_into_reg".to_string(),
+            false,
+            ConcreteTest {
+                termname: "lower_icmp_into_reg".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                ],
+                output: "#b00000001".to_string(),
+            },
+        )
+    });
+}

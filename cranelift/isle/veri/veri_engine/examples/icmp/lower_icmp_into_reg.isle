@@ -37,16 +37,16 @@
 ;;@   (assertions 
 ;;@     (= (ret) 
 ;;@        (switch (c)
-;;@          ((0i8:bv8) (if (= (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((1i8:bv8) (if (! (= (x) (y))) (0i8:bv8) (1i8:bv8)))
-;;@          ((2i8:bv8) (if (sgt (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((3i8:bv8) (if (sgte (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((4i8:bv8) (if (slt (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((5i8:bv8) (if (slte (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((6i8:bv8) (if (ugt (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((7i8:bv8) (if (ugte (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((8i8:bv8) (if (ult (x) (y)) (0i8:bv8) (1i8:bv8)))
-;;@          ((9i8:bv8) (if (ulte (x) (y)) (0i8:bv8) (1i8:bv8)))
+;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((1i8:bv8) (if (! (= (x) (y))) (1i8:bv8) (0i8:bv8)))
+;;@          ((2i8:bv8) (if (sgt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((3i8:bv8) (if (sgte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((4i8:bv8) (if (slt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((5i8:bv8) (if (slte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((6i8:bv8) (if (ugt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((7i8:bv8) (if (ugte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@        )),
 ;;@        (|| (= (in_ty) (8i8: isleType))
 ;;@        (|| (= (in_ty) (16i8: isleType))
@@ -59,6 +59,11 @@
 ;;@ ))
 (decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
 (extern extractor lower_icmp_into_reg lower_icmp_into_reg)
+
+;; N: Set to 1 when the result of the operation is negative
+;; Z: Set to 1 when the result of the operation is zero
+;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow
+;; V: Set to 1 when the operation causes overflow
 
 ;; Concat the 4 bits of flags to 8 bits with the CC, for 12 bits
 ;;  | 11  10  9   8 | 7 .......... 0|
@@ -82,21 +87,24 @@
 (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
 (extern constructor lower_icmp lower_icmp)
 
-;; Code  	Meaning (for cmp or subs)	Flags Tested
-;; eq       Equal.	                                Z==1
-;; ne	    Not equal.	                            Z==0
-;; cs or hs	Unsigned higher or same (or carry set).	C==1
-;; cc or lo	Unsigned lower (or carry clear).	    C==0
-;; mi	    Negative.	                            N==1
-;; pl	    Positive or zero.	                    N==0
-;; vs	    Signed overflow.                        V==1
-;; vc	    No signed overflow. 	                V==0
-;; hi	    Unsigned higher.	                    (C==1) && (Z==0)
-;; ls	    Unsigned lower or same.	                (C==0) || (Z==1)
-;; ge	    Signed greater than or equal.	        N==V
-;; lt	    Signed less than.	                    N!=V
-;; gt	    Signed greater than.	                (Z==0) && (N==V)
-;; le	    Signed less than or equal.	            (Z==1) || (N!=V)
+
+;; flags_32_121
+;; #xb|0b1011
+;; Code      Meaning (for cmp or subs)              Flags Tested
+;; eq        Equal.                                  Z==1
+;; ne        Not equal.                              Z==0
+;; cs or hs  Unsigned higher or same (or carry set). C==1
+;; cc or lo  Unsigned lower (or carry clear).        C==0
+;; mi        Negative.                               N==1
+;; pl        Positive or zero.                       N==0
+;; vs        Signed overflow.                        V==1
+;; vc        No signed overflow.                     V==0
+;; hi        Unsigned higher.                        (C==1) && (Z==0)
+;; ls        Unsigned lower or same.                 (C==0) || (Z==1)
+;; ge        Signed greater than or equal.           N==V
+;; lt        Signed less than.                       N!=V
+;; gt        Signed greater than.                    (Z==0) && (N==V)
+;; le        Signed less than or equal.              (Z==1) || (N!=V)
 
 ;;  | 11  10  9   8 | 7 .......... 0|
 ;;  [ N | Z | C | V |   ... CC ...  ]
@@ -105,25 +113,25 @@
 ;;@     (assertions 
 ;;@     (= (ret) 
 ;;@        (switch (extract 7 0 (a))
-;;@          ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (0i8:bv8) (1i8:bv8)))
-;;@          ((1i8:bv8) (if (= (extract 10 10 (a)) (0i1:bv1)) (0i8:bv8) (1i8:bv8)))
+;;@          ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+;;@          ((1i8:bv8) (if (= (extract 10 10 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((2i8:bv8) (if (&& (= (extract 10 10 (a)) (0i1:bv1))
 ;;@                             (= (extract 11 11 (a)) (extract 8 8 (a)))) 
-;;@                         (0i8:bv8) (1i8:bv8)))
+;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@          ((3i8:bv8) (if (= (extract 11 11 (a)) (extract 8 8 (a)))
-;;@                         (0i8:bv8) (1i8:bv8)))
-;;@          ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (0i8:bv8) (1i8:bv8)))
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@          ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (1i8:bv8) (0i8:bv8)))
 ;;@          ((5i8:bv8) (if (&& (= (extract 10 10 (a)) (1i1:bv1))
 ;;@                             (! (= (extract 11 11 (a)) (extract 8 8 (a)))))
-;;@                         (0i8:bv8) (1i8:bv8)))
+;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@          ((6i8:bv8) (if (&& (= (extract 9 9 (a)) (1i1:bv1))
 ;;@                             (= (extract 10 10 (a)) (0i1:bv1)))
-;;@                         (0i8:bv8) (1i8:bv8)))
-;;@          ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (0i8:bv8) (1i8:bv8)))
-;;@          ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (0i8:bv8) (1i8:bv8)))
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@          ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+;;@          ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((9i8:bv8) (if (&& (= (extract 9 9 (a)) (0i1:bv1))
 ;;@                             (= (extract 10 10 (a)) (1i1:bv1)))
-;;@                         (0i8:bv8) (1i8:bv8)))
+;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@        )),
 ;;@ ))
 (decl flags_and_cc_to_bool (FlagsAndCC) ValueRegs)
