@@ -76,12 +76,7 @@ mod tests {
         check_encoding_with_solver(ctx, output_from_call, output, width)
     }
 
-    fn check_encoding_with_solver(
-        mut ctx: SolverCtx,
-        call: SExpr,
-        output: &str,
-        width: usize,
-    ) {
+    fn check_encoding_with_solver(mut ctx: SolverCtx, call: SExpr, output: &str, width: usize) {
         // Extract the width of bits that we care about.
         let output_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, call);
 
@@ -104,8 +99,13 @@ mod tests {
             ctx.smt.pop().unwrap();
             // Try again
             assert!(matches!(ctx.smt.check(), Ok(Response::Sat)));
+
+            let model = ctx.smt.get_model().unwrap();
+            println!("{}", ctx.smt.display(model));
+
             // Get the value for what output is to panic with a useful message
             let val = ctx.smt.get_value(vec![output_care_bits]).unwrap()[0].1;
+
             panic!("Expected {}, got {}", output, ctx.display_hex_to_bin(val));
         } else {
             ctx.smt.pop().unwrap();
@@ -119,7 +119,15 @@ mod tests {
                     .not(ctx.smt.eq(output_care_bits, ctx.smt.atom(output))),
             )
             .unwrap();
-        assert!(matches!(ctx.smt.check(), Ok(Response::Unsat)));
+        if !matches!(ctx.smt.check(), Ok(Response::Unsat)) {
+            let model = ctx.smt.get_model().unwrap();
+            println!("{}", ctx.smt.display(model));
+
+            // Get the value for what output is to panic with a useful message
+            let val = ctx.smt.get_value(vec![output_care_bits]).unwrap()[0].1;
+            panic!("Multiple possible outputs! Expected only {}, got {}", output, ctx.display_hex_to_bin(val));
+
+        }
         ctx.smt.pop().unwrap();
     }
 
@@ -390,11 +398,11 @@ mod tests {
         ctx.additional_assumptions
             .push(ctx.smt.eq(x, ctx.smt.atom(x_str)));
         ctx.additional_assumptions
-            .push(ctx.smt.eq(x, ctx.smt.atom(y_str)));
+            .push(ctx.smt.eq(y, ctx.smt.atom(y_str)));
 
         // Call the encoding function to be tested
         let call = subs::subs(&mut ctx, width, x, y, 0);
-        
+
         // Output width always 68 bits
         check_encoding_with_solver(ctx, call, output, 68)
     }
@@ -405,7 +413,17 @@ mod tests {
             32,
             "#b00000000000000000000000000000000",
             "#b00000000000000000000000000000000",
-            "#b00000000000000000000000000000000000000000000000000000000000000000000",
+            "#b01100000000000000000000000000000000000000000000000000000000000000000",
+        );
+    }
+
+    #[test]
+    fn test_subs_64_with_solver() {
+        check_subs_with_solver(
+            64,
+            "#b0000000000000000000000000000000000000000000000000000000000000000",
+            "#b0000000000000000000000000000000000000000000000000000000000000000",
+            "#b01100000000000000000000000000000000000000000000000000000000000000000",
         );
     }
 }

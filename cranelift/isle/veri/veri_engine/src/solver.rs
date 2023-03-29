@@ -1218,7 +1218,20 @@ impl SolverCtx {
         if val_str.starts_with(sexpr_hex_prefix) {
             let without_prefix = val_str.trim_start_matches("#x");
             let as_unsigned = u128::from_str_radix(without_prefix, 16).unwrap();
-            format!("{}|{:#b}", self.smt.display(value), as_unsigned)
+            // SMTLIB: bvhexX where X is a hexadecimal numeral of length m defines the bitvector
+            // constant with value X and size 4*m.
+            match without_prefix.len() {
+                2 => format!("{}|{:#010b}", self.smt.display(value), as_unsigned),
+                4 => format!("{}|{:#018b}", self.smt.display(value), as_unsigned),
+                8 => format!("{}|{:#034b}", self.smt.display(value), as_unsigned),
+                16 => format!("{}|{:#068b}", self.smt.display(value), as_unsigned),
+                17 => format!("{}|{:#070b}", self.smt.display(value), as_unsigned),
+                32 => format!("{}|{:#0130b}", self.smt.display(value), as_unsigned),
+                x => {
+                    dbg!(x);
+                    format!("{}|{:#b}", self.smt.display(value), as_unsigned)
+                }
+            }
         } else {
             val_str
         }
@@ -1437,7 +1450,6 @@ impl SolverCtx {
         let rhs = self.display_isle_expr(termenv, typeenv, &vars, rule, &rule.rhs);
         println!("{}", self.smt.display(rhs));
 
-        // TODO AVH: left pad bin representation
         println!("\n{} =>\n{}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
