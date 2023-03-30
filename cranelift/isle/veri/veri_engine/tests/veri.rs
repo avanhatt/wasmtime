@@ -2008,8 +2008,8 @@ fn test_lower_icmp_into_reg() {
             "./examples/icmp/lower_icmp_into_reg.isle",
             "lower_icmp_into_reg".to_string(),
             vec![
-                // (Bitwidth::I8, VerificationResult::Success),
-                // (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],

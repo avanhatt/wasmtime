@@ -48,6 +48,9 @@
 ;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@        )),
+;;@
+;;@        (ulte (c) (9i8:bv8)),
+;;@
 ;;@        (|| (= (in_ty) (8i8: isleType))
 ;;@        (|| (= (in_ty) (16i8: isleType))
 ;;@        (|| (= (in_ty) (32i8: isleType))
@@ -69,11 +72,17 @@
 ;;  | 11  10  9   8 | 7 .......... 0|
 ;;  [ N | Z | C | V |   ... CC ...  ]
 
+;; Condition codes that require signed: 2i8, 3i8, 4i8, 5i8
+
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
 ;;@   (assertions 
-;;@     (= (ret) 
-;;@        (| (shl (zero_ext (12i8: isleType) (extract 67 64 (subs (64i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y))))) (8i12:bv12))
-;;@           (zero_ext (12i8: isleType) (c)))
+;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) (extract 67 64 
+;;@          (if (|| (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
+;;@            (subs (64i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y)))
+;;@            (subs (64i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y)))
+;;@          )))
+;;@        (8i12:bv12))
+;;@       (zero_ext (12i8: isleType) (c)))
 ;;@     ),
 ;;@
 ;;@     (|| (= (in_ty) (8i8: isleType))
@@ -118,7 +127,7 @@
 ;;@          ((3i8:bv8) (if (= (extract 11 11 (a)) (extract 8 8 (a)))
 ;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@          ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (1i8:bv8) (0i8:bv8)))
-;;@          ((5i8:bv8) (if (&& (= (extract 10 10 (a)) (1i1:bv1))
+;;@          ((5i8:bv8) (if (|| (= (extract 10 10 (a)) (1i1:bv1))
 ;;@                             (! (= (extract 11 11 (a)) (extract 8 8 (a)))))
 ;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@          ((6i8:bv8) (if (&& (= (extract 9 9 (a)) (1i1:bv1))
@@ -126,7 +135,7 @@
 ;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@          ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
-;;@          ((9i8:bv8) (if (&& (= (extract 9 9 (a)) (0i1:bv1))
+;;@          ((9i8:bv8) (if (|| (= (extract 9 9 (a)) (0i1:bv1))
 ;;@                             (= (extract 10 10 (a)) (1i1:bv1)))
 ;;@                         (1i8:bv8) (0i8:bv8)))
 ;;@        )),
