@@ -9,7 +9,7 @@ use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
 use veri_engine_lib::Config;
-use veri_ir::{ConcreteTest, Counterexample, VerificationResult};
+use veri_ir::{ConcreteTest, Counterexample, TermSignature, VerificationResult};
 
 // TODO FB: once the opcode situation is resolved, return and:
 // - add nice output
@@ -145,14 +145,15 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
 
     // AVH TODO: tests should probably specify more types
     for type_instantiation in types {
-        let ty = type_instantiation.first().unwrap();
+        let ty = type_instantiation.canonical_type.unwrap();
         let expected = tr.iter().find(|(bw, _)| match *bw {
-            Bitwidth::I8 => *ty == veri_ir::Type::BitVector(Some(8)),
-            Bitwidth::I16 => *ty == veri_ir::Type::BitVector(Some(16)),
-            Bitwidth::I32 => *ty == veri_ir::Type::BitVector(Some(32)),
-            Bitwidth::I64 => *ty == veri_ir::Type::BitVector(Some(64)),
+            Bitwidth::I8 => ty == veri_ir::Type::BitVector(Some(8)),
+            Bitwidth::I16 => ty == veri_ir::Type::BitVector(Some(16)),
+            Bitwidth::I32 => ty == veri_ir::Type::BitVector(Some(32)),
+            Bitwidth::I64 => ty == veri_ir::Type::BitVector(Some(64)),
         });
         if let Some((_, expected_result)) = expected {
+            dbg!(expected_result);
             let type_sols = type_rules_with_term_and_types(
                 defs.clone(),
                 &termenv,
@@ -241,7 +242,13 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     };
 
     // Get the types/widths for this particular term
-    let types = concrete.args.iter().map(|i| i.ty.clone()).collect();
+    let args = concrete.args.iter().map(|i| i.ty.clone()).collect();
+    let ret = concrete.output.ty;
+    let t = TermSignature {
+        args,
+        ret,
+        canonical_type: None,
+    };
 
     let type_sols = type_rules_with_term_and_types(
         defs.clone(),
@@ -249,17 +256,10 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         &typeenv,
         &annotation_env,
         &termname,
-        &types,
+        &t,
         &Some(concrete.clone()),
     );
-    let result = verify_rules_for_term(
-        &termenv,
-        &typeenv,
-        &type_sols,
-        types,
-        &Some(concrete),
-        &config,
-    );
+    let result = verify_rules_for_term(&termenv, &typeenv, &type_sols, t, &Some(concrete), &config);
     assert_eq!(result, VerificationResult::Success);
 }
 

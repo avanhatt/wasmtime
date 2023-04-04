@@ -1152,7 +1152,6 @@ impl SolverCtx {
             // };
             // self.smt.pop().unwrap();
         }
-        print!("done");
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
                 if !config.distinct_check {
@@ -1227,7 +1226,7 @@ impl SolverCtx {
                 16 => format!("{}|{:#068b}", self.smt.display(value), as_unsigned),
                 17 => format!("{}|{:#070b}", self.smt.display(value), as_unsigned),
                 32 => format!("{}|{:#0130b}", self.smt.display(value), as_unsigned),
-                x_ => {
+                _ => {
                     format!("{}|{:#b}", self.smt.display(value), as_unsigned)
                 }
             }
@@ -1707,7 +1706,7 @@ pub fn run_solver(
         ctx.smt
             .assert(
                 ctx.smt
-                    .eq(rhs_care_bits, ctx.smt.atom(concrete.output.clone())),
+                    .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone())),
             )
             .unwrap();
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
@@ -1721,11 +1720,14 @@ pub fn run_solver(
             ctx.display_model(termenv, typeenv, rule, lhs, rhs);
             panic!(
                 "Expected {}, got {}",
-                concrete.output,
+                concrete.output.literal,
                 ctx.display_hex_to_bin(val)
             );
         } else {
-            println!("Expected concrete result matched: {}", concrete.output);
+            println!(
+                "Expected concrete result matched: {}",
+                concrete.output.literal
+            );
             ctx.smt.pop().unwrap();
         }
 
@@ -1735,7 +1737,7 @@ pub fn run_solver(
             .assert(
                 ctx.smt.not(
                     ctx.smt
-                        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.clone())),
+                        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone())),
                 ),
             )
             .unwrap();
@@ -1745,7 +1747,7 @@ pub fn run_solver(
             ctx.display_model(termenv, typeenv, rule, lhs, rhs);
             panic!(
                 "Expected ONLY {}, got POSSIBLE {}",
-                concrete.output,
+                concrete.output.literal,
                 ctx.display_hex_to_bin(val)
             );
         }

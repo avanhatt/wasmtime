@@ -25,7 +25,10 @@ fn test_iadd_base_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000010".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000010".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -424,7 +427,10 @@ fn test_isub_imm12_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000010".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000010".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -480,8 +486,11 @@ fn test_isub_imm12neg_concrete32() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
-                    .to_string(),
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
             },
         )
     });
@@ -510,8 +519,11 @@ fn test_isub_imm12neg_concrete_64() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
-                    .to_string(),
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
             },
         )
     });
@@ -791,7 +803,10 @@ fn test_srem_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b11111110".to_string(),
+                output: ConcreteInput {
+                    literal: "#b11111110".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -833,7 +848,10 @@ fn test_urem_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00001001".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00001001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -1688,8 +1706,11 @@ fn test_ishl_to_do_shift_64_concrete() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000100"
-                    .to_string(),
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000100"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
             },
         )
     });
@@ -1728,7 +1749,10 @@ fn test_ishl_to_do_shift_fits_in_32_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000100".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000100".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -1780,7 +1804,10 @@ fn test_sshr_to_do_shift_fits_in_32_concrete() {
                     ty: veri_ir::Type::BitVector(Some(8)),
                 },
             ],
-            output: "#b11010000".to_string(),
+            output: ConcreteInput {
+                literal: "#b11010000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(8)),
+            },
         },
     )
 }
@@ -1831,7 +1858,10 @@ fn test_ushr_to_do_shift_fits_in_32_concrete() {
                     ty: veri_ir::Type::BitVector(Some(8)),
                 },
             ],
-            output: "#b01010000".to_string(),
+            output: ConcreteInput {
+                literal: "#b01010000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(8)),
+            },
         },
     )
 }
@@ -1951,7 +1981,10 @@ fn test_broken_sshr_to_do_shift_fits_in_32_concrete() {
                 },
             ],
             // Wrong output:
-            output: "#b01010000".to_string(),
+            output: ConcreteInput {
+                literal: "#b01010000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(8)),
+            },
         },
     )
 }
@@ -2048,7 +2081,10 @@ fn test_lower_icmp_into_reg_concrete_eq1() {
                         ty: veri_ir::Type::Int,
                     },
                 ],
-                output: "#b00000000".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000000".to_string(),
+                    ty: veri_ir::Type::Int,
+                },
             },
         )
     });
@@ -2085,8 +2121,44 @@ fn test_lower_icmp_into_reg_concrete_eq2() {
                         ty: veri_ir::Type::Int,
                     },
                 ],
-                output: "#b00000001".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
+}
+
+#[test]
+fn test_lower_icmp_32_64() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp.isle",
+            "lower_icmp".to_string(),
+            vec![
+                // These fail to type check, rule in inapplicable because of priorities
+                // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
+                // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_fits_in_16_imm() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_fits_in_16_imm.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
 }

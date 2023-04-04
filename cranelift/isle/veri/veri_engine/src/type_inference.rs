@@ -8,7 +8,7 @@ use isle::ast::{Decl, Defs};
 use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
 use itertools::izip;
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::{annotation_ir, ConcreteTest, Expr, Type, TypeContext};
+use veri_ir::{annotation_ir, ConcreteTest, Expr, TermSignature, Type, TypeContext};
 
 use crate::{FLAGS_WIDTH, REG_WIDTH};
 
@@ -96,7 +96,7 @@ pub fn type_rules_with_term_and_types(
     typeenv: &TypeEnv,
     annotation_env: &AnnotationEnv,
     term: &String,
-    types: &Vec<Type>,
+    types: &TermSignature,
     concrete: &Option<ConcreteTest>,
 ) -> HashMap<isle::sema::RuleId, RuleSemantics> {
     let decls = build_decl_map(defs);
@@ -173,7 +173,7 @@ fn type_annotations_using_rule<'a>(
     typeenv: &'a TypeEnv,
     termenv: &'a TermEnv,
     term: &String,
-    types: &Vec<Type>,
+    types: &TermSignature,
     concrete: &'a Option<ConcreteTest>,
 ) -> Option<RuleSemantics> {
     let mut parse_tree = RuleParseTree {
@@ -1287,9 +1287,12 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
 
             let t = tree.next_type_var;
+
+            // For aarch64, subs sets 4 flags. Model these as 4 bit appended to the left of the
+            // register.
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(FLAGS_WIDTH + 4),
+                annotation_ir::Type::BitVectorWithWidth(REG_WIDTH + FLAGS_WIDTH),
             ));
             tree.concrete_constraints
                 .insert(TypeExpr::Concrete(t0, annotation_ir::Type::Int));
@@ -1341,7 +1344,6 @@ fn add_isle_constraints(
             annotation_ir::Type::BitVectorWithWidth(64),
         ),
         ("u8".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
-        // AVH TODO: needed for lower from rolt to small_rotr, but should rework.
         ("usize".to_owned(), annotation_ir::Type::BitVector),
         ("bool".to_owned(), annotation_ir::Type::Bool),
         (
@@ -1921,7 +1923,7 @@ fn create_parse_tree_pattern(
     typeenv: &TypeEnv,
     termenv: &TermEnv,
     term: &String,
-    types: &Vec<Type>,
+    types: &TermSignature,
 ) -> TypeVarNode {
     match pattern {
         isle::sema::Pattern::Term(_, term_id, args) => {
@@ -1938,11 +1940,11 @@ fn create_parse_tree_pattern(
                 if name.eq(term) {
                     tree.concrete_constraints.insert(TypeExpr::Concrete(
                         child.type_var,
-                        annotation_type_for_vir_type(&types[i]),
+                        annotation_type_for_vir_type(&types.args[i]),
                     ));
 
                     // If this is a bitvector, mark the name for the assumption feasibility check
-                    if matches!(&types[i], Type::BitVector(_)) {
+                    if matches!(&types.args[i], Type::BitVector(_)) {
                         tree.term_input_bvs.push(child.ident.clone());
                     }
                 }
@@ -1950,6 +1952,13 @@ fn create_parse_tree_pattern(
             }
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
+
+            if name.eq(term) {
+                tree.concrete_constraints.insert(TypeExpr::Concrete(
+                    type_var,
+                    annotation_type_for_vir_type(&types.ret),
+                ));
+            }
 
             TypeVarNode {
                 ident: format!("{}__{}", name, type_var),

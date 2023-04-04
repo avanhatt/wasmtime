@@ -72,6 +72,9 @@
 ;;  | 11  10  9   8 | 7 .......... 0|
 ;;  [ N | Z | C | V |   ... CC ...  ]
 
+
+;; For the intermediate term, use the 64b version of subs for all widths
+;; Zero- or sign- extend based on the condition code
 ;; Condition codes that require signed: 2i8, 3i8, 4i8, 5i8
 
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))

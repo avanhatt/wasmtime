@@ -1,3 +1,147 @@
+(type MInst
+  (enum)
+)
+
+(type Imm12 (primitive Imm12))
+
+;; A tuple of `ProducesFlags` and `IntCC`.
+(type FlagsAndCC (enum (FlagsAndCC (flags ProducesFlags)
+                                   (cc IntCC))))
+
+(type OperandSize extern
+      (enum Size32
+            Size64))
+
+;; Helper for calculating the `OperandSize` corresponding to a type
+;;@ (spec (sig (args ty) (ret))
+;;@     (assertions (= (ret) 
+;;@                    (if (<= (ty) (32i8:isleType)) 
+;;@                        (32i8:isleType) 
+;;@                        (64i8:isleType))),
+;;@ ))
+(decl operand_size (Type) OperandSize)
+(rule (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+
+;; NOTE: this rule only applies to unsigned cond codes bases on rule priorities
+;; Added via (|| (ulte (c) (2i8:bv8)) (ugte (c) (5i8:bv8))),
+;;
+;; (0i8:bv8) =
+;; (1i8:bv8) != 
+;; (2i8:bv8) sgt
+;; (3i8:bv8) sgte
+;; (4i8:bv8) slt
+;; (5i8:bv8) slte
+;; (6i8:bv8) ugt
+;; (7i8:bv8) ugte
+;; (8i8:bv8) ult
+;; (9i8:bv8) ulte
+;;@ (spec (sig (args c, x, y, in_ty) (ret))
+;;@   (assertions 
+;;@     (= (ret) 
+;;@        (| (shl (zero_ext (12i8: isleType) 
+;;@           (& (extract 67 64 
+;;@           (if (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
+;;@             (subs (64i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y)))
+;;@             (subs (64i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y)))
+;;@           ))
+;;@           (switch (c)
+;;@             ((0i8:bv8) (4i8:bv4))
+;;@             ((1i8:bv8) (4i8:bv4))
+;;@             ((2i8:bv8) (13i8:bv4))
+;;@             ((3i8:bv8) (9i8:bv4))
+;;@             ((4i8:bv8) (9i8:bv4))
+;;@             ((5i8:bv8) (13i8:bv4))
+;;@             ((6i8:bv8) (6i8:bv4))
+;;@             ((7i8:bv8) (2i8:bv4))
+;;@             ((8i8:bv8) (2i8:bv4))
+;;@             ((9i8:bv8) (6i8:bv4))
+;;@           )
+;;@          ))
+;;@          (8i12:bv12))
+;;@       (zero_ext (12i8: isleType) (c)))
+;;@     ),
+;;@
+;;@     (ulte (c) (9i8:bv8)),
+;;@     (! (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8)))),
+;;@
+;;@     (|| (= (in_ty) (8i8: isleType))
+;;@     (|| (= (in_ty) (16i8: isleType))
+;;@     (|| (= (in_ty) (32i8: isleType))
+;;@     (= (in_ty) (64i8: isleType))))),
+;;@
+;;@     (= (in_ty) (widthof (x))),
+;;@     (= (in_ty) (widthof (y))),
+;;@ ))
+(decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
+(extern extractor lower_icmp lower_icmp)
+
+;; Note that 4095 = 0xfff and 16773120 = 0xfff000
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (|| (< (zero_ext (regwidth) (ret)) (4095i64:bv))
+;;@                     (&& (< (zero_ext (regwidth) (ret)) (16773120i64:bv))
+;;@                         (= (extract 2 0 (zero_ext (regwidth) (ret))) (0i3:bv))
+;;@                 )),
+;;@                 (= (ret) (conv_to (widthof (ret)) (zero_ext (regwidth) (arg)))),
+;;@                 (= (arg) (conv_to (widthof (arg)) (zero_ext (regwidth) (ret)))),
+;;@ ))
+(decl imm12_from_value (Imm12) Value)
+(extern extractor imm12_from_value imm12_from_value)
+
+;; Place a `Value` into a register, zero extending it to 32-bits
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (
+;;@          if (<= (32i0:isleType) (widthof (arg))) 
+;;@             (= (ret) (conv_to (regwidth) (arg)))             
+;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
+;;@          )
+;;@ ))
+(decl put_in_reg_zext32 (Value) Reg)
+(extern constructor put_in_reg_zext32 put_in_reg_zext32)
+
+;; NOTE: this seems to need to keep only relevant bits used in converting
+;; flags to bools, otherwise it is not equivalent 
+;; Use a bitwise-and mask after extracting 
+
+;;@ (spec (sig (args pflags, c) (ret))
+;;@   (assertions 
+;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) 
+;;@        (& (extract 67 64 (pflags))
+;;@           (switch (c)
+;;@             ((0i8:bv8) (4i8:bv4))
+;;@             ((1i8:bv8) (4i8:bv4))
+;;@             ((2i8:bv8) (13i8:bv4))
+;;@             ((3i8:bv8) (9i8:bv4))
+;;@             ((4i8:bv8) (9i8:bv4))
+;;@             ((5i8:bv8) (13i8:bv4))
+;;@             ((6i8:bv8) (6i8:bv4))
+;;@             ((7i8:bv8) (2i8:bv4))
+;;@             ((8i8:bv8) (2i8:bv4))
+;;@             ((9i8:bv8) (6i8:bv4))
+;;@           )
+;;@        ))
+;;@        (8i12:bv12))
+;;@       (zero_ext (12i8: isleType) (c)))
+;;@     ),
+;;@ ))
+(decl flags_and_cc (ProducesFlags IntCC) FlagsAndCC)
+(extern constructor flags_and_cc flags_and_cc)
+
+;; N: Set to 1 when the result of the operation is negative, cleared to 0 otherwise.
+;; Z: Set to 1 when the result of the operation is zero, cleared to 0 otherwise.
+;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
+;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assertions 
+;;@     (= (ret) 
+;;@        (subs (ty) (x) (zero_ext (regwidth) (y)))
+;;@      ),
+;;@      (|| (= (ty) (32i8: isleType))
+;;@          (= (ty) (64i8: isleType))),
+;;@ ))
+(decl cmp_imm (OperandSize Reg Imm12) ProducesFlags)
+(extern constructor cmp_imm cmp_imm)
+
 (rule -1 (lower_icmp cond rn (imm12_from_value rm) (fits_in_16 ty))
       (let ((rn Reg (put_in_reg_zext32 rn)))
       (flags_and_cc (cmp_imm (operand_size ty) rn rm) cond)))

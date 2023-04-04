@@ -29,7 +29,7 @@ pub struct ConcreteTest {
     pub termname: String,
     // List of name, bitvector literal, widths
     pub args: Vec<ConcreteInput>,
-    pub output: String,
+    pub output: ConcreteInput,
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
@@ -105,6 +105,16 @@ pub enum Type {
     /// This corresponds to Cranelift's Isle type:
     /// (type Type (primitive Type))
     Int,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct TermSignature {
+    pub args: Vec<Type>,
+    pub ret: Type,
+
+    // Which type varies for different bitwidth Values, that is, the type that
+    // is used as a key for testing for that type.
+    pub canonical_type: Option<Type>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
