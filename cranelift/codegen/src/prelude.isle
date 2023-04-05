@@ -418,6 +418,11 @@
 (extern constructor intcc_unsigned intcc_unsigned)
 
 ;; Pure constructor that only matches signed integer cond codes.
+;;@ (spec (sig (args c) (ret))
+;;@     (assertions 
+;;@          (= (ret) (c)),
+;;@          (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
+;;@ ))
 (decl pure partial signed_cond_code (IntCC) IntCC)
 (extern constructor signed_cond_code signed_cond_code)
 

@@ -72,7 +72,6 @@
 ;;  | 11  10  9   8 | 7 .......... 0|
 ;;  [ N | Z | C | V |   ... CC ...  ]
 
-
 ;; For the intermediate term, use the 64b version of subs for all widths
 ;; Zero- or sign- extend based on the condition code
 ;; Condition codes that require signed: 2i8, 3i8, 4i8, 5i8
@@ -80,7 +79,7 @@
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) (extract 67 64 
-;;@          (if (|| (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
+;;@          (if (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
 ;;@            (subs (64i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y)))
 ;;@            (subs (64i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y)))
 ;;@          )))
