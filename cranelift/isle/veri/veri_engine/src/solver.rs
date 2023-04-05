@@ -1698,11 +1698,11 @@ pub fn run_solver(
         }
     };
 
-    if let Type::BitVector(Some(w)) = types.canonical_type.unwrap() {
-        if width != w {
-            print!("Static width and cannonical width differ!");
-        }
-    }
+    // if let Type::BitVector(Some(w)) = types.canonical_type.unwrap() {
+    //     if width != w {
+    //         print!("Static width and cannonical width differ!");
+    //     }
+    // }
 
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
