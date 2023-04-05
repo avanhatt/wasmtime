@@ -2035,6 +2035,22 @@ fn test_if_let() {
 }
 
 #[test]
+fn test_icmp_to_lower_icmp() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/icmp_to_lower_icmp.isle",
+            "icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
 fn test_lower_icmp_into_reg() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
@@ -2194,3 +2210,19 @@ fn test_lower_icmp_fits_in_16_unsigned() {
         )
     })
 }
+
+// #[test]
+// fn test_lower_icmp_32_64_to_lower_icmp_const() {
+//     run_and_retry(|| {
+//         test_from_file_with_lhs_termname(
+//             "./examples/icmp/lower_icmp_32_64_to_lower_icmp_const.isle",
+//             "lower_icmp".to_string(),
+//             vec![
+//                 (Bitwidth::I8, VerificationResult::InapplicableRule),
+//                 (Bitwidth::I16, VerificationResult::InapplicableRule),
+//                 (Bitwidth::I32, VerificationResult::Success),
+//                 (Bitwidth::I64, VerificationResult::Success),
+//             ],
+//         )
+//     })
+// }

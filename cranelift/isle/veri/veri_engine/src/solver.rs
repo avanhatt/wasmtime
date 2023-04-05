@@ -11,8 +11,8 @@ use crate::Config;
 use easy_smt::{Response, SExpr};
 use std::collections::HashMap;
 use veri_ir::{
-    BinaryOp, ConcreteTest, Counterexample, Expr, Terminal, Type, TypeContext, UnaryOp,
-    VerificationResult, TermSignature
+    BinaryOp, ConcreteTest, Counterexample, Expr, TermSignature, Terminal, Type, TypeContext,
+    UnaryOp, VerificationResult,
 };
 
 mod encoded_ops;
@@ -1136,11 +1136,13 @@ impl SolverCtx {
     ) -> VerificationResult {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
-        for a in assumptions {
-            self.smt.assert(*a).unwrap();
+        for (i, a) in assumptions.iter().enumerate() {
+            self.smt
+                .assert(self.smt.named(format!("assum{i}"), *a))
+                .unwrap();
 
             // Uncomment to debug specific asserts
-            // println!("{}", self.smt.display(*a));
+            println!("assum{}: {}", i, self.smt.display(*a));
             // self.smt.push().unwrap();
             // match self.smt.check() {
             //     Ok(Response::Sat) => (),
@@ -1223,6 +1225,7 @@ impl SolverCtx {
             // constant with value X and size 4*m.
             match without_prefix.len() {
                 2 => format!("{}|{:#010b}", self.smt.display(value), as_unsigned),
+                3 => format!("{}|{:#014b}", self.smt.display(value), as_unsigned),
                 4 => format!("{}|{:#018b}", self.smt.display(value), as_unsigned),
                 8 => format!("{}|{:#034b}", self.smt.display(value), as_unsigned),
                 16 => format!("{}|{:#068b}", self.smt.display(value), as_unsigned),
@@ -1522,7 +1525,9 @@ pub fn run_solver(
         .build()
         .unwrap();
 
-    solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
+    solver
+        .set_option(":produce-unsat-cores", solver.true_())
+        .unwrap();
 
     // We start with logic to determine the width of all bitvectors
     let mut ctx = SolverCtx {
@@ -1585,7 +1590,9 @@ pub fn run_solver(
             println!("All assumptions to determine widths:");
             for (i, a) in assumptions.iter().enumerate() {
                 println!("dyn{}: {}", i, ctx.smt.display(*a));
-                ctx.smt.assert(ctx.smt.named(format!("dyn{i}"), *a)).unwrap();
+                ctx.smt
+                    .assert(ctx.smt.named(format!("dyn{i}"), *a))
+                    .unwrap();
             }
             match ctx.smt.check() {
                 Ok(Response::Sat) => {
@@ -1647,7 +1654,9 @@ pub fn run_solver(
             .solver("z3", ["-smt2", "-in"])
             .build()
             .unwrap();
-        solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
+        solver
+            .set_option(":produce-unsat-cores", solver.true_())
+            .unwrap();
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
@@ -1710,16 +1719,24 @@ pub fn run_solver(
     // Test code only: test against concrete input/output
     if let Some(concrete) = concrete {
         // Check that our expected output is valid
-        for a in assumptions {
-            ctx.smt.assert(a).unwrap();
+        for (i, a) in assumptions.iter().enumerate() {
+            println!("conc{}: {}", i, ctx.smt.display(*a));
+            ctx.smt
+                .assert(ctx.smt.named(format!("conc{i}"), *a))
+                .unwrap();
         }
         ctx.smt.push().unwrap();
+        let eq = ctx
+            .smt
+            .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone()));
+
         ctx.smt
             .assert(
                 ctx.smt
-                    .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone())),
+                    .named(format!("conceq"), eq),
             )
             .unwrap();
+
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
             // Bad! This is a bug!
             // Pop the output assertion

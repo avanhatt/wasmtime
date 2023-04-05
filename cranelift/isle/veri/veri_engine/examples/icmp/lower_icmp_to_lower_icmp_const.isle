@@ -1,3 +1,0 @@
-(rule -3 (lower_icmp cond rn (u64_from_iconst c) ty)
-      (if (ty_int_ref_scalar_64 ty))
-      (lower_icmp_const cond rn c ty))

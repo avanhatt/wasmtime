@@ -145,12 +145,15 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
 
     for type_instantiation in &types {
         let ty = type_instantiation.canonical_type.unwrap();
-        let all_expected : Vec<&(Bitwidth, VerificationResult)> = tr.iter().filter(|(bw, _)| match *bw {
-            Bitwidth::I8 => ty == veri_ir::Type::BitVector(Some(8)),
-            Bitwidth::I16 => ty == veri_ir::Type::BitVector(Some(16)),
-            Bitwidth::I32 => ty == veri_ir::Type::BitVector(Some(32)),
-            Bitwidth::I64 => ty == veri_ir::Type::BitVector(Some(64)),
-        }).collect();
+        let all_expected: Vec<&(Bitwidth, VerificationResult)> = tr
+            .iter()
+            .filter(|(bw, _)| match *bw {
+                Bitwidth::I8 => ty == veri_ir::Type::BitVector(Some(8)),
+                Bitwidth::I16 => ty == veri_ir::Type::BitVector(Some(16)),
+                Bitwidth::I32 => ty == veri_ir::Type::BitVector(Some(32)),
+                Bitwidth::I64 => ty == veri_ir::Type::BitVector(Some(64)),
+            })
+            .collect();
         if !(all_expected.len() > 0) {
             print!("WARNING: some bitwidths not checked!")
         }
