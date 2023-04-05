@@ -143,37 +143,38 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
         distinct_check: true,
     };
 
-    // AVH TODO: tests should probably specify more types
-    for type_instantiation in types {
+    for type_instantiation in &types {
         let ty = type_instantiation.canonical_type.unwrap();
-        let expected = tr.iter().find(|(bw, _)| match *bw {
+        let all_expected = tr.iter().filter(|(bw, _)| match *bw {
             Bitwidth::I8 => ty == veri_ir::Type::BitVector(Some(8)),
             Bitwidth::I16 => ty == veri_ir::Type::BitVector(Some(16)),
             Bitwidth::I32 => ty == veri_ir::Type::BitVector(Some(32)),
             Bitwidth::I64 => ty == veri_ir::Type::BitVector(Some(64)),
         });
-        if let Some((_, expected_result)) = expected {
-            dbg!(expected_result);
-            let type_sols = type_rules_with_term_and_types(
-                defs.clone(),
-                &termenv,
-                &typeenv,
-                &annotation_env,
-                &term,
-                &type_instantiation,
-                &None,
-            );
-            let result = verify_rules_for_term(
-                &termenv,
-                &typeenv,
-                &type_sols,
-                type_instantiation,
-                &None,
-                &config,
-            );
-            assert_eq!(result, *expected_result);
-        } else {
-            println!("WARNING: Test skips type {:?}", expected);
+        for expected in all_expected {
+            if let (_, expected_result) = expected {
+                dbg!(expected_result);
+                let type_sols = type_rules_with_term_and_types(
+                    defs.clone(),
+                    &termenv,
+                    &typeenv,
+                    &annotation_env,
+                    &term,
+                    type_instantiation,
+                    &None,
+                );
+                let result = verify_rules_for_term(
+                    &termenv,
+                    &typeenv,
+                    &type_sols,
+                    type_instantiation.clone(),
+                    &None,
+                    &config,
+                );
+                assert_eq!(result, *expected_result);
+            } else {
+                panic!("WARNING: Test skips type {:?}", expected);
+            }
         }
     }
 }

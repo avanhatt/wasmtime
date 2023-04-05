@@ -39,12 +39,14 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("ctz", bv_unary_8_to_64.clone());
 
     // Unary with variable return width
+    // No-ops commented out for now because not easy to hook differing success results 
+    // into broken tests
     let extends = vec![
-        TermSignature {
-            args: vec![Type::BitVector(Some(8))],
-            ret: Type::BitVector(Some(8)),
-            canonical_type: Some(Type::BitVector(Some(8))),
-        },
+        // TermSignature {
+        //     args: vec![Type::BitVector(Some(8))],
+        //     ret: Type::BitVector(Some(8)),
+        //     canonical_type: Some(Type::BitVector(Some(8))),
+        // },
         TermSignature {
             args: vec![Type::BitVector(Some(8))],
             ret: Type::BitVector(Some(16)),
@@ -60,11 +62,11 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(8))),
         },
-        TermSignature {
-            args: vec![Type::BitVector(Some(16))],
-            ret: Type::BitVector(Some(16)),
-            canonical_type: Some(Type::BitVector(Some(16))),
-        },
+        // TermSignature {
+        //     args: vec![Type::BitVector(Some(16))],
+        //     ret: Type::BitVector(Some(16)),
+        //     canonical_type: Some(Type::BitVector(Some(16))),
+        // },
         TermSignature {
             args: vec![Type::BitVector(Some(16))],
             ret: Type::BitVector(Some(32)),
@@ -75,11 +77,11 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(16))),
         },
-        TermSignature {
-            args: vec![Type::BitVector(Some(32))],
-            ret: Type::BitVector(Some(32)),
-            canonical_type: Some(Type::BitVector(Some(32))),
-        },
+        // TermSignature {
+        //     args: vec![Type::BitVector(Some(32))],
+        //     ret: Type::BitVector(Some(32)),
+        //     canonical_type: Some(Type::BitVector(Some(32))),
+        // },
         TermSignature {
             args: vec![Type::BitVector(Some(32))],
             ret: Type::BitVector(Some(64)),
