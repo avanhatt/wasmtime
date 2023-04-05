@@ -39,7 +39,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("ctz", bv_unary_8_to_64.clone());
 
     // Unary with variable return width
-    // No-ops commented out for now because not easy to hook differing success results 
+    // No-ops commented out for now because not easy to hook differing success results
     // into broken tests
     let extends = vec![
         // TermSignature {
@@ -86,7 +86,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             args: vec![Type::BitVector(Some(32))],
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(32))),
-        }
+        },
     ];
     widths.insert("sextend", extends.clone());
     widths.insert("uextend", extends.clone());
@@ -110,157 +110,246 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("rotl", bv_binary_8_to_64.clone());
     widths.insert("rotr", bv_binary_8_to_64.clone());
 
-    // widths.insert(
-    //     "icmp",
-    //     vec![
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(8)),
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(16)),
-    //             Type::BitVector(Some(16)),
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(32)),
-    //             Type::BitVector(Some(32)),
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(64)),
-    //         ],
-    //     ],
-    // );
+    widths.insert(
+        "icmp",
+        vec![
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(16)),
+                    Type::BitVector(Some(16)),
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(32)),
+                    Type::BitVector(Some(32)),
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(64)),
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
-    // widths.insert(
-    //     "lower_icmp_into_reg",
-    //     vec![
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(8)),
-    //             Type::Int,
-    //             Type::Int,
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(16)),
-    //             Type::BitVector(Some(16)),
-    //             Type::Int,
-    //             Type::Int,
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(32)),
-    //             Type::BitVector(Some(32)),
-    //             Type::Int,
-    //             Type::Int,
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(64)),
-    //             Type::Int,
-    //             Type::Int,
-    //         ],
-    //     ],
-    // );
+    widths.insert(
+        "lower_icmp_into_reg",
+        vec![
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::Int,
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(16)),
+                    Type::BitVector(Some(16)),
+                    Type::Int,
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(32)),
+                    Type::BitVector(Some(32)),
+                    Type::Int,
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
-    // widths.insert(
-    //     "lower_icmp",
-    //     vec![
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(8)),
-    //             Type::Int,
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(16)),
-    //             Type::BitVector(Some(16)),
-    //             Type::Int,
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(32)),
-    //             Type::BitVector(Some(32)),
-    //             Type::Int,
-    //         ],
-    //         vec![
-    //             Type::BitVector(Some(8)),
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(64)),
-    //             Type::Int,
-    //         ],
-    //     ],
-    // );
+    widths.insert(
+        "lower_icmp",
+        vec![
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(16)),
+                    Type::BitVector(Some(16)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(32)),
+                    Type::BitVector(Some(32)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
-    // // Intermediate terms
-    // // (decl small_rotr (Type Reg Reg) Reg)
-    // widths.insert(
-    //     "small_rotr",
-    //     vec![vec![
-    //         Type::Int,
-    //         Type::BitVector(Some(64)),
-    //         Type::BitVector(Some(64)),
-    //     ]],
-    // );
+    // Intermediate terms
+    // (decl small_rotr (Type Reg Reg) Reg)
+    widths.insert(
+        "small_rotr",
+        vec![TermSignature {
+            args: vec![
+                Type::Int,
+                Type::BitVector(Some(64)),
+                Type::BitVector(Some(64)),
+            ],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
 
-    // // (decl small_rotr_imm (Type Reg ImmShift) Reg)
-    // widths.insert(
-    //     "small_rotr_imm",
-    //     vec![vec![
-    //         Type::Int,
-    //         Type::BitVector(Some(6)),
-    //         Type::BitVector(Some(64)),
-    //     ]],
-    // );
+    // (decl small_rotr_imm (Type Reg ImmShift) Reg)
+    widths.insert(
+        "small_rotr_imm",
+        vec![TermSignature {
+            args: vec![
+                Type::Int,
+                Type::BitVector(Some(6)),
+                Type::BitVector(Some(64)),
+            ],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
 
-    // // (decl do_shift (ALUOp Type Reg Value) Reg)
-    // widths.insert(
-    //     "do_shift",
-    //     vec![
-    //         vec![
-    //             Type::Int,
-    //             Type::Int,
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(8)),
-    //         ],
-    //         vec![
-    //             Type::Int,
-    //             Type::Int,
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(16)),
-    //         ],
-    //         vec![
-    //             Type::Int,
-    //             Type::Int,
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(32)),
-    //         ],
-    //         vec![
-    //             Type::Int,
-    //             Type::Int,
-    //             Type::BitVector(Some(64)),
-    //             Type::BitVector(Some(64)),
-    //         ],
-    //     ],
-    // );
+    // (decl do_shift (ALUOp Type Reg Value) Reg)
+    widths.insert(
+        "do_shift",
+        vec![
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(16)),
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(32)),
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(64)),
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
-    // widths.insert(
-    //     "imm12_from_negated_value",
-    //     vec![
-    //         vec![Type::BitVector(Some(8))],
-    //         vec![Type::BitVector(Some(16))],
-    //         vec![Type::BitVector(Some(32))],
-    //         vec![Type::BitVector(Some(64))],
-    //     ],
-    // );
+    //  (decl pure imm12_from_negated_value (Value) Imm12)
+    widths.insert(
+        "imm12_from_negated_value",
+        vec![
+            TermSignature {
+                args: vec![Type::BitVector(Some(8))],
+                ret: Type::BitVector(Some(24)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(16))],
+                ret: Type::BitVector(Some(24)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(32))],
+                ret: Type::BitVector(Some(24)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(24)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
     return widths;
 }

@@ -519,9 +519,10 @@ fn test_isub_imm12neg_concrete_64() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output:       ConcreteInput {
+                output: ConcreteInput {
                     literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
-                    .to_string(),ty: veri_ir::Type::BitVector(Some(64)),
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
                 },
             },
         )
@@ -803,7 +804,8 @@ fn test_srem_concrete() {
                     },
                 ],
                 output: ConcreteInput {
-                    literal: "#b11111110".to_string(), ty: veri_ir::Type::BitVector(Some(8)),
+                    literal: "#b11111110".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
                 },
             },
         )
@@ -847,7 +849,8 @@ fn test_urem_concrete() {
                     },
                 ],
                 output: ConcreteInput {
-                    literal:"#b00001001".to_string(),ty: veri_ir::Type::BitVector(Some(8)),
+                    literal: "#b00001001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
                 },
             },
         )
@@ -2080,7 +2083,7 @@ fn test_lower_icmp_into_reg_concrete_eq1() {
                 ],
                 output: ConcreteInput {
                     literal: "#b00000000".to_string(),
-                    ty: veri_ir::Type::Int,
+                    ty: veri_ir::Type::BitVector(Some(8)),
                 },
             },
         )
