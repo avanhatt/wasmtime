@@ -2148,6 +2148,22 @@ fn test_lower_icmp_32_64() {
 }
 
 #[test]
+fn test_lower_icmp_fits_in_16_signed() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_fits_in_16_signed.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
 fn test_lower_icmp_fits_in_16_unsigned_imm() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
@@ -2164,10 +2180,10 @@ fn test_lower_icmp_fits_in_16_unsigned_imm() {
 }
 
 #[test]
-fn test_lower_icmp_fits_in_16_signed() {
+fn test_lower_icmp_fits_in_16_unsigned() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_fits_in_16_signed.isle",
+            "./examples/icmp/lower_icmp_fits_in_16_unsigned.isle",
             "lower_icmp".to_string(),
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
