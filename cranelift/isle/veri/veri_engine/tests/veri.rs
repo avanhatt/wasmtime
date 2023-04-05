@@ -2134,10 +2134,10 @@ fn test_lower_icmp_into_reg_concrete_eq2() {
 fn test_lower_icmp_32_64() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp.isle",
+            "./examples/icmp/lower_icmp_32_64.isle",
             "lower_icmp".to_string(),
             vec![
-                // These fail to type check, rule in inapplicable because of priorities
+                // These fail to type check, rule is inapplicable because of priorities
                 // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
                 // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
                 (Bitwidth::I32, VerificationResult::Success),

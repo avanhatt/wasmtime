@@ -12,7 +12,7 @@ use easy_smt::{Response, SExpr};
 use std::collections::HashMap;
 use veri_ir::{
     BinaryOp, ConcreteTest, Counterexample, Expr, Terminal, Type, TypeContext, UnaryOp,
-    VerificationResult,
+    VerificationResult, TermSignature
 };
 
 mod encoded_ops;
@@ -816,7 +816,9 @@ impl SolverCtx {
             Expr::BVConvTo(y) => {
                 if self.dynwidths {
                     // For static convto, width constraints are handling during inference
-                    self.vir_expr_to_sexp(*y)
+                    let ys = self.vir_expr_to_sexp(*y);
+                    println!("conv to static {}", self.smt.display(ys));
+                    ys
                 } else {
                     let arg_width = self.static_width(&*y).unwrap();
                     match ty {
@@ -902,8 +904,8 @@ impl SolverCtx {
                 if self.dynwidths {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
-                    dbg!(self.smt.display(expr_width).to_string());
-                    dbg!(self.smt.display(dyn_width).to_string());
+                    let eq = self.smt.eq(expr_width, dyn_width);
+                    println!("conv to var {}", self.smt.display(eq));
                     self.width_assumptions
                         .push(self.smt.eq(expr_width, dyn_width));
                     self.vir_expr_to_sexp(*y)
@@ -1196,8 +1198,8 @@ impl SolverCtx {
             }
             Ok(Response::Unsat) => {
                 println!("Assertion list is infeasible!");
-                // let unsat = self.smt.get_unsat_core().unwrap();
-                // println!("Unsat core:\n{}", self.smt.display(unsat));
+                let unsat = self.smt.get_unsat_core().unwrap();
+                println!("Unsat core:\n{}", self.smt.display(unsat));
                 VerificationResult::InapplicableRule
             }
             Ok(Response::Unknown) => {
@@ -1512,14 +1514,15 @@ pub fn run_solver(
     typeenv: &TypeEnv,
     concrete: &Option<ConcreteTest>,
     config: &Config,
+    types: &TermSignature,
 ) -> VerificationResult {
-    let solver = easy_smt::ContextBuilder::new()
+    let mut solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
         .solver("z3", ["-smt2", "-in"])
         .build()
         .unwrap();
 
-    // solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
+    solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
 
     // We start with logic to determine the width of all bitvectors
     let mut ctx = SolverCtx {
@@ -1580,9 +1583,9 @@ pub fn run_solver(
             assumptions = ctx.declare_variables(&rule_sem);
             ctx.smt.push().unwrap();
             println!("All assumptions to determine widths:");
-            for a in &assumptions {
-                println!("{}", ctx.smt.display(*a));
-                ctx.smt.assert(*a).unwrap();
+            for (i, a) in assumptions.iter().enumerate() {
+                println!("dyn{}: {}", i, ctx.smt.display(*a));
+                ctx.smt.assert(ctx.smt.named(format!("dyn{i}"), *a)).unwrap();
             }
             match ctx.smt.check() {
                 Ok(Response::Sat) => {
@@ -1622,6 +1625,8 @@ pub fn run_solver(
                     println!(
                         "Rule not applicable as written for rule assumptions, skipping full query"
                     );
+                    let unsat = ctx.smt.get_unsat_core().unwrap();
+                    println!("Unsat core:\n{}", ctx.smt.display(unsat));
                     return VerificationResult::InapplicableRule;
                 }
                 Ok(Response::Unknown) => {
@@ -1637,12 +1642,12 @@ pub fn run_solver(
         }
 
         // Declare variables again, this time with all static widths
-        let solver = easy_smt::ContextBuilder::new()
+        let mut solver = easy_smt::ContextBuilder::new()
             .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
             .solver("z3", ["-smt2", "-in"])
             .build()
             .unwrap();
-        // solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
+        solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
@@ -1692,6 +1697,12 @@ pub fn run_solver(
             REG_WIDTH
         }
     };
+
+    if let Type::BitVector(Some(w)) = types.canonical_type.unwrap() {
+        if width != w {
+            print!("Static width and cannonical width differ!");
+        }
+    }
 
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);

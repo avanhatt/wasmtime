@@ -86,7 +86,7 @@ pub fn verify_rules_for_term(
             "Verifying rule with term {} and types {:?}",
             config.term, types
         );
-        let result = run_solver(rule_sem, rule, termenv, typeenv, concrete, config);
+        let result = run_solver(rule_sem, rule, termenv, typeenv, concrete, config, &types);
         rules_checked += 1;
         if result != VerificationResult::Success {
             return result;
