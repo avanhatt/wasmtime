@@ -1143,18 +1143,18 @@ impl SolverCtx {
 
             // Uncomment to debug specific asserts
             println!("assum{}: {}", i, self.smt.display(*a));
-            // self.smt.push().unwrap();
-            // match self.smt.check() {
-            //     Ok(Response::Sat) => (),
-            //     Ok(Response::Unsat) => (),
-            //     Ok(Response::Unknown) => {
-            //         panic!("Assertion list is unknown!");
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            self.smt.push().unwrap();
+            match self.smt.check() {
+                Ok(Response::Sat) => (),
+                Ok(Response::Unsat) => (),
+                Ok(Response::Unknown) => {
+                    panic!("Assertion list is unknown!");
+                }
+                Err(err) => {
+                    unreachable!("Error! {:?}", err);
+                }
+            };
+            self.smt.pop().unwrap();
         }
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
