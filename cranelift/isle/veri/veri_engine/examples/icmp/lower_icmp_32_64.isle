@@ -62,7 +62,6 @@
 ;;@     ),
 ;;@
 ;;@     (ulte (c) (9i8:bv8)),
-;;@     (! (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8)))),
 ;;@
 ;;@     (|| (= (in_ty) (8i8: isleType))
 ;;@     (|| (= (in_ty) (16i8: isleType))
