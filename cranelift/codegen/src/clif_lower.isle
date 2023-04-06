@@ -838,8 +838,11 @@
     (inst_data (InstructionData.Binary (Opcode.Isub) (value_array_2 x y)))
 )
 
-;;@ (spec (sig (args x) (ret))
-;;@     (assertions (= (-(x)) (ret))))
+;;@ (spec (sig (args x) (ret) (mask))
+;;@     (assertions
+;;@       (= (-(x)) (ret)),
+;;@       (= (mask) (zero_ext (regwidth) (sign_ext (widthof (x) (1i1:bv1))))),
+;;@ ))
 (decl ineg (Value) Inst)
 (extractor
     (ineg x)

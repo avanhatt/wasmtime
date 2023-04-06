@@ -14,6 +14,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let func = TermSignature {
                 args: vec![arg],
                 ret: result,
+mask: None,
             };
             Some(TermAnnotation::new(func, vec![identity]))
         }
@@ -24,6 +25,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let func = TermSignature {
                 args: vec![arg],
                 ret: result,
+mask: None,
             };
             Some(TermAnnotation::new(func, vec![ty_eq]))
         }
@@ -39,6 +41,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let func = TermSignature {
                 args: vec![ty_arg, arg],
                 ret: result,
+mask: None,
             };
             Some(TermAnnotation::new(func, vec![ty_eq, identity]))
         }
@@ -62,6 +65,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let func = TermSignature {
                 args: vec![arg],
                 ret: result,
+                mask: None,
             };
             Some(TermAnnotation::new(func, vec![identity, ty_fits]))
         }
@@ -77,6 +81,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
             let func = TermSignature {
                 args: vec![a, b],
                 ret: r,
+                mask: None,
             };
             Some(TermAnnotation::new(func, vec![sem]))
         }
@@ -94,6 +99,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
         //     let sig = TermSignature {
         //         args: vec![imm_arg],
         //         ret: result,
+// mask: None,
         //     };
         //     Some(TermAnnotation::new(sig, vec![eq]))
         // }
@@ -115,6 +121,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
         //     let func = TermSignature {
         //         args: vec![ty_arg, reg_arg, imm_arg],
         //         ret: result,
+// mask: None,
         //     };
         //     Some(TermAnnotation::new(func, vec![assertion]))
         //}

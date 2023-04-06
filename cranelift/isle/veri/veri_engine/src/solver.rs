@@ -1142,7 +1142,7 @@ impl SolverCtx {
                 .unwrap();
 
             // Uncomment to debug specific asserts
-            println!("assum{}: {}", i, self.smt.display(*a));
+            // println!("assum{}: {}", i, self.smt.display(*a));
             // self.smt.push().unwrap();
             // match self.smt.check() {
             //     Ok(Response::Sat) => (),
@@ -1693,25 +1693,20 @@ pub fn run_solver(
         ctx.static_width(&rule_sem.lhs),
         ctx.static_width(&rule_sem.rhs),
     ) {
-        (Some(w), None) | (None, Some(w)) => w,
-        (Some(w1), Some(w2)) => {
-            assert_eq!(w1, w2);
-            w1
-        }
-        (None, None) => {
-            println!(
-                "Width of relevant bits of LHS and RHS unknown, using full register bitwidth: {}",
-                REG_WIDTH
-            );
-            REG_WIDTH
-        }
+        // (Some(w), None) | (None, Some(w)) => w,
+        // (Some(w1), Some(w2)) => {
+        //     assert_eq!(w1, w2);
+        //     w1
+        // }
+        // (None, None) => {
+        //     println!(
+        //         "Width of relevant bits of LHS and RHS unknown, using full register bitwidth: {}",
+        //         REG_WIDTH
+        //     );
+        //     REG_WIDTH
+        // }
+        _ => REG_WIDTH,
     };
-
-    // if let Type::BitVector(Some(w)) = types.canonical_type.unwrap() {
-    //     if width != w {
-    //         print!("Static width and cannonical width differ!");
-    //     }
-    // }
 
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
@@ -1731,10 +1726,7 @@ pub fn run_solver(
             .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone()));
 
         ctx.smt
-            .assert(
-                ctx.smt
-                    .named(format!("conceq"), eq),
-            )
+            .assert(ctx.smt.named(format!("conceq"), eq))
             .unwrap();
 
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {

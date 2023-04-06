@@ -51,9 +51,14 @@ Pair: (Expr, Expr) = {
    "(" <c:Expr> <b:Expr> ")" => (*c, *b)
 }
 
+Mask: Option<BoundVar> = {
+    "" => None,
+    "(" <r:BoundVar> ")" => Some(r)
+}
+
 pub TermSignature: TermSignature = {
-    "(" "sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
-        TermSignature{args: a, ret: r},
+    "(" "sig" <a:Args> "(" <r:BoundVar> ")" <m:Mask> ")" => 
+        TermSignature{args: a, ret: r, mask: m},
 };
 
 pub FunctionType: FunctionType = {

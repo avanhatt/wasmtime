@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assertions (= (ret) (zero_ext (regwidth) (arg)))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -15,7 +15,11 @@
 (extern constructor alu_rrr alu_rrr)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (- (a) (b)) (r))))
+;;@     (assertions 
+;;@       (= (r) 
+;;@          (if (<= (ty) (32i8: isleType)) 
+;;@              (zero_ext (regwidth) (- (extract 31 0 (a)) (extract 31 0 (b))))
+;;@              (- (a) (b))))))
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 

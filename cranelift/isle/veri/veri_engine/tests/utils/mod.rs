@@ -155,11 +155,13 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
             })
             .collect();
         if !(all_expected.len() > 0) {
-            print!("WARNING: some bitwidths not checked!")
+            println!(
+                "WARNING: some bitwidths not checked!\n{:?}",
+                type_instantiation
+            );
         }
         for expected in all_expected {
             let (_, expected_result) = expected;
-            dbg!(expected_result);
             let type_sols = type_rules_with_term_and_types(
                 defs.clone(),
                 &termenv,

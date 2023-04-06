@@ -39,6 +39,7 @@ impl BoundVar {
 pub struct TermSignature {
     pub args: Vec<BoundVar>,
     pub ret: BoundVar,
+    pub mask: Option<BoundVar>,
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
