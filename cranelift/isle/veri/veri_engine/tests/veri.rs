@@ -1,10 +1,11 @@
 mod utils;
 use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
 use utils::{
-    run_and_retry, test_concrete_input_from_file_with_lhs_termname,
+    run_and_retry, test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
     test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
 use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
+use veri_engine_lib::Config;
 
 #[test]
 fn test_iadd_base_concrete() {
@@ -2211,18 +2212,98 @@ fn test_lower_icmp_fits_in_16_unsigned() {
     })
 }
 
-// #[test]
-// fn test_lower_icmp_32_64_to_lower_icmp_const() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/icmp/lower_icmp_32_64_to_lower_icmp_const.isle",
-//             "lower_icmp".to_string(),
-//             vec![
-//                 (Bitwidth::I8, VerificationResult::InapplicableRule),
-//                 (Bitwidth::I16, VerificationResult::InapplicableRule),
-//                 (Bitwidth::I32, VerificationResult::Success),
-//                 (Bitwidth::I64, VerificationResult::Success),
-//             ],
-//         )
-//     })
-// }
+#[test]
+fn test_lower_icmp_32_64_to_lower_icmp_const() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_32_64_to_lower_icmp_const.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64_imm() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_const_32_64_imm.isle",
+            "lower_icmp_const".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64_sgte() {
+    // Note: only one distinct condition code is matched on, so need to disable
+    // distinctness check
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+        };
+        test_from_file_with_config(
+            "./examples/icmp/lower_icmp_const_32_64_sgte.isle",
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Currently fails! The rewrite is not semantics-preserving
+                (Bitwidth::I32, VerificationResult::Failure(Counterexample {  })),
+                (Bitwidth::I64, VerificationResult::Failure(Counterexample {  })),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64_ugte() {
+    // Note: only one distinct condition code is matched on, so need to disable
+    // distinctness check
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+        };
+        test_from_file_with_config(
+            "./examples/icmp/lower_icmp_const_32_64_ugte.isle",
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Currently fails! The rewrite is not semantics-preserving
+                (Bitwidth::I32, VerificationResult::Failure(Counterexample {  })),
+                (Bitwidth::I64, VerificationResult::Failure(Counterexample {  })),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_const_32_64.isle",
+            "lower_icmp_const".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}

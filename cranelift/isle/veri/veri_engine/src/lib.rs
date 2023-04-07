@@ -14,6 +14,7 @@ pub const REG_WIDTH: usize = 64;
 
 pub const FLAGS_WIDTH: usize = 4;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Config {
     pub term: String,
     pub dyn_width: bool,

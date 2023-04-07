@@ -2057,6 +2057,8 @@ fn create_parse_tree_pattern(
                 "I32" => 32,
                 "I16" => 16,
                 "I8" => 8,
+                "true" => 1,
+                "false" => 0,
                 _ => todo!("{:?}", &name),
             };
             let name = format!("{}__{}", name, type_var);

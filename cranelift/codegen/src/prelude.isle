@@ -111,6 +111,8 @@
 (decl pure u64_add (u64 u64) u64)
 (extern constructor u64_add u64_add)
 
+;;@ (spec (sig (args a, b) (ret))
+;;@     (assertions (= (ret) (- (a) (b)))))
 (decl pure u64_sub (u64 u64) u64)
 (extern constructor u64_sub u64_sub)
 
@@ -150,6 +152,10 @@
 (decl u64_nonzero (u64) u64)
 (extractor (u64_nonzero x) (and (u64_is_zero $false) x))
 
+
+;; x & 1 == 1
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (ret) (= (1i1:bv1) (extract 0 0 (arg))))))
 (decl pure u64_is_odd (u64) bool)
 (extern constructor u64_is_odd u64_is_odd)
 

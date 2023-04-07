@@ -248,6 +248,53 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
+    // (decl lower_icmp_const (IntCC Value u64 Type) FlagsAndCC)
+    widths.insert(
+        "lower_icmp_const",
+        vec![
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(16)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(32)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(12)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
+
     // Intermediate terms
     // (decl small_rotr (Type Reg Reg) Reg)
     widths.insert(

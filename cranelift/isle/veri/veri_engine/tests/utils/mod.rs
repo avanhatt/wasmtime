@@ -125,7 +125,7 @@ where
     result.unwrap();
 }
 
-fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dynwidth: bool) -> () {
+fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) -> () {
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
@@ -133,15 +133,9 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
 
     // Get the types/widths for this particular term
     let types = isle_inst_types()
-        .get(&term.as_str())
-        .expect(format!("Missing term width for {}", term).as_str())
+        .get(config.term.as_str())
+        .expect(format!("Missing term width for {}", config.term).as_str())
         .clone();
-
-    let config = Config {
-        dyn_width: dynwidth,
-        term: term.clone(),
-        distinct_check: true,
-    };
 
     for type_instantiation in &types {
         let ty = type_instantiation.canonical_type.unwrap();
@@ -165,7 +159,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
                 &termenv,
                 &typeenv,
                 &annotation_env,
-                &term,
+                &config.term,
                 type_instantiation,
                 &None,
             );
@@ -182,24 +176,6 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, term: &String, dyn
     }
 }
 
-pub fn _test_from_file_term(s: &str, term: String, tr: TestResult) -> () {
-    // TODO: clean up path logic
-    let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
-    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let prelude_lower_isle = cur_dir
-        .join("../../../codegen/src")
-        .join("prelude_lower.isle");
-    println!("Verifying {} rules in file: {}", term, s);
-    let input = PathBuf::from(s);
-    test_rules_with_term(
-        vec![prelude_isle, prelude_lower_isle, clif_isle, input],
-        tr,
-        &term,
-        false,
-    );
-}
-
 pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestResult) -> () {
     println!("Verifying {} rules in file: {}", termname, file);
     // TODO: clean up path logic
@@ -211,7 +187,26 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         .join("prelude_lower.isle");
     let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
     inputs.push(PathBuf::from(file));
-    test_rules_with_term(inputs, tr, &termname.to_string(), false);
+    let config = Config {
+        dyn_width: false,
+        term: termname,
+        distinct_check: true,
+    };
+    test_rules_with_term(inputs, tr, config);
+}
+
+pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) -> () {
+    println!("Verifying {} rules in file: {}", config.term, file);
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let prelude_lower_isle = cur_dir
+        .join("../../../codegen/src")
+        .join("prelude_lower.isle");
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(PathBuf::from(file));
+    test_rules_with_term(inputs, tr, config);
 }
 
 pub fn test_concrete_input_from_file_with_lhs_termname(
@@ -282,22 +277,12 @@ pub fn test_from_file_with_lhs_termname_dynwidth(
         .join("prelude_lower.isle");
     let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
     inputs.push(PathBuf::from(file));
-    test_rules_with_term(inputs, tr, &termname.to_string(), true);
-}
-
-pub fn _test_from_files_with_lhs_termname(files: Vec<&str>, termname: &str, tr: TestResult) -> () {
-    // TODO: clean up path logic
-    let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
-    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let prelude_lower_isle = cur_dir
-        .join("../../../codegen/src")
-        .join("prelude_lower.isle");
-    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
-    for f in files {
-        inputs.push(PathBuf::from(f));
-    }
-    test_rules_with_term(inputs, tr, &termname.to_string(), false);
+    let config = Config {
+        dyn_width: true,
+        term: termname.clone(),
+        distinct_check: false,
+    };
+    test_rules_with_term(inputs, tr, config);
 }
 
 // pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {

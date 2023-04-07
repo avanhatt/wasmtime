@@ -1731,10 +1731,7 @@ pub fn run_solver(
             .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone()));
 
         ctx.smt
-            .assert(
-                ctx.smt
-                    .named(format!("conceq"), eq),
-            )
+            .assert(ctx.smt.named(format!("conceq"), eq))
             .unwrap();
 
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {

@@ -1,3 +1,0 @@
-(rule -2 (lower_icmp_const cond rn c ty)
-      (if (ty_int_ref_scalar_64 ty))
-  (flags_and_cc (cmp (operand_size ty) rn (imm ty (ImmExtend.Zero) c)) cond))
