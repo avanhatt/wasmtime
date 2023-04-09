@@ -1947,16 +1947,85 @@ fn test_do_shift_with_imm() {
 
 #[test]
 fn test_do_shift_fits_in_16() {
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "do_shift".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = args[1];
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
+            "./examples/shifts/do_shift_fits_in_16.isle",
+            config,
+            vec![(Bitwidth::I8, VerificationResult::Success),
+            (Bitwidth::I16, VerificationResult::Success)],
+        );
+    });
     test_from_file_with_lhs_termname(
         "./examples/shifts/do_shift_fits_in_16.isle",
         "do_shift".to_string(),
         vec![
-            (Bitwidth::I8, VerificationResult::Success),
-            (Bitwidth::I16, VerificationResult::Success),
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )
+}
+
+#[test]
+fn test_do_shift_fits_in_16_concrete() {
+    // (decl do_shift (ALUOp Type Reg Value) Reg)
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/shifts/do_shift_fits_in_16.isle",
+            "do_shift".to_string(),
+            false,
+            ConcreteTest {
+                termname: "do_shift".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000000"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput {
+                        literal: "16".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000001"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput {
+                        literal: "#b0000000000000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(16)),
+                    },
+                ],
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
+            },
+        )
+    });
 }
 
 #[test]
@@ -1974,8 +2043,7 @@ fn test_do_shift_32() {
         dyn_width: false,
         term: "do_shift".to_string(),
         distinct_check: true,
-        custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
-            let ty_arg = args[1];
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
             let lower_32_bits_eq = {
                 let mask = smt.atom("#x00000000FFFFFFFF");
                 smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))

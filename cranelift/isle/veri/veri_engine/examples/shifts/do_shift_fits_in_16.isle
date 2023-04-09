@@ -56,8 +56,18 @@
     (SbcS)
 ))
 
-;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (& (conv_to (ty) (a)) (conv_to (ty) (b))) (conv_to (ty) (r)))))
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (y)) (0i3:bv))
+;;@                 )),
+;;@       (= (ret) 
+;;@          (switch (ty) 
+;;@            ((32i8: isleType) (conv_to (regwidth) (& (extract 31 0 (x)) (extract 31 0 (y)))))
+;;@            ((64i8: isleType) (& (x) (zero_ext (regwidth) (y))))
+;;@          )
+;;@       )
+;;@ ))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (extern constructor and_imm and_imm)
 
@@ -65,42 +75,43 @@
 ;;@   (assertions 
 ;;@     (= (ret) 
 ;;@          (switch (op) 
-;;@                  ((0i64:bv) (shl (conv_to (t) (a)) (conv_to (t) (b))))
-;;@                  ((1i64:bv) (shr (conv_to (t) (a)) (conv_to (t) (b))))
-;;@                  ((2i64:bv) (ashr (conv_to (t) (a)) (conv_to (t) (b))))
+;;@                  ((0i64:bv) (conv_to (regwidth) (shl (conv_to (t) (a)) (conv_to (t) (zero_ext (regwidth) (b))))))
+;;@                  ((1i64:bv) (conv_to (regwidth) (shr (conv_to (t) (a)) (conv_to (t) (zero_ext (regwidth) (b))))))
+;;@                  ((2i64:bv) (conv_to (regwidth) (ashr (conv_to (t) (a)) (conv_to (t) (zero_ext (regwidth) (b))))))
 ;;@                  )),
 ;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
-;;@                  (|| (= (t) (1i8: isleType)) 
 ;;@                  (|| (= (t) (8i8: isleType))
 ;;@                  (|| (= (t) (16i8: isleType))
 ;;@                  (|| (= (t) (32i8: isleType))
-;;@                      (= (t) (64i8: isleType))))))
+;;@                      (= (t) (64i8: isleType)))))
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@     (assertions 
-;;@       (switch (op)
-;;@               ((0i64:bv) (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) (b))))
-;;@               ((1i64:bv) (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) (b))))
-;;@               ((2i64:bv) (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) (b))))
-;;@       ),
-;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
-;;@                  (|| (= (t) (1i8: isleType)) 
-;;@                  (|| (= (t) (8i8: isleType))
-;;@                  (|| (= (t) (16i8: isleType))
-;;@                  (|| (= (t) (32i8: isleType))
-;;@                      (= (t) (64i8: isleType))))))
+;;@       (= (ret) (switch (op)
+;;@               ((0i64:bv) (conv_to (regwidth) (shl (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) 
+;;@                                                   (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (b)))))
+;;@               ((1i64:bv) (conv_to (regwidth) (shr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a))
+;;@                                                   (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (b)))))
+;;@               ((2i64:bv) (conv_to (regwidth) (ashr (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (a)) 
+;;@                                                   (conv_to (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType)) (b)))))
+;;@       )),
+;;@       (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@       (|| (= (t) (8i8: isleType))
+;;@       (|| (= (t) (16i8: isleType))
+;;@       (|| (= (t) (32i8: isleType))
+;;@           (= (t) (64i8: isleType)))))
 ;;@     ))
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
-
-(rule -1 (do_shift op (fits_in_16 ty) x y)
-      (let ((shift_amt Reg (value_regs_get y 0))
-            (masked_shift_amt Reg (and_imm $I32 shift_amt (shift_mask ty))))
-        (alu_rrr op $I32 x masked_shift_amt)))
 
 ;;@ (spec (sig (args x) (ret))
 ;;@   (assertions (= (- (int2bv 64 (x)) (1i64:bv)) (ret))))
 (decl shift_mask (Type) ImmLogic)
 (extern constructor shift_mask shift_mask)
+
+(rule -1 (do_shift op (fits_in_16 ty) x y)
+      (let ((shift_amt Reg (value_regs_get y 0))
+            (masked_shift_amt Reg (and_imm $I32 shift_amt (shift_mask ty))))
+        (alu_rrr op $I32 x masked_shift_amt)))

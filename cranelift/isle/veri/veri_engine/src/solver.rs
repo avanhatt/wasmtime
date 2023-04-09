@@ -555,7 +555,7 @@ impl SolverCtx {
             Expr::Terminal(t) => match t {
                 Terminal::Literal(v, tyvar) => {
                     let lit = self.smt.atom(v);
-                    if self.dynwidths {
+                    if self.dynwidths && matches!(ty.unwrap(), Type::BitVector(_)) {
                         self.widen_to_register_width(tyvar, static_expr_width.unwrap(), lit, None)
                     } else {
                         lit
@@ -916,8 +916,8 @@ impl SolverCtx {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
                     let eq = self.smt.eq(expr_width, dyn_width);
-                    self.width_assumptions
-                        .push(self.smt.eq(expr_width, dyn_width));
+                    println!("conv_to dyn: {}", self.smt.display(eq));
+                    self.width_assumptions.push(eq);
                     self.vir_expr_to_sexp(*y)
                 } else {
                     let arg_width = self.static_width(&*y).unwrap();
@@ -1560,7 +1560,8 @@ pub fn run_solver(
 
     let mut some_dyn_width = false;
 
-    // Check whether the non-solver type inference was able to resolve all bitvector widths
+    // Check whether the non-solver type inference was able to resolve all bitvector widths,
+    // and add assumptions for known widths
     for (e, t) in &ctx.tyctx.tyvars {
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
@@ -1570,10 +1571,9 @@ pub fn run_solver(
                     .push((width_name.clone(), ctx.smt.int_sort()));
                 match *w {
                     Some(bitwidth) => {
-                        ctx.width_assumptions.push(
-                            ctx.smt
-                                .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth)),
-                        );
+                        let eq = ctx.smt.eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
+                        println!("from inference: {}", ctx.smt.display(eq));
+                        ctx.width_assumptions.push(eq);
                     }
                     None => {
                         println!("Unresolved width: {:?} ({})", &e, *t);

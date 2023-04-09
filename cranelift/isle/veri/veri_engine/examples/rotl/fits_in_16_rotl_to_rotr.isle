@@ -24,8 +24,18 @@
 (decl extend (Reg bool u8 u8) Reg)
 (extern constructor extend extend)
 
-;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (& (a) (b)) (r))))
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@                         (= (extract 2 0 (y)) (0i3:bv))
+;;@                 )),
+;;@       (= (ret) 
+;;@          (switch (ty) 
+;;@            ((32i8: isleType) (conv_to (regwidth) (& (extract 31 0 (x)) (extract 31 0 (y)))))
+;;@            ((64i8: isleType) (& (x) (zero_ext (regwidth) (y))))
+;;@          )
+;;@       )
+;;@ ))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (extern constructor and_imm and_imm)
 

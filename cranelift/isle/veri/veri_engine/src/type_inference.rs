@@ -1025,7 +1025,7 @@ fn add_annotation_constraints(
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
 
-                (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
+                dbg!((veri_ir::Expr::BVConvTo(Box::new(e1)), t))
             } else {
                 tree.concrete_constraints.insert(TypeExpr::WidthInt(t, wt));
                 tree.bv_constraints
@@ -1318,6 +1318,8 @@ fn add_annotation_constraints(
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
+    let fmt = format!("{}:\t{:?}", t, e);
+    dbg!(fmt);
     (e, t)
 }
 
