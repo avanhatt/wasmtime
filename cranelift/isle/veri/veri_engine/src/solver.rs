@@ -829,9 +829,7 @@ impl SolverCtx {
             Expr::BVConvTo(y) => {
                 if self.dynwidths {
                     // For static convto, width constraints are handling during inference
-                    let ys = self.vir_expr_to_sexp(*y);
-                    println!("conv to static {}", self.smt.display(ys));
-                    ys
+                    self.vir_expr_to_sexp(*y)
                 } else {
                     let arg_width = self.static_width(&*y).unwrap();
                     match ty {
@@ -918,7 +916,6 @@ impl SolverCtx {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
                     let eq = self.smt.eq(expr_width, dyn_width);
-                    println!("conv to var {}", self.smt.display(eq));
                     self.width_assumptions
                         .push(self.smt.eq(expr_width, dyn_width));
                     self.vir_expr_to_sexp(*y)
@@ -1516,7 +1513,7 @@ impl SolverCtx {
 
         println!("Declaring additional variables");
         for (name, ty) in &self.additional_decls {
-            println!("\t{} : {}", name, self.smt.display(*ty));
+            // println!("\t{} : {}", name, self.smt.display(*ty));
             self.smt.declare_const(name, *ty).unwrap();
         }
         assumptions

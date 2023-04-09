@@ -1967,10 +1967,27 @@ fn test_do_shift_32() {
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
-            (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
-    )
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+            let ty_arg = args[1];
+            let lower_32_bits_eq = {
+                let mask = smt.atom("#x00000000FFFFFFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_32_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_32.isle",
+        config,
+        vec![(Bitwidth::I32, VerificationResult::Success)],
+    );
 }
 
 #[test]
