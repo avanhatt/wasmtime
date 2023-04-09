@@ -20,7 +20,8 @@ pub struct Config {
     pub dyn_width: bool,
     pub distinct_check: bool,
 
-    pub custom_verification_condition: Option<Box<dyn Fn(&easy_smt::Context, Vec<SExpr>, SExpr, SExpr) -> SExpr>>,
+    pub custom_verification_condition:
+        Option<Box<dyn Fn(&easy_smt::Context, Vec<SExpr>, SExpr, SExpr) -> SExpr>>,
 }
 
 /// Given a file, lexes and parses the file to an ISLE term and type environment tuple

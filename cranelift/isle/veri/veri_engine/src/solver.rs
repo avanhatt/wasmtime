@@ -137,7 +137,12 @@ impl SolverCtx {
         op: &str,
     ) -> SExpr {
         if dest_width < source_width {
-            println!("Unexpected extend widths for {}: dest {} source {} ", dest_width, source_width, self.smt.display(source));
+            println!(
+                "Unexpected extend widths for {}: dest {} source {} ",
+                dest_width,
+                source_width,
+                self.smt.display(source)
+            );
             self.additional_assumptions.push(self.smt.false_());
             return self.bv(
                 0,
@@ -1785,11 +1790,8 @@ pub fn run_solver(
         return VerificationResult::Success;
     }
 
-
     let condition = if let Some(condition) = &config.custom_verification_condition {
-        let term_args = rule_sem.term_args.iter().map(|s| {
-            ctx.smt.atom(s)
-        }).collect();
+        let term_args = rule_sem.term_args.iter().map(|s| ctx.smt.atom(s)).collect();
         let custom_condition = condition(&ctx.smt, term_args, lhs, rhs);
         println!(
             "Custom verification condition:\n\t{}\n",

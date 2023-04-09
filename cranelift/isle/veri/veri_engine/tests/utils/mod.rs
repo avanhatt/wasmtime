@@ -149,7 +149,10 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
             })
             .collect();
         if !(all_expected.len() > 0) {
-            println!("WARNING: type instantiation {:?} not checked in this test!", type_instantiation)
+            println!(
+                "WARNING: type instantiation {:?} not checked in this test!",
+                type_instantiation
+            )
         }
         for expected in all_expected {
             let (_, expected_result) = expected;

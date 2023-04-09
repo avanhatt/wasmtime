@@ -1232,15 +1232,17 @@ fn test_small_rotr_to_shifts() {
                     let mask = smt.atom("#x000000000000FFFF");
                     smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
                 };
-                smt.ite(smt.eq(ty_arg, smt.atom("8")), lower_8_bits_eq, lower_16_bits_eq)
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
             })),
         };
         test_from_file_with_config(
             "./examples/rotr/small_rotr_to_shifts.isle",
             config,
-            vec![
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
+            vec![(Bitwidth::I64, VerificationResult::Success)],
         );
     })
 }
@@ -1248,38 +1250,70 @@ fn test_small_rotr_to_shifts() {
 #[test]
 fn test_small_rotr_to_shifts_broken() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
             "./examples/broken/broken_mask_small_rotr.isle",
-            "small_rotr".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
-    });
+            config,
+            vec![(
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            )],
+        );
+    })
 }
 
 #[test]
 fn test_small_rotr_to_shifts_broken2() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
             "./examples/broken/broken_rule_or_small_rotr.isle",
-            "small_rotr".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
+            config,
+            vec![(
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            )],
+        );
     })
 }
 
@@ -1300,15 +1334,17 @@ fn test_small_rotr_imm_to_shifts() {
                     let mask = smt.atom("#x000000000000FFFF");
                     smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
                 };
-                smt.ite(smt.eq(ty_arg, smt.atom("8")), lower_8_bits_eq, lower_16_bits_eq)
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
             })),
         };
         test_from_file_with_config(
             "./examples/rotr/small_rotr_imm_to_shifts.isle",
             config,
-            vec![
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
+            vec![(Bitwidth::I64, VerificationResult::Success)],
         );
     })
 }
