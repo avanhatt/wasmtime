@@ -57,6 +57,7 @@ fn main() {
         dyn_width: args.dynwidths,
         term: args.term,
         distinct_check: !args.nodistinct,
+        custom_verification_condition: None,
     };
     verify_rules(inputs, &config)
 }

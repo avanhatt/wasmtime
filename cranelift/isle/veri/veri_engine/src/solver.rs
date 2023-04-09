@@ -137,6 +137,7 @@ impl SolverCtx {
         op: &str,
     ) -> SExpr {
         if dest_width < source_width {
+            println!("Unexpected extend widths for {}: dest {} source {} ", dest_width, source_width, self.smt.display(source));
             self.additional_assumptions.push(self.smt.false_());
             return self.bv(
                 0,
@@ -687,6 +688,9 @@ impl SolverCtx {
 
                         // Width math
                         if self.dynwidths {
+                            if self.onlywidths {
+                                return xs;
+                            }
                             // The shift arg needs to be extracted to the right width, default to 8 if unknown
                             let y_static_width = self.static_width(&y).unwrap_or(8);
                             let y_rec = self.vir_expr_to_sexp(*y);
@@ -805,9 +809,13 @@ impl SolverCtx {
                 }
             }
             Expr::BVIntToBV(w, x) => {
-                let padded_width = self.bitwidth - w;
                 let x_sexp = self.vir_expr_to_sexp(*x);
-                self.zero_extend(padded_width, self.int2bv(w, x_sexp))
+                if self.dynwidths {
+                    let padded_width = self.bitwidth - w;
+                    self.zero_extend(padded_width, self.int2bv(w, x_sexp))
+                } else {
+                    self.int2bv(w, x_sexp)
+                }
             }
             Expr::BVToInt(x) => {
                 let x_sexp = self.vir_expr_to_sexp(*x);
@@ -1142,20 +1150,23 @@ impl SolverCtx {
                 .unwrap();
 
             // Uncomment to debug specific asserts
-            println!("assum{}: {}", i, self.smt.display(*a));
-            self.smt.push().unwrap();
-            match self.smt.check() {
-                Ok(Response::Sat) => (),
-                Ok(Response::Unsat) => (),
-                Ok(Response::Unknown) => {
-                    panic!("Assertion list is unknown!");
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-            self.smt.pop().unwrap();
+            //     println!("assum{}: {}", i, self.smt.display(*a));
+
+            //     self.smt.push().unwrap();
+            //     match self.smt.check() {
+            //         Ok(Response::Sat) => (),
+            //         Ok(Response::Unsat) => (),
+            //         Ok(Response::Unknown) => {
+            //             panic!("Assertion list is unknown!");
+            //         }
+            //         Err(err) => {
+            //             unreachable!("Error! {:?}", err);
+            //         }
+            //     };
+            //     self.smt.pop().unwrap();
         }
+        // print!("done with debugging");
+
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
                 if !config.distinct_check {
@@ -1517,7 +1528,7 @@ pub fn run_solver(
     typeenv: &TypeEnv,
     concrete: &Option<ConcreteTest>,
     config: &Config,
-    types: &TermSignature,
+    _types: &TermSignature,
 ) -> VerificationResult {
     let mut solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
@@ -1587,7 +1598,7 @@ pub fn run_solver(
             ctx.onlywidths = true;
             assumptions = ctx.declare_variables(&rule_sem);
             ctx.smt.push().unwrap();
-            println!("All assumptions to determine widths:");
+            println!("Adding assumptions to determine widths");
             for (i, a) in assumptions.iter().enumerate() {
                 println!("dyn{}: {}", i, ctx.smt.display(*a));
                 ctx.smt
@@ -1707,12 +1718,6 @@ pub fn run_solver(
         }
     };
 
-    // if let Type::BitVector(Some(w)) = types.canonical_type.unwrap() {
-    //     if width != w {
-    //         print!("Static width and cannonical width differ!");
-    //     }
-    // }
-
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
 
@@ -1780,16 +1785,28 @@ pub fn run_solver(
         return VerificationResult::Success;
     }
 
-    let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
-    println!(
-        "LHS and RHS equality condition:\n\t{}\n",
-        ctx.smt.display(side_equality)
-    );
+
+    let condition = if let Some(condition) = &config.custom_verification_condition {
+        let term_args = rule_sem.term_args.iter().map(|s| {
+            ctx.smt.atom(s)
+        }).collect();
+        let custom_condition = condition(&ctx.smt, term_args, lhs, rhs);
+        println!(
+            "Custom verification condition:\n\t{}\n",
+            ctx.smt.display(custom_condition)
+        );
+        custom_condition
+    } else {
+        let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
+        println!(
+            "LHS and RHS equality condition:\n\t{}\n",
+            ctx.smt.display(side_equality)
+        );
+        side_equality
+    };
 
     let assumption_conjunction = ctx.smt.and_many(assumptions);
-    let query = ctx
-        .smt
-        .not(ctx.smt.imp(assumption_conjunction, side_equality));
+    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, condition));
     println!("Running query");
     ctx.smt.assert(query).unwrap();
 

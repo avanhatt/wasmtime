@@ -149,7 +149,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
             })
             .collect();
         if !(all_expected.len() > 0) {
-            print!("WARNING: some bitwidths not checked!")
+            println!("WARNING: type instantiation {:?} not checked in this test!", type_instantiation)
         }
         for expected in all_expected {
             let (_, expected_result) = expected;
@@ -191,6 +191,7 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         dyn_width: false,
         term: termname,
         distinct_check: true,
+        custom_verification_condition: None,
     };
     test_rules_with_term(inputs, tr, config);
 }
@@ -238,6 +239,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         dyn_width: dynwidth,
         term: termname.clone(),
         distinct_check: false,
+        custom_verification_condition: None,
     };
 
     // Get the types/widths for this particular term
@@ -281,6 +283,7 @@ pub fn test_from_file_with_lhs_termname_dynwidth(
         dyn_width: true,
         term: termname.clone(),
         distinct_check: false,
+        custom_verification_condition: None,
     };
     test_rules_with_term(inputs, tr, config);
 }

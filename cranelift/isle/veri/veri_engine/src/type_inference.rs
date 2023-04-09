@@ -33,6 +33,8 @@ struct RuleParseTree<'a> {
     free_vars: HashSet<(String, u32)>,
     // Used to check distinct models
     term_input_bvs: Vec<String>,
+    // Used for custom verification conditions
+    term_args: Vec<String>,
     assumptions: Vec<Expr>,
     concrete: Option<ConcreteTest>,
 }
@@ -86,6 +88,8 @@ pub struct RuleSemantics {
     pub quantified_vars: Vec<veri_ir::BoundVar>,
     pub free_vars: Vec<veri_ir::BoundVar>,
     pub term_input_bvs: Vec<String>,
+    // Used for custom verification conditions
+    pub term_args: Vec<String>,
     pub assumptions: Vec<Expr>,
     pub tyctx: TypeContext,
 }
@@ -188,6 +192,7 @@ fn type_annotations_using_rule<'a>(
         quantified_vars: HashSet::new(),
         free_vars: HashSet::new(),
         term_input_bvs: vec![],
+        term_args: vec![],
         assumptions: vec![],
         concrete: concrete.clone(),
     };
@@ -329,6 +334,7 @@ fn type_annotations_using_rule<'a>(
                 quantified_vars,
                 free_vars,
                 term_input_bvs: parse_tree.term_input_bvs,
+                term_args: parse_tree.term_args,
                 tyctx: TypeContext {
                     tyvars: parse_tree.ty_vars.clone(),
                     tymap,
@@ -1947,6 +1953,7 @@ fn create_parse_tree_pattern(
                     if matches!(&types.args[i], Type::BitVector(_)) {
                         tree.term_input_bvs.push(child.ident.clone());
                     }
+                    tree.term_args.push(child.ident.clone())
                 }
                 children.push(child);
             }

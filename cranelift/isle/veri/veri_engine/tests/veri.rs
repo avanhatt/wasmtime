@@ -4,8 +4,8 @@ use utils::{
     run_and_retry, test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
     test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
-use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 use veri_engine_lib::Config;
+use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 
 #[test]
 fn test_iadd_base_concrete() {
@@ -1218,16 +1218,31 @@ fn test_ctz16_broken() {
 #[test]
 fn test_small_rotr_to_shifts() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(smt.eq(ty_arg, smt.atom("8")), lower_8_bits_eq, lower_16_bits_eq)
+            })),
+        };
+        test_from_file_with_config(
             "./examples/rotr/small_rotr_to_shifts.isle",
-            "small_rotr".to_string(),
+            config,
             vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
-        )
+        );
     })
 }
 
@@ -2253,6 +2268,7 @@ fn test_lower_icmp_const_32_64_sgte() {
             dyn_width: false,
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
+            custom_verification_condition: None,
         };
         test_from_file_with_config(
             "./examples/icmp/lower_icmp_const_32_64_sgte.isle",
@@ -2261,8 +2277,14 @@ fn test_lower_icmp_const_32_64_sgte() {
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
                 // Currently fails! The rewrite is not semantics-preserving
-                (Bitwidth::I32, VerificationResult::Failure(Counterexample {  })),
-                (Bitwidth::I64, VerificationResult::Failure(Counterexample {  })),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
             ],
         )
     })
@@ -2277,6 +2299,7 @@ fn test_lower_icmp_const_32_64_ugte() {
             dyn_width: false,
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
+            custom_verification_condition: None,
         };
         test_from_file_with_config(
             "./examples/icmp/lower_icmp_const_32_64_ugte.isle",
@@ -2285,8 +2308,14 @@ fn test_lower_icmp_const_32_64_ugte() {
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
                 // Currently fails! The rewrite is not semantics-preserving
-                (Bitwidth::I32, VerificationResult::Failure(Counterexample {  })),
-                (Bitwidth::I64, VerificationResult::Failure(Counterexample {  })),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
             ],
         )
     })

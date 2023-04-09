@@ -1,4 +1,5 @@
 use cranelift_isle as isle;
+use easy_smt::SExpr;
 use isle::compile::create_envs;
 use isle::sema::{TermEnv, TypeEnv};
 use std::path::PathBuf;
@@ -14,11 +15,12 @@ pub const REG_WIDTH: usize = 64;
 
 pub const FLAGS_WIDTH: usize = 4;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Config {
     pub term: String,
     pub dyn_width: bool,
     pub distinct_check: bool,
+
+    pub custom_verification_condition: Option<Box<dyn Fn(&easy_smt::Context, Vec<SExpr>, SExpr, SExpr) -> SExpr>>,
 }
 
 /// Given a file, lexes and parses the file to an ISLE term and type environment tuple
