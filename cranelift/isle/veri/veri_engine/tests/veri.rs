@@ -1218,7 +1218,6 @@ fn test_ctz16_broken() {
 #[test]
 fn test_small_rotr_to_shifts() {
     run_and_retry(|| {
-
         let config = Config {
             dyn_width: false,
             term: "small_rotr".to_string(),
@@ -1287,16 +1286,30 @@ fn test_small_rotr_to_shifts_broken2() {
 #[test]
 fn test_small_rotr_imm_to_shifts() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr_imm".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(smt.eq(ty_arg, smt.atom("8")), lower_8_bits_eq, lower_16_bits_eq)
+            })),
+        };
+        test_from_file_with_config(
             "./examples/rotr/small_rotr_imm_to_shifts.isle",
-            "small_rotr_imm".to_string(),
+            config,
             vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
-        )
+        );
     })
 }
 

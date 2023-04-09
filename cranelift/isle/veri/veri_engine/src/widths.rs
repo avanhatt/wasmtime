@@ -316,8 +316,8 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         vec![TermSignature {
             args: vec![
                 Type::Int,
-                Type::BitVector(Some(6)),
                 Type::BitVector(Some(64)),
+                Type::BitVector(Some(6)),
             ],
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(64))),
