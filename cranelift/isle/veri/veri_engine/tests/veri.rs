@@ -133,29 +133,108 @@ fn test_iadd_imm12neg2_not_distinct() {
     });
 }
 
-// Currently timing out, disabling for now.
-// https://github.com/avanhatt/wasmtime/issues/13
-// #[test]
-// fn test_iadd_extend() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/iadd/extend.isle",
-//             "iadd".to_string(),
-//             lte_64_success_result(),
-//         )
-//     });
-// }
+#[test]
+fn test_iadd_extend() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/add_extend.isle",
+            "iadd".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    });
+}
 
-// #[test]
-// fn test_iadd_extend2() {
-//     run_and_retry(|| {
-//         test_from_file_with_lhs_termname(
-//             "./examples/iadd/extend2.isle",
-//             "iadd".to_string(),
-//             lte_64_success_result(),
-//         )
-//     });
-// }
+#[test]
+fn test_iadd_extend_concrete() {
+    test_concrete_input_from_file_with_lhs_termname(
+        "./examples/iadd/add_extend.isle",
+        "iadd".to_string(),
+        false,
+        ConcreteTest {
+            termname: "iadd".to_string(),
+            args: vec![
+                ConcreteInput {
+                    literal: "#b0000000000000001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(16)),
+                },
+                ConcreteInput {
+                    literal: "#b1111111111111111".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(16)),
+                },
+            ],
+            output: ConcreteInput {
+                literal: "#b0000000000000000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(16)),
+            },
+        },
+    );
+    test_concrete_input_from_file_with_lhs_termname(
+        "./examples/iadd/add_extend.isle",
+        "iadd".to_string(),
+        false,
+        ConcreteTest {
+            termname: "iadd".to_string(),
+            args: vec![
+                ConcreteInput {
+                    literal: "#b01000000000000000000000000000000".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(32)),
+                },
+                ConcreteInput {
+                    literal: "#b00000000000000001111111111111111".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(32)),
+                },
+            ],
+            output: ConcreteInput {
+                literal: "#b01000000000000001111111111111111".to_string(),
+                ty: veri_ir::Type::BitVector(Some(32)),
+            },
+        },
+    )
+}
+
+#[test]
+fn test_iadd_extend_2() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/add_extend_2.isle",
+            "iadd".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_broken_iadd_extend() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/broken/iadd/broken_add_extend.isle",
+            "iadd".to_string(),
+            vec![
+                // The type of the iadd is the destination type, so for i8 there is no bad extend-to
+                (Bitwidth::I8, VerificationResult::Success),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    });
+}
 
 #[test]
 fn test_iadd_shift() {

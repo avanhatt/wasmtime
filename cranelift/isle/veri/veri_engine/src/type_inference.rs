@@ -1346,6 +1346,10 @@ fn add_isle_constraints(
         ("Reg".to_owned(), annotation_ir::Type::BitVector),
         ("Inst".to_owned(), annotation_ir::Type::BitVector),
         ("Value".to_owned(), annotation_ir::Type::BitVector),
+        (
+            "ExtendedValue".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(67),
+        ),
         ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
         ("ImmExtend".to_owned(), annotation_ir::Type::Int),
