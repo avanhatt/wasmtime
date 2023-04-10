@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -13,7 +13,7 @@
 ))
 
 ;;@ (spec (sig (args ty, a, b, c) (r))
-;;@     (assertions (= (+ (c) (* (a) (b))) (r))))
+;;@     (assume  (= (+ (c) (* (a) (b))) (r))))
 (decl madd (Type Reg Reg Reg) Reg)
 (rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
 

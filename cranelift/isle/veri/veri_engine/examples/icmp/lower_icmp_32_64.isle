@@ -8,7 +8,7 @@
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
 ;;@ (spec (sig (args ty) (ret))
-;;@     (assertions (= (ret) 
+;;@     (assume  (= (ret) 
 ;;@                    (if (<= (ty) (32i8:isleType)) 
 ;;@                        (32i8:isleType) 
 ;;@                        (64i8:isleType))),
@@ -42,7 +42,7 @@
 ))
 
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (| (shl (zero_ext (12i8: isleType) 
 ;;@           (extract 67 64 
@@ -75,7 +75,7 @@
 (extern extractor lower_icmp lower_icmp)
 
 ;;@ (spec (sig (args pflags, c) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) 
 ;;@        (extract 67 64 (pflags))
 ;;@        )
@@ -91,7 +91,7 @@
 ;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
 ;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (subs (ty) (x) (y))
 ;;@      ),

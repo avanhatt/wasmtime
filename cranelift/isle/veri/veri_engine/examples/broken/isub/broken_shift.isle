@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -28,7 +28,7 @@
 
 ;; BROKEN: swapped shl, shr
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (switch (extract 9 8 (shift))
 ;;@             ((0i2:bv) (= (ret) (- (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))
 ;;@             ((1i2:bv) (= (ret) (- (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))
@@ -41,7 +41,7 @@
 (rule (sub_shift ty x y z) (alu_rrr_shift (ALUOp.Sub) ty x y z))
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assertions (= (extract 63 8 (a)) (0i56:bv)),
+;;@     (assume  (= (extract 63 8 (a)) (0i56:bv)),
 ;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))
 (decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)

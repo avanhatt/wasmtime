@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -16,7 +16,7 @@
 ))
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (= (ret) (- (x) (zero_ext (regwidth) (y))))
+;;@     (assume  (= (ret) (- (x) (zero_ext (regwidth) (y))))
 ;;@ ))
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
@@ -26,7 +26,7 @@
 
 ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
+;;@     (assume  (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
 ;;@                     (&& (< (- (zero_ext (regwidth) (ret))) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) (0i3:bv))
 ;;@                 )),

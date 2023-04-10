@@ -36,6 +36,7 @@ struct RuleParseTree<'a> {
     // Used for custom verification conditions
     term_args: Vec<String>,
     assumptions: Vec<Expr>,
+    rhs_assertions: Vec<Expr>,
     concrete: Option<ConcreteTest>,
 }
 
@@ -91,6 +92,7 @@ pub struct RuleSemantics {
     // Used for custom verification conditions
     pub term_args: Vec<String>,
     pub assumptions: Vec<Expr>,
+    pub rhs_assertions: Vec<Expr>,
     pub tyctx: TypeContext,
 }
 
@@ -194,6 +196,7 @@ fn type_annotations_using_rule<'a>(
         term_input_bvs: vec![],
         term_args: vec![],
         assumptions: vec![],
+        rhs_assertions: vec![],
         concrete: concrete.clone(),
     };
 
@@ -218,6 +221,7 @@ fn type_annotations_using_rule<'a>(
                 iflet_lhs,
                 annotation_env,
                 &mut annotation_infos,
+                false,
             );
             if iflet_lhs_expr.is_none() {
                 return None;
@@ -228,6 +232,7 @@ fn type_annotations_using_rule<'a>(
                 iflet_rhs,
                 annotation_env,
                 &mut annotation_infos,
+                false,
             );
             if iflet_rhs_expr.is_none() {
                 return None;
@@ -262,13 +267,13 @@ fn type_annotations_using_rule<'a>(
     println!("Typing rule:");
     print!("\tLHS:");
     let lhs_expr =
-        add_rule_constraints(&mut parse_tree, lhs, annotation_env, &mut annotation_infos);
+        add_rule_constraints(&mut parse_tree, lhs, annotation_env, &mut annotation_infos, false);
     if lhs_expr.is_none() {
         return None;
     }
     print!("\n\tRHS:");
     let rhs_expr =
-        add_rule_constraints(&mut parse_tree, rhs, annotation_env, &mut annotation_infos);
+        add_rule_constraints(&mut parse_tree, rhs, annotation_env, &mut annotation_infos, true);
     if rhs_expr.is_none() {
         return None;
     }
@@ -331,6 +336,7 @@ fn type_annotations_using_rule<'a>(
                 lhs: lhs_expr,
                 rhs: rhs_expr,
                 assumptions: parse_tree.assumptions,
+                rhs_assertions: parse_tree.rhs_assertions,
                 quantified_vars,
                 free_vars,
                 term_input_bvs: parse_tree.term_input_bvs,
@@ -1410,12 +1416,13 @@ fn add_rule_constraints(
     curr: &mut TypeVarNode,
     annotation_env: &AnnotationEnv,
     annotation_infos: &mut Vec<AnnotationTypeInfo>,
+    rhs: bool,
 ) -> Option<veri_ir::Expr> {
     // Only relate args to annotations for terms. For leaves, return immediately.
     // For recursive definitions without annotations (like And and Let), recur.
     let mut children = vec![];
     for child in &mut curr.children {
-        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos) {
+        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos, rhs) {
             children.push(e);
         } else {
             return None;
@@ -1525,7 +1532,7 @@ fn add_rule_constraints(
                 term: curr.ident.clone(),
                 var_to_type_var: HashMap::new(),
             };
-            for expr in annotation.assertions {
+            for expr in annotation.assumptions {
                 let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
                 curr.assertions.push(typed_expr.clone());
                 tree.assumptions.push(typed_expr);
@@ -1536,6 +1543,24 @@ fn add_rule_constraints(
                         &mut annotation_info,
                         annotation.sig.clone(),
                     );
+                }
+            }
+            // For assertions, global assume if not RHS, otherwise assert
+            for expr in annotation.assertions {
+                let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
+                curr.assertions.push(typed_expr.clone());
+                if tree.decls.contains_key(t) {
+                    add_isle_constraints(
+                        cranelift_isle::ast::Def::Decl(tree.decls[t].clone()),
+                        tree,
+                        &mut annotation_info,
+                        annotation.sig.clone(),
+                    );
+                }
+                if rhs {
+                    tree.rhs_assertions.push(typed_expr);
+                } else {
+                    tree.assumptions.push(typed_expr);
                 }
             }
 

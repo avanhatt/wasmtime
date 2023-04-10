@@ -54,7 +54,7 @@
 ;; (8i8:bv8) ult
 ;; (9i8:bv8) ulte
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (| (shl (zero_ext (12i8: isleType) 
 ;;@           (extract 67 64 
@@ -84,7 +84,7 @@
 (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
 
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (| (shl (zero_ext (12i8: isleType) 
 ;;@           (extract 67 64 

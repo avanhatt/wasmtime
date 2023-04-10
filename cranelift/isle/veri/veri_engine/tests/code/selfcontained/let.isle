@@ -11,21 +11,21 @@
 
 ;; EXTRACTORS
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) ValueRegs)
 
 ;;@ (spec (sig (args ty, arg) (ret))
-;;@ (assertions (= (ty) (widthof (arg))), (= (arg) (ret))))
+;;@ (assume  (= (ty) (widthof (arg))), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extern extractor has_type has_type)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
 ;;@ (spec (sig (args a, b) (r))
-;;@     (assertions (= (+ (a) (b)) (r))))
+;;@     (assume  (= (+ (a) (b)) (r))))
 (decl iadd (Value Value) Inst)
 (extern extractor iadd iadd)
 
@@ -35,23 +35,23 @@
 
 ;; CONSTRUCTORS
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl value_reg (Reg) ValueRegs)
 (extern constructor value_reg value_reg)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions 
+;;@     (assume  
 ;;@       (= (+ (conv_to (ty) (a)) (conv_to (ty) (b))) (r))))
 (decl add (Type Reg Reg) Reg)
 (extern constructor add add)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (conv_to (regwidth) (arg)) (ret))))
+;;@     (assume  (= (conv_to (regwidth) (arg)) (ret))))
 (decl put_in_reg (Value) Reg)
 (extern constructor put_in_reg put_in_reg)
 
 ;;@ (spec (sig (args) (r))
-;;@     (assertions (= (zero_ext (regwidth) (0i1:bv)) (r))))
+;;@     (assume  (= (zero_ext (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 

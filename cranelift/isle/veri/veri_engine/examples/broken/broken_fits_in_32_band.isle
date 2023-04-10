@@ -1,6 +1,6 @@
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -9,11 +9,11 @@
 ))
 
 ;;@ (spec (sig (args) (ret))
-;;@       (assertions (= (0i64:bv) (ret))))
+;;@       (assume  (= (0i64:bv) (ret))))
 ;;decl ALUOp.And
 
 ;;@ (spec (sig (args) (ret))
-;;@       (assertions (= (1i64:bv) (ret))))
+;;@       (assume  (= (1i64:bv) (ret))))
 ;;decl ALUOp.Or
 
 ;; An ALU operation. This can be paired with several instruction formats
@@ -57,7 +57,7 @@
 
 ;; BROKEN: swapped 0 and 1
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (= (ret) (switch (op) 
+;;@     (assume  (= (ret) (switch (op) 
 ;;@                     ((1i64:bv) (& (a) (b)))
 ;;@                     ((0i64:bv) (| (a) (b)))
 ;;@                     ((2i64:bv) (xor (a) (b)))

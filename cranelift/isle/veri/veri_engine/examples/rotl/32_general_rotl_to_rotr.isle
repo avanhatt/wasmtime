@@ -1,6 +1,6 @@
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -9,17 +9,17 @@
 ))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (- (a) (b)) (r))))
+;;@     (assume  (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
 (extern constructor sub sub)
 
 ;;@ (spec (sig (args) (r))
-;;@     (assertions (= (zero_ext (regwidth) (0i1:bv)) (r))))
+;;@     (assume  (= (zero_ext (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (= (ret) 
+;;@     (assume  (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
 ;;@                        (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y))))
 ;;@                        (rotr (x) (y))

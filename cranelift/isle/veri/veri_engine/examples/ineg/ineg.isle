@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -15,12 +15,12 @@
 (extern constructor alu_rrr alu_rrr)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (- (a) (b)) (r))))
+;;@     (assume  (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 
 ;;@ (spec (sig (args) (r))
-;;@     (assertions (= (zero_ext (regwidth) (0i1:bv)) (r))))
+;;@     (assume  (= (zero_ext (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 

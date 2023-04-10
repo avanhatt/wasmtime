@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -8,7 +8,7 @@
 ))
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (= (ret) 
+;;@     (assume  (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
 ;;@                        (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y))))
 ;;@                        (rotr (x) (y))

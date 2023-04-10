@@ -3,7 +3,7 @@
 (type Imm12 (primitive Imm12))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions 
+;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
 ;;@            ((32i8: isleType) (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b)))))
@@ -15,7 +15,7 @@
 (extern constructor orr orr)
 
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@       (assertions 
+;;@       (assume  
 ;;@          (= (ret) 
 ;;@             (switch (t)
 ;;@               ((8i8: isleType) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
@@ -34,7 +34,7 @@
 
 ;; Helper for generating `lsr` instructions.
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions 
+;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
 ;;@            ((32i8: isleType) (conv_to (regwidth) (shr (extract 31 0 (a)) (zero_ext (32) (b)))))
@@ -47,7 +47,7 @@
 (extern extractor lsr_imm lsr_imm)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions 
+;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
 ;;@            ((32i8: isleType) (conv_to (regwidth) (shl (extract 31 0 (a)) (zero_ext (32) (b)))))
@@ -65,7 +65,7 @@
 ;; }
 
 ;;@ (spec (sig (args ty, x) (ret))
-;;@   (assertions (= (- (int2bv 6 (ty)) (& (x) (- (int2bv 6 (ty)) (1i6:bv)))) (ret))))
+;;@   (assume  (= (- (int2bv 6 (ty)) (& (x) (- (int2bv 6 (ty)) (1i6:bv)))) (ret))))
 (decl rotr_opposite_amount (Type ImmShift) ImmShift)
 (extern constructor rotr_opposite_amount rotr_opposite_amount)
 

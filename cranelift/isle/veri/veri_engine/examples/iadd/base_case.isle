@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -21,7 +21,7 @@
 (extern constructor alu_rrr alu_rrr)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (+ (a) (b)) (r))))
+;;@     (assume  (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
 (rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
 

@@ -3,7 +3,7 @@
 (type Imm12 (primitive Imm12))
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -12,17 +12,17 @@
 ))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (- (a) (b)) (r))))
+;;@     (assume  (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
 (extern constructor sub sub)
 
 ;;@ (spec (sig (args) (r))
-;;@     (assertions (= (zero_ext (regwidth) (0i1:bv)) (r))))
+;;@     (assume  (= (zero_ext (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (= (ret) 
+;;@     (assume  (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
 ;;@                        (zero_ext (regwidth) (rotr (extract 31 0 (x)) (zero_ext (32i0:isleType) (y)))) 
 ;;@                        (rotr (x) (zero_ext (regwidth) (y)))
@@ -41,7 +41,7 @@
 
 ;; Add an assertion that the value fits, using the constand with 56 1's then 6 0's (~63)
 ;;@ (spec (sig (args ty, x) (r))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (r) (extract 5 0 (& (x) (- (int2bv 64 (ty)) (1i64:bv64))))),
 ;;@     (ult (& (x) (- (int2bv 64 (ty)) (1i64:bv64))) (64i64:bv64))
 ;;@   )
@@ -57,7 +57,7 @@
 ;; }
 
 ;;@ (spec (sig (args ty, x) (r))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (- (x)) (r))
 ;;@   )
 ;;@ )

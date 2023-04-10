@@ -1745,6 +1745,13 @@ pub fn run_solver(
             .assert(ctx.smt.named(format!("conceq"), eq))
             .unwrap();
 
+        for (i, a) in rule_sem.rhs_assertions.iter().enumerate() {
+            let p = ctx.vir_expr_to_sexp(a.clone());
+            ctx.smt
+                .assert(ctx.smt.named(format!("rhs_assert{i}"), p))
+                .unwrap();
+        }
+
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
             // Bad! This is a bug!
             // Pop the output assertion
@@ -1809,8 +1816,23 @@ pub fn run_solver(
         side_equality
     };
 
+    // Look at RHS assertions, which are checked, not trusted
+    let rhs_assertions: Vec<SExpr> = rule_sem.rhs_assertions.iter().map(|a| {
+        ctx.vir_expr_to_sexp(a.clone())
+    }).collect();
+
     let assumption_conjunction = ctx.smt.and_many(assumptions);
-    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, condition));
+    let full_condition = if rhs_assertions.len() > 1 {
+        let assertion_conjunction = ctx.smt.and_many(rhs_assertions);
+        ctx.smt.and(condition, assertion_conjunction)
+    } else {
+        condition
+    };
+    println!(
+        "Full verification condition:\n\t{}\n",
+        ctx.smt.display(full_condition)
+    );
+    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, full_condition));
     println!("Running query");
     ctx.smt.assert(query).unwrap();
 

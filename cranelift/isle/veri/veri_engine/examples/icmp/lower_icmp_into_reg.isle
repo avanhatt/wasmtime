@@ -29,12 +29,12 @@
 ;; Lower an integer cond code.
 ;; AVH TODO CHECK
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl cond_code (IntCC) Cond)
 (extern constructor cond_code cond_code)
 
 ;;@ (spec (sig (args c, x, y, in_ty, out_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (switch (c)
 ;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
@@ -87,7 +87,7 @@
 ;; (8i8:bv8) ult
 ;; (9i8:bv8) ulte
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (| (shl (zero_ext (12i8: isleType) 
 ;;@           (extract 67 64 
@@ -139,7 +139,7 @@
 ;;  [ N | Z | C | V |   ... CC ...  ]
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (assertions 
+;;@     (assume  
 ;;@     (= (ret) 
 ;;@        (switch (extract 7 0 (a))
 ;;@          ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))

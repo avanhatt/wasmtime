@@ -14,7 +14,7 @@
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
 ;;@ (spec (sig (args ty) (ret))
-;;@     (assertions (= (ret) 
+;;@     (assume  (= (ret) 
 ;;@                    (if (<= (ty) (32i8:isleType)) 
 ;;@                        (32i8:isleType) 
 ;;@                        (64i8:isleType))),
@@ -37,7 +37,7 @@
 ;; (8i8:bv8) ult
 ;; (9i8:bv8) ulte
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (| (shl (zero_ext (12i8: isleType) 
 ;;@           (extract 67 64 
@@ -72,7 +72,7 @@
 
 ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (|| (< (zero_ext (regwidth) (ret)) (4095i64:bv))
+;;@     (assume  (|| (< (zero_ext (regwidth) (ret)) (4095i64:bv))
 ;;@                     (&& (< (zero_ext (regwidth) (ret)) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (zero_ext (regwidth) (ret))) (0i3:bv))
 ;;@                 )),
@@ -84,7 +84,7 @@
 
 ;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (
+;;@     (assume  (
 ;;@          if (<= (32i0:isleType) (widthof (arg))) 
 ;;@             (= (ret) (conv_to (regwidth) (arg)))             
 ;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
@@ -94,7 +94,7 @@
 (extern constructor put_in_reg_zext32 put_in_reg_zext32)
 
 ;;@ (spec (sig (args pflags, c) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) 
 ;;@        (extract 67 64 (pflags))
 ;;@        )
@@ -110,7 +110,7 @@
 ;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
 ;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
 ;;@ (spec (sig (args ty, x, y, extend) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (subs (ty) (x) 
 ;;@          (switch (extend)
@@ -144,7 +144,7 @@
 ))
 
 ;;@ (spec (sig (args ty, b) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (switch (ty) 
 ;;@          ((8i8: isleType) (if (b) (4i8: bv3) (0i8: bv3)))

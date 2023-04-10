@@ -10,7 +10,7 @@
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
 ;;@ (spec (sig (args ty) (ret))
-;;@     (assertions (= (ret) 
+;;@     (assume  (= (ret) 
 ;;@                    (if (<= (ty) (32i8:isleType)) 
 ;;@                        (32i8:isleType) 
 ;;@                        (64i8:isleType))),
@@ -46,7 +46,7 @@
 ;; NOTE: due to rule priorities, only applies to 32 and 64
 
 ;;@ (spec (sig (args c, x, y, in_ty) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (| (shl (zero_ext (12i8: isleType) 
 ;;@           (extract 67 64 
@@ -75,7 +75,7 @@
 (decl lower_icmp_const (IntCC Value u64 Type) FlagsAndCC)
 
 ;;@ (spec (sig (args pflags, c) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) 
 ;;@        (extract 67 64 (pflags))
 ;;@        )
@@ -92,7 +92,7 @@
 ;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
 ;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (subs (ty) (x) (y))
 ;;@      ),
@@ -113,7 +113,7 @@
 ;; all bits in the destination register in a defined state, i.e. smaller types
 ;; such as `I8` are either sign- or zero-extended.
 ;;@ (spec (sig (args ty, e, x) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (switch (ty)
 ;;@        ((8i8: isleType) (if (= (e) (0i1: isleType)) (zero_ext (regwidth) (extract 7 0 (x))) (sign_ext (regwidth) (extract 7 0 (x)))))
@@ -139,11 +139,11 @@
 ))
 
 ;;@ (spec (sig (args) (ret))
-;;@     (assertions (= (0i1: isleType) (ret))))
+;;@     (assume  (= (0i1: isleType) (ret))))
 ;;decl ImmExtend.Zero 
 
 ;;@ (spec (sig (args) (ret))
-;;@     (assertions (= (1i1: isleType) (ret))))
+;;@     (assume  (= (1i1: isleType) (ret))))
 ;;decl ImmExtend.Sign 
 
 (rule -2 (lower_icmp_const cond rn c ty)

@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -15,7 +15,7 @@
 ))
 
 ;;@ (spec (sig (args a, b, c, d) (ret))
-;;@     (assertions (if (b) 
+;;@     (assume  (if (b) 
 ;;@                     (= (ret) (sign_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
 ;;@                     (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
 ;;@                 )

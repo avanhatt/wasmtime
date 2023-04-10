@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -50,13 +50,13 @@
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (- (a) (b)) (r))))
+;;@     (assume  (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assertions (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
 ;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
@@ -66,7 +66,7 @@
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assertions (= (+ (a) (sign_ext (a) (b))) (r))))
+;;@     (assume  (= (+ (a) (sign_ext (a) (b))) (r))))
 (decl add_imm (Type Reg Imm12) Reg)
 (rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
 
