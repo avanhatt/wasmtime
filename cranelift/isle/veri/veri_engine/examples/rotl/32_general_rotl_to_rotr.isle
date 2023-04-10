@@ -21,9 +21,8 @@
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y)))) }
-;;@                        else
-;;@                        { (rotr (x) (y)) }
+;;@                        (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y))))
+;;@                        (rotr (x) (y))
 ;;@                    )
 ;;@                 ),
 ;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))

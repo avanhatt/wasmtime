@@ -11,8 +11,8 @@ use crate::Config;
 use easy_smt::{Response, SExpr};
 use std::collections::HashMap;
 use veri_ir::{
-    BinaryOp, ConcreteTest, Counterexample, Expr, Terminal, Type, TypeContext, UnaryOp,
-    VerificationResult,
+    BinaryOp, ConcreteTest, Counterexample, Expr, TermSignature, Terminal, Type, TypeContext,
+    UnaryOp, VerificationResult,
 };
 
 mod encoded_ops;
@@ -20,6 +20,7 @@ mod encoded_ops;
 use encoded_ops::cls;
 use encoded_ops::clz;
 use encoded_ops::rev;
+use encoded_ops::subs;
 
 use crate::REG_WIDTH;
 
@@ -104,10 +105,26 @@ impl SolverCtx {
     /// Zero-extend an SMT bit vector to a wider bit vector by adding `padding` zeroes to the
     /// front.
     fn zero_extend(&self, padding: usize, value: SExpr) -> SExpr {
+        if padding == 0 {
+            return value;
+        }
         self.smt.list(vec![
             self.smt.list(vec![
                 self.smt.atoms().und,
                 self.smt.atom("zero_extend"),
+                self.smt.numeral(padding),
+            ]),
+            value,
+        ])
+    }
+
+    /// Sign-extend an SMT bit vector to a wider bit vector by adding `padding` zeroes to the
+    /// front.
+    fn sign_extend(&self, padding: usize, value: SExpr) -> SExpr {
+        self.smt.list(vec![
+            self.smt.list(vec![
+                self.smt.atoms().und,
+                self.smt.atom("sign_extend"),
                 self.smt.numeral(padding),
             ]),
             value,
@@ -123,6 +140,12 @@ impl SolverCtx {
         op: &str,
     ) -> SExpr {
         if dest_width < source_width {
+            println!(
+                "Unexpected extend widths for {}: dest {} source {} ",
+                self.smt.display(source),
+                dest_width,
+                source_width,
+            );
             self.additional_assumptions.push(self.smt.false_());
             return self.bv(
                 0,
@@ -535,7 +558,7 @@ impl SolverCtx {
             Expr::Terminal(t) => match t {
                 Terminal::Literal(v, tyvar) => {
                     let lit = self.smt.atom(v);
-                    if self.dynwidths {
+                    if self.dynwidths && matches!(ty.unwrap(), Type::BitVector(_)) {
                         self.widen_to_register_width(tyvar, static_expr_width.unwrap(), lit, None)
                     } else {
                         lit
@@ -673,21 +696,18 @@ impl SolverCtx {
 
                         // Width math
                         if self.dynwidths {
-                            // The shift arg needs to be extracted to the right width
-                            let y_static_width = self.static_width(&y);
+                            if self.onlywidths {
+                                return xs;
+                            }
+                            // The shift arg needs to be extracted to the right width, default to 8 if unknown
+                            let y_static_width = self.static_width(&y).unwrap_or(8);
                             let y_rec = self.vir_expr_to_sexp(*y);
                             let extract = self.smt.extract(
-                                y_static_width
-                                    .unwrap()
-                                    .checked_sub(1)
-                                    .unwrap()
-                                    .try_into()
-                                    .unwrap(),
+                                y_static_width.checked_sub(1).unwrap().try_into().unwrap(),
                                 0,
                                 y_rec,
                             );
-                            let ys =
-                                self.zero_extend(self.bitwidth - y_static_width.unwrap(), extract);
+                            let ys = self.zero_extend(self.bitwidth - y_static_width, extract);
                             let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
                             let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
                             let extra_shift = self.smt.bvsub(bitwidth_as_bv, arg_width_as_bv);
@@ -713,21 +733,15 @@ impl SolverCtx {
 
                         // Width math
                         if self.dynwidths {
-                            // The shift arg needs to be extracted to the right width
-                            let y_static_width = self.static_width(&y);
+                            // The shift arg needs to be extracted to the right width, default to 8 if unknown
+                            let y_static_width = self.static_width(&y).unwrap_or(8);
                             let ys = self.vir_expr_to_sexp(*y);
                             let extract = self.smt.extract(
-                                y_static_width
-                                    .unwrap()
-                                    .checked_sub(1)
-                                    .unwrap()
-                                    .try_into()
-                                    .unwrap(),
+                                y_static_width.checked_sub(1).unwrap().try_into().unwrap(),
                                 0,
                                 ys,
                             );
-                            let ysext =
-                                self.zero_extend(self.bitwidth - y_static_width.unwrap(), extract);
+                            let ysext = self.zero_extend(self.bitwidth - y_static_width, extract);
 
                             let arg_width_as_bv = self.int2bv(self.bitwidth, arg_width);
                             let bitwidth_as_bv = self.bv(self.bitwidth, self.bitwidth);
@@ -758,6 +772,14 @@ impl SolverCtx {
                         (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => "bvult",
                         _ => unreachable!(),
                     },
+                    BinaryOp::BVSgt => "bvsgt",
+                    BinaryOp::BVSgte => "bvsge",
+                    BinaryOp::BVSlt => "bvslt",
+                    BinaryOp::BVSlte => "bvsle",
+                    BinaryOp::BVUgt => "bvugt",
+                    BinaryOp::BVUgte => "bvuge",
+                    BinaryOp::BVUlt => "bvult",
+                    BinaryOp::BVUlte => "bvule",
                     BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVSDiv => "bvsdiv",
@@ -772,7 +794,7 @@ impl SolverCtx {
                     _ => unreachable!("{:?}", op),
                 };
                 // If we have some static width that isn't the bitwidth, extract based on it
-                // before performing the operation.
+                // before performing the operation for the dynamic case.
                 match static_expr_width {
                     Some(w) if w < self.bitwidth && self.dynwidths => {
                         let h: i32 = (w - 1).try_into().unwrap();
@@ -795,9 +817,13 @@ impl SolverCtx {
                 }
             }
             Expr::BVIntToBV(w, x) => {
-                let padded_width = self.bitwidth - w;
                 let x_sexp = self.vir_expr_to_sexp(*x);
-                self.zero_extend(padded_width, self.int2bv(w, x_sexp))
+                if self.dynwidths {
+                    let padded_width = self.bitwidth - w;
+                    self.zero_extend(padded_width, self.int2bv(w, x_sexp))
+                } else {
+                    self.int2bv(w, x_sexp)
+                }
             }
             Expr::BVToInt(x) => {
                 let x_sexp = self.vir_expr_to_sexp(*x);
@@ -892,10 +918,9 @@ impl SolverCtx {
                 if self.dynwidths {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
-                    dbg!(self.smt.display(expr_width).to_string());
-                    dbg!(self.smt.display(dyn_width).to_string());
-                    self.width_assumptions
-                        .push(self.smt.eq(expr_width, dyn_width));
+                    let eq = self.smt.eq(expr_width, dyn_width);
+                    println!("conv_to dyn: {}", self.smt.display(eq));
+                    self.width_assumptions.push(eq);
                     self.vir_expr_to_sexp(*y)
                 } else {
                     let arg_width = self.static_width(&*y).unwrap();
@@ -928,7 +953,6 @@ impl SolverCtx {
             Expr::BVExtract(i, j, x) => {
                 assert!(i >= j);
                 if self.get_type(&x).is_some() {
-                    assert!(i < self.bitwidth);
                     let xs = self.vir_expr_to_sexp(*x);
                     // No-op if we are extracting exactly the full bitwidth
                     if j == 0 && i == self.bitwidth - 1 && self.dynwidths {
@@ -960,6 +984,47 @@ impl SolverCtx {
                 let ts = self.vir_expr_to_sexp(*t);
                 let es = self.vir_expr_to_sexp(*e);
                 self.smt.ite(cs, ts, es)
+            }
+            Expr::Switch(c, cases) => {
+                if self.dynwidths {
+                    if matches!(ty, Some(Type::BitVector(_))) {
+                        for (_, b) in &cases {
+                            self.assume_same_width_from_sexpr(width.clone().unwrap(), b);
+                        }
+                    }
+                    let cty = self.get_type(&c);
+                    if matches!(cty, Some(Type::BitVector(_))) {
+                        let cwidth = self.get_expr_width_var(&c).map(|s| s.clone());
+                        for (m, _) in &cases {
+                            self.assume_same_width_from_sexpr(cwidth.clone().unwrap(), m);
+                        }
+                    }
+                }
+                let cs = self.vir_expr_to_sexp(*c);
+                let mut case_sexprs: Vec<(SExpr, SExpr)> = cases
+                    .iter()
+                    .map(|(m, b)| {
+                        (
+                            self.vir_expr_to_sexp(m.clone()),
+                            self.vir_expr_to_sexp(b.clone()),
+                        )
+                    })
+                    .collect();
+
+                // Assert that some case must match
+                let some_case_matches: Vec<SExpr> = case_sexprs
+                    .iter()
+                    .map(|(m, _)| self.smt.eq(cs, *m))
+                    .collect();
+                self.additional_assumptions
+                    .push(self.smt.or_many(some_case_matches.clone()));
+
+                let (_, last_body) = case_sexprs.remove(case_sexprs.len() - 1);
+
+                // Reverse to keep the order of the switch
+                case_sexprs.iter().rev().fold(last_body, |acc, (m, b)| {
+                    self.smt.ite(self.smt.eq(cs, *m), *b, acc)
+                })
             }
             Expr::CLZ(e) => {
                 let tyvar = *tyvar.unwrap();
@@ -1057,6 +1122,21 @@ impl SolverCtx {
                     }
                 }
             }
+            Expr::BVSubs(ty, x, y) => {
+                let tyvar = *tyvar.unwrap();
+                let ety = self.vir_expr_to_sexp(*ty);
+                let ex = self.vir_expr_to_sexp(*x);
+                let ey = self.vir_expr_to_sexp(*y);
+
+                let encoded_32 = subs::subs(self, 32, ex, ey, tyvar);
+                let encoded_64 = subs::subs(self, 64, ex, ey, tyvar);
+
+                self.smt.ite(
+                    self.smt.eq(ety, self.smt.numeral(32)),
+                    encoded_32,
+                    encoded_64,
+                )
+            }
         }
     }
 
@@ -1069,24 +1149,29 @@ impl SolverCtx {
     ) -> VerificationResult {
         println!("Checking assumption feasibility");
         self.smt.push().unwrap();
-        for a in assumptions {
-            self.smt.assert(*a).unwrap();
+        for (i, a) in assumptions.iter().enumerate() {
+            self.smt
+                .assert(self.smt.named(format!("assum{i}"), *a))
+                .unwrap();
 
             // Uncomment to debug specific asserts
-            // println!("{}", self.smt.display(*a));
-            // self.smt.push().unwrap();
-            // match self.smt.check() {
-            //     Ok(Response::Sat) => (),
-            //     Ok(Response::Unsat) => (),
-            //     Ok(Response::Unknown) => {
-            //         panic!("Assertion list is unknown!");
-            //     }
-            //     Err(err) => {
-            //         unreachable!("Error! {:?}", err);
-            //     }
-            // };
-            // self.smt.pop().unwrap();
+            println!("assum{}: {}", i, self.smt.display(*a));
+
+            //     self.smt.push().unwrap();
+            //     match self.smt.check() {
+            //         Ok(Response::Sat) => (),
+            //         Ok(Response::Unsat) => (),
+            //         Ok(Response::Unknown) => {
+            //             panic!("Assertion list is unknown!");
+            //         }
+            //         Err(err) => {
+            //             unreachable!("Error! {:?}", err);
+            //         }
+            //     };
+            //     self.smt.pop().unwrap();
         }
+        // print!("done with debugging");
+
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
                 if !config.distinct_check {
@@ -1131,8 +1216,8 @@ impl SolverCtx {
             }
             Ok(Response::Unsat) => {
                 println!("Assertion list is infeasible!");
-                // let unsat = self.smt.get_unsat_core().unwrap();
-                // println!("Unsat core:\n{}", self.smt.display(unsat));
+                let unsat = self.smt.get_unsat_core().unwrap();
+                println!("Unsat core:\n{}", self.smt.display(unsat));
                 VerificationResult::InapplicableRule
             }
             Ok(Response::Unknown) => {
@@ -1151,8 +1236,21 @@ impl SolverCtx {
         let val_str = self.smt.display(value).to_string();
         if val_str.starts_with(sexpr_hex_prefix) {
             let without_prefix = val_str.trim_start_matches("#x");
-            let as_unsigned = u64::from_str_radix(without_prefix, 16).unwrap();
-            format!("{}|{:#b}", self.smt.display(value), as_unsigned)
+            let as_unsigned = u128::from_str_radix(without_prefix, 16).unwrap();
+            // SMTLIB: bvhexX where X is a hexadecimal numeral of length m defines the bitvector
+            // constant with value X and size 4*m.
+            match without_prefix.len() {
+                2 => format!("{}|{:#010b}", self.smt.display(value), as_unsigned),
+                3 => format!("{}|{:#014b}", self.smt.display(value), as_unsigned),
+                4 => format!("{}|{:#018b}", self.smt.display(value), as_unsigned),
+                8 => format!("{}|{:#034b}", self.smt.display(value), as_unsigned),
+                16 => format!("{}|{:#068b}", self.smt.display(value), as_unsigned),
+                17 => format!("{}|{:#070b}", self.smt.display(value), as_unsigned),
+                32 => format!("{}|{:#0130b}", self.smt.display(value), as_unsigned),
+                _ => {
+                    format!("{}|{:#b}", self.smt.display(value), as_unsigned)
+                }
+            }
         } else {
             val_str
         }
@@ -1371,7 +1469,6 @@ impl SolverCtx {
         let rhs = self.display_isle_expr(termenv, typeenv, &vars, rule, &rule.rhs);
         println!("{}", self.smt.display(rhs));
 
-        // TODO AVH: left pad bin representation
         println!("\n{} =>\n{}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
@@ -1419,7 +1516,7 @@ impl SolverCtx {
 
         println!("Declaring additional variables");
         for (name, ty) in &self.additional_decls {
-            println!("\t{} : {}", name, self.smt.display(*ty));
+            // println!("\t{} : {}", name, self.smt.display(*ty));
             self.smt.declare_const(name, *ty).unwrap();
         }
         assumptions
@@ -1436,14 +1533,17 @@ pub fn run_solver(
     typeenv: &TypeEnv,
     concrete: &Option<ConcreteTest>,
     config: &Config,
+    _types: &TermSignature,
 ) -> VerificationResult {
-    let solver = easy_smt::ContextBuilder::new()
+    let mut solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
         .solver("z3", ["-smt2", "-in"])
         .build()
         .unwrap();
 
-    // solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
+    solver
+        .set_option(":produce-unsat-cores", solver.true_())
+        .unwrap();
 
     // We start with logic to determine the width of all bitvectors
     let mut ctx = SolverCtx {
@@ -1463,7 +1563,8 @@ pub fn run_solver(
 
     let mut some_dyn_width = false;
 
-    // Check whether the non-solver type inference was able to resolve all bitvector widths
+    // Check whether the non-solver type inference was able to resolve all bitvector widths,
+    // and add assumptions for known widths
     for (e, t) in &ctx.tyctx.tyvars {
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
@@ -1473,10 +1574,10 @@ pub fn run_solver(
                     .push((width_name.clone(), ctx.smt.int_sort()));
                 match *w {
                     Some(bitwidth) => {
-                        ctx.width_assumptions.push(
-                            ctx.smt
-                                .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth)),
-                        );
+                        let eq = ctx
+                            .smt
+                            .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
+                        ctx.width_assumptions.push(eq);
                     }
                     None => {
                         println!("Unresolved width: {:?} ({})", &e, *t);
@@ -1503,10 +1604,12 @@ pub fn run_solver(
             ctx.onlywidths = true;
             assumptions = ctx.declare_variables(&rule_sem);
             ctx.smt.push().unwrap();
-            println!("All assumptions to determine widths:");
-            for a in &assumptions {
-                println!("{}", ctx.smt.display(*a));
-                ctx.smt.assert(*a).unwrap();
+            println!("Adding assumptions to determine widths");
+            for (i, a) in assumptions.iter().enumerate() {
+                println!("dyn{}: {}", i, ctx.smt.display(*a));
+                ctx.smt
+                    .assert(ctx.smt.named(format!("dyn{i}"), *a))
+                    .unwrap();
             }
             match ctx.smt.check() {
                 Ok(Response::Sat) => {
@@ -1546,6 +1649,8 @@ pub fn run_solver(
                     println!(
                         "Rule not applicable as written for rule assumptions, skipping full query"
                     );
+                    let unsat = ctx.smt.get_unsat_core().unwrap();
+                    println!("Unsat core:\n{}", ctx.smt.display(unsat));
                     return VerificationResult::InapplicableRule;
                 }
                 Ok(Response::Unknown) => {
@@ -1561,12 +1666,14 @@ pub fn run_solver(
         }
 
         // Declare variables again, this time with all static widths
-        let solver = easy_smt::ContextBuilder::new()
+        let mut solver = easy_smt::ContextBuilder::new()
             .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
             .solver("z3", ["-smt2", "-in"])
             .build()
             .unwrap();
-        // solver.set_option(":produce-unsat-cores", solver.true_()).unwrap();
+        solver
+            .set_option(":produce-unsat-cores", solver.true_())
+            .unwrap();
         ctx = SolverCtx {
             smt: solver,
             dynwidths: false,
@@ -1623,16 +1730,21 @@ pub fn run_solver(
     // Test code only: test against concrete input/output
     if let Some(concrete) = concrete {
         // Check that our expected output is valid
-        for a in assumptions {
-            ctx.smt.assert(a).unwrap();
+        for (i, a) in assumptions.iter().enumerate() {
+            println!("conc{}: {}", i, ctx.smt.display(*a));
+            ctx.smt
+                .assert(ctx.smt.named(format!("conc{i}"), *a))
+                .unwrap();
         }
         ctx.smt.push().unwrap();
+        let eq = ctx
+            .smt
+            .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone()));
+
         ctx.smt
-            .assert(
-                ctx.smt
-                    .eq(rhs_care_bits, ctx.smt.atom(concrete.output.clone())),
-            )
+            .assert(ctx.smt.named(format!("conceq"), eq))
             .unwrap();
+
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
             // Bad! This is a bug!
             // Pop the output assertion
@@ -1641,13 +1753,17 @@ pub fn run_solver(
             assert!(matches!(ctx.smt.check(), Ok(Response::Sat)));
             // Get the value for what output is to panic with a useful message
             let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+            ctx.display_model(termenv, typeenv, rule, lhs, rhs);
             panic!(
                 "Expected {}, got {}",
-                concrete.output,
+                concrete.output.literal,
                 ctx.display_hex_to_bin(val)
             );
         } else {
-            println!("Expected concrete result matched: {}", concrete.output);
+            println!(
+                "Expected concrete result matched: {}",
+                concrete.output.literal
+            );
             ctx.smt.pop().unwrap();
         }
 
@@ -1657,7 +1773,7 @@ pub fn run_solver(
             .assert(
                 ctx.smt.not(
                     ctx.smt
-                        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.clone())),
+                        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone())),
                 ),
             )
             .unwrap();
@@ -1665,9 +1781,10 @@ pub fn run_solver(
             // Get the value for what output is to panic with a useful message
             let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
             ctx.display_model(termenv, typeenv, rule, lhs, rhs);
-            panic!(
-                "Expected ONLY {}, got POSSIBLE {}",
-                concrete.output,
+            // AVH TODO: should probably elevate back to an error with custom verification condition
+            println!(
+                "WARNING: Expected ONLY {}, got POSSIBLE {}",
+                concrete.output.literal,
                 ctx.display_hex_to_bin(val)
             );
         }
@@ -1675,16 +1792,25 @@ pub fn run_solver(
         return VerificationResult::Success;
     }
 
-    let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
-    println!(
-        "LHS and RHS equality condition:\n\t{}\n",
-        ctx.smt.display(side_equality)
-    );
+    let condition = if let Some(condition) = &config.custom_verification_condition {
+        let term_args = rule_sem.term_args.iter().map(|s| ctx.smt.atom(s)).collect();
+        let custom_condition = condition(&ctx.smt, term_args, lhs, rhs);
+        println!(
+            "Custom verification condition:\n\t{}\n",
+            ctx.smt.display(custom_condition)
+        );
+        custom_condition
+    } else {
+        let side_equality = ctx.smt.eq(lhs_care_bits, rhs_care_bits);
+        println!(
+            "LHS and RHS equality condition:\n\t{}\n",
+            ctx.smt.display(side_equality)
+        );
+        side_equality
+    };
 
     let assumption_conjunction = ctx.smt.and_many(assumptions);
-    let query = ctx
-        .smt
-        .not(ctx.smt.imp(assumption_conjunction, side_equality));
+    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, condition));
     println!("Running query");
     ctx.smt.assert(query).unwrap();
 

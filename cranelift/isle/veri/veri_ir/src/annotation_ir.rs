@@ -169,6 +169,15 @@ pub enum Expr {
     Lte(Box<Expr>, Box<Expr>, u32),
     Lt(Box<Expr>, Box<Expr>, u32),
 
+    BVSgt(Box<Expr>, Box<Expr>, u32),
+    BVSgte(Box<Expr>, Box<Expr>, u32),
+    BVSlt(Box<Expr>, Box<Expr>, u32),
+    BVSlte(Box<Expr>, Box<Expr>, u32),
+    BVUgt(Box<Expr>, Box<Expr>, u32),
+    BVUgte(Box<Expr>, Box<Expr>, u32),
+    BVUlt(Box<Expr>, Box<Expr>, u32),
+    BVUlte(Box<Expr>, Box<Expr>, u32),
+
     // Bitvector operations
     //      Note: these follow the naming conventions of the SMT theory of bitvectors:
     //      https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -181,6 +190,7 @@ pub enum Expr {
     A64CLS(Box<Expr>, Box<Expr>, u32),
     Rev(Box<Expr>, u32),
     A64Rev(Box<Expr>, Box<Expr>, u32),
+
 
     // Binary operators
     BVMul(Box<Expr>, Box<Expr>, u32),
@@ -198,6 +208,9 @@ pub enum Expr {
     BVShl(Box<Expr>, Box<Expr>, u32),
     BVShr(Box<Expr>, Box<Expr>, u32),
     BVAShr(Box<Expr>, Box<Expr>, u32),
+
+    // Includes type
+    BVSubs(Box<Expr>, Box<Expr>, Box<Expr>, u32),
 
     // Conversions
     // Zero extend, static and dynamic width
@@ -224,6 +237,9 @@ pub enum Expr {
 
     // Conditional if-then-else
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>, u32),
+
+    // Switch
+    Switch(Box<Expr>, Vec<(Expr, Expr)>, u32),
 }
 
 impl Expr {
@@ -261,6 +277,14 @@ impl Expr {
             | Expr::Imp(_, _, t)
             | Expr::Eq(_, _, t)
             | Expr::Lte(_, _, t)
+            | Expr::BVSgt(_, _, t)
+            | Expr::BVSgte(_, _, t)
+            | Expr::BVSlt(_, _, t)
+            | Expr::BVSlte(_, _, t)
+            | Expr::BVUgt(_, _, t)
+            | Expr::BVUgte(_, _, t)
+            | Expr::BVUlt(_, _, t)
+            | Expr::BVUlte(_, _, t)
             | Expr::BVMul(_, _, t)
             | Expr::BVUDiv(_, _, t)
             | Expr::BVSDiv(_, _, t)
@@ -285,8 +309,10 @@ impl Expr {
             | Expr::BVToInt(_, t)
             | Expr::BVConvTo(_, _, t)
             | Expr::BVConvToVarWidth(_, _, t)
+            | Expr::BVExtract(_, _, _, t)
+            | Expr::BVSubs(_, _, _, t)
             | Expr::Conditional(_, _, _, t)
-            | Expr::BVExtract(_, _, _, t) => *t,
+            | Expr::Switch(_, _, t)  => *t,
         }
     }
 }

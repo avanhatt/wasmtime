@@ -47,6 +47,10 @@ TypeList = Comma<Type>;
 
 ExprList = Comma<Expr>;
 
+Pair: (Expr, Expr) = {
+   "(" <c:Expr> <b:Expr> ")" => (*c, *b)
+}
+
 pub TermSignature: TermSignature = {
     "(" "sig" <a:Args> "(" <r:BoundVar> ")" ")" => 
         TermSignature{args: a, ret: r},
@@ -89,6 +93,15 @@ pub Expr: Box<Expr> = {
     "(" "<=" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lte(u, v, 0)),
     "(" "<" <u:Expr> <v:Expr> ")" => Box::new(Expr::Lt(u, v, 0)),
 
+    "(" "sgt" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSgt(u, v, 0)),
+    "(" "sgte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSgte(u, v, 0)),
+    "(" "slt" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSlt(u, v, 0)),
+    "(" "slte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSlte(u, v, 0)),
+    "(" "ugt" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUgt(u, v, 0)),
+    "(" "ugte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUgte(u, v, 0)),
+    "(" "ult" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUlt(u, v, 0)),
+    "(" "ulte" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUlte(u, v, 0)),
+
     "(" "-" <u:Expr> ")" => Box::new(Expr::BVNeg(u, 0)),
     "(" "~" <u:Expr> ")" => Box::new(Expr::BVNot(u, 0)),
     "(" "clz" <u:Expr> ")" => Box::new(Expr::CLZ(u, 0)),
@@ -97,6 +110,8 @@ pub Expr: Box<Expr> = {
     "(" "a64cls" <ty:Expr> <u:Expr> ")" => Box::new(Expr::A64CLS(ty, u, 0)),
     "(" "rev" <u:Expr> ")" => Box::new(Expr::Rev(u, 0)),
     "(" "a64rev" <ty:Expr> <u:Expr> ")" => Box::new(Expr::A64Rev(ty, u, 0)),
+
+    "(" "subs" <ty:Expr> <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSubs(ty, u, v, 0)),
 
     "(" "*" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVMul(u, v, 0)),
     "(" "/" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),
@@ -124,8 +139,10 @@ pub Expr: Box<Expr> = {
     "(" "conv_to" <n:Expr> <v:Expr> ")" => 
         Box::new(Expr::BVConvToVarWidth(n, v, 0)),
 
-    "(" "if" <c:Expr> "{" <e1:Expr> "}" "else" "{" <e2:Expr> "}" ")" =>
+    "(" "if" <c:Expr> <e1:Expr> <e2:Expr> ")" =>
         Box::new(Expr::Conditional(c, e1, e2, 0)),
+
+    "(" "switch" <c:Expr> <l:Pair+> ")" => Box::new(Expr::Switch(c, l, 0)),
 
     "(" "int2bv" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v, 0)),
     "(" "bv2int" <v:Expr> ")" => Box::new(Expr::BVToInt(v, 0)),

@@ -8,9 +8,9 @@ use isle::ast::{Decl, Defs};
 use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
 use itertools::izip;
 use veri_annotation::parser_wrapper::AnnotationEnv;
-use veri_ir::{annotation_ir, ConcreteTest, Expr, Type, TypeContext};
+use veri_ir::{annotation_ir, ConcreteTest, Expr, TermSignature, Type, TypeContext};
 
-use crate::REG_WIDTH;
+use crate::{FLAGS_WIDTH, REG_WIDTH};
 
 #[derive(Clone, Debug)]
 struct RuleParseTree<'a> {
@@ -33,6 +33,8 @@ struct RuleParseTree<'a> {
     free_vars: HashSet<(String, u32)>,
     // Used to check distinct models
     term_input_bvs: Vec<String>,
+    // Used for custom verification conditions
+    term_args: Vec<String>,
     assumptions: Vec<Expr>,
     concrete: Option<ConcreteTest>,
 }
@@ -86,6 +88,8 @@ pub struct RuleSemantics {
     pub quantified_vars: Vec<veri_ir::BoundVar>,
     pub free_vars: Vec<veri_ir::BoundVar>,
     pub term_input_bvs: Vec<String>,
+    // Used for custom verification conditions
+    pub term_args: Vec<String>,
     pub assumptions: Vec<Expr>,
     pub tyctx: TypeContext,
 }
@@ -96,7 +100,7 @@ pub fn type_rules_with_term_and_types(
     typeenv: &TypeEnv,
     annotation_env: &AnnotationEnv,
     term: &String,
-    types: &Vec<Type>,
+    types: &TermSignature,
     concrete: &Option<ConcreteTest>,
 ) -> HashMap<isle::sema::RuleId, RuleSemantics> {
     let decls = build_decl_map(defs);
@@ -173,7 +177,7 @@ fn type_annotations_using_rule<'a>(
     typeenv: &'a TypeEnv,
     termenv: &'a TermEnv,
     term: &String,
-    types: &Vec<Type>,
+    types: &TermSignature,
     concrete: &'a Option<ConcreteTest>,
 ) -> Option<RuleSemantics> {
     let mut parse_tree = RuleParseTree {
@@ -188,6 +192,7 @@ fn type_annotations_using_rule<'a>(
         quantified_vars: HashSet::new(),
         free_vars: HashSet::new(),
         term_input_bvs: vec![],
+        term_args: vec![],
         assumptions: vec![],
         concrete: concrete.clone(),
     };
@@ -329,6 +334,7 @@ fn type_annotations_using_rule<'a>(
                 quantified_vars,
                 free_vars,
                 term_input_bvs: parse_tree.term_input_bvs,
+                term_args: parse_tree.term_args,
                 tyctx: TypeContext {
                     tyvars: parse_tree.ty_vars.clone(),
                     tymap,
@@ -490,6 +496,134 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (
                 veri_ir::Expr::Binary(veri_ir::BinaryOp::And, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSgt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSgt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSgte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSgte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSlt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSlt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVSlte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSlte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUgt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUgt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUgte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUgte, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUlt(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUlt, Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
+        annotation_ir::Expr::BVUlte(x, y, _) => {
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVUlte, Box::new(e1), Box::new(e2)),
                 t,
             )
         }
@@ -1028,6 +1162,25 @@ fn add_annotation_constraints(
                 t,
             )
         }
+        annotation_ir::Expr::Switch(c, cases, _) => {
+            let (c_expr, c_t) = add_annotation_constraints(*c, tree, annotation_info);
+
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            let mut case_exprs = vec![];
+            for (m, b) in cases {
+                let (case_expr, case_t) =
+                    add_annotation_constraints(m.clone(), tree, annotation_info);
+                let (body_expr, body_t) =
+                    add_annotation_constraints(b.clone(), tree, annotation_info);
+
+                tree.var_constraints.insert(TypeExpr::Variable(c_t, case_t));
+                tree.var_constraints.insert(TypeExpr::Variable(t, body_t));
+                case_exprs.push((case_expr, body_expr));
+            }
+            (veri_ir::Expr::Switch(Box::new(c_expr), case_exprs), t)
+        }
         annotation_ir::Expr::CLZ(x, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
 
@@ -1118,9 +1271,39 @@ fn add_annotation_constraints(
             tree.next_type_var += 1;
             (veri_ir::Expr::A64Rev(Box::new(e0), Box::new(e1)), t)
         }
+        annotation_ir::Expr::BVSubs(ty, x, y, _) => {
+            let (e0, t0) = add_annotation_constraints(*ty, tree, annotation_info);
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+            let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
+
+            let t = tree.next_type_var;
+
+            // For aarch64, subs sets 4 flags. Model these as 4 bit appended to the left of the
+            // register.
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t,
+                annotation_ir::Type::BitVectorWithWidth(REG_WIDTH + FLAGS_WIDTH),
+            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t0, annotation_ir::Type::Int));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t2, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::BVSubs(Box::new(e0), Box::new(e1), Box::new(e2)),
+                t,
+            )
+        }
+
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
+    // let fmt = format!("{}:\t{:?}", t, e);
+    // dbg!(fmt);
     (e, t)
 }
 
@@ -1153,14 +1336,13 @@ fn add_isle_constraints(
             annotation_ir::Type::BitVectorWithWidth(64),
         ),
         ("u8".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
-        // AVH TODO: needed for lower from rolt to small_rotr, but should rework.
         ("usize".to_owned(), annotation_ir::Type::BitVector),
         ("bool".to_owned(), annotation_ir::Type::Bool),
         (
             "MoveWideConst".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(16),
         ),
-        ("OperandSize".to_owned(), annotation_ir::Type::BitVector),
+        ("OperandSize".to_owned(), annotation_ir::Type::Int),
         ("Reg".to_owned(), annotation_ir::Type::BitVector),
         ("Inst".to_owned(), annotation_ir::Type::BitVector),
         ("Value".to_owned(), annotation_ir::Type::BitVector),
@@ -1578,14 +1760,23 @@ fn solve_constraints(
                             // been typed (with a width), ignore the constraint
                             if let Some(var_type) = get_var_type_concrete(*v, &union_find) {
                                 match var_type {
-                                annotation_ir::Type::BitVectorWithWidth(_) => {
-                                    continue;
+                                    annotation_ir::Type::BitVectorWithWidth(_) => {
+                                        continue;
+                                    }
+                                    annotation_ir::Type::BitVectorUnknown(_) => {
+                                        continue;
+                                    }
+                                    _ => {
+                                        let e = ty_vars
+                                            .unwrap()
+                                            .iter()
+                                            .find_map(
+                                                |(k, &u)| if u == *v { Some(k) } else { None },
+                                            )
+                                            .unwrap();
+                                        panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}\n{:?}", var_type, b, e)
+                                    }
                                 }
-                                annotation_ir::Type::BitVectorUnknown(_) => {
-                                    continue;
-                                }
-                                _ => panic!("Var was already typed as {:#?} but currently processing constraint: {:#?}", var_type, b),
-                            }
 
                             // otherwise add it to a generic bv bucket
                             } else {
@@ -1724,7 +1915,7 @@ fn create_parse_tree_pattern(
     typeenv: &TypeEnv,
     termenv: &TermEnv,
     term: &String,
-    types: &Vec<Type>,
+    types: &TermSignature,
 ) -> TypeVarNode {
     match pattern {
         isle::sema::Pattern::Term(_, term_id, args) => {
@@ -1741,18 +1932,26 @@ fn create_parse_tree_pattern(
                 if name.eq(term) {
                     tree.concrete_constraints.insert(TypeExpr::Concrete(
                         child.type_var,
-                        annotation_type_for_vir_type(&types[i]),
+                        annotation_type_for_vir_type(&types.args[i]),
                     ));
 
                     // If this is a bitvector, mark the name for the assumption feasibility check
-                    if matches!(&types[i], Type::BitVector(_)) {
+                    if matches!(&types.args[i], Type::BitVector(_)) {
                         tree.term_input_bvs.push(child.ident.clone());
                     }
+                    tree.term_args.push(child.ident.clone())
                 }
                 children.push(child);
             }
             let type_var = tree.next_type_var;
             tree.next_type_var += 1;
+
+            if name.eq(term) {
+                tree.concrete_constraints.insert(TypeExpr::Concrete(
+                    type_var,
+                    annotation_type_for_vir_type(&types.ret),
+                ));
+            }
 
             TypeVarNode {
                 ident: format!("{}__{}", name, type_var),
@@ -1851,6 +2050,8 @@ fn create_parse_tree_pattern(
                 "I32" => 32,
                 "I16" => 16,
                 "I8" => 8,
+                "true" => 1,
+                "false" => 0,
                 _ => todo!("{:?}", &name),
             };
             let name = format!("{}__{}", name, type_var);
@@ -1965,6 +2166,7 @@ fn create_parse_tree_expr(
             tree.next_type_var += 1;
             let name = typeenv.syms[sym.index()].clone();
             let val = match name.as_str() {
+                "I8" => 8,
                 "I64" => 64,
                 "I32" => 32,
                 "false" => 0,

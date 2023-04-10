@@ -27,15 +27,11 @@
 (extern constructor alu_rrr_shift alu_rrr_shift)
 
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
-;;@     (assertions (if (= (extract 9 8 (shift)) (0i2:bv)) {
-;;@                     (= (ret) (+ (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
-;;@                  } else {
-;;@                      (if (= (extract 9 8 (shift)) (1i2:bv)) {
-;;@                          (= (ret) (+ (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
-;;@                      } else {
-;;@                          (= (ret) (+ (a) (ashr (b) (zero_ext (widthof (b)) (extract 7 0 (shift))))))
-;;@                      })
-;;@                  }),
+;;@   (assertions 
+;;@     (switch (extract 9 8 (shift))
+;;@             ((0i2:bv) (= (ret) (+ (a) (shl (b) (zero_ext (widthof (b)) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))))
+;;@             ((1i2:bv) (= (ret) (+ (a) (shr (b) (zero_ext (widthof (b)) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))))
+;;@             ((2i2:bv) (= (ret) (+ (a) (ashr (b) (zero_ext (widthof (b)) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))))),
 ;;@                 (|| (= (extract 9 8 (shift)) (0i2:bv)) 
 ;;@                     (|| (= (extract 9 8 (shift)) (1i2:bv)) 
 ;;@                         (= (extract 9 8 (shift)) (2i2:bv))))

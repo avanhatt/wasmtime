@@ -59,59 +59,80 @@
 ;; Add an assertion that the value fits, using the constand with 56 1's then 6 0's (~63)
 ;;@ (spec (sig (args ty, x) (r))
 ;;@   (assertions 
-;;@     (= (r) (conv_to (widthof (r)) (x))),
-;;@     (= (0i65:bv) (& (x) (~ (63i64:bv))))
+;;@     (= (r) (extract 5 0 (& (x) (- (int2bv 64 (ty)) (1i64:bv64))))),
+;;@     (ult (& (x) (- (int2bv 64 (ty)) (1i64:bv64))) (64i64:bv64))
 ;;@   )
 ;;@ )
 (decl pure imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (= (ret) (conv_to (t) (if (= (op) (0i64:bv)) {
-;;@                     (shl (a) (zero_ext (widthof (a)) (b)))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (shr (a) (zero_ext (widthof (a)) (b)))
-;;@                      } else { 
-;;@                          (ashr (a) (zero_ext (widthof (a)) (b)))
-;;@                      })
-;;@                  }))),
-;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
-;;@                  (|| (= (t) (1i8: isleType)) 
-;;@                  (|| (= (t) (8i8: isleType))
-;;@                  (|| (= (t) (16i8: isleType))
-;;@                  (|| (= (t) (32i8: isleType))
-;;@                      (= (t) (64i8: isleType))))))
+;;@   (assertions 
+;;@     (= (ret) 
+;;@          (switch (op) 
+;;@            ((0i64:bv) (conv_to (regwidth) 
+;;@                         (shl (conv_to (t) (a)) 
+;;@                           (conv_to (t) (zero_ext (regwidth) 
+;;@                             (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv64))) (b)))))))
+;;@                  ((1i64:bv) (conv_to (regwidth) 
+;;@                         (shr (conv_to (t) (a)) 
+;;@                           (conv_to (t) (zero_ext (regwidth) 
+;;@                             (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b)))))))
+;;@                  ((2i64:bv) (conv_to (regwidth) 
+;;@                         (ashr (conv_to (t) (a)) 
+;;@                           (conv_to (t) (zero_ext (regwidth) 
+;;@                             (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b)))))))
+;;@           )),
+;;@           (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@           (= (t) (widthof (b))),
+;;@           (|| (= (t) (8i8: isleType))
+;;@           (|| (= (t) (16i8: isleType))
+;;@           (|| (= (t) (32i8: isleType))
+;;@           (= (t) (64i8: isleType))))),
+;;@           (switch (op) 
+;;@                  ((0i64:bv) (true))
+;;@                  ((1i64:bv) (switch (t) 
+;;@                               ((8i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
+;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
+;;@                               ((32i32: isleType) (true))
+;;@                               ((64i32: isleType) (true))))
+;;@                  ((2i64:bv) (switch (t) 
+;;@                               ((8i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
+;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
+;;@                               ((32i32: isleType) (true))
+;;@                               ((64i32: isleType) (true))))
+;;@           ),
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern extractor do_shift do_shift)
 
 ;; types get bucketed for <= 32, <= 64
-;; (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)})
+;; (if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType))
 
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@     (assertions (if (= (op) (0i64:bv)) {
-;;@                     (= (ret) (shl (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
-;;@                                   (zero_ext (regwidth) (b))))
-;;@                  } else { 
-;;@                      (if (= (op) (1i64:bv)) {
-;;@                          (= (ret) (shr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
-;;@                                   (zero_ext (regwidth) (b))))
-;;@                      } else { 
-;;@                          (if (= (op) (2i64:bv)) {
-;;@                              (= (ret) (ashr (conv_to (if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)}) (a)) 
-;;@                                   (zero_ext  (regwidth) (b))))
-;;@                          } else { 
-;;@                              (= (ret) (0i64:bv))
-;;@                          })
-;;@                      })
-;;@                  }),
-;;@                  (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
-;;@                  (|| (= (t) (1i8: isleType)) 
-;;@                  (|| (= (t) (8i8: isleType))
-;;@                  (|| (= (t) (16i8: isleType))
-;;@                  (|| (= (t) (32i8: isleType))
-;;@                      (= (t) (64i8: isleType))))))
+;;@     (assertions 
+;;@       (= (ret) (switch (op)
+;;@               ((0i64:bv)
+;;@                 (if (<= (t) (32i8: isleType)) 
+;;@                     (conv_to (64) (shl (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (zero_ext (regwidth) (b))))))
+;;@                     (shl (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (zero_ext (regwidth) (b)))))
+;;@               )
+;;@               ((1i64:bv)
+;;@                 (if (<= (t) (32i8: isleType)) 
+;;@                     (conv_to (64) (shr (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (zero_ext (regwidth) (b))))))
+;;@                     (shr (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (zero_ext (regwidth) (b)))))
+;;@               )
+;;@               ((2i64:bv) 
+;;@                 (if (<= (t) (32i8: isleType)) 
+;;@                     (conv_to (64) (ashr (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (zero_ext (regwidth) (b))))))
+;;@                     (ashr (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (zero_ext (regwidth) (b)))))
+;;@               )
+;;@       )),
+;;@       (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
+;;@       (|| (= (t) (8i8: isleType))
+;;@       (|| (= (t) (16i8: isleType))
+;;@       (|| (= (t) (32i8: isleType))
+;;@           (= (t) (64i8: isleType)))))
 ;;@     ))
 (decl alu_rr_imm_shift (ALUOp Type Reg ImmShift) Reg)
 (extern constructor alu_rr_imm_shift alu_rr_imm_shift)

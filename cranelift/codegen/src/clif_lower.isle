@@ -780,6 +780,36 @@
     (inst_data (InstructionData.Unary (Opcode.VhighBits) a))
 )
 
+;; (type IntCC extern
+;;     (enum
+;;         Equal
+;;         NotEqual
+;;         SignedGreaterThan
+;;         SignedGreaterThanOrEqual
+;;         SignedLessThan
+;;         SignedLessThanOrEqual
+;;         UnsignedGreaterThan
+;;         UnsignedGreaterThanOrEqual
+;;         UnsignedLessThan
+;;         UnsignedLessThanOrEqual
+;;     )
+;; )
+;;@ (spec (sig (args c, x, y) (ret))
+;;@   (assertions 
+;;@     (= (ret) 
+;;@        (switch (c)
+;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((1i8:bv8) (if (! (= (x) (y))) (1i8:bv8) (0i8:bv8)))
+;;@          ((2i8:bv8) (if (sgt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((3i8:bv8) (if (sgte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((4i8:bv8) (if (slt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((5i8:bv8) (if (slte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((6i8:bv8) (if (ugt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((7i8:bv8) (if (ugte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@        )
+;;@ )))
 (decl icmp (IntCC Value Value) Inst)
 (extractor
     (icmp Cond x y)
@@ -1074,8 +1104,15 @@
     (inst_data (InstructionData.BinaryImm64 (Opcode.RotrImm) x Y))
 )
 
+;; fn shift_mask(&mut self, ty: Type) -> ImmLogic {
+;;     debug_assert!(ty.lane_bits().is_power_of_two());
+
+;;     let mask = (ty.lane_bits() - 1) as u64;
+;;     ImmLogic::maybe_from_u64(mask, I32).unwrap()
+;; }
+
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (shl (a) (b)))))
+;;@     (assertions (= (ret) (shl (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
@@ -1083,7 +1120,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (shr (a) (b)))))
+;;@     (assertions (= (ret) (shr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
@@ -1091,7 +1128,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (ashr (a) (b)))))
+;;@     (assertions (= (ret) (ashr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)
@@ -1357,7 +1394,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (ret) (zero_ext (regwidth) (arg)))))
+;;@     (assertions (= (ret) (zero_ext (widthof (ret)) (arg)))))
 (decl uextend (Value) Inst)
 (extractor
     (uextend x)
@@ -1365,7 +1402,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (ret) (sign_ext (regwidth) (arg)))))
+;;@     (assertions (= (ret) (sign_ext (widthof (ret)) (arg)))))
 (decl sextend (Value) Inst)
 (extractor
     (sextend x)

@@ -46,9 +46,8 @@
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (a64clz (32i0:isleType) (a)) }
-;;@                        else
-;;@                        { (a64clz (64i0:isleType) (a)) }
+;;@                        (a64clz (32i0:isleType) (a))
+;;@                        (a64clz (64i0:isleType) (a))
 ;;@                    )
 ;;@                 ),
 ;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
@@ -63,13 +62,14 @@
             (_ Unit (emit (MInst.Extend dst rn signed from_bits to_bits))))
         dst))
 
+;; BROKEN: swapped order in comparison
+;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assertions (
-;;@          if (<= (widthof (arg)) (32i0:isleType)) {
-;;@              (= (ret) (conv_to (regwidth) (arg)))
-;;@          } else {              
-;;@              (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
-;;@          })
+;;@          if (<= (widthof (arg)) (32i0:isleType)) 
+;;@             (= (ret) (conv_to (regwidth) (arg)))             
+;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
+;;@          )
 ;;@ ))
 (decl put_in_reg_zext32 (Value) Reg)
 (rule (put_in_reg_zext32 val @ (value_type (fits_in_32 ty)))

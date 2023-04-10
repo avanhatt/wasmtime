@@ -47,9 +47,8 @@
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (a64clz (32i0:isleType) (a)) }
-;;@                        else
-;;@                        { (a64clz (64i0:isleType) (a)) }
+;;@                        (a64clz (32i0:isleType) (a))
+;;@                        (a64clz (64i0:isleType) (a))
 ;;@                    )
 ;;@                 ),
 ;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
@@ -66,9 +65,8 @@
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (a64rev (32i0:isleType) (a)) }
-;;@                        else
-;;@                        { (a64rev (64i0:isleType) (a)) }
+;;@                        (a64rev (32i0:isleType) (a))
+;;@                        (a64rev (64i0:isleType) (a))
 ;;@                    )
 ;;@                 ),
 ;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))

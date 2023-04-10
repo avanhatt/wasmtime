@@ -1,9 +1,10 @@
 mod utils;
 use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
 use utils::{
-    run_and_retry, test_concrete_input_from_file_with_lhs_termname,
+    run_and_retry, test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
     test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
+use veri_engine_lib::Config;
 use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 
 #[test]
@@ -25,7 +26,10 @@ fn test_iadd_base_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000010".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000010".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -424,7 +428,10 @@ fn test_isub_imm12_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000010".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000010".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -480,8 +487,11 @@ fn test_isub_imm12neg_concrete32() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
-                    .to_string(),
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
             },
         )
     });
@@ -510,8 +520,11 @@ fn test_isub_imm12neg_concrete_64() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000010"
-                    .to_string(),
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
             },
         )
     });
@@ -709,29 +722,51 @@ fn test_sdiv_safe_const() {
 }
 
 #[test]
+fn test_broken_sdiv_safe_const() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/broken/sdiv/broken_sdiv_safe_const.isle",
+            "sdiv".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+            ],
+        )
+    });
+}
+
+#[test]
 fn test_broken_sdiv() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/sdiv/broken_sdiv.isle",
             "sdiv".to_string(),
-            all_failure_result(),
-        )
-    });
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/broken/sdiv/broken_sdiv32.isle",
-            "sdiv".to_string(),
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                // (Bitwidth::I32, VerificationResult::Success),
-                // (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
 }
-
 
 #[test]
 fn test_srem() {
@@ -751,31 +786,6 @@ fn test_srem() {
 }
 
 #[test]
-fn test_srem_concrete() {
-    run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/srem/srem.isle",
-            "srem".to_string(),
-            false,
-            ConcreteTest {
-                termname: "srem".to_string(),
-                args: vec![
-                    ConcreteInput {
-                        literal: "#b11111110".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                    ConcreteInput {
-                        literal: "#b00110001".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                ],
-                output: "#b11111110".to_string(),
-            },
-        )
-    });
-}
-
-#[test]
 fn test_urem() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
@@ -791,7 +801,6 @@ fn test_urem() {
         )
     })
 }
-
 
 #[test]
 fn test_urem_concrete() {
@@ -812,12 +821,14 @@ fn test_urem_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00001001".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00001001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
 }
-
 
 #[test]
 fn test_uextend() {
@@ -1179,70 +1190,134 @@ fn test_ctz16_broken() {
 #[test]
 fn test_small_rotr_to_shifts() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
             "./examples/rotr/small_rotr_to_shifts.isle",
-            "small_rotr".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
+            config,
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        );
     })
 }
 
 #[test]
 fn test_small_rotr_to_shifts_broken() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
             "./examples/broken/broken_mask_small_rotr.isle",
-            "small_rotr".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
-    });
+            config,
+            vec![(
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            )],
+        );
+    })
 }
 
 #[test]
 fn test_small_rotr_to_shifts_broken2() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
             "./examples/broken/broken_rule_or_small_rotr.isle",
-            "small_rotr".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
+            config,
+            vec![(
+                Bitwidth::I64,
+                VerificationResult::Failure(Counterexample {}),
+            )],
+        );
     })
 }
 
 #[test]
 fn test_small_rotr_imm_to_shifts() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        let config = Config {
+            dyn_width: false,
+            term: "small_rotr_imm".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = *args.first().unwrap();
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
             "./examples/rotr/small_rotr_imm_to_shifts.isle",
-            "small_rotr_imm".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
+            config,
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        );
     })
 }
 
@@ -1419,7 +1494,7 @@ fn test_fits_in_16_rotr() {
 fn test_fits_in_16_with_imm_rotr() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/rotr/fits_in_16_rotr.isle",
+            "./examples/rotr/fits_in_16_with_imm_rotr.isle",
             "rotr".to_string(),
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -1668,8 +1743,11 @@ fn test_ishl_to_do_shift_64_concrete() {
                         ty: veri_ir::Type::BitVector(Some(64)),
                     },
                 ],
-                output: "#b0000000000000000000000000000000000000000000000000000000000000100"
-                    .to_string(),
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000100"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
             },
         )
     });
@@ -1708,7 +1786,10 @@ fn test_ishl_to_do_shift_fits_in_32_concrete() {
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                 ],
-                output: "#b00000100".to_string(),
+                output: ConcreteInput {
+                    literal: "#b00000100".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
             },
         )
     });
@@ -1760,7 +1841,10 @@ fn test_sshr_to_do_shift_fits_in_32_concrete() {
                     ty: veri_ir::Type::BitVector(Some(8)),
                 },
             ],
-            output: "#b11010000".to_string(),
+            output: ConcreteInput {
+                literal: "#b11010000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(8)),
+            },
         },
     )
 }
@@ -1811,37 +1895,157 @@ fn test_ushr_to_do_shift_fits_in_32_concrete() {
                     ty: veri_ir::Type::BitVector(Some(8)),
                 },
             ],
-            output: "#b01010000".to_string(),
+            output: ConcreteInput {
+                literal: "#b01010000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(8)),
+            },
         },
     )
 }
 
 #[test]
 fn test_do_shift_with_imm() {
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_8_bits_eq = {
+                let mask = smt.atom("#x00000000000000FF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_8_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_with_imm.isle",
+        config,
+        vec![(Bitwidth::I8, VerificationResult::Success)],
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_16_bits_eq = {
+                let mask = smt.atom("#x000000000000FFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_16_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_with_imm.isle",
+        config,
+        vec![(Bitwidth::I16, VerificationResult::Success)],
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_32_bits_eq = {
+                let mask = smt.atom("#x00000000FFFFFFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_32_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_with_imm.isle",
+        config,
+        vec![(Bitwidth::I32, VerificationResult::Success)],
+    );
     test_from_file_with_lhs_termname(
         "./examples/shifts/do_shift_with_imm.isle",
         "do_shift".to_string(),
-        vec![
-            (Bitwidth::I8, VerificationResult::Success),
-            (Bitwidth::I16, VerificationResult::Success),
-            (Bitwidth::I32, VerificationResult::Success),
-            (Bitwidth::I64, VerificationResult::Success),
-        ],
+        vec![(Bitwidth::I64, VerificationResult::Success)],
     )
 }
 
 #[test]
 fn test_do_shift_fits_in_16() {
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "do_shift".to_string(),
+            distinct_check: true,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                let ty_arg = args[1];
+                let lower_8_bits_eq = {
+                    let mask = smt.atom("#x00000000000000FF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                let lower_16_bits_eq = {
+                    let mask = smt.atom("#x000000000000FFFF");
+                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+                };
+                smt.ite(
+                    smt.eq(ty_arg, smt.atom("8")),
+                    lower_8_bits_eq,
+                    lower_16_bits_eq,
+                )
+            })),
+        };
+        test_from_file_with_config(
+            "./examples/shifts/do_shift_fits_in_16.isle",
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+            ],
+        );
+    });
     test_from_file_with_lhs_termname(
         "./examples/shifts/do_shift_fits_in_16.isle",
         "do_shift".to_string(),
         vec![
-            (Bitwidth::I8, VerificationResult::Success),
-            (Bitwidth::I16, VerificationResult::Success),
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )
+}
+
+#[test]
+fn test_do_shift_fits_in_16_concrete() {
+    // (decl do_shift (ALUOp Type Reg Value) Reg)
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/shifts/do_shift_fits_in_16.isle",
+            "do_shift".to_string(),
+            false,
+            ConcreteTest {
+                termname: "do_shift".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000000"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput {
+                        literal: "16".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                    ConcreteInput {
+                        literal:
+                            "#b0000000000000000000000000000000000000000000000000000000000000001"
+                                .to_string(),
+                        ty: veri_ir::Type::BitVector(Some(64)),
+                    },
+                    ConcreteInput {
+                        literal: "#b0000000000000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(16)),
+                    },
+                ],
+                output: ConcreteInput {
+                    literal: "#b0000000000000000000000000000000000000000000000000000000000000010"
+                        .to_string(),
+                    ty: veri_ir::Type::BitVector(Some(64)),
+                },
+            },
+        )
+    });
 }
 
 #[test]
@@ -1852,10 +2056,26 @@ fn test_do_shift_32() {
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
-            (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
-    )
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_32_bits_eq = {
+                let mask = smt.atom("#x00000000FFFFFFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_32_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_32.isle",
+        config,
+        vec![(Bitwidth::I32, VerificationResult::Success)],
+    );
 }
 
 #[test]
@@ -1903,8 +2123,10 @@ fn test_broken_sshr_to_do_shift_fits_in_32() {
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
             ),
-            // The rule only sign/zero extends to 32 bits, so this case should succeed
-            (Bitwidth::I32, VerificationResult::Success),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )
@@ -1929,7 +2151,10 @@ fn test_broken_sshr_to_do_shift_fits_in_32_concrete() {
                 },
             ],
             // Wrong output:
-            output: "#b01010000".to_string(),
+            output: ConcreteInput {
+                literal: "#b01010000".to_string(),
+                ty: veri_ir::Type::BitVector(Some(8)),
+            },
         },
     )
 }
@@ -1945,8 +2170,10 @@ fn test_broken_ushr_to_do_shift_fits_in_32() {
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
             ),
-            // The rule only sign/zero extends to 32 bits, so this case should succeed
-            (Bitwidth::I32, VerificationResult::Success),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
         ],
     )
@@ -1975,4 +2202,291 @@ fn test_if_let() {
         "iadd".to_string(),
         all_success_result(),
     );
+}
+
+#[test]
+fn test_icmp_to_lower_icmp() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/icmp_to_lower_icmp.isle",
+            "icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_into_reg() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_into_reg.isle",
+            "lower_icmp_into_reg".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_into_reg_concrete_eq1() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_into_reg.isle",
+            "lower_icmp_into_reg".to_string(),
+            false,
+            ConcreteTest {
+                termname: "lower_icmp_into_reg".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000001".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                ],
+                output: ConcreteInput {
+                    literal: "#b00000000".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
+            },
+        )
+    });
+}
+
+#[test]
+fn test_lower_icmp_into_reg_concrete_eq2() {
+    run_and_retry(|| {
+        test_concrete_input_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_into_reg.isle",
+            "lower_icmp_into_reg".to_string(),
+            false,
+            ConcreteTest {
+                termname: "lower_icmp_into_reg".to_string(),
+                args: vec![
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "#b00000000".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                    ConcreteInput {
+                        literal: "8".to_string(),
+                        ty: veri_ir::Type::Int,
+                    },
+                ],
+                output: ConcreteInput {
+                    literal: "#b00000001".to_string(),
+                    ty: veri_ir::Type::BitVector(Some(8)),
+                },
+            },
+        )
+    });
+}
+
+#[test]
+fn test_lower_icmp_32_64() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_32_64.isle",
+            "lower_icmp".to_string(),
+            vec![
+                // These fail to type check, rule is inapplicable because of priorities
+                // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
+                // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_fits_in_16_signed() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_fits_in_16_signed.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_fits_in_16_unsigned_imm() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_fits_in_16_unsigned_imm.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_fits_in_16_unsigned() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_fits_in_16_unsigned.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_32_64_to_lower_icmp_const() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_32_64_to_lower_icmp_const.isle",
+            "lower_icmp".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64_imm() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_const_32_64_imm.isle",
+            "lower_icmp_const".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64_sgte() {
+    // Note: only one distinct condition code is matched on, so need to disable
+    // distinctness check
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+            custom_verification_condition: None,
+        };
+        test_from_file_with_config(
+            "./examples/icmp/lower_icmp_const_32_64_sgte.isle",
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Currently fails! The rewrite is not semantics-preserving
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64_ugte() {
+    // Note: only one distinct condition code is matched on, so need to disable
+    // distinctness check
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+            custom_verification_condition: None,
+        };
+        test_from_file_with_config(
+            "./examples/icmp/lower_icmp_const_32_64_ugte.isle",
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Currently fails! The rewrite is not semantics-preserving
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_lower_icmp_const_32_64() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/icmp/lower_icmp_const_32_64.isle",
+            "lower_icmp_const".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
 }

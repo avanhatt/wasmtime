@@ -11,7 +11,7 @@ use veri_annotation::parser_wrapper::parse_annotations;
 use crate::solver::run_solver;
 use crate::type_inference::RuleSemantics;
 use crate::{interp::Context, termname::pattern_contains_termname};
-use veri_ir::{ConcreteTest, Type, VerificationResult};
+use veri_ir::{ConcreteTest, TermSignature, VerificationResult};
 
 pub fn verify_rules(inputs: Vec<PathBuf>, config: &Config) {
     let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
@@ -56,7 +56,7 @@ pub fn verify_rules_for_term(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     typesols: &HashMap<RuleId, RuleSemantics>,
-    types: Vec<Type>,
+    types: TermSignature,
     concrete: &Option<ConcreteTest>,
     config: &Config,
 ) -> VerificationResult {
@@ -86,7 +86,7 @@ pub fn verify_rules_for_term(
             "Verifying rule with term {} and types {:?}",
             config.term, types
         );
-        let result = run_solver(rule_sem, rule, termenv, typeenv, concrete, config);
+        let result = run_solver(rule_sem, rule, termenv, typeenv, concrete, config, &types);
         rules_checked += 1;
         if result != VerificationResult::Success {
             return result;

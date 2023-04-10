@@ -29,7 +29,7 @@ pub struct ConcreteTest {
     pub termname: String,
     // List of name, bitvector literal, widths
     pub args: Vec<ConcreteInput>,
-    pub output: String,
+    pub output: ConcreteInput,
 }
 
 /// Verification IR annotations for an ISLE term consist of the function
@@ -108,6 +108,16 @@ pub enum Type {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct TermSignature {
+    pub args: Vec<Type>,
+    pub ret: Type,
+
+    // Which type varies for different bitwidth Values, that is, the type that
+    // is used as a key for testing for that type.
+    pub canonical_type: Option<Type>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Terminal {
     Var(String),
 
@@ -142,6 +152,15 @@ pub enum BinaryOp {
     Lt,
 
     // Bitvector operations
+    BVSgt,
+    BVSgte,
+    BVSlt,
+    BVSlte,
+    BVUgt,
+    BVUgte,
+    BVUlt,
+    BVUlte,
+
     BVMul,
     BVUDiv,
     BVSDiv,
@@ -177,8 +196,13 @@ pub enum Expr {
     Rev(Box<Expr>),
     A64Rev(Box<Expr>, Box<Expr>),
 
+    BVSubs(Box<Expr>, Box<Expr>, Box<Expr>),
+
     // ITE
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
+
+    // Switch
+    Switch(Box<Expr>, Vec<(Expr, Expr)>),
 
     // Conversions
     // Extract specified bits

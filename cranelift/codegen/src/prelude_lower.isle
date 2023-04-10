@@ -247,6 +247,8 @@
 (extern extractor def_inst def_inst)
 
 ;; Extract a constant `u64` from a value defined by an `iconst`.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (zero_ext (64) (ret)))))
 (decl u64_from_iconst (u64) Value)
 (extractor (u64_from_iconst x)
            (def_inst (iconst (u64_from_imm64 x))))

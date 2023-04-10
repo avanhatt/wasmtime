@@ -22,7 +22,7 @@ struct Args {
     noaarch64: bool,
 
     /// Don't check for distinct possible models
-    #[clap(short, long, action=ArgAction::SetTrue)]
+    #[clap(long, action=ArgAction::SetTrue)]
     nodistinct: bool,
 
     /// Allow dynamic widths for the solver query
@@ -57,6 +57,7 @@ fn main() {
         dyn_width: args.dynwidths,
         term: args.term,
         distinct_check: !args.nodistinct,
+        custom_verification_condition: None,
     };
     verify_rules(inputs, &config)
 }

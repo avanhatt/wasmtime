@@ -19,9 +19,8 @@
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assertions (= (ret) 
 ;;@                    (if (= (ty) (32i0:isleType))
-;;@                        { (a64cls (32i0:isleType) (a)) }
-;;@                        else
-;;@                        { (a64cls (64i0:isleType) (a)) }
+;;@                        (a64cls (32i0:isleType) (a))
+;;@                        (a64cls (64i0:isleType) (a))
 ;;@                    )
 ;;@                 )
 ;;@     )
