@@ -58,6 +58,7 @@
     (SbcS)
 ))
 
+;; BROKEN: missing extension part of the spec
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@   (assertions 
 ;;@     (= (ret) 
@@ -81,15 +82,6 @@
 ;;@           (|| (= (t) (16i8: isleType))
 ;;@           (|| (= (t) (32i8: isleType))
 ;;@           (= (t) (64i8: isleType))))),
-;;@           (switch (op) 
-;;@                  ((0i64:bv) (true))
-;;@                  ((1i64:bv) (if (< (t) (32i32: isleType)) 
-;;@                                 (= (extract 31 0 (a)) (zero_ext (32) (extract 31 0 (conv_to (t) (a))))) 
-;;@                                 (true)))
-;;@                  ((2i64:bv) (if (< (t) (32i32: isleType))
-;;@                                 (= (extract 31 0 (a)) (sign_ext (32) (extract 31 0 (conv_to (t) (a))))) 
-;;@                                 (true)))
-;;@           ),
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern constructor do_shift do_shift)
@@ -104,7 +96,7 @@
 (decl put_in_reg_sext32 (Value) Reg)
 (extern constructor put_in_reg_sext32 put_in_reg_sext32)
 
-;; BROKEN: wrong op
+;; BROKEN: Wrong opcode
 ;; Shift for i64.
 (rule -2 (lower (has_type (fits_in_32 ty) (sshr x y)))
       (do_shift (ALUOp.Lsr) ty (put_in_reg_sext32 x) y))

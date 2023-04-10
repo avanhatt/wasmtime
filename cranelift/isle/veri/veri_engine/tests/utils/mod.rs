@@ -156,7 +156,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
         }
         for expected in all_expected {
             let (_, expected_result) = expected;
-            dbg!(expected_result);
+            println!("Expected result: {:?}", expected_result);
             let type_sols = type_rules_with_term_and_types(
                 defs.clone(),
                 &termenv,

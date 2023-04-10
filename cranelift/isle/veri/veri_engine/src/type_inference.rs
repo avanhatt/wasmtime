@@ -507,7 +507,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -525,7 +525,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -543,7 +543,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -561,7 +561,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -579,7 +579,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -597,7 +597,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -615,7 +615,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -633,7 +633,7 @@ fn add_annotation_constraints(
 
             tree.concrete_constraints.insert(TypeExpr::Concrete(
                 t,
-                annotation_ir::Type::BitVectorWithWidth(8),
+                annotation_ir::Type::Bool,
             ));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
@@ -1318,8 +1318,8 @@ fn add_annotation_constraints(
         _ => todo!("expr {:#?} not yet implemented", expr),
     };
     tree.ty_vars.insert(e.clone(), t);
-    let fmt = format!("{}:\t{:?}", t, e);
-    dbg!(fmt);
+    // let fmt = format!("{}:\t{:?}", t, e);
+    // dbg!(fmt);
     (e, t)
 }
 

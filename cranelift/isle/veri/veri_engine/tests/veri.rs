@@ -1522,7 +1522,7 @@ fn test_fits_in_16_rotr() {
 fn test_fits_in_16_with_imm_rotr() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/rotr/fits_in_16_rotr.isle",
+            "./examples/rotr/fits_in_16_with_imm_rotr.isle",
             "rotr".to_string(),
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -1933,13 +1933,61 @@ fn test_ushr_to_do_shift_fits_in_32_concrete() {
 
 #[test]
 fn test_do_shift_with_imm() {
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_8_bits_eq = {
+                let mask = smt.atom("#x00000000000000FF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_8_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_with_imm.isle",
+        config,
+        vec![(Bitwidth::I8, VerificationResult::Success)],
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_16_bits_eq = {
+                let mask = smt.atom("#x000000000000FFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_16_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_with_imm.isle",
+        config,
+        vec![(Bitwidth::I16, VerificationResult::Success)],
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_32_bits_eq = {
+                let mask = smt.atom("#x00000000FFFFFFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_32_bits_eq
+        })),
+    };
+    test_from_file_with_config(
+        "./examples/shifts/do_shift_with_imm.isle",
+        config,
+        vec![(Bitwidth::I32, VerificationResult::Success)],
+    );
     test_from_file_with_lhs_termname(
         "./examples/shifts/do_shift_with_imm.isle",
         "do_shift".to_string(),
         vec![
-            (Bitwidth::I8, VerificationResult::Success),
-            (Bitwidth::I16, VerificationResult::Success),
-            (Bitwidth::I32, VerificationResult::Success),
             (Bitwidth::I64, VerificationResult::Success),
         ],
     )

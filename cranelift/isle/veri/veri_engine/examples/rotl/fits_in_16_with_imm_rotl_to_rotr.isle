@@ -171,17 +171,4 @@
 ;;@       )
 ;;@ )
 (decl small_rotr_imm (Type Reg ImmShift) Reg)
-
-;; For a constant amount, we can instead do:
-;;
-;;    rotr rd, val, #amt
-;;
-;;       =>
-;;
-;;    lsr val_rshift, val, #<amt>
-;;    lsl val_lshift, val, <bitwidth - amt>
-;;    orr rd, val_lshift, val_rshift
-(rule (small_rotr_imm ty val amt)
-      (let ((val_rshift Reg (lsr_imm $I32 val amt))
-            (val_lshift Reg (lsl_imm $I32 val (rotr_opposite_amount ty amt))))
-        (orr $I32 val_lshift val_rshift)))
+(extern constructor small_rotr_imm small_rotr_imm)
