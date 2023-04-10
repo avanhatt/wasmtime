@@ -139,9 +139,9 @@ impl SolverCtx {
         if dest_width < source_width {
             println!(
                 "Unexpected extend widths for {}: dest {} source {} ",
+                self.smt.display(source),
                 dest_width,
                 source_width,
-                self.smt.display(source)
             );
             self.additional_assumptions.push(self.smt.false_());
             return self.bv(
@@ -1152,7 +1152,7 @@ impl SolverCtx {
                 .unwrap();
 
             // Uncomment to debug specific asserts
-            //     println!("assum{}: {}", i, self.smt.display(*a));
+                println!("assum{}: {}", i, self.smt.display(*a));
 
             //     self.smt.push().unwrap();
             //     match self.smt.check() {
@@ -1572,7 +1572,6 @@ pub fn run_solver(
                 match *w {
                     Some(bitwidth) => {
                         let eq = ctx.smt.eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
-                        println!("from inference: {}", ctx.smt.display(eq));
                         ctx.width_assumptions.push(eq);
                     }
                     None => {

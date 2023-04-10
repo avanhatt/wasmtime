@@ -1025,7 +1025,7 @@ fn add_annotation_constraints(
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
 
-                dbg!((veri_ir::Expr::BVConvTo(Box::new(e1)), t))
+                (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
             } else {
                 tree.concrete_constraints.insert(TypeExpr::WidthInt(t, wt));
                 tree.bv_constraints

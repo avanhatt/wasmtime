@@ -1120,7 +1120,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (shr (a) (b)))))
+;;@     (assertions (= (ret) (shr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
@@ -1128,7 +1128,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (ashr (a) (b)))))
+;;@     (assertions (= (ret) (ashr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)
