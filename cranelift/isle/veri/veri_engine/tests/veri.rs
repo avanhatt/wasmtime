@@ -785,121 +785,6 @@ fn test_srem() {
     })
 }
 
-
-#[test]
-fn test_srem() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/srem/srem.isle",
-            "srem".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                // (Bitwidth::I16, VerificationResult::Success),
-                // (Bitwidth::I32, VerificationResult::Success),
-                // (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_srem_concrete() {
-    run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/srem/srem.isle",
-            "srem".to_string(),
-            false,
-            ConcreteTest {
-                termname: "srem".to_string(),
-                args: vec![
-                    ConcreteInput {
-                        literal: "#b11111110".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                    ConcreteInput {
-                        literal: "#b00110001".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                ],
-                output: "#b11111110".to_string(),
-            },
-        )
-    });
-}
-
-#[test]
-fn test_urem() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/urem/urem.isle",
-            "urem".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                // (Bitwidth::I16, VerificationResult::Success),
-                // (Bitwidth::I32, VerificationResult::Success),
-                // (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    })
-}
-
-
-#[test]
-fn test_urem_concrete() {
-    run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/urem/urem.isle",
-            "urem".to_string(),
-            false,
-            ConcreteTest {
-                termname: "urem".to_string(),
-                args: vec![
-                    ConcreteInput {
-                        literal: "#b11111110".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                    ConcreteInput {
-                        literal: "#b00110001".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                ],
-                output: "#b00001001".to_string(),
-            },
-        )
-    });
-}
-
-
-#[test]
-fn test_srem_concrete() {
-    run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/srem/srem.isle",
-            "srem".to_string(),
-            false,
-            ConcreteTest {
-                termname: "srem".to_string(),
-                args: vec![
-                    ConcreteInput {
-                        literal: "#b11111110".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                    ConcreteInput {
-                        literal: "#b00110001".to_string(),
-                        ty: veri_ir::Type::BitVector(Some(8)),
-                    },
-                ],
-                output: ConcreteInput {
-                    literal: "#b11111110".to_string(),
-                    ty: veri_ir::Type::BitVector(Some(8)),
-                },
-            },
-        )
-    });
-}
-
 #[test]
 fn test_urem() {
     run_and_retry(|| {
@@ -2074,9 +1959,7 @@ fn test_do_shift_with_imm() {
     test_from_file_with_lhs_termname(
         "./examples/shifts/do_shift_with_imm.isle",
         "do_shift".to_string(),
-        vec![
-            (Bitwidth::I64, VerificationResult::Success),
-        ],
+        vec![(Bitwidth::I64, VerificationResult::Success)],
     )
 }
 
@@ -2107,8 +1990,10 @@ fn test_do_shift_fits_in_16() {
         test_from_file_with_config(
             "./examples/shifts/do_shift_fits_in_16.isle",
             config,
-            vec![(Bitwidth::I8, VerificationResult::Success),
-            (Bitwidth::I16, VerificationResult::Success)],
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+            ],
         );
     });
     test_from_file_with_lhs_termname(

@@ -505,10 +505,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -523,10 +521,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -541,10 +537,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -559,10 +553,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -577,10 +569,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -595,10 +585,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -613,10 +601,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;
@@ -631,10 +617,8 @@ fn add_annotation_constraints(
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
 
-            tree.concrete_constraints.insert(TypeExpr::Concrete(
-                t,
-                annotation_ir::Type::Bool,
-            ));
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::Bool));
             tree.var_constraints.insert(TypeExpr::Variable(t1, t2));
 
             tree.next_type_var += 1;

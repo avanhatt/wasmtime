@@ -1155,7 +1155,7 @@ impl SolverCtx {
                 .unwrap();
 
             // Uncomment to debug specific asserts
-                println!("assum{}: {}", i, self.smt.display(*a));
+            println!("assum{}: {}", i, self.smt.display(*a));
 
             //     self.smt.push().unwrap();
             //     match self.smt.check() {
@@ -1574,7 +1574,9 @@ pub fn run_solver(
                     .push((width_name.clone(), ctx.smt.int_sort()));
                 match *w {
                     Some(bitwidth) => {
-                        let eq = ctx.smt.eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
+                        let eq = ctx
+                            .smt
+                            .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
