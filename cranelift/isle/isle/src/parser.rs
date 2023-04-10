@@ -398,6 +398,14 @@ impl<'a> Parser<'a> {
 
     fn parse_rule(&mut self) -> Result<Rule> {
         let pos = self.pos();
+        let name = if self.is_sym() {
+            Some(
+                self.symbol()
+                    .map_err(|err| self.error(pos, format!("Invalid rule name: {:?}", err)))?,
+            )
+        } else {
+            None
+        };
         let prio = if self.is_int() {
             Some(
                 i64::try_from(self.int()?)
@@ -420,6 +428,7 @@ impl<'a> Parser<'a> {
                         expr,
                         pos,
                         prio,
+                        name,
                     });
                 }
             }

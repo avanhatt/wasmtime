@@ -11,12 +11,6 @@ use veri_engine_lib::widths::isle_inst_types;
 use veri_engine_lib::Config;
 use veri_ir::{ConcreteTest, Counterexample, TermSignature, VerificationResult};
 
-// TODO FB: once the opcode situation is resolved, return and:
-// - add nice output
-// - create a standard prelude and figure out if its more intuitive to send
-//   in rule strings or files
-// - intermediate tests?
-
 #[derive(Debug, EnumIter, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
 pub enum Bitwidth {
     I8 = 8,
@@ -162,7 +156,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
                 &termenv,
                 &typeenv,
                 &annotation_env,
-                &config.term,
+                &config,
                 type_instantiation,
                 &None,
             );
@@ -195,6 +189,37 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         term: termname,
         distinct_check: true,
         custom_verification_condition: None,
+        names: None,
+    };
+    test_rules_with_term(inputs, tr, config);
+}
+
+pub fn test_aarch64_rule_with_lhs_termname(rulename: &str, termname: &str, tr: TestResult) -> () {
+    println!("Verifying rule `{}` with termname {} ", rulename, termname);
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let prelude_lower_isle = cur_dir
+        .join("../../../codegen/src")
+        .join("prelude_lower.isle");
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(
+        cur_dir
+            .join("../../../codegen/src/isa/aarch64")
+            .join("inst.isle"),
+    );
+    inputs.push(
+        cur_dir
+            .join("../../../codegen/src/isa/aarch64")
+            .join("lower.isle"),
+    );
+    let config = Config {
+        dyn_width: false,
+        term: termname.to_string(),
+        distinct_check: true,
+        custom_verification_condition: None,
+        names: Some(vec![rulename.to_string()]),
     };
     test_rules_with_term(inputs, tr, config);
 }
@@ -243,6 +268,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         term: termname.clone(),
         distinct_check: false,
         custom_verification_condition: None,
+        names: None,
     };
 
     // Get the types/widths for this particular term
@@ -259,7 +285,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         &termenv,
         &typeenv,
         &annotation_env,
-        &termname,
+        &config,
         &t,
         &Some(concrete.clone()),
     );
@@ -287,6 +313,7 @@ pub fn test_from_file_with_lhs_termname_dynwidth(
         term: termname.clone(),
         distinct_check: false,
         custom_verification_condition: None,
+        names: None,
     };
     test_rules_with_term(inputs, tr, config);
 }

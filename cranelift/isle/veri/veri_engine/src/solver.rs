@@ -1817,9 +1817,11 @@ pub fn run_solver(
     };
 
     // Look at RHS assertions, which are checked, not trusted
-    let rhs_assertions: Vec<SExpr> = rule_sem.rhs_assertions.iter().map(|a| {
-        ctx.vir_expr_to_sexp(a.clone())
-    }).collect();
+    let rhs_assertions: Vec<SExpr> = rule_sem
+        .rhs_assertions
+        .iter()
+        .map(|a| ctx.vir_expr_to_sexp(a.clone()))
+        .collect();
 
     let assumption_conjunction = ctx.smt.and_many(assumptions);
     let full_condition = if rhs_assertions.len() > 1 {
@@ -1832,7 +1834,9 @@ pub fn run_solver(
         "Full verification condition:\n\t{}\n",
         ctx.smt.display(full_condition)
     );
-    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, full_condition));
+    let query = ctx
+        .smt
+        .not(ctx.smt.imp(assumption_conjunction, full_condition));
     println!("Running query");
     ctx.smt.assert(query).unwrap();
 

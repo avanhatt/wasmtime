@@ -1700,12 +1700,29 @@
 (extern constructor is_zero_uimm12 is_zero_uimm12)
 
 ;; Helper to go directly from a `Value`, when it's an `iconst`, to an `Imm12`.
+;; Note that 4095 = 0xfff and 16773120 = 0xfff000
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (|| (< (zero_ext (regwidth) (ret)) (4095i64:bv))
+;;@                     (&& (< (zero_ext (regwidth) (ret)) (16773120i64:bv))
+;;@                         (= (extract 2 0 (zero_ext (regwidth) (ret))) (0i3:bv))
+;;@                 )),
+;;@                 (= (ret) (conv_to (widthof (ret)) (zero_ext (regwidth) (arg)))),
+;;@                 (= (arg) (conv_to (widthof (arg)) (zero_ext (regwidth) (ret))))
+;;@ ))
 (decl imm12_from_value (Imm12) Value)
 (extractor
   (imm12_from_value n)
   (iconst (u64_from_imm64 (imm12_from_u64 n))))
 
 ;; Same as `imm12_from_value`, but tries negating the constant value.
+;; Note that 4095 = 0xfff and 16773120 = 0xfff000
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
+;;@                     (&& (< (- (zero_ext (regwidth) (ret))) (16773120i64:bv))
+;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) (0i3:bv))
+;;@                 )),
+;;@                 (= (ret) (conv_to (widthof (ret)) (- (zero_ext (regwidth) (arg)))))
+;;@ ))
 (decl imm12_from_negated_value (Imm12) Value)
 (extractor
   (imm12_from_negated_value n)
@@ -2284,9 +2301,26 @@
 
 ;; Helpers for generating `add` instructions.
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (+ (extract 31 0 (a)) (extract 31 0 (b))))
+;;@            (+ (a) (b))))))
 (decl add (Type Reg Reg) Reg)
 (rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (+ (extract 31 0 (a)) (zero_ext (32) (b))))
+;;@            (+ (a) (zero_ext (regwidth) (b))))))
+;;@   (assert  (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@                (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@                    (= (extract 2 0 (y)) (0i3:bv))
+;;@   )))
+;;@ )
 (decl add_imm (Type Reg Imm12) Reg)
 (rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
 
@@ -2307,6 +2341,17 @@
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (- (extract 31 0 (a)) (zero_ext (32) (b))))
+;;@            (- (a) (zero_ext (regwidth) (b))))))
+;;@   (assert  (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@                (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@                    (= (extract 2 0 (y)) (0i3:bv))
+;;@   )))
+;;@ )
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 

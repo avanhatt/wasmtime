@@ -10,7 +10,7 @@ use itertools::izip;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{annotation_ir, ConcreteTest, Expr, TermSignature, Type, TypeContext};
 
-use crate::{FLAGS_WIDTH, REG_WIDTH};
+use crate::{Config, FLAGS_WIDTH, REG_WIDTH};
 
 #[derive(Clone, Debug)]
 struct RuleParseTree<'a> {
@@ -101,7 +101,7 @@ pub fn type_rules_with_term_and_types(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotation_env: &AnnotationEnv,
-    term: &String,
+    config: &Config,
     types: &TermSignature,
     concrete: &Option<ConcreteTest>,
 ) -> HashMap<isle::sema::RuleId, RuleSemantics> {
@@ -118,19 +118,24 @@ pub fn type_rules_with_term_and_types(
                 rule.root_term,
                 rule.args.clone(),
             ),
-            &term,
+            &config.term,
             termenv,
             typeenv,
         ) {
             continue;
         }
+        if let Some(names) = &config.names {
+            if rule.name.is_none() || !names.contains(rule.name.as_ref().unwrap()) {
+                continue;
+            } 
+        } 
         if let Some(s) = type_annotations_using_rule(
             rule,
             annotation_env,
             &decls,
             typeenv,
             termenv,
-            term,
+            &config.term,
             &types,
             concrete,
         ) {
@@ -266,14 +271,24 @@ fn type_annotations_using_rule<'a>(
 
     println!("Typing rule:");
     print!("\tLHS:");
-    let lhs_expr =
-        add_rule_constraints(&mut parse_tree, lhs, annotation_env, &mut annotation_infos, false);
+    let lhs_expr = add_rule_constraints(
+        &mut parse_tree,
+        lhs,
+        annotation_env,
+        &mut annotation_infos,
+        false,
+    );
     if lhs_expr.is_none() {
         return None;
     }
     print!("\n\tRHS:");
-    let rhs_expr =
-        add_rule_constraints(&mut parse_tree, rhs, annotation_env, &mut annotation_infos, true);
+    let rhs_expr = add_rule_constraints(
+        &mut parse_tree,
+        rhs,
+        annotation_env,
+        &mut annotation_infos,
+        true,
+    );
     if rhs_expr.is_none() {
         return None;
     }
@@ -1495,7 +1510,7 @@ fn add_rule_constraints(
                 .insert((curr.ident.clone(), curr.type_var));
             let a = annotation_env.get_annotation_for_term(t);
             if a.is_none() {
-                println!("\nSKIPPING RULE with unannotated term: {}", t);
+                println!("\nSkipping rule with unannotated term: {}", t);
                 return None;
             }
             let annotation = a.unwrap();
@@ -2081,6 +2096,8 @@ fn create_parse_tree_pattern(
                 "I8" => 8,
                 "true" => 1,
                 "false" => 0,
+                // Not currently used, but parsed
+                "I128" => 16,
                 _ => todo!("{:?}", &name),
             };
             let name = format!("{}__{}", name, type_var);

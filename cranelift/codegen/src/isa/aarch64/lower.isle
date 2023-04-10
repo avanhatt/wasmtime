@@ -2,6 +2,8 @@
 
 ;; The main lowering constructor term: takes a clif `Inst` and returns the
 ;; register(s) within which the lowered instruction's result values live.
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (arg) (ret))))
 (decl partial lower (Inst) InstOutput)
 
 ;; Variant of the main lowering constructor term, which receives an
@@ -44,22 +46,22 @@
 ;; `i64` and smaller
 
 ;; Base case, simply adding things in registers.
-(rule -1 (lower (has_type (fits_in_64 ty) (iadd x y)))
+(rule iadd_base_case -1 (lower (has_type (fits_in_64 ty) (iadd x y)))
       (add ty  x y))
 
 ;; Special cases for when one operand is an immediate that fits in 12 bits.
-(rule 4 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_value y))))
+(rule iadd_imm12_right 4 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_value y))))
       (add_imm ty x y))
 
-(rule 5 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
+(rule iadd_imm12_left 5 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
       (add_imm ty y x))
 
 ;; Same as the previous special cases, except we can switch the addition to a
 ;; subtraction if the negated immediate fits in 12 bits.
-(rule 2 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
+(rule iadd_imm12_neg_right -1 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
       (sub_imm ty x y))
 
-(rule 3 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
+(rule iadd_imm12_neg_left -2 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
       (sub_imm ty y x))
 
 ;; Special cases for when we're adding an extended register where the extending
@@ -1419,8 +1421,6 @@
             (val_lshift Reg (lsl $I32 val neg_amt)))
         (orr $I32 val_lshift val_rshift)))
 
-;;@ (spec (sig (args x) (ret))
-;;@   (assertions (= (ret) (- (int2bv (x) 12) (1i32:bv24)))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 

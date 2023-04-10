@@ -82,26 +82,28 @@
 ;;@                         (ashr (conv_to (t) (a)) 
 ;;@                           (conv_to (t) (zero_ext (regwidth) 
 ;;@                             (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b)))))))
-;;@           )),
+;;@           ))
+;;@   )
+;;@   (assert
 ;;@           (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
 ;;@           (= (t) (widthof (b))),
 ;;@           (|| (= (t) (8i8: isleType))
 ;;@           (|| (= (t) (16i8: isleType))
 ;;@           (|| (= (t) (32i8: isleType))
-;;@           (= (t) (64i8: isleType))))),
+;;@               (= (t) (64i8: isleType))))),
 ;;@           (switch (op) 
 ;;@                  ((0i64:bv) (true))
 ;;@                  ((1i64:bv) (switch (t) 
 ;;@                               ((8i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
-;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
+;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
 ;;@                               ((32i32: isleType) (true))
 ;;@                               ((64i32: isleType) (true))))
 ;;@                  ((2i64:bv) (switch (t) 
 ;;@                               ((8i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
-;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
+;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
 ;;@                               ((32i32: isleType) (true))
 ;;@                               ((64i32: isleType) (true))))
-;;@           ),
+;;@           )
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern extractor do_shift do_shift)

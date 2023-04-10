@@ -1,7 +1,8 @@
 mod utils;
 use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
 use utils::{
-    run_and_retry, test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
+    run_and_retry, test_aarch64_rule_with_lhs_termname,
+    test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
     test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
 use veri_engine_lib::Config;
@@ -47,6 +48,13 @@ fn test_iadd_base() {
 }
 
 #[test]
+fn test_named_iadd_base() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname("iadd_base_case", "iadd", lte_64_success_result())
+    });
+}
+
+#[test]
 fn test_iadd_imm12() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
@@ -54,6 +62,13 @@ fn test_iadd_imm12() {
             "iadd".to_string(),
             lte_64_success_result(),
         )
+    });
+}
+
+#[test]
+fn test_named_iadd_imm12_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname("iadd_imm12_right", "iadd", lte_64_success_result())
     });
 }
 
@@ -69,11 +84,50 @@ fn test_iadd_imm12_2() {
 }
 
 #[test]
+fn test_named_iadd_imm12_left() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname("iadd_imm12_left", "iadd", lte_64_success_result())
+    });
+}
+
+#[test]
 fn test_iadd_imm12neg_not_distinct() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/iadd/imm12neg.isle",
             "iadd".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_iadd_imm12_neg_left() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imm12_neg_left",
+            "iadd",
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_iadd_imm12_neg_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imm12_neg_right",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
                 (Bitwidth::I16, VerificationResult::NoDistinctModels),
@@ -1289,6 +1343,7 @@ fn test_small_rotr_to_shifts() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/rotr/small_rotr_to_shifts.isle",
@@ -1321,6 +1376,7 @@ fn test_small_rotr_to_shifts_broken() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/broken/broken_mask_small_rotr.isle",
@@ -1356,6 +1412,7 @@ fn test_small_rotr_to_shifts_broken2() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/broken/broken_rule_or_small_rotr.isle",
@@ -1391,6 +1448,7 @@ fn test_small_rotr_imm_to_shifts() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/rotr/small_rotr_imm_to_shifts.isle",
@@ -1995,6 +2053,7 @@ fn test_do_shift_with_imm() {
             };
             lower_8_bits_eq
         })),
+        names: None,
     };
     test_from_file_with_config(
         "./examples/shifts/do_shift_with_imm.isle",
@@ -2012,6 +2071,7 @@ fn test_do_shift_with_imm() {
             };
             lower_16_bits_eq
         })),
+        names: None,
     };
     test_from_file_with_config(
         "./examples/shifts/do_shift_with_imm.isle",
@@ -2029,6 +2089,7 @@ fn test_do_shift_with_imm() {
             };
             lower_32_bits_eq
         })),
+        names: None,
     };
     test_from_file_with_config(
         "./examples/shifts/do_shift_with_imm.isle",
@@ -2065,6 +2126,7 @@ fn test_do_shift_fits_in_16() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/shifts/do_shift_fits_in_16.isle",
@@ -2149,6 +2211,7 @@ fn test_do_shift_32() {
             };
             lower_32_bits_eq
         })),
+        names: None,
     };
     test_from_file_with_config(
         "./examples/shifts/do_shift_32.isle",
@@ -2502,6 +2565,7 @@ fn test_lower_icmp_const_32_64_sgte() {
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
             custom_verification_condition: None,
+            names: None,
         };
         test_from_file_with_config(
             "./examples/icmp/lower_icmp_const_32_64_sgte.isle",
@@ -2533,6 +2597,7 @@ fn test_lower_icmp_const_32_64_ugte() {
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
             custom_verification_condition: None,
+            names: None,
         };
         test_from_file_with_config(
             "./examples/icmp/lower_icmp_const_32_64_ugte.isle",
