@@ -97,15 +97,15 @@ fn test_expr() {
 
     // conditional
     assert!(parser::ExprParser::new()
-        .parse("(if (a) {(+ (b) (c))} else {(d)})")
+        .parse("(if (a) (+ (b) (c)) (d))")
         .is_ok());
 
     // nested conditionals
     assert!(parser::ExprParser::new()
-        .parse("(if (a) {(+ (if (x) {(+ (b) (c))} else {(d)}) (c))} else {(d)})")
+        .parse("(if (a) (+ (if (x) (+ (b) (c)) (d)) (c)) (d))")
         .is_ok());
     assert!(parser::ExprParser::new()
-        .parse("(if (<= (t) (32i8: isleType)) {(32i8: isleType)} else {(64i8: isleType)})")
+        .parse("(if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType))")
         .is_ok());
 }
 
@@ -207,7 +207,7 @@ fn test_real_annotations() {
     //         "(spec (sig (args a, b, c, d) (ret))
     //          (assertions (if (b) {
     //                          (= (ret) (signed_conv_to (d) (a)))
-    //                   } else {
+    //                    
     //                       (= (ret) (conv_to (d) (a)))}),
     //          (= (widthof (a)) (c))
     //      ))",
