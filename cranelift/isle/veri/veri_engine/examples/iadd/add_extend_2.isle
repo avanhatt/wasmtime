@@ -1,0 +1,87 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (assertions (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+(type MInst
+  (enum
+))
+
+(type ALUOp
+  (enum
+    (Add)
+))
+
+;; Helper type to represent a value and an extend operation fused together.
+(type ExtendedValue extern (enum))
+
+;; We represent ExtendedValue as a bv
+;; where the three most significant bits
+;; encode an extend op as follows:
+;;   UXTB = 0b000,
+;;   UXTH = 0b001,
+;;   UXTW = 0b010,
+;;   UXTX = 0b011,
+;;   SXTB = 0b100,
+;;   SXTH = 0b101,
+;;   SXTW = 0b110,
+;;   SXTX = 0b111,
+;; and the remaining bits encode the value.
+
+(decl alu_rr_extend_reg (ALUOp Type Reg ExtendedValue) Reg)
+(extern constructor alu_rr_extend_reg alu_rr_extend_reg)
+
+;; (rule (alu_rr_extend_reg op ty src1 extended_reg)
+;;       (let ((src2 Reg (put_extended_in_reg extended_reg))
+;;             (extend ExtendOp (get_extended_op extended_reg)))
+;;         (alu_rrr_extend op ty src1 src2 extend)))
+
+;; Only including the i8 to i32 opcodes, based on the impl of extended_value_from_value
+;;@ (spec (sig (args x) (ret))
+;;@   (assertions
+;;@     (switch (extract 66 64 (x))
+;;@       ((0i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 7 0 (zero_ext (64) (ret))))))
+;;@       ((1i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 15 0 (zero_ext (64) (ret))))))
+;;@       ((2i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 31 0 (zero_ext (64) (ret))))))
+;;@       ((4i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 7 0 (zero_ext (64) (ret))))))
+;;@       ((5i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 15 0 (zero_ext (64) (ret))))))
+;;@       ((6i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 31 0 (zero_ext (64) (ret))))))
+;;@     ),
+;;@     (= (ret) (conv_to (widthof (ret)) (x))),
+;;@     (|| (= (8i32:isleType) (widthof (ret))) (|| (= (16i32:isleType) (widthof (ret))) (= (32i32:isleType) (widthof (ret)))))
+;;@ ))
+(decl extended_value_from_value (ExtendedValue) Value)
+(extern extractor extended_value_from_value extended_value_from_value)
+
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assertions
+;;@       (= (ret) 
+;;@          (if (<= (ty) (32i32:isleType))
+;;@          (conv_to (regwidth) (+ (extract 31 0 (x)) 
+;;@             (switch (extract 66 64 (y))
+;;@               ((0i3:bv) (zero_ext (32) (extract 7 0 (y))))
+;;@               ((1i3:bv) (zero_ext (32) (extract 15 0 (y))))
+;;@               ((2i3:bv) (zero_ext (32) (extract 31 0 (y))))
+;;@               ((3i3:bv) (zero_ext (32) (extract 31 0 (y))))
+;;@               ((4i3:bv) (sign_ext (32) (extract 7 0 (y))))
+;;@               ((5i3:bv) (sign_ext (32) (extract 15 0 (y))))
+;;@               ((6i3:bv) (sign_ext (32) (extract 31 0 (y))))
+;;@               ((7i3:bv) (sign_ext (32) (extract 31 0 (y))))
+;;@          )))
+;;@          (+ (x) 
+;;@             (switch (extract 66 64 (y))
+;;@               ((0i3:bv) (zero_ext (regwidth) (extract 7 0 (y))))
+;;@               ((1i3:bv) (zero_ext (regwidth) (extract 15 0 (y))))
+;;@               ((2i3:bv) (zero_ext (regwidth) (extract 31 0 (y))))
+;;@               ((3i3:bv) (zero_ext (regwidth) (extract 63 0 (y))))
+;;@               ((4i3:bv) (sign_ext (regwidth) (extract 7 0 (y))))
+;;@               ((5i3:bv) (sign_ext (regwidth) (extract 15 0 (y))))
+;;@               ((6i3:bv) (sign_ext (regwidth) (extract 31 0 (y))))
+;;@               ((7i3:bv) (sign_ext (regwidth) (extract 63 0 (y))))
+;;@         ))
+;;@       )),
+;;@     ))
+(decl add_extend (Type Reg ExtendedValue) Reg)
+(rule (add_extend ty x y) (alu_rr_extend_reg (ALUOp.Add) ty x y))
+
+(rule 1 (lower (has_type (fits_in_64 ty) (iadd (extended_value_from_value x) y)))
+      (add_extend ty y x))
