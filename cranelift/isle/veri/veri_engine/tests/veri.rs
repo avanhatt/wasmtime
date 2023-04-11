@@ -1922,10 +1922,10 @@ fn test_ishl_to_do_shift_64_concrete() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ishl_to_do_shift_fits_in_32.isle",
-        "ishl".to_string(),
+fn test_named_ishl_fits_in_32() {
+    test_aarch64_rule_with_lhs_termname(
+        "ishl_fits_in_32",
+        "ishl",
         vec![
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
