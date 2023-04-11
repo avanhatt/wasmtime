@@ -1853,6 +1853,28 @@ fn test_named_band_not_64() {
 }
 
 #[test]
+fn test_named_bnot() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "bnot_base_case",
+            "bnot",
+            all_success_result(),
+        )
+    })
+}
+
+#[test]
+fn test_named_bnot_ishl() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "bnot_ishl",
+            "bnot",
+            all_success_result(),
+        )
+    })
+}
+
+#[test]
 fn test_ishl_to_do_shift_64() {
     test_from_file_with_lhs_termname(
         "./examples/shifts/ishl_to_do_shift_64.isle",

@@ -34,6 +34,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
 
     // Simple unary
     widths.insert("ineg", bv_unary_8_to_64.clone());
+    widths.insert("bnot", bv_unary_8_to_64.clone());
     widths.insert("cls", bv_unary_8_to_64.clone());
     widths.insert("clz", bv_unary_8_to_64.clone());
     widths.insert("ctz", bv_unary_8_to_64.clone());

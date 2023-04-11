@@ -2759,10 +2759,22 @@
 (rule (not x size) (vec_misc (VecMisc2.Not) x size))
 
 ;; Helpers for generating `orr_not` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (| (extract 31 0 (a)) (~ (extract 31 0 (b)))))
+;;@            (| (a) (~ (b)))))))
 (decl orr_not (Type Reg Reg) Reg)
 (rule (orr_not ty x y) (alu_rrr (ALUOp.OrrNot) ty x y))
 
+;;@ (spec (sig (args ty, a, b, shift) (ret))
+;;@   (assume  
+;;@     (= (ret) (if (<= (ty) (32i32:isleType))
+;;@       (conv_to (regwidth) (| (a) (~ (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))))
+;;@       (| (a) (~ (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift)))))))
+;;@     ))
+;;@ ))
 (decl orr_not_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (orr_not_shift ty x y shift) (alu_rrr_shift (ALUOp.OrrNot) ty x y shift))
 

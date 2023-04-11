@@ -1032,6 +1032,8 @@
     (inst_data (InstructionData.Binary (Opcode.Bxor) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x) (ret))
+;;@       (assume  (= (~ (x)) (ret))))
 (decl bnot (Value) Inst)
 (extractor
     (bnot x)
