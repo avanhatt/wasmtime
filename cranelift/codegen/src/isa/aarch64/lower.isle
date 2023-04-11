@@ -958,7 +958,7 @@
 
 ;; General rule for extending input to an output which fits in a single
 ;; register.
-(rule -2 (lower (has_type (fits_in_64 out) (uextend x @ (value_type in))))
+(rule uextend -2 (lower (has_type (fits_in_64 out) (uextend x @ (value_type in))))
       (extend x $false (ty_bits in) (ty_bits out)))
 
 ;; Extraction of a vector lane automatically extends as necessary, so we can
@@ -991,7 +991,7 @@
 
 ;; General rule for extending input to an output which fits in a single
 ;; register.
-(rule -4 (lower (has_type (fits_in_64 out) (sextend x @ (value_type in))))
+(rule sextend -4 (lower (has_type (fits_in_64 out) (sextend x @ (value_type in))))
       (extend x $true (ty_bits in) (ty_bits out)))
 
 ;; Extraction of a vector lane automatically extends as necessary, so we can
@@ -1067,10 +1067,10 @@
 
 ;;;; Rules for `band` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule -1 (lower (has_type (fits_in_32 ty) (band x y)))
+(rule band_fits_in_32 -1 (lower (has_type (fits_in_32 ty) (band x y)))
       (alu_rs_imm_logic_commutative (ALUOp.And) ty x y))
 
-(rule (lower (has_type $I64 (band x y)))
+(rule band_64 (lower (has_type $I64 (band x y)))
       (alu_rs_imm_logic_commutative (ALUOp.And) $I64 x y))
 
 (rule (lower (has_type $I128 (band x y))) (i128_alu_bitop (ALUOp.And) $I64 x y))
@@ -1080,10 +1080,10 @@
 
 ;;;; Rules for `bor` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule -1 (lower (has_type (fits_in_32 ty) (bor x y)))
+(rule bor_fits_in_32 -1 (lower (has_type (fits_in_32 ty) (bor x y)))
       (alu_rs_imm_logic_commutative (ALUOp.Orr) ty x y))
 
-(rule (lower (has_type $I64 (bor x y)))
+(rule bor_64 (lower (has_type $I64 (bor x y)))
       (alu_rs_imm_logic_commutative (ALUOp.Orr) $I64 x y))
 
 (rule (lower (has_type $I128 (bor x y))) (i128_alu_bitop (ALUOp.Orr) $I64 x y))
@@ -1093,10 +1093,10 @@
 
 ;;;; Rules for `bxor` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule -1 (lower (has_type (fits_in_32 ty) (bxor x y)))
+(rule bxor_fits_in_32 -1 (lower (has_type (fits_in_32 ty) (bxor x y)))
       (alu_rs_imm_logic_commutative (ALUOp.Eor) ty x y))
 
-(rule (lower (has_type $I64 (bxor x y)))
+(rule bxor_64 (lower (has_type $I64 (bxor x y)))
       (alu_rs_imm_logic_commutative (ALUOp.Eor) $I64 x y))
 
 (rule (lower (has_type $I128 (bxor x y))) (i128_alu_bitop (ALUOp.Eor) $I64 x y))
@@ -1106,10 +1106,10 @@
 
 ;;;; Rules for `band_not` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule -1 (lower (has_type (fits_in_32 ty) (band_not x y)))
+(rule band_not_fits_in_32 -1 (lower (has_type (fits_in_32 ty) (band_not x y)))
       (alu_rs_imm_logic (ALUOp.AndNot) ty x y))
 
-(rule (lower (has_type $I64 (band_not x y)))
+(rule band_not_64 (lower (has_type $I64 (band_not x y)))
       (alu_rs_imm_logic (ALUOp.AndNot) $I64 x y))
 
 (rule (lower (has_type $I128 (band_not x y))) (i128_alu_bitop (ALUOp.AndNot) $I64 x y))

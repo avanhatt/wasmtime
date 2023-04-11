@@ -985,6 +985,54 @@
     (SbcS)
 ))
 
+;; Verification annotations:
+;;@ (spec (sig (args) (r)) (assume  (= (0i8:bv8) (r))))
+;;decl ALUOp.Add
+;;@ (spec (sig (args) (r)) (assume  (= (1i8:bv8) (r))))
+;;decl ALUOp.Sub
+;;@ (spec (sig (args) (r)) (assume  (= (2i8:bv8) (r))))
+;;decl ALUOp.Orr
+;;@ (spec (sig (args) (r)) (assume  (= (3i8:bv8) (r))))
+;;decl ALUOp.OrrNot
+;;@ (spec (sig (args) (r)) (assume  (= (4i8:bv8) (r))))
+;;decl ALUOp.And
+;;@ (spec (sig (args) (r)) (assume  (= (5i8:bv8) (r))))
+;;decl ALUOp.AndS
+;;@ (spec (sig (args) (r)) (assume  (= (6i8:bv8) (r))))
+;;decl ALUOp.AndNot
+;;@ (spec (sig (args) (r)) (assume  (= (7i8:bv8) (r))))
+;;decl ALUOp.Eor
+;;@ (spec (sig (args) (r)) (assume  (= (8i8:bv8) (r))))
+;;decl ALUOp.EorNot
+;;@ (spec (sig (args) (r)) (assume  (= (9i8:bv8) (r))))
+;;decl ALUOp.AddS
+;;@ (spec (sig (args) (r)) (assume  (= (10i8:bv8) (r))))
+;;decl ALUOp.SubS
+;;@ (spec (sig (args) (r)) (assume  (= (11i8:bv8) (r))))
+;;decl ALUOp.SMulH
+;;@ (spec (sig (args) (r)) (assume  (= (12i8:bv8) (r))))
+;;decl ALUOp.UMulH
+;;@ (spec (sig (args) (r)) (assume  (= (13i8:bv8) (r))))
+;;decl ALUOp.SDiv
+;;@ (spec (sig (args) (r)) (assume  (= (14i8:bv8) (r))))
+;;decl ALUOp.UDiv
+;;@ (spec (sig (args) (r)) (assume  (= (15i8:bv8) (r))))
+;;decl ALUOp.RotR
+;;@ (spec (sig (args) (r)) (assume  (= (16i8:bv8) (r))))
+;;decl ALUOp.Lsr
+;;@ (spec (sig (args) (r)) (assume  (= (17i8:bv8) (r))))
+;;decl ALUOp.Asr
+;;@ (spec (sig (args) (r)) (assume  (= (18i8:bv8) (r))))
+;;decl ALUOp.Lsl
+;;@ (spec (sig (args) (r)) (assume  (= (19i8:bv8) (r))))
+;;decl ALUOp.Adc
+;;@ (spec (sig (args) (r)) (assume  (= (20i8:bv8) (r))))
+;;decl ALUOp.AdcS
+;;@ (spec (sig (args) (r)) (assume  (= (21i8:bv8) (r))))
+;;decl ALUOp.Sbc
+;;@ (spec (sig (args) (r)) (assume  (= (22i8:bv8) (r))))
+;;decl ALUOp.SbcS
+
 ;; An ALU operation with three arguments.
 (type ALUOp3
   (enum
@@ -2208,6 +2256,12 @@
         dst))
 
 ;; Helper for emitting `MInst.Extend` instructions.
+;;@ (spec (sig (args a, b, c, d) (ret))
+;;@     (assume  (if (b) 
+;;@                     (= (ret) (sign_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
+;;@                     (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
+;;@                 )
+;;@     ))
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3065,6 +3119,16 @@
 ;; Helper for generating either an `AluRRR`, `AluRRRShift`, or `AluRRImmLogic`
 ;; instruction depending on the input. Note that this requires that the `ALUOp`
 ;; specified is commutative.
+;;@ (spec (sig (args op, t, a, b) (ret))
+;;@     (assume  
+;;@       (= (ret) 
+;;@          (conv_to (regwidth)
+;;@            (switch (op) 
+;;@              ((2i8:bv8) (| (a) (b)))
+;;@              ((4i8:bv8) (& (a) (b)))
+;;@              ((7i8:bv8) (xor (a) (b)))
+;;@        )))
+;;@     ))
 (decl alu_rs_imm_logic_commutative (ALUOp Type Value Value) Reg)
 
 ;; Base case of operating on registers.
@@ -3089,6 +3153,15 @@
 
 ;; Same as `alu_rs_imm_logic_commutative` above, except that it doesn't require
 ;; that the operation is commutative.
+;;@ (spec (sig (args op, t, a, b) (ret))
+;;@     (assume  
+;;@       (= (ret) 
+;;@          (conv_to (regwidth)
+;;@            (switch (op) 
+;;@              ((3i8:bv8) (| (a) (~ (b))))
+;;@              ((6i8:bv8) (& (a) (~ (b))))
+;;@        )))
+;;@     ))
 (decl alu_rs_imm_logic (ALUOp Type Value Value) Reg)
 (rule -1 (alu_rs_imm_logic op ty x y)
       (alu_rrr op ty x y))

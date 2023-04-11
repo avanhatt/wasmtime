@@ -96,6 +96,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("isub", bv_binary_8_to_64.clone());
     widths.insert("imul", bv_binary_8_to_64.clone());
     widths.insert("band", bv_binary_8_to_64.clone());
+    widths.insert("band_not", bv_binary_8_to_64.clone());
     widths.insert("bor", bv_binary_8_to_64.clone());
     widths.insert("bxor", bv_binary_8_to_64.clone());
     widths.insert("ushr", bv_binary_8_to_64.clone());

@@ -941,22 +941,22 @@ fn test_named_urem_concrete() {
 }
 
 #[test]
-fn test_uextend() {
+fn test_named_uextend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname_dynwidth(
-            "./examples/uextend/uextend.isle",
-            "uextend".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "uextend",
+            "uextend",
             all_success_result(),
         )
     })
 }
 
 #[test]
-fn test_sextend() {
+fn test_named_sextend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname_dynwidth(
-            "./examples/sextend/sextend.isle",
-            "sextend".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "sextend",
+            "sextend",
             all_success_result(),
         )
     })
@@ -1681,11 +1681,11 @@ fn test_64_with_imm_rotr() {
 }
 
 #[test]
-fn test_fits_in_32_band() {
+fn test_named_band_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/band/fits_in_32_band.isle",
-            "band".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "band_fits_in_32",
+            "band",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1697,7 +1697,7 @@ fn test_fits_in_32_band() {
 }
 
 #[test]
-fn test_broken_fits_in_32_band() {
+fn test_broken_band_fits_in_32() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/broken_fits_in_32_band.isle",
@@ -1719,11 +1719,11 @@ fn test_broken_fits_in_32_band() {
 }
 
 #[test]
-fn test_64_band() {
+fn test_named_band_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/band/64_band.isle",
-            "band".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "band_64",
+            "band",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1735,11 +1735,11 @@ fn test_64_band() {
 }
 
 #[test]
-fn test_fits_in_32_bor() {
+fn test_named_bor_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bor/fits_in_32_bor.isle",
-            "bor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bor_fits_in_32",
+            "bor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1751,11 +1751,11 @@ fn test_fits_in_32_bor() {
 }
 
 #[test]
-fn test_64_bor() {
+fn test_named_bor_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bor/64_bor.isle",
-            "bor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bor_64",
+            "bor",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1767,7 +1767,7 @@ fn test_64_bor() {
 }
 
 #[test]
-fn test_broken_fits_in_32_bor() {
+fn test_broken_bor_fits_in_32() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/broken_fits_in_32_bor.isle",
@@ -1789,11 +1789,11 @@ fn test_broken_fits_in_32_bor() {
 }
 
 #[test]
-fn test_fits_in_32_bxor() {
+fn test_named_bxor_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bxor/fits_in_32_bxor.isle",
-            "bxor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bxor_fits_in_32",
+            "bxor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1805,11 +1805,43 @@ fn test_fits_in_32_bxor() {
 }
 
 #[test]
-fn test_64_bxor() {
+fn test_named_bxor_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bxor/64_bxor.isle",
-            "bxor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bxor_64",
+            "bxor",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_band_not_fits_in_32() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "band_not_fits_in_32",
+            "band_not",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_band_not_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "band_not_64",
+            "band_not",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),

@@ -1038,6 +1038,8 @@
     (inst_data (InstructionData.Unary (Opcode.Bnot) x))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assume  (= (& (x) (~ (y))) (ret))))
 (decl band_not (Value Value) Inst)
 (extractor
     (band_not x y)
