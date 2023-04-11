@@ -82,7 +82,7 @@ pub fn verify_rules_for_term(
             } else {
                 println!("VERIFYING rule with name: {}", rule.name.as_ref().unwrap());
             }
-        } 
+        }
         let ctx = Context::new(typesols);
         if ctx.typesols.get(&rule.id).is_none() {
             println!("ABORTING rule not found in the context");

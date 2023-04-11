@@ -2,18 +2,19 @@ mod utils;
 use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
 use utils::{
     run_and_retry, test_aarch64_rule_with_lhs_termname,
-    test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
-    test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
+    test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
+    test_from_file_with_config, test_from_file_with_lhs_termname,
+    test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
 use veri_engine_lib::Config;
 use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 
 #[test]
-fn test_iadd_base_concrete() {
+fn test_named_iadd_base_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/iadd/base_case.isle",
-            "iadd".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "iadd_base_case",
+            "iadd",
             false,
             ConcreteTest {
                 termname: "iadd".to_string(),
@@ -37,31 +38,9 @@ fn test_iadd_base_concrete() {
 }
 
 #[test]
-fn test_iadd_base() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/base_case.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
-    });
-}
-
-#[test]
 fn test_named_iadd_base() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname("iadd_base_case", "iadd", lte_64_success_result())
-    });
-}
-
-#[test]
-fn test_iadd_imm12() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
     });
 }
 
@@ -73,36 +52,9 @@ fn test_named_iadd_imm12_right() {
 }
 
 #[test]
-fn test_iadd_imm12_2() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12_2.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
-    });
-}
-
-#[test]
 fn test_named_iadd_imm12_left() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname("iadd_imm12_left", "iadd", lte_64_success_result())
-    });
-}
-
-#[test]
-fn test_iadd_imm12neg_not_distinct() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg.isle",
-            "iadd".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
     });
 }
 

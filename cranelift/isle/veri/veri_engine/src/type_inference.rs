@@ -127,8 +127,8 @@ pub fn type_rules_with_term_and_types(
         if let Some(names) = &config.names {
             if rule.name.is_none() || !names.contains(rule.name.as_ref().unwrap()) {
                 continue;
-            } 
-        } 
+            }
+        }
         if let Some(s) = type_annotations_using_rule(
             rule,
             annotation_env,

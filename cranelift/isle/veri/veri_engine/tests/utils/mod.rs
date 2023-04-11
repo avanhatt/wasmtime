@@ -238,6 +238,70 @@ pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) ->
     test_rules_with_term(inputs, tr, config);
 }
 
+pub fn test_concrete_aarch64_rule_with_lhs_termname(
+    rulename: &str,
+    termname: &str,
+    dynwidth: bool,
+    concrete: ConcreteTest,
+) -> () {
+    println!(
+        "Verifying concrete input rule `{}` with termname {} ",
+        rulename, termname
+    );
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let prelude_lower_isle = cur_dir
+        .join("../../../codegen/src")
+        .join("prelude_lower.isle");
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(
+        cur_dir
+            .join("../../../codegen/src/isa/aarch64")
+            .join("inst.isle"),
+    );
+    inputs.push(
+        cur_dir
+            .join("../../../codegen/src/isa/aarch64")
+            .join("lower.isle"),
+    );
+
+    let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
+    let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
+    let (typeenv, termenv) = create_envs(&defs).unwrap();
+    let annotation_env = parse_annotations(&inputs);
+
+    let config = Config {
+        dyn_width: dynwidth,
+        term: termname.to_string(),
+        distinct_check: false,
+        custom_verification_condition: None,
+        names: Some(vec![rulename.to_string()]),
+    };
+
+    // Get the types/widths for this particular term
+    let args = concrete.args.iter().map(|i| i.ty.clone()).collect();
+    let ret = concrete.output.ty;
+    let t = TermSignature {
+        args,
+        ret,
+        canonical_type: None,
+    };
+
+    let type_sols = type_rules_with_term_and_types(
+        defs.clone(),
+        &termenv,
+        &typeenv,
+        &annotation_env,
+        &config,
+        &t,
+        &Some(concrete.clone()),
+    );
+    let result = verify_rules_for_term(&termenv, &typeenv, &type_sols, t, &Some(concrete), &config);
+    assert_eq!(result, VerificationResult::Success);
+}
+
 pub fn test_concrete_input_from_file_with_lhs_termname(
     file: &str,
     termname: String,
