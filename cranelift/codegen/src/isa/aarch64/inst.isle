@@ -1686,6 +1686,8 @@
 (decl u8_into_uimm5 (u8) UImm5)
 (extern constructor u8_into_uimm5 u8_into_uimm5)
 
+;;@ (spec (sig (args arg) (ret))
+;;@   (assume  (= (ret) (zero_ext (24) (arg)))))
 (decl u8_into_imm12 (u8) Imm12)
 (extern constructor u8_into_imm12 u8_into_imm12)
 
@@ -2782,16 +2784,52 @@
 (rule (asr_imm ty x imm) (alu_rr_imm_shift (ALUOp.Asr) ty x imm))
 
 ;; Helper for generating `lsr` instructions.
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (switch (ty) 
+;;@          ((32i8:isleType) (conv_to (regwidth) (shr (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@          ((64i8:isleType) (shr (a) (b)))
+;;@        )
+;;@     )
+;;@ ))
 (decl lsr (Type Reg Reg) Reg)
 (rule (lsr ty x y) (alu_rrr (ALUOp.Lsr) ty x y))
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (switch (ty) 
+;;@          ((32i8: isleType) (conv_to (regwidth) (shr (extract 31 0 (a)) (zero_ext (32) (b)))))
+;;@          ((64i8: isleType) (shr (a) (zero_ext (regwidth) (b))))
+;;@        )
+;;@     )
+;;@ ))
 (decl lsr_imm (Type Reg ImmShift) Reg)
 (rule (lsr_imm ty x imm) (alu_rr_imm_shift (ALUOp.Lsr) ty x imm))
 
 ;; Helper for generating `lsl` instructions.
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (switch (ty) 
+;;@          ((32i8: isleType) (conv_to (regwidth) (shl (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@          ((64i8: isleType) (shl (a) (b)))
+;;@        )
+;;@     )
+;;@ ))
 (decl lsl (Type Reg Reg) Reg)
 (rule (lsl ty x y) (alu_rrr (ALUOp.Lsl) ty x y))
 
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (switch (ty) 
+;;@          ((32i8: isleType) (conv_to (regwidth) (shl (extract 31 0 (a)) (zero_ext (32) (b)))))
+;;@          ((64i8: isleType) (shl (a) (zero_ext (regwidth) (b))))
+;;@        )
+;;@     )
+;;@ ))
 (decl lsl_imm (Type Reg ImmShift) Reg)
 (rule (lsl_imm ty x imm) (alu_rr_imm_shift (ALUOp.Lsl) ty x imm))
 
@@ -2841,7 +2879,15 @@
 (rule (orr_not_shift ty x y shift) (alu_rrr_shift (ALUOp.OrrNot) ty x y shift))
 
 ;; Helpers for generating `orr` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (switch (ty) 
+;;@          ((32i8: isleType) (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@          ((64i8: isleType) (| (a) (b)))
+;;@        )
+;;@     )
+;;@ ))
 (decl orr (Type Reg Reg) Reg)
 (rule (orr ty x y) (alu_rrr (ALUOp.Orr) ty x y))
 
