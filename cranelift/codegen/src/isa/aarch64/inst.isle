@@ -2825,7 +2825,8 @@
 ;;@     (= (r) 
 ;;@        (if (<= (ty) (32i8: isleType)) 
 ;;@            (conv_to (regwidth) (| (extract 31 0 (a)) (~ (extract 31 0 (b)))))
-;;@            (| (a) (~ (b)))))))
+;;@            (| (a) (~ (b))))))
+;;@ )
 (decl orr_not (Type Reg Reg) Reg)
 (rule (orr_not ty x y) (alu_rrr (ALUOp.OrrNot) ty x y))
 
@@ -2834,8 +2835,8 @@
 ;;@     (= (ret) (if (<= (ty) (32i32:isleType))
 ;;@       (conv_to (regwidth) (| (a) (~ (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))))
 ;;@       (| (a) (~ (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift)))))))
-;;@     ))
-;;@ ))
+;;@    )))
+;;@ )
 (decl orr_not_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (orr_not_shift ty x y shift) (alu_rrr_shift (ALUOp.OrrNot) ty x y shift))
 
@@ -2896,10 +2897,27 @@
 (rule (ushl x y size) (vec_rrr (VecALUOp.Ushl) x y size))
 
 ;; Helpers for generating `rotr` instructions.
-
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (= (ty) (32i0:isleType))
+;;@            (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y))))
+;;@            (rotr (x) (y))
+;;@   )))
+;;@   (assert (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))))
+;;@ )
 (decl a64_rotr (Type Reg Reg) Reg)
 (rule (a64_rotr ty x y) (alu_rrr (ALUOp.RotR) ty x y))
 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (= (ty) (32i0:isleType))
+;;@            (zero_ext (regwidth) (rotr (extract 31 0 (x)) (zero_ext (32i0:isleType) (y)))) 
+;;@            (rotr (x) (zero_ext (regwidth) (y)))
+;;@    )))
+;;@   (assert (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))))
+;;@ )
 (decl a64_rotr_imm (Type Reg ImmShift) Reg)
 (rule (a64_rotr_imm ty x y) (alu_rr_imm_shift (ALUOp.RotR) ty x y))
 

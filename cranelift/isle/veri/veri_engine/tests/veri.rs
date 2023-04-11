@@ -1404,11 +1404,11 @@ fn test_small_rotr_imm_to_shifts() {
 }
 
 #[test]
-fn test_fits_in_16_rotl_to_rotr() {
+fn test_named_rotl_fits_in_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/fits_in_16_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_fits_in_16",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1420,12 +1420,12 @@ fn test_fits_in_16_rotl_to_rotr() {
 }
 
 #[test]
-fn test_32_general_rotl_to_rotr() {
+fn test_named_rotl_32_base_case() {
     run_and_retry(|| {
         run_and_retry(|| {
-            test_from_file_with_lhs_termname(
-                "./examples/rotl/32_general_rotl_to_rotr.isle",
-                "rotl".to_string(),
+            test_aarch64_rule_with_lhs_termname(
+                "rotl_32_base_case",
+                "rotl",
                 vec![
                     (Bitwidth::I8, VerificationResult::InapplicableRule),
                     (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1457,11 +1457,11 @@ fn test_broken_32_general_rotl_to_rotr() {
 }
 
 #[test]
-fn test_64_general_rotl_to_rotr() {
+fn test_named_rotl_64_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/64_general_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_64_base_case",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1492,11 +1492,11 @@ fn test_broken_fits_in_16_rotl_to_rotr() {
 }
 
 #[test]
-fn test_fits_in_16_with_imm_rotl_to_rotr() {
+fn test_named_rotl_fits_in_16_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/fits_in_16_with_imm_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_fits_in_16_imm",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1508,11 +1508,11 @@ fn test_fits_in_16_with_imm_rotl_to_rotr() {
 }
 
 #[test]
-fn test_64_with_imm_rotl_to_rotr() {
+fn test_named_rotl_64_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/64_with_imm_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_64_imm",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1524,11 +1524,11 @@ fn test_64_with_imm_rotl_to_rotr() {
 }
 
 #[test]
-fn test_32_with_imm_rotl_to_rotr() {
+fn test_named_rotl_32_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/32_with_imm_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_32_imm",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
