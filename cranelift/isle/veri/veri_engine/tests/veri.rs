@@ -879,11 +879,11 @@ fn test_broken_sdiv() {
 }
 
 #[test]
-fn test_srem() {
+fn test_named_srem() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/srem/srem.isle",
-            "srem".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "srem",
+            "srem",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -896,11 +896,11 @@ fn test_srem() {
 }
 
 #[test]
-fn test_urem() {
+fn test_named_urem() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/urem/urem.isle",
-            "urem".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "urem",
+            "urem",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -913,11 +913,11 @@ fn test_urem() {
 }
 
 #[test]
-fn test_urem_concrete() {
+fn test_named_urem_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/urem/urem.isle",
-            "urem".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "urem",
+            "urem",
             false,
             ConcreteTest {
                 termname: "urem".to_string(),
