@@ -1793,6 +1793,8 @@
 ;;@       ((5i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 15 0 (zero_ext (64) (ret))))))
 ;;@       ((6i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 31 0 (zero_ext (64) (ret))))))
 ;;@     ),
+;;@     (ulte (extract 66 64 (x)) (6i3:bv)),
+;;@     (! (= (extract 66 64 (x)) (3i3:bv))),
 ;;@     (= (ret) (conv_to (widthof (ret)) (x))),
 ;;@     (|| (= (8i32:isleType) (widthof (ret))) (|| (= (16i32:isleType) (widthof (ret))) (= (32i32:isleType) (widthof (ret)))))
 ;;@ ))

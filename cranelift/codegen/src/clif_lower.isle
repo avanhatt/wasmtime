@@ -808,8 +808,9 @@
 ;;@          ((7i8:bv8) (if (ugte (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@        )
-;;@ )))
+;;@        )),
+;;@     (ulte (c) (9i8:bv8))
+;;@ ))
 (decl icmp (IntCC Value Value) Inst)
 (extractor
     (icmp Cond x y)

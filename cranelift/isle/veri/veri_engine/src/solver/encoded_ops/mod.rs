@@ -33,6 +33,7 @@ mod tests {
             width_assumptions: vec![],
             additional_decls: vec![],
             additional_assumptions: vec![],
+            additional_assertions: vec![],
             fresh_bits_idx: 0,
         }
     }

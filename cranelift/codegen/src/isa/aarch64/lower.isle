@@ -1140,11 +1140,11 @@
 ;;;; Rules for `ishl` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Shift for i8/i16/i32.
-(rule -1 (lower (has_type (fits_in_32 ty) (ishl x y)))
+(rule ishl_fits_in_32 -1 (lower (has_type (fits_in_32 ty) (ishl x y)))
       (do_shift (ALUOp.Lsl) ty x y))
 
 ;; Shift for i64.
-(rule (lower (has_type $I64 (ishl x y)))
+(rule ishl_64 (lower (has_type $I64 (ishl x y)))
       (do_shift (ALUOp.Lsl) $I64 x y))
 
 ;; Shift for i128.
