@@ -1,0 +1,171 @@
+(type Reg (primitive Reg))
+(type Value (primitive Value))
+(type Type (primitive Type))
+(type Inst (primitive Inst))
+(type Unit (primitive Unit))
+(type MemFlags (primitive MemFlags))
+(type Gpr (primitive Gpr))
+(type Imm64 (primitive Imm64))
+(type u32 (primitive u32))
+(type u8 (primitive u8))
+
+(extern const $I64 Type)
+
+(type ExtendKind (enum Sign Zero))
+
+;; (extern extractor put_in_gpr put_in_gpr)
+;; (extern constructor put_in_gpr put_in_gpr)
+;; (convert Value Gpr put_in_gpr)
+
+;;@ (spec (sig (args arg) (ret))
+ ;;@     (assume  (= (zero_ext (widthof (arg)) (ret)) (arg))))
+(decl iconst (Imm64) Inst)
+(extern extractor iconst iconst)
+
+;; fn uimm8(&mut self, x: Imm64) -> Option<u8> {
+;;     let x64: i64 = x.into();
+;;     let x8: u8 = x64.try_into().ok()?;
+;;     Some(x8)
+;; }
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (< (ret) (256i64:bv)),
+;;@                 (= (ret) (zero_ext (64i64:isleType) (arg))),
+;;@                 (= (widthof (arg)) (8i64:isleType))
+;;@ ))
+(decl uimm8 (u8) Imm64)
+(extern extractor uimm8 uimm8)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  
+;;@       (= (ret) (zero_ext (widthof (ret)) (arg))),
+;;@       (= (widthof (arg)) (8i8:isleType)),
+;;@       (= (widthof (ret)) (32i8:isleType)),
+;;@ ))
+(decl pure u8_as_u32 (u8) u32)
+(extern constructor u8_as_u32 u8_as_u32)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (arg) (ret))))
+(decl def_inst (Inst) Value)
+(extern extractor def_inst def_inst)
+(convert Inst Value def_inst)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (conv_to (regwidth) (arg)) (ret))))
+(decl put_in_reg (Value) Reg)
+(extern constructor put_in_reg put_in_reg)
+(convert Value Reg put_in_reg)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (arg) (ret))))
+(decl gpr_to_reg (Gpr) Reg)
+(extern constructor gpr_to_reg gpr_to_reg)
+(convert Gpr Reg gpr_to_reg)
+
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (arg) (ret))))
+(decl gpr_new (Reg) Gpr)
+(extern constructor gpr_new gpr_new)
+(convert Reg Gpr gpr_new)
+
+;; NOTE: added extra assumptions on widths
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (ret) (zero_ext (widthof (ret)) (arg))),
+;;@                 (= (widthof (arg)) (32i8:isleType))
+;;@ ))
+(decl uextend (Value) Inst)
+(extern extractor uextend uextend)
+
+;; NOTE: added extra assumptions on widths
+;;@ (spec (sig (args a, b) (ret))
+;;@     (assume  (<= (bv2int (b)) (widthof (a))),
+;;@                 (= (ret) (shl (a) (b))),
+;;@                 (= (widthof (a)) (32i8:isleType)),
+;;@                 (= (widthof (b)) (32i8:isleType)),
+;;@                 (= (widthof (ret)) (32i8:isleType)),
+;;@ ))
+(decl ishl (Value Value) Inst)
+(extern extractor ishl ishl)
+
+;; Pure/fallible constructor that tries to add two `u32`s, interpreted
+;; as signed values, and fails to match on overflow.
+;; #[inline]
+;; fn s32_add_fallible(&mut self, a: u32, b: u32) -> Option<u32> {
+;;     let a = a as i32;
+;;     let b = b as i32;
+;;     a.checked_add(b).map(|sum| sum as u32)
+;; }
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assume  (= (+ (x) (y)) (ret)),
+;;@                   (< (+ (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y))) (4294967295i64:bv)),
+;;@                   (= (+ (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y))) (sign_ext (regwidth) (ret))),
+;;@ ))
+(decl pure s32_add_fallible (u32 u32) u32)
+(extern constructor s32_add_fallible s32_add_fallible)
+
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assume  (= (+ (x) (zero_ext (regwidth) (y))) (ret))))
+(decl amode_add (Amode Value) Amode)
+(extern extractor amode_add amode_add)
+
+;; Get a signed 32-bit immediate in an u32 from an Imm64, if possible.
+;; #[inline]
+;; fn simm32(&mut self, x: Imm64) -> Option<u32> {
+;;     let x64: i64 = x.into();
+;;     let x32: i32 = x64.try_into().ok()?;
+;;     Some(x32 as u32)
+;; }
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (< (ret) (4294967295i64:bv)),
+;;@                 (= (ret) (zero_ext (regwidth) (arg))),
+;;@                 (= (widthof (arg)) (32i8:isleType))
+;;@ ))
+(decl simm32 (u32) Imm64)
+(extern extractor simm32 simm32)
+
+
+;; NOTE: partial spec: ignoring the `flags` argument for now
+;; Immediate sign-extended and a register
+;;@ (spec (sig (args simm, base, flags) (ret))
+;;@       (assume  
+;;@         (= (widthof (simm)) (32i8:isleType)) ,
+;;@         (= (widthof (base)) (64i8:isleType)) ,
+;;@         (= (ret) (+ (base) (sign_ext (64i8:isleType) (simm)))) , 
+;;@         (= (flags) (flags)),
+;;@         (< (base) (4294967296i64:bv)),
+;;@         (= (base) (0i64:bv)),
+;;@ ))
+;;decl Amode.ImmReg
+
+;; An `Amode` represents a possible addressing mode that can be used
+;; in instructions. These denote a 64-bit value only.
+(type Amode (enum
+             ;; Immediate sign-extended and a register
+             (ImmReg (simm32 u32)
+                     (base Reg)
+                     (flags MemFlags))
+                     
+             ;; Sign-extend-32-to-64(simm32) + base + (index << shift)
+             (ImmRegRegShift (simm32 u32)
+                             (base Gpr)
+                             (index Gpr)
+                             (shift u8)
+                             (flags MemFlags))
+            )
+)
+
+
+;; -- Case 4 (absorbing constant offsets).
+;;
+;; An Amode can absorb a constant (i64, or extended i32) as long as
+;; the sum still fits in the signed-32-bit offset.
+;;
+;; Priority 3 in order to take this option above the fallback
+;; (immediate in register). Two rules, for imm+reg and
+;; imm+reg+scale*reg cases.
+(rule 3 (amode_add (Amode.ImmReg off base flags)
+                   (iconst (simm32 c)))
+      (if-let sum (s32_add_fallible off c))
+      (Amode.ImmReg sum base flags))
