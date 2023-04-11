@@ -75,10 +75,26 @@ fn test_named_iadd_imm12_neg_left() {
 }
 
 #[test]
-fn test_named_iadd_imm12_neg_right() {
+fn test_named_iadd_imm12_neg_right_not_distinct() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname(
             "iadd_imm12_neg_right",
+            "iadd",
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_iadd_imm12_neg_left_not_distinct() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imm12_neg_left",
             "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
@@ -95,7 +111,7 @@ fn test_named_iadd_imm12_neg_right() {
 fn test_imm12_from_negated_value() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12_from_negated_value.isle",
+            "./examples/iadd/imm12_from_negated_value_new.isle",
             "imm12_from_negated_value".to_string(),
             all_success_result(),
         )
@@ -127,27 +143,11 @@ fn test_iadd_imm12neg2_new() {
 }
 
 #[test]
-fn test_iadd_imm12neg2_not_distinct() {
+fn test_named_iadd_extend_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg2.isle",
-            "iadd".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    });
-}
-
-#[test]
-fn test_iadd_extend() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/add_extend.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_extend_right",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -159,10 +159,10 @@ fn test_iadd_extend() {
 }
 
 #[test]
-fn test_iadd_extend_concrete() {
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/iadd/add_extend.isle",
-        "iadd".to_string(),
+fn test_named_iadd_extend_right_concrete() {
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "iadd_extend_right",
+        "iadd",
         false,
         ConcreteTest {
             termname: "iadd".to_string(),
@@ -182,9 +182,9 @@ fn test_iadd_extend_concrete() {
             },
         },
     );
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/iadd/add_extend.isle",
-        "iadd".to_string(),
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "iadd_extend_right",
+        "iadd",
         false,
         ConcreteTest {
             termname: "iadd".to_string(),
@@ -207,11 +207,11 @@ fn test_iadd_extend_concrete() {
 }
 
 #[test]
-fn test_iadd_extend_2() {
+fn test_named_iadd_extend_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/add_extend_2.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_extend_left",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),

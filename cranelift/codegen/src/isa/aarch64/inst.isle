@@ -1730,6 +1730,21 @@
 
 ;; Helper type to represent a value and an extend operation fused together.
 (type ExtendedValue extern (enum))
+
+;; Only including the i8 to i32 opcodes, based on the impl of extended_value_from_value
+;;@ (spec (sig (args x) (ret))
+;;@   (assume
+;;@     (switch (extract 66 64 (x))
+;;@       ((0i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 7 0 (zero_ext (64) (ret))))))
+;;@       ((1i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 15 0 (zero_ext (64) (ret))))))
+;;@       ((2i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 31 0 (zero_ext (64) (ret))))))
+;;@       ((4i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 7 0 (zero_ext (64) (ret))))))
+;;@       ((5i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 15 0 (zero_ext (64) (ret))))))
+;;@       ((6i3:bv) (= (extract 63 0 (x)) (sign_ext (64) (extract 31 0 (zero_ext (64) (ret))))))
+;;@     ),
+;;@     (= (ret) (conv_to (widthof (ret)) (x))),
+;;@     (|| (= (8i32:isleType) (widthof (ret))) (|| (= (16i32:isleType) (widthof (ret))) (= (32i32:isleType) (widthof (ret)))))
+;;@ ))
 (decl extended_value_from_value (ExtendedValue) Value)
 (extern extractor extended_value_from_value extended_value_from_value)
 
@@ -2324,6 +2339,34 @@
 (decl add_imm (Type Reg Imm12) Reg)
 (rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assume
+;;@       (= (ret) 
+;;@          (if (<= (ty) (32i32:isleType))
+;;@          (conv_to (regwidth) (+ (extract 31 0 (x)) 
+;;@             (switch (extract 66 64 (y))
+;;@               ((0i3:bv) (zero_ext (32) (extract 7 0 (y))))
+;;@               ((1i3:bv) (zero_ext (32) (extract 15 0 (y))))
+;;@               ((2i3:bv) (zero_ext (32) (extract 31 0 (y))))
+;;@               ((3i3:bv) (zero_ext (32) (extract 31 0 (y))))
+;;@               ((4i3:bv) (sign_ext (32) (extract 7 0 (y))))
+;;@               ((5i3:bv) (sign_ext (32) (extract 15 0 (y))))
+;;@               ((6i3:bv) (sign_ext (32) (extract 31 0 (y))))
+;;@               ((7i3:bv) (sign_ext (32) (extract 31 0 (y))))
+;;@          )))
+;;@          (+ (x) 
+;;@             (switch (extract 66 64 (y))
+;;@               ((0i3:bv) (zero_ext (regwidth) (extract 7 0 (y))))
+;;@               ((1i3:bv) (zero_ext (regwidth) (extract 15 0 (y))))
+;;@               ((2i3:bv) (zero_ext (regwidth) (extract 31 0 (y))))
+;;@               ((3i3:bv) (zero_ext (regwidth) (extract 63 0 (y))))
+;;@               ((4i3:bv) (sign_ext (regwidth) (extract 7 0 (y))))
+;;@               ((5i3:bv) (sign_ext (regwidth) (extract 15 0 (y))))
+;;@               ((6i3:bv) (sign_ext (regwidth) (extract 31 0 (y))))
+;;@               ((7i3:bv) (sign_ext (regwidth) (extract 63 0 (y))))
+;;@         ))
+;;@       )),
+;;@     ))
 (decl add_extend (Type Reg ExtendedValue) Reg)
 (rule (add_extend ty x y) (alu_rr_extend_reg (ALUOp.Add) ty x y))
 

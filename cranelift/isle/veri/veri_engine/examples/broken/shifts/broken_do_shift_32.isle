@@ -71,7 +71,8 @@
 ;;@                         (ashr (conv_to (t) (a)) 
 ;;@                           (conv_to (t) (zero_ext (regwidth) 
 ;;@                             (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b)))))))
-;;@           ))
+;;@           )),
+;;@          (= (t) (widthof (b))),
 ;;@   ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
