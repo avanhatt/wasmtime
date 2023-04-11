@@ -1875,10 +1875,10 @@ fn test_named_bnot_ishl() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ishl_to_do_shift_64.isle",
-        "ishl".to_string(),
+fn test_named_ishl_64() {
+    test_aarch64_rule_with_lhs_termname(
+        "ishl_64",
+        "ishl",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1889,11 +1889,11 @@ fn test_ishl_to_do_shift_64() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_64_concrete() {
+fn test_named_ishl_64_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/shifts/ishl_to_do_shift_64.isle",
-            "ishl".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "ishl_64",
+            "ishl",
             false,
             ConcreteTest {
                 termname: "ishl".to_string(),
@@ -1936,11 +1936,11 @@ fn test_named_ishl_fits_in_32() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_fits_in_32_concrete() {
+fn test_named_ishl_fits_in_32_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/shifts/ishl_to_do_shift_fits_in_32.isle",
-            "ishl".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "ishl_fits_in_32",
+            "ishl",
             false,
             ConcreteTest {
                 termname: "ishl".to_string(),

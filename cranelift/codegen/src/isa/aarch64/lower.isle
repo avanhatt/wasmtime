@@ -1209,25 +1209,25 @@
 ;;@           ))
 ;;@   )
 ;;@   (assert
-;;@           (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (18i8:bv8)))),
-;;@           (= (t) (widthof (b))),
-;;@           (|| (= (t) (8i8: isleType))
-;;@           (|| (= (t) (16i8: isleType))
-;;@           (|| (= (t) (32i8: isleType))
-;;@               (= (t) (64i8: isleType))))),
-;;@           (switch (op) 
-;;@                  ((16i8:bv8) (switch (t) 
-;;@                               ((8i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
-;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
-;;@                               ((32i32: isleType) (true))
-;;@                               ((64i32: isleType) (true))))
-;;@                  ((17i8:bv8) (switch (t) 
-;;@                               ((8i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
-;;@                               ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
-;;@                               ((32i32: isleType) (true))
-;;@                               ((64i32: isleType) (true))))
-;;@                  ((18i8:bv8) (true))
-;;@           )
+;;@     (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (18i8:bv8)))),
+;;@     (= (t) (widthof (b))),
+;;@     (|| (= (t) (8i8: isleType))
+;;@     (|| (= (t) (16i8: isleType))
+;;@     (|| (= (t) (32i8: isleType))
+;;@     (= (t) (64i8: isleType))))),
+;;@     (switch (op) 
+;;@       ((16i8:bv8) (switch (t) 
+;;@         ((8i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
+;;@         ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
+;;@         ((32i32: isleType) (true))
+;;@         ((64i32: isleType) (true))))
+;;@      ((17i8:bv8) (switch (t) 
+;;@        ((8i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
+;;@        ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
+;;@        ((32i32: isleType) (true))
+;;@        ((64i32: isleType) (true))))
+;;@        ((18i8:bv8) (true))
+;;@       )
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
