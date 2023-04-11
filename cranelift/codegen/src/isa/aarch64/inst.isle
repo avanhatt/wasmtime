@@ -1667,6 +1667,13 @@
 (decl pure partial imm_logic_from_imm64 (Type Imm64) ImmLogic)
 (extern constructor imm_logic_from_imm64 imm_logic_from_imm64)
 
+;; Add an assertion that the value fits, using the constand with 56 1's then 6 0's (~63)
+;;@ (spec (sig (args ty, x) (r))
+;;@   (assume  
+;;@     (= (r) (extract 5 0 (& (x) (- (int2bv 64 (ty)) (1i64:bv64))))),
+;;@     (ult (& (x) (- (int2bv 64 (ty)) (1i64:bv64))) (64i64:bv64))
+;;@   )
+;;@ )
 (decl pure partial imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
 
@@ -1878,6 +1885,32 @@
         dst))
 
 ;; Helper for emitting `MInst.AluRRImmShift` instructions.
+;;@ (spec (sig (args op, t, a, b) (ret))
+;;@     (assume  
+;;@       (= (ret) (switch (op)
+;;@               ((16i8:bv8)
+;;@                 (if (<= (t) (32i8: isleType)) 
+;;@                     (conv_to (64) (shr (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (zero_ext (regwidth) (b))))))
+;;@                     (shr (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (zero_ext (regwidth) (b)))))
+;;@               )
+;;@               ((17i8:bv8) 
+;;@                 (if (<= (t) (32i8: isleType)) 
+;;@                     (conv_to (64) (ashr (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (zero_ext (regwidth) (b))))))
+;;@                     (ashr (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (zero_ext (regwidth) (b)))))
+;;@               )
+;;@               ((18i8:bv8)
+;;@                 (if (<= (t) (32i8: isleType)) 
+;;@                     (conv_to (64) (shl (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (zero_ext (regwidth) (b))))))
+;;@                     (shl (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (zero_ext (regwidth) (b)))))
+;;@               )
+;;@       )))
+;;@     (assert
+;;@       (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (18i8:bv8)))),
+;;@       (|| (= (t) (8i8: isleType))
+;;@       (|| (= (t) (16i8: isleType))
+;;@       (|| (= (t) (32i8: isleType))
+;;@           (= (t) (64i8: isleType)))))
+;;@     ))
 (decl alu_rr_imm_shift (ALUOp Type Reg ImmShift) Reg)
 (rule (alu_rr_imm_shift op ty src imm)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -1898,14 +1931,14 @@
 ;;@                     (conv_to (64) (ashr (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (b)))))
 ;;@                     (ashr (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (b))))
 ;;@               )
-;;@               ((17i8:bv8)
+;;@               ((18i8:bv8)
 ;;@                 (if (<= (t) (32i8: isleType)) 
 ;;@                     (conv_to (64) (shl (extract 31 0 (a)) (& (- (int2bv 32 (32i32:isleType)) (1i32:bv)) (extract 31 0 (b)))))
 ;;@                     (shl (a) (& (- (int2bv 64 (64i64:isleType)) (1i64:bv)) (b))))
 ;;@               )
 ;;@       )))
 ;;@    (assert
-;;@       (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (17i8:bv8)))),
+;;@       (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (18i8:bv8)))),
 ;;@       (|| (= (t) (8i8: isleType))
 ;;@       (|| (= (t) (16i8: isleType))
 ;;@       (|| (= (t) (32i8: isleType))
@@ -2822,6 +2855,20 @@
 (decl and_reg (Type Reg Reg) Reg)
 (rule (and_reg ty x y) (alu_rrr (ALUOp.And) ty x y))
 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (switch (ty) 
+;;@          ((32i8: isleType) (conv_to (regwidth) (& (extract 31 0 (x)) (extract 31 0 (y)))))
+;;@          ((64i8: isleType) (& (x) (zero_ext (regwidth) (y))))
+;;@        )
+;;@     ))
+;;@     (assert  
+;;@       (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@           (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@               (= (extract 2 0 (y)) (0i3:bv))
+;;@     ))
+;;@ ))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (rule (and_imm ty x y) (alu_rr_imm_logic (ALUOp.And) ty x y))
 

@@ -922,7 +922,6 @@ impl SolverCtx {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
                     let eq = self.smt.eq(expr_width, dyn_width);
-                    println!("conv_to dyn: {}", self.smt.display(eq));
                     self.width_assumptions.push(eq);
                     self.vir_expr_to_sexp(*y)
                 } else {
@@ -1580,6 +1579,7 @@ pub fn run_solver(
                         let eq = ctx
                             .smt
                             .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
+                        println!("Width from inference {} ({})", width_name, bitwidth);
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
@@ -1857,9 +1857,7 @@ pub fn run_solver(
         Ok(Response::Sat) => {
             println!("Verification failed");
             ctx.display_model(termenv, typeenv, rule, lhs, rhs);
-            let vals = ctx.smt
-                .get_value(vec![condition])
-                .unwrap();
+            let vals = ctx.smt.get_value(vec![condition]).unwrap();
             for (variable, value) in vals {
                 if value == ctx.smt.false_() {
                     println!("Failed condition:\n{}", ctx.smt.display(variable));
@@ -1869,9 +1867,7 @@ pub fn run_solver(
             }
 
             if assertions.len() > 0 {
-                let vals = ctx.smt
-                    .get_value(assertions)
-                    .unwrap();
+                let vals = ctx.smt.get_value(assertions).unwrap();
                 for (variable, value) in vals {
                     if value == ctx.smt.false_() {
                         println!("Failed assertion:\n{}", ctx.smt.display(variable));

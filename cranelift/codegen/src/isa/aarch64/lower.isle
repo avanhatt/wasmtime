@@ -1226,9 +1226,9 @@
 ;;@        ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
 ;;@        ((32i32: isleType) (true))
 ;;@        ((64i32: isleType) (true))))
-;;@        ((18i8:bv8) (true))
-;;@       )
-;;@     ))
+;;@      ((18i8:bv8) (true))
+;;@     )
+;;@ ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
 ;; 8/16-bit shift base case.
@@ -1240,17 +1240,19 @@
 ;; On i32 and i64 types this matches what the aarch64 spec does, but on smaller
 ;; types (i16, i8) we need to do this manually, so we wrap the shift amount
 ;; with an AND instruction
-(rule -1 (do_shift op (fits_in_16 ty) x y)
+(rule do_shift_fits_in_16 -1 (do_shift op (fits_in_16 ty) x y)
       (let ((shift_amt Reg (value_regs_get y 0))
             (masked_shift_amt Reg (and_imm $I32 shift_amt (shift_mask ty))))
         (alu_rrr op $I32 x masked_shift_amt)))
 
+;;@ (spec (sig (args t) (ret))
+;;@   (assume  (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
 (decl shift_mask (Type) ImmLogic)
 (extern constructor shift_mask shift_mask)
 
 ;; 32/64-bit shift base cases.
-(rule (do_shift op $I32 x y) (alu_rrr op $I32 x (value_regs_get y 0)))
-(rule (do_shift op $I64 x y) (alu_rrr op $I64 x (value_regs_get y 0)))
+(rule do_shift_32_base_case (do_shift op $I32 x y) (alu_rrr op $I32 x (value_regs_get y 0)))
+(rule do_shift_64_base_case (do_shift op $I64 x y) (alu_rrr op $I64 x (value_regs_get y 0)))
 
 ;; Special case for shifting by a constant value where the value can fit into an
 ;; `ImmShift`.
@@ -1258,7 +1260,7 @@
 ;; Note that this rule explicitly has a higher priority than the others
 ;; to ensure it's attempted first, otherwise the type-based filters on the
 ;; previous rules seem to take priority over this rule.
-(rule 1 (do_shift op ty x (iconst k))
+(rule do_shift_imm 1 (do_shift op ty x (iconst k))
       (if-let shift (imm_shift_from_imm64 ty k))
       (alu_rr_imm_shift op ty x shift))
 

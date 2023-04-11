@@ -332,7 +332,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         vec![
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(8)),
@@ -342,7 +342,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             },
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(16)),
@@ -352,7 +352,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             },
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(32)),
@@ -362,7 +362,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             },
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(64)),

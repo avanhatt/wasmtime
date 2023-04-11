@@ -238,6 +238,32 @@ pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) ->
     test_rules_with_term(inputs, tr, config);
 }
 
+pub fn test_aarch64_with_config(config: Config, tr: TestResult) -> () {
+    println!(
+        "Verifying rules {:?} with termname {}",
+        config.names, config.term
+    );
+    // TODO: clean up path logic
+    let cur_dir = env::current_dir().expect("Can't access current working directory");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
+    let prelude_lower_isle = cur_dir
+        .join("../../../codegen/src")
+        .join("prelude_lower.isle");
+    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(
+        cur_dir
+            .join("../../../codegen/src/isa/aarch64")
+            .join("inst.isle"),
+    );
+    inputs.push(
+        cur_dir
+            .join("../../../codegen/src/isa/aarch64")
+            .join("lower.isle"),
+    );
+    test_rules_with_term(inputs, tr, config);
+}
+
 pub fn test_concrete_aarch64_rule_with_lhs_termname(
     rulename: &str,
     termname: &str,
