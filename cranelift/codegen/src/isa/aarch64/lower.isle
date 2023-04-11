@@ -578,7 +578,7 @@
 ;;;; Rules for `ineg` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; `i64` and smaller.
-(rule 1 (lower (has_type (fits_in_64 ty) (ineg x)))
+(rule ineg_base_case 1 (lower (has_type (fits_in_64 ty) (ineg x)))
       (sub ty (zero_reg) x))
 
 ;; `i128`
@@ -592,7 +592,7 @@
 ;;;; Rules for `imul` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; `i64` and smaller.
-(rule -3 (lower (has_type (fits_in_64 ty) (imul x y)))
+(rule imul_base_case -3 (lower (has_type (fits_in_64 ty) (imul x y)))
       (madd ty x y (zero_reg)))
 
 ;; `i128`.
@@ -799,10 +799,13 @@
 ;;
 ;; Note that aarch64's `udiv` doesn't trap so to respect the semantics of
 ;; CLIF's `udiv` the check for zero needs to be manually performed.
-(rule (lower (has_type (fits_in_64 ty) (udiv x y)))
+(rule udiv (lower (has_type (fits_in_64 ty) (udiv x y)))
       (a64_udiv $I64 (put_in_reg_zext64 x) (put_nonzero_in_reg_zext64 y)))
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
+;;@ (spec (sig (args x) (ret))
+;;@       (assume (= (zero_ext (64) (x)) (ret)))
+;;@       (assert (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_zext64 (Value) Reg)
 (rule -1 (put_nonzero_in_reg_zext64 val)
       (trap_if_zero_divisor (put_in_reg_zext64 val)))
@@ -832,7 +835,7 @@
 ;;
 ;; TODO: if `y` is -1 then a check that `x` is not INT_MIN is all that's
 ;; necessary, but right now `y` is checked to not be -1 as well.
-(rule (lower (has_type (fits_in_64 ty) (sdiv x y)))
+(rule sdiv_base_case (lower (has_type (fits_in_64 ty) (sdiv x y)))
       (let ((x64 Reg (put_in_reg_sext64 x))
             (y64 Reg (put_nonzero_in_reg_sext64 y))
             (valid_x64 Reg (trap_if_div_overflow ty x64 y64))
@@ -840,15 +843,23 @@
         result))
 
 ;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
+;;@ (spec (sig (args x) (ret))
+;;@       (assume  (= (x) (ret)),
+;;@                   (! (= (0i64:bv) (ret))),
+;;@                   (! (= (18446744073709551615i64:bv) (ret)))
+;;@ ))
 (decl safe_divisor_from_imm64 (u64) Imm64)
 (extern extractor safe_divisor_from_imm64 safe_divisor_from_imm64)
 
 ;; Special case for `sdiv` where no checks are needed due to division by a
 ;; constant meaning the checks are always passed.
-(rule 1 (lower (has_type (fits_in_64 ty) (sdiv x (iconst (safe_divisor_from_imm64 y)))))
+(rule sdiv_safe_divisor 1 (lower (has_type (fits_in_64 ty) (sdiv x (iconst (safe_divisor_from_imm64 y)))))
       (a64_sdiv $I64 (put_in_reg_sext64 x) (imm ty (ImmExtend.Sign) y)))
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
+;;@ (spec (sig (args x) (ret))
+;;@       (assume (= (sign_ext (64) (x)) (ret)))
+;;@       (assert (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_sext64 (Value) Reg)
 (rule -1 (put_nonzero_in_reg_sext64 val)
       (trap_if_zero_divisor (put_in_reg_sext64 val)))
@@ -873,14 +884,14 @@
 ;;   div rd, x, y       ; rd = x / y
 ;;   msub rd, rd, y, x  ; rd = x - rd * y
 
-(rule (lower (has_type (fits_in_64 ty) (urem x y)))
+(rule urem (lower (has_type (fits_in_64 ty) (urem x y)))
       (let ((x64 Reg (put_in_reg_zext64 x))
             (y64 Reg (put_nonzero_in_reg_zext64 y))
             (div Reg (a64_udiv $I64 x64 y64))
             (result Reg (msub $I64 div y64 x64)))
         result))
 
-(rule (lower (has_type (fits_in_64 ty) (srem x y)))
+(rule srem (lower (has_type (fits_in_64 ty) (srem x y)))
       (let ((x64 Reg (put_in_reg_sext64 x))
             (y64 Reg (put_nonzero_in_reg_sext64 y))
             (div Reg (a64_sdiv $I64 x64 y64))

@@ -1775,6 +1775,8 @@
 ;; Instruction creation helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Helper for creating the zero register.
+;;@ (spec (sig (args) (r))
+;;@     (assume  (= (zero_ext (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
@@ -2679,10 +2681,22 @@
 (rule (lsl_imm ty x imm) (alu_rr_imm_shift (ALUOp.Lsl) ty x imm))
 
 ;; Helper for generating `udiv` instructions.
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (/ (extract 31 0 (a)) (extract 31 0 (b))))
+;;@            (/ (a) (b))))))
 (decl a64_udiv (Type Reg Reg) Reg)
 (rule (a64_udiv ty x y) (alu_rrr (ALUOp.UDiv) ty x y))
 
 ;; Helper for generating `sdiv` instructions.
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (sdiv (extract 31 0 (a)) (extract 31 0 (b))))
+;;@            (sdiv (a) (b))))))
 (decl a64_sdiv (Type Reg Reg) Reg)
 (rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
 
@@ -2899,6 +2913,14 @@
     (Sign)
     (Zero)))
 
+;;@ (spec (sig (args) (ret))
+;;@     (assume  (= (0i1: isleType) (ret))))
+;;decl ImmExtend.Zero 
+
+;;@ (spec (sig (args) (ret))
+;;@     (assume  (= (1i1: isleType) (ret))))
+;;decl ImmExtend.Sign 
+
 ;; Arguments:
 ;; * Immediate type
 ;; * Way to extend the immediate value to the full width of the destination
@@ -2909,6 +2931,13 @@
 ;; Note that, unlike the convention in the AArch64 backend, this helper leaves
 ;; all bits in the destination register in a defined state, i.e. smaller types
 ;; such as `I8` are either sign- or zero-extended.
+;;@ (spec (sig (args ty, ext, x) (ret))
+;;@       (assume  (|| (= (ext) (0i0:isleType)) (= (ext) (1i0:isleType))),
+;;@                   (if (= (ext) (0i0:isleType)) 
+;;@                       (= (ret) (zero_ext (regwidth) (conv_to (ty) (x))))
+;;@                       (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))
+;;@                   )
+;;@ ))
 (decl imm (Type ImmExtend u64) Reg)
 
 ;; Move wide immediate instructions; to simplify, we only match when we
@@ -2954,6 +2983,8 @@
 (rule (put_in_reg_zext32 val @ (value_type $I64)) val)
 
 ;; Place a `Value` into a register, sign extending it to 64-bits
+;;@ (spec (sig (args x) (ret))
+;;@       (assume  (= (sign_ext (64) (x)) (ret))))
 (decl put_in_reg_sext64 (Value) Reg)
 (rule 1 (put_in_reg_sext64 val @ (value_type (fits_in_32 ty)))
       (extend val $true (ty_bits ty) 64))
@@ -2962,6 +2993,8 @@
 (rule (put_in_reg_sext64 val @ (value_type $I64)) val)
 
 ;; Place a `Value` into a register, zero extending it to 64-bits
+;;@ (spec (sig (args x) (ret))
+;;@       (assume  (= (zero_ext (64) (x)) (ret))))
 (decl put_in_reg_zext64 (Value) Reg)
 (rule 1 (put_in_reg_zext64 val @ (value_type (fits_in_32 ty)))
       (extend val $false (ty_bits ty) 64))
@@ -2983,6 +3016,21 @@
 ;; Check for signed overflow. The only case is min_value / -1.
 ;; The following checks must be done in 32-bit or 64-bit, depending
 ;; on the input type.
+;; Verification note: operand type converts to 32/64, so no explicit
+;; check for those types needed
+;; Check for signed overflow. The only case is min_value / -1.
+;; The following checks must be done in 32-bit or 64-bit, depending
+;; on the input type.
+;; 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@       (assume  (= (x) (ret)),
+;;@       (if (= (ty) (32i0:isleType)) 
+;;@           (! (&& (= (0i32:bv) (extract 31 0 (y)))
+;;@                  (= (2147483648i32:bv) (extract 31 0 (y)))))          
+;;@           (! (&& (= (0i64:bv) (y))
+;;@                   (= (9223372036854775808i64:bv) (y))))
+;;@       )
+;;@ ))
 (decl trap_if_div_overflow (Type Reg Reg) Reg)
 (rule (trap_if_div_overflow ty x y)
       (let (

@@ -730,22 +730,22 @@ fn test_broken_isub_shift() {
 }
 
 #[test]
-fn test_ineg() {
+fn test_named_ineg_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ineg/ineg.isle",
-            "ineg".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ineg_base_case",
+            "ineg",
             lte_64_success_result(),
         )
     })
 }
 
 #[test]
-fn test_mul() {
+fn test_imul_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/imul/imul.isle",
-            "imul".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "imul_base_case",
+            "imul",
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -757,12 +757,13 @@ fn test_mul() {
     });
 }
 
+// TODO traps https://github.com/avanhatt/wasmtime/issues/31
 #[test]
-fn test_udiv() {
+fn test_named_udiv() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/udiv/udiv.isle",
-            "udiv".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "udiv",
+            "udiv",
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -797,11 +798,11 @@ fn test_broken_udiv() {
 }
 
 #[test]
-fn test_sdiv() {
+fn test_named_sdiv_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/sdiv/sdiv.isle",
-            "sdiv".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "sdiv_base_case",
+            "sdiv",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -814,11 +815,11 @@ fn test_sdiv() {
 }
 
 #[test]
-fn test_sdiv_safe_const() {
+fn test_named_sdiv_safe_divisor() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/sdiv/sdiv_safe_const.isle",
-            "sdiv".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "sdiv_safe_divisor",
+            "sdiv",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
