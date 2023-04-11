@@ -90,6 +90,7 @@ fn test_named_iadd_imm12_neg_right() {
     });
 }
 
+// Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_imm12_from_negated_value() {
     run_and_retry(|| {
@@ -101,6 +102,7 @@ fn test_imm12_from_negated_value() {
     });
 }
 
+// Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_iadd_imm12neg_new() {
     run_and_retry(|| {
@@ -112,6 +114,7 @@ fn test_iadd_imm12neg_new() {
     });
 }
 
+// Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_iadd_imm12neg2_new() {
     run_and_retry(|| {
