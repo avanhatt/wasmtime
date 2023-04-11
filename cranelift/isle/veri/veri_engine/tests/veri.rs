@@ -717,7 +717,7 @@ fn test_named_ineg_base_case() {
 }
 
 #[test]
-fn test_imul_base_case() {
+fn test_named_imul_base_case() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname(
             "imul_base_case",
@@ -2228,7 +2228,8 @@ fn test_broken_do_shift_32() {
         })),
         names: None,
     };
-    test_aarch64_with_config(
+    test_from_file_with_config(
+        "./examples/broken/shifts/broken_do_shift_32.isle",
         config,
         vec![(
             Bitwidth::I32,

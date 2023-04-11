@@ -82,7 +82,6 @@
 ;;@ ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
-;; Helper for emitting `MInst.AluRRR` instructions.
 ;;@ (spec (sig (args op, t, a, b) (ret))
 ;;@     (assume  
 ;;@       (= (ret) (switch (op)
