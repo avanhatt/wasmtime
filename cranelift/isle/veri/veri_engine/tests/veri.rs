@@ -1964,10 +1964,10 @@ fn test_named_ishl_fits_in_32_concrete() {
 }
 
 #[test]
-fn test_sshr_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/sshr_to_do_shift_64.isle",
-        "sshr".to_string(),
+fn test_named_sshr_64() {
+    test_aarch64_rule_with_lhs_termname(
+        "sshr_64",
+        "sshr",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1978,10 +1978,10 @@ fn test_sshr_to_do_shift_64() {
 }
 
 #[test]
-fn test_sshr_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/sshr_to_do_shift_fits_in_32.isle",
-        "sshr".to_string(),
+fn test_named_sshr_fits_in_32() {
+    test_aarch64_rule_with_lhs_termname(
+        "sshr_fits_in_32",
+        "sshr",
         vec![
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
@@ -1992,10 +1992,10 @@ fn test_sshr_to_do_shift_fits_in_32() {
 }
 
 #[test]
-fn test_sshr_to_do_shift_fits_in_32_concrete() {
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/shifts/sshr_to_do_shift_fits_in_32.isle",
-        "sshr".to_string(),
+fn test_named_sshr_fits_in_32_concrete() {
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "sshr_fits_in_32",
+        "sshr",
         false,
         ConcreteTest {
             termname: "sshr".to_string(),
@@ -2018,10 +2018,10 @@ fn test_sshr_to_do_shift_fits_in_32_concrete() {
 }
 
 #[test]
-fn test_ushr_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ushr_to_do_shift_64.isle",
-        "ushr".to_string(),
+fn test_named_ushr_64() {
+    test_aarch64_rule_with_lhs_termname(
+        "ushr_64",
+        "ushr",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -2032,10 +2032,10 @@ fn test_ushr_to_do_shift_64() {
 }
 
 #[test]
-fn test_ushr_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ushr_to_do_shift_fits_in_32.isle",
-        "ushr".to_string(),
+fn test_named_ushr_fits_in_32() {
+    test_aarch64_rule_with_lhs_termname(
+        "ushr_fits_in_32",
+        "ushr",
         vec![
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
@@ -2046,10 +2046,10 @@ fn test_ushr_to_do_shift_fits_in_32() {
 }
 
 #[test]
-fn test_ushr_to_do_shift_fits_in_32_concrete() {
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/shifts/ushr_to_do_shift_fits_in_32.isle",
-        "ushr".to_string(),
+fn test_named_ushr_fits_in_32_concrete() {
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "ushr_fits_in_32",
+        "ushr",
         false,
         ConcreteTest {
             termname: "ushr".to_string(),

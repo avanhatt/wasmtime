@@ -3059,6 +3059,14 @@
 ;; Sign extension helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Place a `Value` into a register, sign extending it to 32-bits
+;;@ (spec (sig (args arg) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (<= (widthof (arg)) (32i0:isleType)) 
+;;@            (conv_to (regwidth) (sign_ext (32) (arg)))
+;;@            (conv_to (regwidth) (arg))             
+;;@     ))
+;;@ ))
 (decl put_in_reg_sext32 (Value) Reg)
 (rule -1 (put_in_reg_sext32 val @ (value_type (fits_in_32 ty)))
       (extend val $true (ty_bits ty) 32))
@@ -3068,6 +3076,14 @@
 (rule (put_in_reg_sext32 val @ (value_type $I64)) val)
 
 ;; Place a `Value` into a register, zero extending it to 32-bits
+;;@ (spec (sig (args arg) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (<= (widthof (arg)) (32i0:isleType)) 
+;;@            (conv_to (regwidth) (zero_ext (32) (arg)))
+;;@            (conv_to (regwidth) (arg))             
+;;@     ))
+;;@ ))
 (decl put_in_reg_zext32 (Value) Reg)
 (rule -1 (put_in_reg_zext32 val @ (value_type (fits_in_32 ty)))
       (extend val $false (ty_bits ty) 32))
