@@ -1681,6 +1681,9 @@
 (decl pure partial lshr_from_u64 (Type u64) ShiftOpAndAmt)
 (extern constructor lshr_from_u64 lshr_from_u64)
 
+;;@ (spec (sig (args ty, a) (ret))
+;;@     (assume  (= (extract 63 8 (a)) (0i56:bv)),
+;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))
 (decl pure partial lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 
@@ -2331,9 +2334,9 @@
 ;;@        (if (<= (ty) (32i8: isleType)) 
 ;;@            (conv_to (regwidth) (+ (extract 31 0 (a)) (zero_ext (32) (b))))
 ;;@            (+ (a) (zero_ext (regwidth) (b))))))
-;;@   (assert  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                (&& (<= (bv2int (y)) (16773119i0:isleType))
-;;@                    (= (extract 2 0 (y)) (0i3:bv))
+;;@   (assert  (|| (<= (bv2int (b)) (4094i0:isleType))
+;;@                (&& (<= (bv2int (b)) (16773119i0:isleType))
+;;@                    (= (extract 2 0 (b)) (0i3:bv))
 ;;@   )))
 ;;@ )
 (decl add_imm (Type Reg Imm12) Reg)
@@ -2373,6 +2376,20 @@
 (decl add_extend_op (Type Reg Reg ExtendOp) Reg)
 (rule (add_extend_op ty x y extend) (alu_rrr_extend (ALUOp.Add) ty x y extend))
 
+;;@ (spec (sig (args ty, a, b, shift) (ret))
+;;@   (assume  
+;;@     (= (ret) (if (<= (ty) (32i32:isleType))
+;;@       (conv_to (regwidth) (+ (extract 31 0 (a)) (switch (extract 9 8 (shift))
+;;@         ((0i2:bv) (shl (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((1i2:bv) (shr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((2i2:bv) (ashr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@       )))
+;;@       (+ (a) (switch (extract 9 8 (shift))
+;;@         ((0i2:bv) (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((1i2:bv) (shr (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((2i2:bv) (ashr (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@       )))),
+;;@ ))
 (decl add_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (add_shift ty x y z) (alu_rrr_shift (ALUOp.Add) ty x y z))
 
@@ -2380,7 +2397,8 @@
 (rule (add_vec x y size) (vec_rrr (VecALUOp.Add) x y size))
 
 ;; Helpers for generating `sub` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@     (assume  (= (- (a) (b)) (r))))
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 
@@ -2390,17 +2408,59 @@
 ;;@        (if (<= (ty) (32i8: isleType)) 
 ;;@            (conv_to (regwidth) (- (extract 31 0 (a)) (zero_ext (32) (b))))
 ;;@            (- (a) (zero_ext (regwidth) (b))))))
-;;@   (assert  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                (&& (<= (bv2int (y)) (16773119i0:isleType))
-;;@                    (= (extract 2 0 (y)) (0i3:bv))
+;;@   (assert  (|| (<= (bv2int (b)) (4094i0:isleType))
+;;@                (&& (<= (bv2int (b)) (16773119i0:isleType))
+;;@                    (= (extract 2 0 (b)) (0i3:bv))
 ;;@   )))
 ;;@ )
 (decl sub_imm (Type Reg Imm12) Reg)
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@     (assume
+;;@       (= (ret) 
+;;@          (if (<= (ty) (32i32:isleType))
+;;@          (conv_to (regwidth) (- (extract 31 0 (x)) 
+;;@             (switch (extract 66 64 (y))
+;;@               ((0i3:bv) (zero_ext (32) (extract 7 0 (y))))
+;;@               ((1i3:bv) (zero_ext (32) (extract 15 0 (y))))
+;;@               ((2i3:bv) (zero_ext (32) (extract 31 0 (y))))
+;;@               ((3i3:bv) (zero_ext (32) (extract 31 0 (y))))
+;;@               ((4i3:bv) (sign_ext (32) (extract 7 0 (y))))
+;;@               ((5i3:bv) (sign_ext (32) (extract 15 0 (y))))
+;;@               ((6i3:bv) (sign_ext (32) (extract 31 0 (y))))
+;;@               ((7i3:bv) (sign_ext (32) (extract 31 0 (y))))
+;;@          )))
+;;@          (- (x) 
+;;@             (switch (extract 66 64 (y))
+;;@               ((0i3:bv) (zero_ext (regwidth) (extract 7 0 (y))))
+;;@               ((1i3:bv) (zero_ext (regwidth) (extract 15 0 (y))))
+;;@               ((2i3:bv) (zero_ext (regwidth) (extract 31 0 (y))))
+;;@               ((3i3:bv) (zero_ext (regwidth) (extract 63 0 (y))))
+;;@               ((4i3:bv) (sign_ext (regwidth) (extract 7 0 (y))))
+;;@               ((5i3:bv) (sign_ext (regwidth) (extract 15 0 (y))))
+;;@               ((6i3:bv) (sign_ext (regwidth) (extract 31 0 (y))))
+;;@               ((7i3:bv) (sign_ext (regwidth) (extract 63 0 (y))))
+;;@         ))
+;;@       )),
+;;@     ))
 (decl sub_extend (Type Reg ExtendedValue) Reg)
 (rule (sub_extend ty x y) (alu_rr_extend_reg (ALUOp.Sub) ty x y))
 
+;;@ (spec (sig (args ty, a, b, shift) (ret))
+;;@   (assume  
+;;@     (= (ret) (if (<= (ty) (32i32:isleType))
+;;@       (conv_to (regwidth) (- (extract 31 0 (a)) (switch (extract 9 8 (shift))
+;;@         ((0i2:bv) (shl (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((1i2:bv) (shr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((2i2:bv) (ashr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@       )))
+;;@       (- (a) (switch (extract 9 8 (shift))
+;;@         ((0i2:bv) (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((1i2:bv) (shr (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((2i2:bv) (ashr (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@       )))),
+;;@ ))
 (decl sub_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (sub_shift ty x y z) (alu_rrr_shift (ALUOp.Sub) ty x y z))
 
@@ -2426,12 +2486,22 @@
           (sbc_paired $I64 x_hi y_hi))))
 
 ;; Helpers for generating `madd` instructions.
-
+;;@ (spec (sig (args ty, a, b, c) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (+ (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            (+ (c) (* (a) (b)))))))
 (decl madd (Type Reg Reg Reg) Reg)
 (rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
 
 ;; Helpers for generating `msub` instructions.
-
+;;@ (spec (sig (args ty, a, b, c) (r))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (- (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            (- (c) (* (a) (b)))))))
 (decl msub (Type Reg Reg Reg) Reg)
 (rule (msub ty x y z) (alu_rrrr (ALUOp3.MSub) ty x y z))
 

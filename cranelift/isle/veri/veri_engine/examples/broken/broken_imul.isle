@@ -46,7 +46,11 @@
 
 ;; Helpers for generating `madd` instructions.
 ;;@ (spec (sig (args ty, a, b, c) (r))
-;;@     (assume  (= (+ (c) (* (a) (b))) (r))))
+;;@   (assume  
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: isleType)) 
+;;@            (conv_to (regwidth) (+ (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            (+ (c) (* (a) (b)))))))
 (decl madd (Type Reg Reg Reg) Reg)
 (rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
 

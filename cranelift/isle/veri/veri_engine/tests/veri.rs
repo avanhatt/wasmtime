@@ -246,22 +246,33 @@ fn test_broken_iadd_extend() {
 }
 
 #[test]
-fn test_iadd_shift() {
+fn test_named_iadd_ishl_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/shift.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_ishl_left",
+            "iadd",
             lte_64_success_result(),
         )
     });
 }
 
 #[test]
-fn test_iadd_madd() {
+fn test_named_iadd_ishl_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/madd.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_ishl_right",
+            "iadd",
+            lte_64_success_result(),
+        )
+    });
+}
+
+#[test]
+fn test_named_iadd_imul_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imul_right",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -274,11 +285,11 @@ fn test_iadd_madd() {
 }
 
 #[test]
-fn test_iadd_madd2() {
+fn test_named_iadd_imul_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/madd2.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imul_left",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -291,11 +302,11 @@ fn test_iadd_madd2() {
 }
 
 #[test]
-fn test_isub_msub() {
+fn test_named_isub_imul() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/msub.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_imul",
+            "isub",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -407,7 +418,7 @@ fn test_broken_iadd_imm12neg_2_not_distinct() {
 }
 
 #[test]
-fn test_broken_iadd_madd() {
+fn test_broken_iadd_imul_right() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_madd.isle",
@@ -418,7 +429,7 @@ fn test_broken_iadd_madd() {
 }
 
 #[test]
-fn test_broken_iadd_madd2() {
+fn test_broken_iadd_imul_left() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_madd2.isle",
@@ -476,33 +487,33 @@ fn test_broken_iadd_shift2() {
 }
 
 #[test]
-fn test_isub_base_case() {
+fn test_named_isub_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/base_case.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_base_case",
+            "isub",
             lte_64_success_result(),
         )
     })
 }
 
 #[test]
-fn test_isub_imm12() {
+fn test_named_isub_imm12() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/imm12.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_imm12",
+            "isub",
             lte_64_success_result(),
         )
     })
 }
 
 #[test]
-fn test_isub_imm12_concrete() {
+fn test_named_isub_imm12_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/isub/imm12.isle",
-            "isub".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "isub_imm12",
+            "isub",
             false,
             ConcreteTest {
                 termname: "isub".to_string(),
@@ -526,11 +537,11 @@ fn test_isub_imm12_concrete() {
 }
 
 #[test]
-fn test_isub_imm12neg_not_distinct() {
+fn test_named_isub_imm12_neg_not_distinct() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/imm12neg.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_imm12_neg",
+            "isub",
             vec![
                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
                 (Bitwidth::I16, VerificationResult::NoDistinctModels),
@@ -541,6 +552,7 @@ fn test_isub_imm12neg_not_distinct() {
     })
 }
 
+// Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_isub_imm12neg_new() {
     run_and_retry(|| {
@@ -553,11 +565,11 @@ fn test_isub_imm12neg_new() {
 }
 
 #[test]
-fn test_isub_imm12neg_concrete32() {
+fn test_named_isub_imm12_neg_concrete32() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/isub/imm12neg.isle",
-            "isub".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "isub_imm12_neg",
+            "isub",
             false,
             ConcreteTest {
                 termname: "isub".to_string(),
@@ -586,11 +598,11 @@ fn test_isub_imm12neg_concrete32() {
 }
 
 #[test]
-fn test_isub_imm12neg_concrete_64() {
+fn test_named_isub_imm12_neg_concrete64() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/isub/imm12neg.isle",
-            "isub".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "isub_imm12_neg",
+            "isub",
             false,
             ConcreteTest {
                 termname: "isub".to_string(),
@@ -619,20 +631,29 @@ fn test_isub_imm12neg_concrete_64() {
 }
 
 #[test]
-fn test_isub_extend() {
+fn test_named_isub_extend() {
     run_and_retry(|| {
-        //test_from_file_with_lhs_termname("./examples/isub/extend.isle", lte_64_success_result());
+        test_aarch64_rule_with_lhs_termname(
+            "isub_extend",
+            "isub",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
     })
 }
 
 #[test]
-fn test_isub_shift() {
+fn test_named_isub_ishl() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/shift.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_ishl",
+            "isub",
             lte_64_success_result(),
-        );
+        )
     })
 }
 

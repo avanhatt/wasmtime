@@ -28,13 +28,17 @@
 
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
 ;;@   (assume  
-;;@     (switch (extract 9 8 (shift))
-;;@             ((0i2:bv) (= (ret) (+ (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))
-;;@             ((1i2:bv) (= (ret) (+ (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))
-;;@             ((2i2:bv) (= (ret) (+ (a) (ashr (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))),
-;;@                 (|| (= (extract 9 8 (shift)) (0i2:bv)) 
-;;@                     (|| (= (extract 9 8 (shift)) (1i2:bv)) 
-;;@                         (= (extract 9 8 (shift)) (2i2:bv))))
+;;@     (= (ret) (if (<= (ty) (32i32:isleType))
+;;@       (conv_to (regwidth) (+ (extract 31 0 (a)) (switch (extract 9 8 (shift))
+;;@         ((0i2:bv) (shl (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((1i2:bv) (shr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((2i2:bv) (ashr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@       )))
+;;@       (+ (a) (switch (extract 9 8 (shift))
+;;@         ((0i2:bv) (shl (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((1i2:bv) (shr (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@         ((2i2:bv) (ashr (b) (zero_ext (64) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
+;;@       )))),
 ;;@ ))
 (decl add_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (add_shift ty x y z) (alu_rrr_shift (ALUOp.Add) ty x y z))
