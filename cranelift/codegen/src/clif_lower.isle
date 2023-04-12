@@ -79,6 +79,18 @@
     )
 )
 
+;;@ (spec (sig (args) (r)) (assume (= (r) (2i8:bv8))))
+;;decl IntCC.SignedGreaterThan
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (3i8:bv8))))
+;;decl IntCC.SignedGreaterThanOrEqual
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (6i8:bv8))))
+;;decl IntCC.UnsignedGreaterThan
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (7i8:bv8))))
+;;decl IntCC.UnsignedGreaterThanOrEqual
+
 ;;;; Enumerated Immediate: TrapCode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (type TrapCode extern

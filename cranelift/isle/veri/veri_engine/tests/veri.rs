@@ -2547,8 +2547,10 @@ fn test_named_lower_icmp_const_32_64_imm() {
     })
 }
 
+// AVH TODO: this rule requires priorities and a custom verification condition
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_const_32_64_sgte() {
+fn test_named_lower_icmp_const_32_64_sgte() {
     // Note: only one distinct condition code is matched on, so need to disable
     // distinctness check
     run_and_retry(|| {
@@ -2557,10 +2559,42 @@ fn test_lower_icmp_const_32_64_sgte() {
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
             custom_verification_condition: None,
-            names: None,
+            names: Some(vec!["lower_icmp_const_32_64_sgte".to_string()]),
         };
-        test_from_file_with_config(
-            "./examples/icmp/lower_icmp_const_32_64_sgte.isle",
+        test_aarch64_with_config(
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Currently fails! The rewrite is not semantics-preserving
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+            ],
+        )
+    })
+}
+
+// AVH TODO: this rule requires priorities and a custom verification condition
+// https://github.com/avanhatt/wasmtime/issues/32
+#[test]
+fn test_named_lower_icmp_const_32_64_ugte() {
+    // Note: only one distinct condition code is matched on, so need to disable
+    // distinctness check
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+            custom_verification_condition: None,
+            names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
+        };
+        test_aarch64_with_config(
             config,
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
@@ -2580,43 +2614,11 @@ fn test_lower_icmp_const_32_64_sgte() {
 }
 
 #[test]
-fn test_lower_icmp_const_32_64_ugte() {
-    // Note: only one distinct condition code is matched on, so need to disable
-    // distinctness check
+fn test_named_lower_icmp_const_32_64() {
     run_and_retry(|| {
-        let config = Config {
-            dyn_width: false,
-            term: "lower_icmp_const".to_string(),
-            distinct_check: false,
-            custom_verification_condition: None,
-            names: None,
-        };
-        test_from_file_with_config(
-            "./examples/icmp/lower_icmp_const_32_64_ugte.isle",
-            config,
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                // Currently fails! The rewrite is not semantics-preserving
-                (
-                    Bitwidth::I32,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (
-                    Bitwidth::I64,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_lower_icmp_const_32_64() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_const_32_64.isle",
-            "lower_icmp_const".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_const_32_64",
+            "lower_icmp_const",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
