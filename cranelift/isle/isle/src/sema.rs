@@ -477,6 +477,8 @@ pub struct Rule {
     pub prio: i64,
     /// The source position where this rule is defined.
     pub pos: Pos,
+    /// The optional name for this rule.
+    pub name: Option<String>,
 }
 
 /// A name bound in a pattern or let-expression.
@@ -1778,6 +1780,7 @@ impl TermEnv {
                         vars: bindings.seen,
                         prio: rule.prio.unwrap_or(0),
                         pos,
+                        name: rule.name.clone()
                     });
                 }
                 _ => {}

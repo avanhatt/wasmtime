@@ -10,7 +10,7 @@ use itertools::izip;
 use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{annotation_ir, ConcreteTest, Expr, TermSignature, Type, TypeContext};
 
-use crate::{FLAGS_WIDTH, REG_WIDTH};
+use crate::{Config, FLAGS_WIDTH, REG_WIDTH};
 
 #[derive(Clone, Debug)]
 struct RuleParseTree<'a> {
@@ -36,6 +36,7 @@ struct RuleParseTree<'a> {
     // Used for custom verification conditions
     term_args: Vec<String>,
     assumptions: Vec<Expr>,
+    rhs_assertions: Vec<Expr>,
     concrete: Option<ConcreteTest>,
 }
 
@@ -91,6 +92,7 @@ pub struct RuleSemantics {
     // Used for custom verification conditions
     pub term_args: Vec<String>,
     pub assumptions: Vec<Expr>,
+    pub rhs_assertions: Vec<Expr>,
     pub tyctx: TypeContext,
 }
 
@@ -99,7 +101,7 @@ pub fn type_rules_with_term_and_types(
     termenv: &TermEnv,
     typeenv: &TypeEnv,
     annotation_env: &AnnotationEnv,
-    term: &String,
+    config: &Config,
     types: &TermSignature,
     concrete: &Option<ConcreteTest>,
 ) -> HashMap<isle::sema::RuleId, RuleSemantics> {
@@ -116,11 +118,16 @@ pub fn type_rules_with_term_and_types(
                 rule.root_term,
                 rule.args.clone(),
             ),
-            &term,
+            &config.term,
             termenv,
             typeenv,
         ) {
             continue;
+        }
+        if let Some(names) = &config.names {
+            if rule.name.is_none() || !names.contains(rule.name.as_ref().unwrap()) {
+                continue;
+            }
         }
         if let Some(s) = type_annotations_using_rule(
             rule,
@@ -128,7 +135,7 @@ pub fn type_rules_with_term_and_types(
             &decls,
             typeenv,
             termenv,
-            term,
+            &config.term,
             &types,
             concrete,
         ) {
@@ -194,6 +201,7 @@ fn type_annotations_using_rule<'a>(
         term_input_bvs: vec![],
         term_args: vec![],
         assumptions: vec![],
+        rhs_assertions: vec![],
         concrete: concrete.clone(),
     };
 
@@ -218,6 +226,7 @@ fn type_annotations_using_rule<'a>(
                 iflet_lhs,
                 annotation_env,
                 &mut annotation_infos,
+                false,
             );
             if iflet_lhs_expr.is_none() {
                 return None;
@@ -228,6 +237,7 @@ fn type_annotations_using_rule<'a>(
                 iflet_rhs,
                 annotation_env,
                 &mut annotation_infos,
+                false,
             );
             if iflet_rhs_expr.is_none() {
                 return None;
@@ -261,14 +271,24 @@ fn type_annotations_using_rule<'a>(
 
     println!("Typing rule:");
     print!("\tLHS:");
-    let lhs_expr =
-        add_rule_constraints(&mut parse_tree, lhs, annotation_env, &mut annotation_infos);
+    let lhs_expr = add_rule_constraints(
+        &mut parse_tree,
+        lhs,
+        annotation_env,
+        &mut annotation_infos,
+        false,
+    );
     if lhs_expr.is_none() {
         return None;
     }
     print!("\n\tRHS:");
-    let rhs_expr =
-        add_rule_constraints(&mut parse_tree, rhs, annotation_env, &mut annotation_infos);
+    let rhs_expr = add_rule_constraints(
+        &mut parse_tree,
+        rhs,
+        annotation_env,
+        &mut annotation_infos,
+        true,
+    );
     if rhs_expr.is_none() {
         return None;
     }
@@ -331,6 +351,7 @@ fn type_annotations_using_rule<'a>(
                 lhs: lhs_expr,
                 rhs: rhs_expr,
                 assumptions: parse_tree.assumptions,
+                rhs_assertions: parse_tree.rhs_assertions,
                 quantified_vars,
                 free_vars,
                 term_input_bvs: parse_tree.term_input_bvs,
@@ -1352,7 +1373,10 @@ fn add_isle_constraints(
         ),
         ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
         ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
-        ("ImmExtend".to_owned(), annotation_ir::Type::Int),
+        (
+            "ImmExtend".to_owned(),
+            annotation_ir::Type::BitVectorWithWidth(1),
+        ),
         (
             "ShiftOpAndAmt".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(10),
@@ -1410,12 +1434,13 @@ fn add_rule_constraints(
     curr: &mut TypeVarNode,
     annotation_env: &AnnotationEnv,
     annotation_infos: &mut Vec<AnnotationTypeInfo>,
+    rhs: bool,
 ) -> Option<veri_ir::Expr> {
     // Only relate args to annotations for terms. For leaves, return immediately.
     // For recursive definitions without annotations (like And and Let), recur.
     let mut children = vec![];
     for child in &mut curr.children {
-        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos) {
+        if let Some(e) = add_rule_constraints(tree, child, annotation_env, annotation_infos, rhs) {
             children.push(e);
         } else {
             return None;
@@ -1488,7 +1513,7 @@ fn add_rule_constraints(
                 .insert((curr.ident.clone(), curr.type_var));
             let a = annotation_env.get_annotation_for_term(t);
             if a.is_none() {
-                println!("\nSKIPPING RULE with unannotated term: {}", t);
+                println!("\nSkipping rule with unannotated term: {}", t);
                 return None;
             }
             let annotation = a.unwrap();
@@ -1525,7 +1550,7 @@ fn add_rule_constraints(
                 term: curr.ident.clone(),
                 var_to_type_var: HashMap::new(),
             };
-            for expr in annotation.assertions {
+            for expr in annotation.assumptions {
                 let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
                 curr.assertions.push(typed_expr.clone());
                 tree.assumptions.push(typed_expr);
@@ -1536,6 +1561,24 @@ fn add_rule_constraints(
                         &mut annotation_info,
                         annotation.sig.clone(),
                     );
+                }
+            }
+            // For assertions, global assume if not RHS, otherwise assert
+            for expr in annotation.assertions {
+                let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
+                curr.assertions.push(typed_expr.clone());
+                if tree.decls.contains_key(t) {
+                    add_isle_constraints(
+                        cranelift_isle::ast::Def::Decl(tree.decls[t].clone()),
+                        tree,
+                        &mut annotation_info,
+                        annotation.sig.clone(),
+                    );
+                }
+                if rhs {
+                    tree.rhs_assertions.push(typed_expr);
+                } else {
+                    tree.assumptions.push(typed_expr);
                 }
             }
 
@@ -2056,6 +2099,8 @@ fn create_parse_tree_pattern(
                 "I8" => 8,
                 "true" => 1,
                 "false" => 0,
+                // Not currently used, but parsed
+                "I128" => 16,
                 _ => todo!("{:?}", &name),
             };
             let name = format!("{}__{}", name, type_var);

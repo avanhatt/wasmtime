@@ -79,6 +79,18 @@
     )
 )
 
+;;@ (spec (sig (args) (r)) (assume (= (r) (2i8:bv8))))
+;;decl IntCC.SignedGreaterThan
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (3i8:bv8))))
+;;decl IntCC.SignedGreaterThanOrEqual
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (6i8:bv8))))
+;;decl IntCC.UnsignedGreaterThan
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (7i8:bv8))))
+;;decl IntCC.UnsignedGreaterThanOrEqual
+
 ;;;; Enumerated Immediate: TrapCode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (type TrapCode extern
@@ -695,7 +707,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (zero_ext (64) (ret)))))
+;;@     (assume  (= (arg) (zero_ext (64) (ret)))))
 (decl iconst (Imm64) Inst)
 (extractor
     (iconst N)
@@ -795,7 +807,7 @@
 ;;     )
 ;; )
 ;;@ (spec (sig (args c, x, y) (ret))
-;;@   (assertions 
+;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (switch (c)
 ;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
@@ -808,8 +820,9 @@
 ;;@          ((7i8:bv8) (if (ugte (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
 ;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@        )
-;;@ )))
+;;@        )),
+;;@     (ulte (c) (9i8:bv8))
+;;@ ))
 (decl icmp (IntCC Value Value) Inst)
 (extractor
     (icmp Cond x y)
@@ -823,7 +836,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (+ (x) (y)) (ret))))
+;;@       (assume  (= (+ (x) (y)) (ret))))
 (decl iadd (Value Value) Inst)
 (extractor
     (iadd x y)
@@ -831,7 +844,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (- (x) (y)) (ret))))
+;;@       (assume  (= (- (x) (y)) (ret))))
 (decl isub (Value Value) Inst)
 (extractor
     (isub x y)
@@ -839,7 +852,7 @@
 )
 
 ;;@ (spec (sig (args x) (ret))
-;;@     (assertions (= (-(x)) (ret))))
+;;@     (assume  (= (-(x)) (ret))))
 (decl ineg (Value) Inst)
 (extractor
     (ineg x)
@@ -853,7 +866,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (* (x) (y)) (ret))))
+;;@       (assume  (= (* (x) (y)) (ret))))
 (decl imul (Value Value) Inst)
 (extractor
     (imul x y)
@@ -861,7 +874,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
+;;@       (assume  (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
 (decl umulhi (Value Value) Inst)
 (extractor
     (umulhi x y)
@@ -869,7 +882,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
+;;@       (assume  (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
 (decl smulhi (Value Value) Inst)
 (extractor
     (smulhi x y)
@@ -883,7 +896,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (/ (x) (y)) (ret))))
+;;@       (assume  (= (/ (x) (y)) (ret))))
 (decl udiv (Value Value) Inst)
 (extractor
     (udiv x y)
@@ -891,7 +904,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (sdiv (x) (y)) (ret))))
+;;@       (assume  (= (sdiv (x) (y)) (ret))))
 (decl sdiv (Value Value) Inst)
 (extractor
     (sdiv x y)
@@ -899,7 +912,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (urem (x) (y)) (ret)),
+;;@       (assume  (= (urem (x) (y)) (ret)),
 ;;@                   (! (= (bv2int (ret)) (0i0:isleType)))
 ;;@ ))
 (decl urem (Value Value) Inst)
@@ -909,7 +922,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (srem (x) (y)) (ret)),
+;;@       (assume  (= (srem (x) (y)) (ret)),
 ;;@                   (! (= (bv2int (ret)) (0i0:isleType)))
 ;;@ ))
 (decl srem (Value Value) Inst)
@@ -918,8 +931,6 @@
     (inst_data (InstructionData.Binary (Opcode.Srem) (value_array_2 x y)))
 )
 
-;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (+ (sign_ext (64) (x)) (y)) (ret))))
 (decl iadd_imm (Value Imm64) Inst)
 (extractor
     (iadd_imm x Y)
@@ -927,7 +938,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (* (sign_ext (64) (x)) (y)) (ret))))
+;;@       (assume  (= (* (sign_ext (64) (x)) (y)) (ret))))
 (decl imul_imm (Value Imm64) Inst)
 (extractor
     (imul_imm x Y)
@@ -965,7 +976,7 @@
 )
 
 ;;@ (spec (sig (args x, y, cin) (ret))
-;;@       (assertions (= (+ (+ (x) (y)) (cin)) (ret))))
+;;@       (assume  (= (+ (+ (x) (y)) (cin)) (ret))))
 (decl iadd_cin (Value Value Value) Inst)
 (extractor
     (iadd_cin x y c_in)
@@ -991,7 +1002,7 @@
 )
 
 ;;@ (spec (sig (args x, y, bin) (ret))
-;;@       (assertions (= (- (x) (+ (y) (bin))) (ret))))
+;;@       (assume  (= (- (x) (+ (y) (bin))) (ret))))
 (decl isub_bin (Value Value Value) Inst)
 (extractor
     (isub_bin x y b_in)
@@ -1011,7 +1022,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (& (x) (y)) (ret))))
+;;@       (assume  (= (& (x) (y)) (ret))))
 (decl band (Value Value) Inst)
 (extractor
     (band x y)
@@ -1019,7 +1030,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (| (x) (y)) (ret))))
+;;@       (assume  (= (| (x) (y)) (ret))))
 (decl bor (Value Value) Inst)
 (extractor
     (bor x y)
@@ -1027,19 +1038,23 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (xor (x) (y)) (ret))))
+;;@       (assume  (= (xor (x) (y)) (ret))))
 (decl bxor (Value Value) Inst)
 (extractor
     (bxor x y)
     (inst_data (InstructionData.Binary (Opcode.Bxor) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x) (ret))
+;;@       (assume  (= (~ (x)) (ret))))
 (decl bnot (Value) Inst)
 (extractor
     (bnot x)
     (inst_data (InstructionData.Unary (Opcode.Bnot) x))
 )
 
+;;@ (spec (sig (args x, y) (ret))
+;;@       (assume  (= (& (x) (~ (y))) (ret))))
 (decl band_not (Value Value) Inst)
 (extractor
     (band_not x y)
@@ -1077,7 +1092,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (rotl (x) (y)) (ret))))
+;;@       (assume  (= (rotl (x) (y)) (ret))))
 (decl rotl (Value Value) Inst)
 (extractor
     (rotl x y)
@@ -1085,7 +1100,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (assertions (= (rotr (x) (y)) (ret))))
+;;@       (assume  (= (rotr (x) (y)) (ret))))
 (decl rotr (Value Value) Inst)
 (extractor
     (rotr x y)
@@ -1112,7 +1127,7 @@
 ;; }
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (shl (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
+;;@     (assume  (= (ret) (shl (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
@@ -1120,7 +1135,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (shr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
+;;@     (assume  (= (ret) (shr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
@@ -1128,7 +1143,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (assertions (= (ret) (ashr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
+;;@     (assume  (= (ret) (ashr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)
@@ -1160,7 +1175,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (assertions (= (ret) (clz (a)))))
+;;@     (assume  (= (ret) (clz (a)))))
 (decl clz (Value) Inst)
 (extractor
     (clz x)
@@ -1168,7 +1183,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (assertions (= (ret) (cls (a)))))
+;;@     (assume  (= (ret) (cls (a)))))
 (decl cls (Value) Inst)
 (extractor
     (cls x)
@@ -1176,7 +1191,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (assertions (= (ret) (clz (rev (a))))))
+;;@     (assume  (= (ret) (clz (rev (a))))))
 (decl ctz (Value) Inst)
 (extractor
     (ctz x)
@@ -1394,7 +1409,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (ret) (zero_ext (widthof (ret)) (arg)))))
+;;@     (assume  (= (ret) (zero_ext (widthof (ret)) (arg)))))
 (decl uextend (Value) Inst)
 (extractor
     (uextend x)
@@ -1402,7 +1417,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (ret) (sign_ext (widthof (ret)) (arg)))))
+;;@     (assume  (= (ret) (sign_ext (widthof (ret)) (arg)))))
 (decl sextend (Value) Inst)
 (extractor
     (sextend x)

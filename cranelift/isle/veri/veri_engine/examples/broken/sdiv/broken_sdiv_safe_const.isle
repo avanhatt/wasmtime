@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst (enum))
@@ -14,27 +14,26 @@
 (type ImmExtend
   (enum
     (Zero)
-    ;;(Sign)
+    (Sign)
 ))
 
 ;;@ (spec (sig (args) (ret))
-;;@     (assertions (= (1i0: isleType) (ret))))
-(decl ImmExtend.Sign () ImmExtend)
-(extern constructor ImmExtend.Sign ImmExtend.Sign)
+;;@     (assume  (= (1i1:bv1) (ret))))
+;;decl ImmExtend.Sign 
 
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@       (assertions (= (/ (x) (y)) (ret)),
+;;@       (assume  (= (/ (x) (y)) (ret)),
 ;;@                   (= (ty) (64i0: isleType))
 ;;@ ))
 (decl a64_udiv (Type Reg Reg) Reg)
 (rule (a64_udiv ty x y) (alu_rrr (ALUOp.UDiv) ty x y))
 
 ;;@ (spec (sig (args ty, ext, x) (ret))
-;;@       (assertions (|| (= (ext) (0i0:isleType)) (= (ext) (1i0:isleType))),
-;;@                   (if (= (ext) (0i0:isleType)) 
+;;@       (assume  (|| (= (ext) (0i1:bv1)) (= (ext) (1i1:bv1))),
+;;@                   (if (= (ext) (0i1:bv1)) 
 ;;@                       (= (ret) (zero_ext (regwidth) (conv_to (ty) (x))))
 ;;@                       (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))
 ;;@                    )
@@ -44,20 +43,20 @@
 
 ;; Place a `Value` into a register, sign extending it to 64-bits
 ;;@ (spec (sig (args x) (ret))
-;;@       (assertions (= (sign_ext (64) (x)) (ret))))
+;;@       (assume  (= (sign_ext (64) (x)) (ret))))
 (decl put_in_reg_sext64 (Value) Reg)
 (extern constructor put_in_reg_sext64 put_in_reg_sext64)
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
 ;;@ (spec (sig (args x) (ret))
-;;@       (assertions (= (sign_ext (64) (x)) (ret)),
+;;@       (assume  (= (sign_ext (64) (x)) (ret)),
 ;;@                   (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_sext64 (Value) Reg)
 (extern constructor put_nonzero_in_reg_sext64 put_nonzero_in_reg_sext64)
 
 ;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
 ;;@ (spec (sig (args x) (ret))
-;;@       (assertions (= (x) (ret)),
+;;@       (assume  (= (x) (ret)),
 ;;@ ))
 (decl safe_divisor_from_imm64 (u64) Imm64)
 (extern extractor safe_divisor_from_imm64 safe_divisor_from_imm64)

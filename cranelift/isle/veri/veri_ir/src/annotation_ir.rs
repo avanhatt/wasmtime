@@ -48,14 +48,18 @@ pub struct TermAnnotation {
     pub sig: TermSignature,
     // Note: extra Box for now for ease of parsing
     #[allow(clippy::vec_box)]
+    pub assumptions: Vec<Box<Expr>>,
+
+    #[allow(clippy::vec_box)]
     pub assertions: Vec<Box<Expr>>,
 }
 
 impl TermAnnotation {
     /// New annotation
-    pub fn new(sig: TermSignature, assertions: Vec<Expr>) -> Self {
+    pub fn new(sig: TermSignature, assumptions: Vec<Expr>, assertions: Vec<Expr>) -> Self {
         TermAnnotation {
             sig,
+            assumptions: assumptions.iter().map(|x| Box::new(x.clone())).collect(),
             assertions: assertions.iter().map(|x| Box::new(x.clone())).collect(),
         }
     }
@@ -65,7 +69,7 @@ impl TermAnnotation {
     }
 
     pub fn assertions(&self) -> Vec<Expr> {
-        self.assertions.iter().map(|x| *x.clone()).collect()
+        self.assumptions.iter().map(|x| *x.clone()).collect()
     }
 }
 

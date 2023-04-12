@@ -35,6 +35,7 @@ pub struct SolverCtx {
     width_assumptions: Vec<SExpr>,
     pub additional_decls: Vec<(String, SExpr)>,
     pub additional_assumptions: Vec<SExpr>,
+    pub additional_assertions: Vec<SExpr>,
     fresh_bits_idx: usize,
 }
 
@@ -71,6 +72,10 @@ impl SolverCtx {
 
     fn assume(&mut self, expr: SExpr) {
         self.additional_assumptions.push(expr);
+    }
+
+    fn assert(&mut self, expr: SExpr) {
+        self.additional_assertions.push(expr);
     }
 
     /// Construct a constant bit-vector value of the given width. (This is used so pervasively that
@@ -146,7 +151,7 @@ impl SolverCtx {
                 dest_width,
                 source_width,
             );
-            self.additional_assumptions.push(self.smt.false_());
+            self.assert(self.smt.false_());
             return self.bv(
                 0,
                 if self.dynwidths {
@@ -448,7 +453,7 @@ impl SolverCtx {
         narrow_decl: SExpr,
         name: Option<String>,
     ) -> SExpr {
-        let width = self.bitwidth.checked_sub(narrow_width).unwrap();
+        let width = self.bitwidth.checked_sub(dbg!(narrow_width)).unwrap();
         if width > 0 {
             let mut narrow_name = format!("narrow__{}", tyvar);
             let mut wide_name = format!("wide__{}", tyvar);
@@ -456,8 +461,7 @@ impl SolverCtx {
                 narrow_name = format!("{}_{}", s, narrow_name);
                 wide_name = format!("{}_{}", s, wide_name);
             }
-            self.additional_assumptions
-                .push(self.smt.eq(self.smt.atom(&narrow_name), narrow_decl));
+            self.assume(self.smt.eq(self.smt.atom(&narrow_name), narrow_decl));
             self.additional_decls.push((
                 narrow_name.clone(),
                 self.smt.bit_vec_sort(self.smt.numeral(narrow_width)),
@@ -467,7 +471,7 @@ impl SolverCtx {
                 self.smt.bit_vec_sort(self.smt.numeral(self.bitwidth)),
             ));
             let padding = self.new_fresh_bits(width);
-            self.additional_assumptions.push(self.smt.eq(
+            self.assume(self.smt.eq(
                 self.smt.atom(&wide_name),
                 self.smt.concat(padding, self.smt.atom(narrow_name)),
             ));
@@ -476,8 +480,7 @@ impl SolverCtx {
             if let Some(s) = name {
                 // self.additional_decls
                 //     .push((s.clone(), format!("(_ BitVec {})", self.bitwidth)));
-                self.additional_assumptions
-                    .push(self.smt.eq(self.smt.atom(&s), narrow_decl));
+                self.assume(self.smt.eq(self.smt.atom(&s), narrow_decl));
                 self.smt.atom(&s)
             } else {
                 narrow_decl
@@ -919,7 +922,6 @@ impl SolverCtx {
                     let expr_width = width.unwrap().clone();
                     let dyn_width = self.vir_expr_to_sexp(*x);
                     let eq = self.smt.eq(expr_width, dyn_width);
-                    println!("conv_to dyn: {}", self.smt.display(eq));
                     self.width_assumptions.push(eq);
                     self.vir_expr_to_sexp(*y)
                 } else {
@@ -1016,8 +1018,7 @@ impl SolverCtx {
                     .iter()
                     .map(|(m, _)| self.smt.eq(cs, *m))
                     .collect();
-                self.additional_assumptions
-                    .push(self.smt.or_many(some_case_matches.clone()));
+                self.assert(self.smt.or_many(some_case_matches.clone()));
 
                 let (_, last_body) = case_sexprs.remove(case_sexprs.len() - 1);
 
@@ -1048,12 +1049,12 @@ impl SolverCtx {
                     Some(64) => clz::clz64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64CLZ width {}", w);
-                        self.additional_assumptions.push(self.smt.false_());
+                        self.assert(self.smt.false_());
                         es
                     }
                     None => {
                         println!("Need static A64CLZ width");
-                        self.additional_assumptions.push(self.smt.false_());
+                        self.assert(self.smt.false_());
                         es
                     }
                 }
@@ -1080,12 +1081,12 @@ impl SolverCtx {
                     Some(64) => cls::cls64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64CLS width {}", w);
-                        self.additional_assumptions.push(self.smt.false_());
+                        self.assert(self.smt.false_());
                         es
                     }
                     None => {
                         println!("Need static A64CLS width");
-                        self.additional_assumptions.push(self.smt.false_());
+                        self.assert(self.smt.false_());
                         es
                     }
                 }
@@ -1112,12 +1113,12 @@ impl SolverCtx {
                     Some(64) => rev::rev64(self, es, tyvar),
                     Some(w) => {
                         println!("Unexpected A64Rev width {}", w);
-                        self.additional_assumptions.push(self.smt.false_());
+                        self.assert(self.smt.false_());
                         es
                     }
                     None => {
                         println!("Need static A64Rev width");
-                        self.additional_assumptions.push(self.smt.false_());
+                        self.assert(self.smt.false_());
                         es
                     }
                 }
@@ -1558,6 +1559,7 @@ pub fn run_solver(
         width_assumptions: vec![],
         additional_decls: vec![],
         additional_assumptions: vec![],
+        additional_assertions: vec![],
         fresh_bits_idx: 0,
     };
 
@@ -1577,6 +1579,7 @@ pub fn run_solver(
                         let eq = ctx
                             .smt
                             .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
+                        println!("Width from inference {} ({})", width_name, bitwidth);
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
@@ -1685,6 +1688,7 @@ pub fn run_solver(
             width_assumptions: vec![],
             additional_decls: vec![],
             additional_assumptions: vec![],
+            additional_assertions: vec![],
             fresh_bits_idx: 0,
         };
         assumptions = ctx.declare_variables(&rule_sem);
@@ -1736,6 +1740,11 @@ pub fn run_solver(
                 .assert(ctx.smt.named(format!("conc{i}"), *a))
                 .unwrap();
         }
+        for (i, e) in ctx.additional_assertions.iter().enumerate() {
+            ctx.smt
+                .assert(ctx.smt.named(format!("conc_assert{i}"), *e))
+                .unwrap();
+        }
         ctx.smt.push().unwrap();
         let eq = ctx
             .smt
@@ -1744,6 +1753,13 @@ pub fn run_solver(
         ctx.smt
             .assert(ctx.smt.named(format!("conceq"), eq))
             .unwrap();
+
+        for (i, a) in rule_sem.rhs_assertions.iter().enumerate() {
+            let p = ctx.vir_expr_to_sexp(a.clone());
+            ctx.smt
+                .assert(ctx.smt.named(format!("rhs_assert{i}"), p))
+                .unwrap();
+        }
 
         if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
             // Bad! This is a bug!
@@ -1809,8 +1825,31 @@ pub fn run_solver(
         side_equality
     };
 
+    // Look at RHS assertions, which are checked, not trusted
+    let mut assertions: Vec<SExpr> = rule_sem
+        .rhs_assertions
+        .iter()
+        .map(|a| ctx.vir_expr_to_sexp(a.clone()))
+        .collect();
+
+    for a in &ctx.additional_assertions {
+        assertions.push(*a);
+    }
+
     let assumption_conjunction = ctx.smt.and_many(assumptions);
-    let query = ctx.smt.not(ctx.smt.imp(assumption_conjunction, condition));
+    let full_condition = if assertions.len() > 1 {
+        let assertion_conjunction = ctx.smt.and_many(assertions.clone());
+        ctx.smt.and(condition, assertion_conjunction)
+    } else {
+        condition
+    };
+    println!(
+        "Full verification condition:\n\t{}\n",
+        ctx.smt.display(full_condition)
+    );
+    let query = ctx
+        .smt
+        .not(ctx.smt.imp(assumption_conjunction, full_condition));
     println!("Running query");
     ctx.smt.assert(query).unwrap();
 
@@ -1818,6 +1857,23 @@ pub fn run_solver(
         Ok(Response::Sat) => {
             println!("Verification failed");
             ctx.display_model(termenv, typeenv, rule, lhs, rhs);
+            let vals = ctx.smt.get_value(vec![condition]).unwrap();
+            for (variable, value) in vals {
+                if value == ctx.smt.false_() {
+                    println!("Failed condition:\n{}", ctx.smt.display(variable));
+                } else if value == ctx.smt.true_() {
+                    println!("Condition met, but failed some assertion(s).")
+                }
+            }
+
+            if assertions.len() > 0 {
+                let vals = ctx.smt.get_value(assertions).unwrap();
+                for (variable, value) in vals {
+                    if value == ctx.smt.false_() {
+                        println!("Failed assertion:\n{}", ctx.smt.display(variable));
+                    }
+                }
+            }
             VerificationResult::Failure(Counterexample {})
         }
         Ok(Response::Unsat) => {

@@ -34,6 +34,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
 
     // Simple unary
     widths.insert("ineg", bv_unary_8_to_64.clone());
+    widths.insert("bnot", bv_unary_8_to_64.clone());
     widths.insert("cls", bv_unary_8_to_64.clone());
     widths.insert("clz", bv_unary_8_to_64.clone());
     widths.insert("ctz", bv_unary_8_to_64.clone());
@@ -96,6 +97,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("isub", bv_binary_8_to_64.clone());
     widths.insert("imul", bv_binary_8_to_64.clone());
     widths.insert("band", bv_binary_8_to_64.clone());
+    widths.insert("band_not", bv_binary_8_to_64.clone());
     widths.insert("bor", bv_binary_8_to_64.clone());
     widths.insert("bxor", bv_binary_8_to_64.clone());
     widths.insert("ushr", bv_binary_8_to_64.clone());
@@ -330,7 +332,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         vec![
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(8)),
@@ -340,7 +342,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             },
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(16)),
@@ -350,7 +352,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             },
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(32)),
@@ -360,7 +362,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             },
             TermSignature {
                 args: vec![
-                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(8)),
                     Type::Int,
                     Type::BitVector(Some(64)),
                     Type::BitVector(Some(64)),

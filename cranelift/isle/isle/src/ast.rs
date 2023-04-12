@@ -95,6 +95,7 @@ pub struct Rule {
     pub expr: Expr,
     pub pos: Pos,
     pub prio: Option<i64>,
+    pub name: Option<String>,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]

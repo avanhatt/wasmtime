@@ -17,6 +17,7 @@ pub const FLAGS_WIDTH: usize = 4;
 
 pub struct Config {
     pub term: String,
+    pub names: Option<Vec<String>>,
     pub dyn_width: bool,
     pub distinct_check: bool,
 

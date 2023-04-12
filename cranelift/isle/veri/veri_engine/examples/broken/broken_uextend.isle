@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assertions (= (arg) (ret))))
+;;@     (assume  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -17,7 +17,7 @@
 ;; Helper for emitting `MInst.Extend` instructions.
 ;; BROKEN: zero_ext and sign_ext swapped
 ;;@ (spec (sig (args a, b, c, d) (ret))
-;;@     (assertions (if (b) 
+;;@     (assume  (if (b) 
 ;;@                     (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
 ;;@                     (= (ret) (sign_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
 ;;@                 )

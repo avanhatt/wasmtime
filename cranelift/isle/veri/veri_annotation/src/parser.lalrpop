@@ -149,7 +149,13 @@ pub Expr: Box<Expr> = {
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v, 0)),
 };
 
+pub AssertBlock: Vec<Box<Expr>> = {
+   "(" "assert" <a:ExprList> ")" => a,
+}
+
 pub TermAnnotation: TermAnnotation = {
-    "(" "spec" <s:TermSignature> "(" "assertions" <a:ExprList> ")" ")" =>
-        TermAnnotation {sig: s, assertions: a},
+    "(" "spec" <s:TermSignature> "(" "assume" <a:ExprList> ")" "(" "assert" <b:ExprList> ")" ")" =>
+        TermAnnotation {sig: s, assumptions: a, assertions: b },
+    "(" "spec" <s:TermSignature> "(" "assume" <a:ExprList> ")" ")" =>
+        TermAnnotation {sig: s, assumptions: a, assertions: vec![] },
 };

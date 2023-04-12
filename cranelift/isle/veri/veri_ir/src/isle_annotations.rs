@@ -5,7 +5,7 @@ use crate::annotation_ir::{BoundVar, Const, Expr, TermAnnotation, TermSignature,
 pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
     match term {
         // (spec (sig (args (x: bvX) (ret: bvX))
-        //       (assumptions (= x ret)))
+        //       (assume  (= x ret)))
         "lower" | "put_in_reg" | "value_reg" | "first_result" | "inst_data" => {
             // No-op for now
             let arg = BoundVar::new("arg");
@@ -15,7 +15,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 args: vec![arg],
                 ret: result,
             };
-            Some(TermAnnotation::new(func, vec![identity]))
+            Some(TermAnnotation::new(func, vec![identity], vec![]))
         }
         "value_type" => {
             let arg = BoundVar::new("arg");
@@ -25,10 +25,10 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 args: vec![arg],
                 ret: result,
             };
-            Some(TermAnnotation::new(func, vec![ty_eq]))
+            Some(TermAnnotation::new(func, vec![ty_eq], vec![]))
         }
         // (spec (sig (args x: bvX) (ret: bvX))
-        //       (assumptions (= x ret)))
+        //       (assume  (= x ret)))
         "has_type" => {
             // Add an assertion on the type
             let ty_arg = BoundVar::new("ty");
@@ -40,7 +40,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 args: vec![ty_arg, arg],
                 ret: result,
             };
-            Some(TermAnnotation::new(func, vec![ty_eq, identity]))
+            Some(TermAnnotation::new(func, vec![ty_eq, identity], vec![]))
         }
         "fits_in_64" => {
             // Identity, but add assertion on type
@@ -63,7 +63,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 args: vec![arg],
                 ret: result,
             };
-            Some(TermAnnotation::new(func, vec![identity, ty_fits]))
+            Some(TermAnnotation::new(func, vec![identity, ty_fits], vec![]))
         }
         "iadd" => {
             let a = BoundVar::new("a");
@@ -78,7 +78,7 @@ pub fn isle_annotation_for_term(term: &str) -> Option<TermAnnotation> {
                 args: vec![a, b],
                 ret: r,
             };
-            Some(TermAnnotation::new(func, vec![sem]))
+            Some(TermAnnotation::new(func, vec![sem], vec![]))
         }
         // "imm12_from_negated_value" => {
         //     // Width: bv12

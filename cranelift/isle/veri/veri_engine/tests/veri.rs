@@ -1,18 +1,20 @@
 mod utils;
 use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
 use utils::{
-    run_and_retry, test_concrete_input_from_file_with_lhs_termname, test_from_file_with_config,
-    test_from_file_with_lhs_termname, test_from_file_with_lhs_termname_dynwidth, Bitwidth,
+    run_and_retry, test_aarch64_rule_with_lhs_termname, test_aarch64_with_config,
+    test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
+    test_from_file_with_config, test_from_file_with_lhs_termname,
+    test_from_file_with_lhs_termname_dynwidth, Bitwidth,
 };
 use veri_engine_lib::Config;
 use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
 
 #[test]
-fn test_iadd_base_concrete() {
+fn test_named_iadd_base_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/iadd/base_case.isle",
-            "iadd".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "iadd_base_case",
+            "iadd",
             false,
             ConcreteTest {
                 termname: "iadd".to_string(),
@@ -36,44 +38,32 @@ fn test_iadd_base_concrete() {
 }
 
 #[test]
-fn test_iadd_base() {
+fn test_named_iadd_base() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/base_case.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("iadd_base_case", "iadd", lte_64_success_result())
     });
 }
 
 #[test]
-fn test_iadd_imm12() {
+fn test_named_iadd_imm12_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("iadd_imm12_right", "iadd", lte_64_success_result())
     });
 }
 
 #[test]
-fn test_iadd_imm12_2() {
+fn test_named_iadd_imm12_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12_2.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("iadd_imm12_left", "iadd", lte_64_success_result())
     });
 }
 
 #[test]
-fn test_iadd_imm12neg_not_distinct() {
+fn test_named_iadd_imm12_neg_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imm12_neg_left",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
                 (Bitwidth::I16, VerificationResult::NoDistinctModels),
@@ -85,21 +75,67 @@ fn test_iadd_imm12neg_not_distinct() {
 }
 
 #[test]
-fn test_imm12_from_negated_value() {
+fn test_named_iadd_imm12_neg_right_not_distinct() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imm12_neg_right",
+            "iadd",
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_iadd_imm12_neg_left_not_distinct() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imm12_neg_left",
+            "iadd",
+            vec![
+                (Bitwidth::I8, VerificationResult::NoDistinctModels),
+                (Bitwidth::I16, VerificationResult::NoDistinctModels),
+                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+// Need a file test because this is a change on top of our latest rebase
+#[test]
+fn test_updated_imm12_from_negated_value() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12_from_negated_value.isle",
+            "./examples/iadd/updated_imm12_from_negated_value.isle",
             "imm12_from_negated_value".to_string(),
             all_success_result(),
         )
     });
 }
 
+// Need a file test because this is a change on top of our latest rebase
 #[test]
-fn test_iadd_imm12neg_new() {
+fn test_updated_iadd_imm12neg_right() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg_new.isle",
+            "./examples/iadd/updated_iadd_imm12neg_right.isle",
+            "iadd".to_string(),
+            all_success_result(),
+        )
+    });
+}
+
+// Need a file test because this is a change on top of our latest rebase
+#[test]
+fn test_updated_iadd_imm12neg_left() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname(
+            "./examples/iadd/updated_iadd_imm12neg_left.isle",
             "iadd".to_string(),
             all_success_result(),
         )
@@ -107,38 +143,11 @@ fn test_iadd_imm12neg_new() {
 }
 
 #[test]
-fn test_iadd_imm12neg2_new() {
+fn test_named_iadd_extend_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg2_new.isle",
-            "iadd".to_string(),
-            all_success_result(),
-        )
-    });
-}
-
-#[test]
-fn test_iadd_imm12neg2_not_distinct() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg2.isle",
-            "iadd".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    });
-}
-
-#[test]
-fn test_iadd_extend() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/add_extend.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_extend_right",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -150,10 +159,10 @@ fn test_iadd_extend() {
 }
 
 #[test]
-fn test_iadd_extend_concrete() {
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/iadd/add_extend.isle",
-        "iadd".to_string(),
+fn test_named_iadd_extend_right_concrete() {
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "iadd_extend_right",
+        "iadd",
         false,
         ConcreteTest {
             termname: "iadd".to_string(),
@@ -173,9 +182,9 @@ fn test_iadd_extend_concrete() {
             },
         },
     );
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/iadd/add_extend.isle",
-        "iadd".to_string(),
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "iadd_extend_right",
+        "iadd",
         false,
         ConcreteTest {
             termname: "iadd".to_string(),
@@ -198,11 +207,11 @@ fn test_iadd_extend_concrete() {
 }
 
 #[test]
-fn test_iadd_extend_2() {
+fn test_named_iadd_extend_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/add_extend_2.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_extend_left",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -237,22 +246,25 @@ fn test_broken_iadd_extend() {
 }
 
 #[test]
-fn test_iadd_shift() {
+fn test_named_iadd_ishl_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/shift.isle",
-            "iadd".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("iadd_ishl_left", "iadd", lte_64_success_result())
     });
 }
 
 #[test]
-fn test_iadd_madd() {
+fn test_named_iadd_ishl_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/madd.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname("iadd_ishl_right", "iadd", lte_64_success_result())
+    });
+}
+
+#[test]
+fn test_named_iadd_imul_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imul_right",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -265,11 +277,11 @@ fn test_iadd_madd() {
 }
 
 #[test]
-fn test_iadd_madd2() {
+fn test_named_iadd_imul_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/iadd/madd2.isle",
-            "iadd".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "iadd_imul_left",
+            "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -282,11 +294,11 @@ fn test_iadd_madd2() {
 }
 
 #[test]
-fn test_isub_msub() {
+fn test_named_isub_imul() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/msub.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_imul",
+            "isub",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -398,7 +410,7 @@ fn test_broken_iadd_imm12neg_2_not_distinct() {
 }
 
 #[test]
-fn test_broken_iadd_madd() {
+fn test_broken_iadd_imul_right() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_madd.isle",
@@ -409,7 +421,7 @@ fn test_broken_iadd_madd() {
 }
 
 #[test]
-fn test_broken_iadd_madd2() {
+fn test_broken_iadd_imul_left() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/iadd/broken_madd2.isle",
@@ -467,33 +479,25 @@ fn test_broken_iadd_shift2() {
 }
 
 #[test]
-fn test_isub_base_case() {
+fn test_named_isub_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/base_case.isle",
-            "isub".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("isub_base_case", "isub", lte_64_success_result())
     })
 }
 
 #[test]
-fn test_isub_imm12() {
+fn test_named_isub_imm12() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/imm12.isle",
-            "isub".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("isub_imm12", "isub", lte_64_success_result())
     })
 }
 
 #[test]
-fn test_isub_imm12_concrete() {
+fn test_named_isub_imm12_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/isub/imm12.isle",
-            "isub".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "isub_imm12",
+            "isub",
             false,
             ConcreteTest {
                 termname: "isub".to_string(),
@@ -517,11 +521,11 @@ fn test_isub_imm12_concrete() {
 }
 
 #[test]
-fn test_isub_imm12neg_not_distinct() {
+fn test_named_isub_imm12_neg_not_distinct() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/imm12neg.isle",
-            "isub".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "isub_imm12_neg",
+            "isub",
             vec![
                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
                 (Bitwidth::I16, VerificationResult::NoDistinctModels),
@@ -532,6 +536,7 @@ fn test_isub_imm12neg_not_distinct() {
     })
 }
 
+// Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_isub_imm12neg_new() {
     run_and_retry(|| {
@@ -544,11 +549,11 @@ fn test_isub_imm12neg_new() {
 }
 
 #[test]
-fn test_isub_imm12neg_concrete32() {
+fn test_named_isub_imm12_neg_concrete32() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/isub/imm12neg.isle",
-            "isub".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "isub_imm12_neg",
+            "isub",
             false,
             ConcreteTest {
                 termname: "isub".to_string(),
@@ -577,11 +582,11 @@ fn test_isub_imm12neg_concrete32() {
 }
 
 #[test]
-fn test_isub_imm12neg_concrete_64() {
+fn test_named_isub_imm12_neg_concrete64() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/isub/imm12neg.isle",
-            "isub".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "isub_imm12_neg",
+            "isub",
             false,
             ConcreteTest {
                 termname: "isub".to_string(),
@@ -610,20 +615,25 @@ fn test_isub_imm12neg_concrete_64() {
 }
 
 #[test]
-fn test_isub_extend() {
+fn test_named_isub_extend() {
     run_and_retry(|| {
-        //test_from_file_with_lhs_termname("./examples/isub/extend.isle", lte_64_success_result());
+        test_aarch64_rule_with_lhs_termname(
+            "isub_extend",
+            "isub",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
     })
 }
 
 #[test]
-fn test_isub_shift() {
+fn test_named_isub_ishl() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/isub/shift.isle",
-            "isub".to_string(),
-            lte_64_success_result(),
-        );
+        test_aarch64_rule_with_lhs_termname("isub_ishl", "isub", lte_64_success_result())
     })
 }
 
@@ -700,22 +710,18 @@ fn test_broken_isub_shift() {
 }
 
 #[test]
-fn test_ineg() {
+fn test_named_ineg_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ineg/ineg.isle",
-            "ineg".to_string(),
-            lte_64_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("ineg_base_case", "ineg", lte_64_success_result())
     })
 }
 
 #[test]
-fn test_mul() {
+fn test_named_imul_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/imul/imul.isle",
-            "imul".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "imul_base_case",
+            "imul",
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -727,12 +733,13 @@ fn test_mul() {
     });
 }
 
+// TODO traps https://github.com/avanhatt/wasmtime/issues/31
 #[test]
-fn test_udiv() {
+fn test_named_udiv() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/udiv/udiv.isle",
-            "udiv".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "udiv",
+            "udiv",
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -767,11 +774,11 @@ fn test_broken_udiv() {
 }
 
 #[test]
-fn test_sdiv() {
+fn test_named_sdiv_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/sdiv/sdiv.isle",
-            "sdiv".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "sdiv_base_case",
+            "sdiv",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -784,11 +791,11 @@ fn test_sdiv() {
 }
 
 #[test]
-fn test_sdiv_safe_const() {
+fn test_named_sdiv_safe_divisor() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/sdiv/sdiv_safe_const.isle",
-            "sdiv".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "sdiv_safe_divisor",
+            "sdiv",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -848,11 +855,11 @@ fn test_broken_sdiv() {
 }
 
 #[test]
-fn test_srem() {
+fn test_named_srem() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/srem/srem.isle",
-            "srem".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "srem",
+            "srem",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -865,11 +872,11 @@ fn test_srem() {
 }
 
 #[test]
-fn test_urem() {
+fn test_named_urem() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/urem/urem.isle",
-            "urem".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "urem",
+            "urem",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -882,11 +889,11 @@ fn test_urem() {
 }
 
 #[test]
-fn test_urem_concrete() {
+fn test_named_urem_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/urem/urem.isle",
-            "urem".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "urem",
+            "urem",
             false,
             ConcreteTest {
                 termname: "urem".to_string(),
@@ -910,24 +917,16 @@ fn test_urem_concrete() {
 }
 
 #[test]
-fn test_uextend() {
+fn test_named_uextend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname_dynwidth(
-            "./examples/uextend/uextend.isle",
-            "uextend".to_string(),
-            all_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("uextend", "uextend", all_success_result())
     })
 }
 
 #[test]
-fn test_sextend() {
+fn test_named_sextend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname_dynwidth(
-            "./examples/sextend/sextend.isle",
-            "sextend".to_string(),
-            all_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("sextend", "sextend", all_success_result())
     })
 }
 
@@ -954,15 +953,17 @@ fn test_broken_uextend() {
     })
 }
 
+// AVH TODO: this rule requires priorities to be correct for narrow cases
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_clz() {
+fn test_named_clz_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/clz/clz.isle",
-            "clz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "clz_32_64",
+            "clz",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -971,11 +972,11 @@ fn test_clz() {
 }
 
 #[test]
-fn test_clz8() {
+fn test_named_clz_8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/clz/clz8.isle",
-            "clz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "clz_8",
+            "clz",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -987,11 +988,11 @@ fn test_clz8() {
 }
 
 #[test]
-fn test_clz16() {
+fn test_named_clz_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/clz/clz16.isle",
-            "clz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "clz_16",
+            "clz",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1003,7 +1004,7 @@ fn test_clz16() {
 }
 
 #[test]
-fn test_clz_broken() {
+fn test_broken_clz() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz.isle",
@@ -1025,7 +1026,7 @@ fn test_clz_broken() {
 }
 
 #[test]
-fn test_clz8_broken() {
+fn test_broken_clz8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz8.isle",
@@ -1041,7 +1042,7 @@ fn test_clz8_broken() {
 }
 
 #[test]
-fn test_clz_broken16() {
+fn test_broken_clz_n6() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz16.isle",
@@ -1059,15 +1060,17 @@ fn test_clz_broken16() {
     })
 }
 
+// AVH TODO: this rule requires priorities to be correct for narrow cases
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_cls() {
+fn test_named_cls_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/cls/cls.isle",
-            "cls".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "cls_32_64",
+            "cls",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -1076,11 +1079,11 @@ fn test_cls() {
 }
 
 #[test]
-fn test_cls8() {
+fn test_named_cls8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/cls/cls8.isle",
-            "cls".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "cls_8",
+            "cls",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1092,11 +1095,11 @@ fn test_cls8() {
 }
 
 #[test]
-fn test_cls16() {
+fn test_named_cls_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/cls/cls16.isle",
-            "cls".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "cls_16",
+            "cls",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1108,7 +1111,7 @@ fn test_cls16() {
 }
 
 #[test]
-fn test_cls_broken() {
+fn test_broken_cls_32_64() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls.isle",
@@ -1127,7 +1130,7 @@ fn test_cls_broken() {
 }
 
 #[test]
-fn test_cls8_broken() {
+fn test_broken_cls_8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls8.isle",
@@ -1143,7 +1146,7 @@ fn test_cls8_broken() {
 }
 
 #[test]
-fn test_cls16_broken() {
+fn test_broken_cls_16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls16.isle",
@@ -1162,14 +1165,14 @@ fn test_cls16_broken() {
 }
 
 #[test]
-fn test_ctz() {
+fn test_named_ctz_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ctz/ctz.isle",
-            "ctz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ctz_32_64",
+            "ctz",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -1178,11 +1181,11 @@ fn test_ctz() {
 }
 
 #[test]
-fn test_ctz8() {
+fn test_named_ctz_8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ctz/ctz8.isle",
-            "ctz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ctz_8",
+            "ctz",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1194,11 +1197,11 @@ fn test_ctz8() {
 }
 
 #[test]
-fn test_ctz16() {
+fn test_named_ctz_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ctz/ctz16.isle",
-            "ctz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ctz_16",
+            "ctz",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1210,7 +1213,7 @@ fn test_ctz16() {
 }
 
 #[test]
-fn test_ctz_broken() {
+fn test_broken_ctz_32_64() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz.isle",
@@ -1232,7 +1235,7 @@ fn test_ctz_broken() {
 }
 
 #[test]
-fn test_ctz8_broken() {
+fn test_broken_ctz_8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz8.isle",
@@ -1248,7 +1251,7 @@ fn test_ctz8_broken() {
 }
 
 #[test]
-fn test_ctz16_broken() {
+fn test_broken_ctz_16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz16.isle",
@@ -1267,7 +1270,7 @@ fn test_ctz16_broken() {
 }
 
 #[test]
-fn test_small_rotr_to_shifts() {
+fn test_named_small_rotr() {
     run_and_retry(|| {
         let config = Config {
             dyn_width: false,
@@ -1289,17 +1292,14 @@ fn test_small_rotr_to_shifts() {
                     lower_16_bits_eq,
                 )
             })),
+            names: Some(vec!["small_rotr".to_string()]),
         };
-        test_from_file_with_config(
-            "./examples/rotr/small_rotr_to_shifts.isle",
-            config,
-            vec![(Bitwidth::I64, VerificationResult::Success)],
-        );
+        test_aarch64_with_config(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
     })
 }
 
 #[test]
-fn test_small_rotr_to_shifts_broken() {
+fn test_broken_small_rotr_to_shifts() {
     run_and_retry(|| {
         let config = Config {
             dyn_width: false,
@@ -1321,6 +1321,7 @@ fn test_small_rotr_to_shifts_broken() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/broken/broken_mask_small_rotr.isle",
@@ -1334,7 +1335,7 @@ fn test_small_rotr_to_shifts_broken() {
 }
 
 #[test]
-fn test_small_rotr_to_shifts_broken2() {
+fn test_broken_small_rotr_to_shifts_2() {
     run_and_retry(|| {
         let config = Config {
             dyn_width: false,
@@ -1356,6 +1357,7 @@ fn test_small_rotr_to_shifts_broken2() {
                     lower_16_bits_eq,
                 )
             })),
+            names: None,
         };
         test_from_file_with_config(
             "./examples/broken/broken_rule_or_small_rotr.isle",
@@ -1369,7 +1371,7 @@ fn test_small_rotr_to_shifts_broken2() {
 }
 
 #[test]
-fn test_small_rotr_imm_to_shifts() {
+fn test_named_small_rotr_imm() {
     run_and_retry(|| {
         let config = Config {
             dyn_width: false,
@@ -1391,21 +1393,18 @@ fn test_small_rotr_imm_to_shifts() {
                     lower_16_bits_eq,
                 )
             })),
+            names: Some(vec!["small_rotr_imm".to_string()]),
         };
-        test_from_file_with_config(
-            "./examples/rotr/small_rotr_imm_to_shifts.isle",
-            config,
-            vec![(Bitwidth::I64, VerificationResult::Success)],
-        );
+        test_aarch64_with_config(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
     })
 }
 
 #[test]
-fn test_fits_in_16_rotl_to_rotr() {
+fn test_named_rotl_fits_in_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/fits_in_16_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_fits_in_16",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1417,12 +1416,12 @@ fn test_fits_in_16_rotl_to_rotr() {
 }
 
 #[test]
-fn test_32_general_rotl_to_rotr() {
+fn test_named_rotl_32_base_case() {
     run_and_retry(|| {
         run_and_retry(|| {
-            test_from_file_with_lhs_termname(
-                "./examples/rotl/32_general_rotl_to_rotr.isle",
-                "rotl".to_string(),
+            test_aarch64_rule_with_lhs_termname(
+                "rotl_32_base_case",
+                "rotl",
                 vec![
                     (Bitwidth::I8, VerificationResult::InapplicableRule),
                     (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1454,11 +1453,11 @@ fn test_broken_32_general_rotl_to_rotr() {
 }
 
 #[test]
-fn test_64_general_rotl_to_rotr() {
+fn test_named_rotl_64_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/64_general_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_64_base_case",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1489,11 +1488,11 @@ fn test_broken_fits_in_16_rotl_to_rotr() {
 }
 
 #[test]
-fn test_fits_in_16_with_imm_rotl_to_rotr() {
+fn test_named_rotl_fits_in_16_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/fits_in_16_with_imm_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_fits_in_16_imm",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1505,11 +1504,11 @@ fn test_fits_in_16_with_imm_rotl_to_rotr() {
 }
 
 #[test]
-fn test_64_with_imm_rotl_to_rotr() {
+fn test_named_rotl_64_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/64_with_imm_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_64_imm",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1521,11 +1520,11 @@ fn test_64_with_imm_rotl_to_rotr() {
 }
 
 #[test]
-fn test_32_with_imm_rotl_to_rotr() {
+fn test_named_rotl_32_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotl/32_with_imm_rotl_to_rotr.isle",
-            "rotl".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotl_32_imm",
+            "rotl",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1554,11 +1553,11 @@ fn test_broken_fits_in_16_with_imm_rotl_to_rotr() {
 }
 
 #[test]
-fn test_fits_in_16_rotr() {
+fn test_named_rotr_fits_in_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotr/fits_in_16_rotr.isle",
-            "rotr".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotr_fits_in_16",
+            "rotr",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1570,11 +1569,11 @@ fn test_fits_in_16_rotr() {
 }
 
 #[test]
-fn test_fits_in_16_with_imm_rotr() {
+fn test_named_rotr_fits_in_16_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotr/fits_in_16_with_imm_rotr.isle",
-            "rotr".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotr_fits_in_16_imm",
+            "rotr",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1586,11 +1585,11 @@ fn test_fits_in_16_with_imm_rotr() {
 }
 
 #[test]
-fn test_32_rotr() {
+fn test_named_rotr_32_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotr/32_rotr.isle",
-            "rotr".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotr_32_base_case",
+            "rotr",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1602,11 +1601,11 @@ fn test_32_rotr() {
 }
 
 #[test]
-fn test_32_with_imm_rotr() {
+fn test_named_rotr_32_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/rotr/32_with_imm_rotr.isle",
-            "rotr".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "rotr_32_imm",
+            "rotr",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1618,10 +1617,10 @@ fn test_32_with_imm_rotr() {
 }
 
 #[test]
-fn test_64_rotr() {
-    test_from_file_with_lhs_termname(
-        "./examples/rotr/64_rotr.isle",
-        "rotr".to_string(),
+fn test_named_rotr_64_base_case() {
+    test_aarch64_rule_with_lhs_termname(
+        "rotr_64_base_case",
+        "rotr",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1632,10 +1631,10 @@ fn test_64_rotr() {
 }
 
 #[test]
-fn test_64_with_imm_rotr() {
-    test_from_file_with_lhs_termname(
-        "./examples/rotr/64_with_imm_rotr.isle",
-        "rotr".to_string(),
+fn test_named_rotr_64_imm() {
+    test_aarch64_rule_with_lhs_termname(
+        "rotr_64_imm",
+        "rotr",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1646,11 +1645,11 @@ fn test_64_with_imm_rotr() {
 }
 
 #[test]
-fn test_fits_in_32_band() {
+fn test_named_band_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/band/fits_in_32_band.isle",
-            "band".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "band_fits_in_32",
+            "band",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1662,7 +1661,7 @@ fn test_fits_in_32_band() {
 }
 
 #[test]
-fn test_broken_fits_in_32_band() {
+fn test_broken_band_fits_in_32() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/broken_fits_in_32_band.isle",
@@ -1684,11 +1683,11 @@ fn test_broken_fits_in_32_band() {
 }
 
 #[test]
-fn test_64_band() {
+fn test_named_band_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/band/64_band.isle",
-            "band".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "band_64",
+            "band",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1700,11 +1699,11 @@ fn test_64_band() {
 }
 
 #[test]
-fn test_fits_in_32_bor() {
+fn test_named_bor_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bor/fits_in_32_bor.isle",
-            "bor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bor_fits_in_32",
+            "bor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1716,11 +1715,11 @@ fn test_fits_in_32_bor() {
 }
 
 #[test]
-fn test_64_bor() {
+fn test_named_bor_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bor/64_bor.isle",
-            "bor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bor_64",
+            "bor",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1732,7 +1731,7 @@ fn test_64_bor() {
 }
 
 #[test]
-fn test_broken_fits_in_32_bor() {
+fn test_broken_bor_fits_in_32() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/broken_fits_in_32_bor.isle",
@@ -1754,11 +1753,11 @@ fn test_broken_fits_in_32_bor() {
 }
 
 #[test]
-fn test_fits_in_32_bxor() {
+fn test_named_bxor_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bxor/fits_in_32_bxor.isle",
-            "bxor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bxor_fits_in_32",
+            "bxor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1770,11 +1769,11 @@ fn test_fits_in_32_bxor() {
 }
 
 #[test]
-fn test_64_bxor() {
+fn test_named_bxor_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/bxor/64_bxor.isle",
-            "bxor".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "bxor_64",
+            "bxor",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1786,10 +1785,54 @@ fn test_64_bxor() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ishl_to_do_shift_64.isle",
-        "ishl".to_string(),
+fn test_named_band_not_fits_in_32() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "band_not_fits_in_32",
+            "band_not",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_band_not_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "band_not_64",
+            "band_not",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_bnot() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname("bnot_base_case", "bnot", all_success_result())
+    })
+}
+
+#[test]
+fn test_named_bnot_ishl() {
+    run_and_retry(|| test_aarch64_rule_with_lhs_termname("bnot_ishl", "bnot", all_success_result()))
+}
+
+#[test]
+fn test_named_ishl_64() {
+    test_aarch64_rule_with_lhs_termname(
+        "ishl_64",
+        "ishl",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1800,11 +1843,11 @@ fn test_ishl_to_do_shift_64() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_64_concrete() {
+fn test_named_ishl_64_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/shifts/ishl_to_do_shift_64.isle",
-            "ishl".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "ishl_64",
+            "ishl",
             false,
             ConcreteTest {
                 termname: "ishl".to_string(),
@@ -1833,10 +1876,10 @@ fn test_ishl_to_do_shift_64_concrete() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ishl_to_do_shift_fits_in_32.isle",
-        "ishl".to_string(),
+fn test_named_ishl_fits_in_32() {
+    test_aarch64_rule_with_lhs_termname(
+        "ishl_fits_in_32",
+        "ishl",
         vec![
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
@@ -1847,11 +1890,11 @@ fn test_ishl_to_do_shift_fits_in_32() {
 }
 
 #[test]
-fn test_ishl_to_do_shift_fits_in_32_concrete() {
+fn test_named_ishl_fits_in_32_concrete() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/shifts/ishl_to_do_shift_fits_in_32.isle",
-            "ishl".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "ishl_fits_in_32",
+            "ishl",
             false,
             ConcreteTest {
                 termname: "ishl".to_string(),
@@ -1875,10 +1918,10 @@ fn test_ishl_to_do_shift_fits_in_32_concrete() {
 }
 
 #[test]
-fn test_sshr_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/sshr_to_do_shift_64.isle",
-        "sshr".to_string(),
+fn test_named_sshr_64() {
+    test_aarch64_rule_with_lhs_termname(
+        "sshr_64",
+        "sshr",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1889,10 +1932,10 @@ fn test_sshr_to_do_shift_64() {
 }
 
 #[test]
-fn test_sshr_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/sshr_to_do_shift_fits_in_32.isle",
-        "sshr".to_string(),
+fn test_named_sshr_fits_in_32() {
+    test_aarch64_rule_with_lhs_termname(
+        "sshr_fits_in_32",
+        "sshr",
         vec![
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
@@ -1903,10 +1946,10 @@ fn test_sshr_to_do_shift_fits_in_32() {
 }
 
 #[test]
-fn test_sshr_to_do_shift_fits_in_32_concrete() {
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/shifts/sshr_to_do_shift_fits_in_32.isle",
-        "sshr".to_string(),
+fn test_named_sshr_fits_in_32_concrete() {
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "sshr_fits_in_32",
+        "sshr",
         false,
         ConcreteTest {
             termname: "sshr".to_string(),
@@ -1929,10 +1972,10 @@ fn test_sshr_to_do_shift_fits_in_32_concrete() {
 }
 
 #[test]
-fn test_ushr_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ushr_to_do_shift_64.isle",
-        "ushr".to_string(),
+fn test_named_ushr_64() {
+    test_aarch64_rule_with_lhs_termname(
+        "ushr_64",
+        "ushr",
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
             (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1943,10 +1986,10 @@ fn test_ushr_to_do_shift_64() {
 }
 
 #[test]
-fn test_ushr_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/ushr_to_do_shift_fits_in_32.isle",
-        "ushr".to_string(),
+fn test_named_ushr_fits_in_32() {
+    test_aarch64_rule_with_lhs_termname(
+        "ushr_fits_in_32",
+        "ushr",
         vec![
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
@@ -1957,10 +2000,10 @@ fn test_ushr_to_do_shift_fits_in_32() {
 }
 
 #[test]
-fn test_ushr_to_do_shift_fits_in_32_concrete() {
-    test_concrete_input_from_file_with_lhs_termname(
-        "./examples/shifts/ushr_to_do_shift_fits_in_32.isle",
-        "ushr".to_string(),
+fn test_named_ushr_fits_in_32_concrete() {
+    test_concrete_aarch64_rule_with_lhs_termname(
+        "ushr_fits_in_32",
+        "ushr",
         false,
         ConcreteTest {
             termname: "ushr".to_string(),
@@ -1983,7 +2026,23 @@ fn test_ushr_to_do_shift_fits_in_32_concrete() {
 }
 
 #[test]
-fn test_do_shift_with_imm() {
+fn test_named_do_shift_64_base_case() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "do_shift_64_base_case",
+            "do_shift",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_do_shift_imm() {
     let config = Config {
         dyn_width: false,
         term: "do_shift".to_string(),
@@ -1995,12 +2054,9 @@ fn test_do_shift_with_imm() {
             };
             lower_8_bits_eq
         })),
+        names: Some(vec!["do_shift_imm".to_string()]),
     };
-    test_from_file_with_config(
-        "./examples/shifts/do_shift_with_imm.isle",
-        config,
-        vec![(Bitwidth::I8, VerificationResult::Success)],
-    );
+    test_aarch64_with_config(config, vec![(Bitwidth::I8, VerificationResult::Success)]);
     let config = Config {
         dyn_width: false,
         term: "do_shift".to_string(),
@@ -2012,12 +2068,9 @@ fn test_do_shift_with_imm() {
             };
             lower_16_bits_eq
         })),
+        names: Some(vec!["do_shift_imm".to_string()]),
     };
-    test_from_file_with_config(
-        "./examples/shifts/do_shift_with_imm.isle",
-        config,
-        vec![(Bitwidth::I16, VerificationResult::Success)],
-    );
+    test_aarch64_with_config(config, vec![(Bitwidth::I16, VerificationResult::Success)]);
     let config = Config {
         dyn_width: false,
         term: "do_shift".to_string(),
@@ -2029,21 +2082,18 @@ fn test_do_shift_with_imm() {
             };
             lower_32_bits_eq
         })),
+        names: Some(vec!["do_shift_imm".to_string()]),
     };
-    test_from_file_with_config(
-        "./examples/shifts/do_shift_with_imm.isle",
-        config,
-        vec![(Bitwidth::I32, VerificationResult::Success)],
-    );
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/do_shift_with_imm.isle",
-        "do_shift".to_string(),
+    test_aarch64_with_config(config, vec![(Bitwidth::I32, VerificationResult::Success)]);
+    test_aarch64_rule_with_lhs_termname(
+        "do_shift_imm",
+        "do_shift",
         vec![(Bitwidth::I64, VerificationResult::Success)],
     )
 }
 
 #[test]
-fn test_do_shift_fits_in_16() {
+fn test_named_do_shift_fits_in_16() {
     run_and_retry(|| {
         let config = Config {
             dyn_width: false,
@@ -2065,9 +2115,9 @@ fn test_do_shift_fits_in_16() {
                     lower_16_bits_eq,
                 )
             })),
+            names: Some(vec!["do_shift_fits_in_16".to_string()]),
         };
-        test_from_file_with_config(
-            "./examples/shifts/do_shift_fits_in_16.isle",
+        test_aarch64_with_config(
             config,
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -2075,9 +2125,9 @@ fn test_do_shift_fits_in_16() {
             ],
         );
     });
-    test_from_file_with_lhs_termname(
-        "./examples/shifts/do_shift_fits_in_16.isle",
-        "do_shift".to_string(),
+    test_aarch64_rule_with_lhs_termname(
+        "do_shift_fits_in_16",
+        "do_shift",
         vec![
             (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::InapplicableRule),
@@ -2086,21 +2136,19 @@ fn test_do_shift_fits_in_16() {
 }
 
 #[test]
-fn test_do_shift_fits_in_16_concrete() {
+fn test_named_do_shift_fits_in_16_concrete() {
     // (decl do_shift (ALUOp Type Reg Value) Reg)
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/shifts/do_shift_fits_in_16.isle",
-            "do_shift".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "do_shift_fits_in_16",
+            "do_shift",
             false,
             ConcreteTest {
                 termname: "do_shift".to_string(),
                 args: vec![
                     ConcreteInput {
-                        literal:
-                            "#b0000000000000000000000000000000000000000000000000000000000000000"
-                                .to_string(),
-                        ty: veri_ir::Type::BitVector(Some(64)),
+                        literal: "#b00010010".to_string(),
+                        ty: veri_ir::Type::BitVector(Some(8)),
                     },
                     ConcreteInput {
                         literal: "16".to_string(),
@@ -2128,9 +2176,36 @@ fn test_do_shift_fits_in_16_concrete() {
 }
 
 #[test]
-fn test_do_shift_32() {
+fn test_named_do_shift_32_base_case() {
+    test_aarch64_rule_with_lhs_termname(
+        "do_shift_32_base_case",
+        "do_shift",
+        vec![
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ],
+    );
+    let config = Config {
+        dyn_width: false,
+        term: "do_shift".to_string(),
+        distinct_check: true,
+        custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
+            let lower_32_bits_eq = {
+                let mask = smt.atom("#x00000000FFFFFFFF");
+                smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+            };
+            lower_32_bits_eq
+        })),
+        names: Some(vec!["do_shift_32_base_case".to_string()]),
+    };
+    test_aarch64_with_config(config, vec![(Bitwidth::I32, VerificationResult::Success)]);
+}
+
+#[test]
+fn test_broken_do_shift_32() {
     test_from_file_with_lhs_termname(
-        "./examples/shifts/do_shift_32.isle",
+        "./examples/broken/shifts/broken_do_shift_32.isle",
         "do_shift".to_string(),
         vec![
             (Bitwidth::I8, VerificationResult::InapplicableRule),
@@ -2149,29 +2224,16 @@ fn test_do_shift_32() {
             };
             lower_32_bits_eq
         })),
+        names: None,
     };
     test_from_file_with_config(
-        "./examples/shifts/do_shift_32.isle",
-        config,
-        vec![(Bitwidth::I32, VerificationResult::Success)],
-    );
-}
-
-#[test]
-fn test_broken_do_shift_32() {
-    test_from_file_with_lhs_termname(
         "./examples/broken/shifts/broken_do_shift_32.isle",
-        "do_shift".to_string(),
-        vec![
-            (Bitwidth::I8, VerificationResult::InapplicableRule),
-            (Bitwidth::I16, VerificationResult::InapplicableRule),
-            (
-                Bitwidth::I32,
-                VerificationResult::Failure(Counterexample {}),
-            ),
-            (Bitwidth::I64, VerificationResult::InapplicableRule),
-        ],
-    )
+        config,
+        vec![(
+            Bitwidth::I32,
+            VerificationResult::Failure(Counterexample {}),
+        )],
+    );
 }
 
 #[test]
@@ -2259,22 +2321,6 @@ fn test_broken_ushr_to_do_shift_fits_in_32() {
 }
 
 #[test]
-fn test_do_shift_64() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/shifts/do_shift_64.isle",
-            "do_shift".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    })
-}
-
-#[test]
 fn test_if_let() {
     test_from_file_with_lhs_termname(
         "./examples/constructs/if-let.isle",
@@ -2284,11 +2330,11 @@ fn test_if_let() {
 }
 
 #[test]
-fn test_icmp_to_lower_icmp() {
+fn test_named_icmp_8_16_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/icmp_to_lower_icmp.isle",
-            "icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "icmp_8_16_32_64",
+            "icmp",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -2300,11 +2346,11 @@ fn test_icmp_to_lower_icmp() {
 }
 
 #[test]
-fn test_lower_icmp_into_reg() {
+fn test_named_lower_icmp_into_reg_8_16_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_into_reg.isle",
-            "lower_icmp_into_reg".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_into_reg_8_16_32_64",
+            "lower_icmp_into_reg",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -2316,11 +2362,11 @@ fn test_lower_icmp_into_reg() {
 }
 
 #[test]
-fn test_lower_icmp_into_reg_concrete_eq1() {
+fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_1() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_into_reg.isle",
-            "lower_icmp_into_reg".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "lower_icmp_into_reg_8_16_32_64",
+            "lower_icmp_into_reg",
             false,
             ConcreteTest {
                 termname: "lower_icmp_into_reg".to_string(),
@@ -2356,11 +2402,11 @@ fn test_lower_icmp_into_reg_concrete_eq1() {
 }
 
 #[test]
-fn test_lower_icmp_into_reg_concrete_eq2() {
+fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_into_reg.isle",
-            "lower_icmp_into_reg".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "lower_icmp_into_reg_8_16_32_64",
+            "lower_icmp_into_reg",
             false,
             ConcreteTest {
                 termname: "lower_icmp_into_reg".to_string(),
@@ -2395,16 +2441,20 @@ fn test_lower_icmp_into_reg_concrete_eq2() {
     });
 }
 
+// Narrow types fail because of rule priorities
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_32_64() {
+fn test_named_lower_icmp_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_32_64.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_32_64",
+            "lower_icmp",
             vec![
-                // These fail to type check, rule is inapplicable because of priorities
-                // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
-                // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -2413,11 +2463,11 @@ fn test_lower_icmp_32_64() {
 }
 
 #[test]
-fn test_lower_icmp_fits_in_16_signed() {
+fn test_named_lower_icmp_8_16_signed() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_fits_in_16_signed.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_8_16_signed",
+            "lower_icmp",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -2428,15 +2478,18 @@ fn test_lower_icmp_fits_in_16_signed() {
     })
 }
 
+// TODO AVH: Currently fails because needs priorities to show this
+// only applies to unsigned cond codes
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_fits_in_16_unsigned_imm() {
+fn test_named_lower_icmp_8_16_unsigned_imm() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_fits_in_16_unsigned_imm.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_8_16_unsigned_imm",
+            "lower_icmp",
             vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::InapplicableRule),
             ],
@@ -2444,15 +2497,18 @@ fn test_lower_icmp_fits_in_16_unsigned_imm() {
     })
 }
 
+// TODO AVH: Currently fails because needs priorities to show this
+// only applies to unsigned cond codes
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_fits_in_16_unsigned() {
+fn test_named_lower_icmp_8_16_unsigned() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_fits_in_16_unsigned.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_8_16_unsigned",
+            "lower_icmp",
             vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::InapplicableRule),
             ],
@@ -2460,12 +2516,30 @@ fn test_lower_icmp_fits_in_16_unsigned() {
     })
 }
 
+// AVH TODO: this rule requires priorities to be correct for narrow cases
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_32_64_to_lower_icmp_const() {
+fn test_named_lower_icmp_32_64_const() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_32_64_to_lower_icmp_const.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_32_64_const",
+            "lower_icmp",
+            vec![
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_lower_icmp_const_32_64_imm() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_const_32_64_imm",
+            "lower_icmp_const",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -2476,24 +2550,10 @@ fn test_lower_icmp_32_64_to_lower_icmp_const() {
     })
 }
 
+// AVH TODO: this rule requires priorities and a custom verification condition
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_const_32_64_imm() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_const_32_64_imm.isle",
-            "lower_icmp_const".to_string(),
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_lower_icmp_const_32_64_sgte() {
+fn test_named_lower_icmp_const_32_64_sgte() {
     // Note: only one distinct condition code is matched on, so need to disable
     // distinctness check
     run_and_retry(|| {
@@ -2502,9 +2562,42 @@ fn test_lower_icmp_const_32_64_sgte() {
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
             custom_verification_condition: None,
+            names: Some(vec!["lower_icmp_const_32_64_sgte".to_string()]),
         };
-        test_from_file_with_config(
-            "./examples/icmp/lower_icmp_const_32_64_sgte.isle",
+        test_aarch64_with_config(
+            config,
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // Currently fails! The rewrite is not semantics-preserving
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I64,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+            ],
+        )
+    })
+}
+
+// AVH TODO: this rule requires priorities and a custom verification condition
+// https://github.com/avanhatt/wasmtime/issues/32
+#[test]
+fn test_named_lower_icmp_const_32_64_ugte() {
+    // Note: only one distinct condition code is matched on, so need to disable
+    // distinctness check
+    run_and_retry(|| {
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+            custom_verification_condition: None,
+            names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
+        };
+        test_aarch64_with_config(
             config,
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
@@ -2524,42 +2617,11 @@ fn test_lower_icmp_const_32_64_sgte() {
 }
 
 #[test]
-fn test_lower_icmp_const_32_64_ugte() {
-    // Note: only one distinct condition code is matched on, so need to disable
-    // distinctness check
+fn test_named_lower_icmp_const_32_64() {
     run_and_retry(|| {
-        let config = Config {
-            dyn_width: false,
-            term: "lower_icmp_const".to_string(),
-            distinct_check: false,
-            custom_verification_condition: None,
-        };
-        test_from_file_with_config(
-            "./examples/icmp/lower_icmp_const_32_64_ugte.isle",
-            config,
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                // Currently fails! The rewrite is not semantics-preserving
-                (
-                    Bitwidth::I32,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                (
-                    Bitwidth::I64,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_lower_icmp_const_32_64() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_const_32_64.isle",
-            "lower_icmp_const".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_const_32_64",
+            "lower_icmp_const",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
