@@ -2450,8 +2450,11 @@ fn test_named_lower_icmp_32_64() {
             "lower_icmp_32_64",
             "lower_icmp",
             vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
-                (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -2475,7 +2478,7 @@ fn test_named_lower_icmp_8_16_signed() {
     })
 }
 
-// TODO AVH: Currently fails because needs priorities to show this 
+// TODO AVH: Currently fails because needs priorities to show this
 // only applies to unsigned cond codes
 // https://github.com/avanhatt/wasmtime/issues/32
 #[test]
@@ -2494,7 +2497,7 @@ fn test_named_lower_icmp_8_16_unsigned_imm() {
     })
 }
 
-// TODO AVH: Currently fails because needs priorities to show this 
+// TODO AVH: Currently fails because needs priorities to show this
 // only applies to unsigned cond codes
 // https://github.com/avanhatt/wasmtime/issues/32
 #[test]

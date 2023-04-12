@@ -21,7 +21,6 @@
 ;;@     (assume  (= (1i1:bv1) (ret))))
 ;;decl ImmExtend.Sign 
 
-
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
 
