@@ -1191,7 +1191,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (assume  (= (ret) (clz (rev (a))))))
+;;@   (assume  (= (ret) (clz (rev (a))))))
 (decl ctz (Value) Inst)
 (extractor
     (ctz x)
@@ -1204,6 +1204,8 @@
     (inst_data (InstructionData.Unary (Opcode.Bswap) x))
 )
 
+;;@ (spec (sig (args a) (r))
+;;@   (assume (= (r) (popcnt (widthof (a)) (a)))))
 (decl popcnt (Value) Inst)
 (extractor
     (popcnt x)

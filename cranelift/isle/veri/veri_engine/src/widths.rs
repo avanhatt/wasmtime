@@ -38,6 +38,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("cls", bv_unary_8_to_64.clone());
     widths.insert("clz", bv_unary_8_to_64.clone());
     widths.insert("ctz", bv_unary_8_to_64.clone());
+    widths.insert("popcnt", bv_unary_8_to_64.clone());
 
     // Unary with variable return width
     // No-ops commented out for now because not easy to hook differing success results

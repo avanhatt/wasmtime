@@ -6,6 +6,7 @@
 use cranelift_isle as isle;
 use isle::sema::{Pattern, Rule, TermEnv, TypeEnv};
 
+use crate::solver::encoded_ops::popcnt::popcnt;
 use crate::type_inference::RuleSemantics;
 use crate::Config;
 use easy_smt::{Response, SExpr};
@@ -23,6 +24,7 @@ use encoded_ops::rev;
 use encoded_ops::subs;
 
 use crate::REG_WIDTH;
+use crate::WIDTHS;
 
 pub struct SolverCtx {
     smt: easy_smt::Context,
@@ -453,7 +455,7 @@ impl SolverCtx {
         narrow_decl: SExpr,
         name: Option<String>,
     ) -> SExpr {
-        let width = self.bitwidth.checked_sub(dbg!(narrow_width)).unwrap();
+        let width = self.bitwidth.checked_sub(narrow_width).unwrap();
         if width > 0 {
             let mut narrow_name = format!("narrow__{}", tyvar);
             let mut wide_name = format!("wide__{}", tyvar);
@@ -1029,6 +1031,9 @@ impl SolverCtx {
             }
             Expr::CLZ(e) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                }
                 let es = self.vir_expr_to_sexp(*e);
                 match static_expr_width {
                     Some(1) => clz::clz1(self, es, tyvar),
@@ -1042,6 +1047,9 @@ impl SolverCtx {
             }
             Expr::A64CLZ(ty, e) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                }
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
@@ -1061,6 +1069,9 @@ impl SolverCtx {
             }
             Expr::CLS(e) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                }
                 let es = self.vir_expr_to_sexp(*e);
                 match static_expr_width {
                     Some(1) => cls::cls1(self, tyvar),
@@ -1074,6 +1085,9 @@ impl SolverCtx {
             }
             Expr::A64CLS(ty, e) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                }
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
@@ -1093,6 +1107,9 @@ impl SolverCtx {
             }
             Expr::Rev(e) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                }
                 let es = self.vir_expr_to_sexp(*e);
                 match static_expr_width {
                     Some(1) => rev::rev1(self, es, tyvar),
@@ -1106,6 +1123,9 @@ impl SolverCtx {
             }
             Expr::A64Rev(ty, e) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*e);
+                }
                 let es = self.vir_expr_to_sexp(*e);
                 let val = self.get_expr_value(&*ty);
                 match val {
@@ -1125,6 +1145,9 @@ impl SolverCtx {
             }
             Expr::BVSubs(ty, x, y) => {
                 let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_comparable_types(&*x, &*y);
+                }
                 let ety = self.vir_expr_to_sexp(*ty);
                 let ex = self.vir_expr_to_sexp(*x);
                 let ey = self.vir_expr_to_sexp(*y);
@@ -1137,6 +1160,91 @@ impl SolverCtx {
                     encoded_32,
                     encoded_64,
                 )
+            }
+            Expr::BVPopcnt(ty, x) => {
+                let tyvar = *tyvar.unwrap();
+                if self.dynwidths {
+                    self.assume_same_width_from_sexpr(width.unwrap(), &*x);
+                }
+                let ety = self.vir_expr_to_sexp(*ty);
+                let ex = self.vir_expr_to_sexp(*x);
+
+                match static_expr_width {
+                    Some(8) => {
+                        let p = popcnt(self, 8, ex, tyvar);
+                        if self.dynwidths {
+                            self.zero_extend(56, p)
+                        } else {
+                            p
+                        }
+                    }
+                    Some(16) => {
+                        let p = popcnt(self, 16, ex, tyvar);
+                        if self.dynwidths {
+                            self.zero_extend(56, p)
+                        } else {
+                            self.zero_extend(8, p)
+                        }
+                    }
+                    Some(32) => {
+                        let p = popcnt(self, 32, ex, tyvar);
+                        if self.dynwidths {
+                            self.zero_extend(56, p)
+                        } else {
+                            self.zero_extend(24, p)
+                        }
+                    }
+                    Some(64) => {
+                        let p = popcnt(self, 64, ex, tyvar);
+                        self.zero_extend(56, p)
+                    }
+                    Some(w) => unreachable!("Unexpected popcnt width {}", w),
+                    None => unreachable!("Need static popcnt width"),
+                }
+
+                // let mut some_match = vec![];
+                // let mut case_sexprs = vec![];
+
+                // for i in WIDTHS {
+                //     let ty_match = self.smt.eq(ety, self.smt.numeral(i));
+                //     some_match.push(ty_match);
+                //     let popcnt = popcnt(self, i, ex, tyvar);
+                //     case_sexprs.push((ty_match, popcnt));
+                // }
+
+                // let (_, last_body) = case_sexprs.remove(case_sexprs.len() - 1);
+
+                // // Reverse to keep the order of the cases
+                // case_sexprs
+                //     .iter()
+                //     .rev()
+                //     .fold(last_body, |acc, (m, b)| self.smt.ite(*m, *b, acc))
+            }
+            Expr::BVConcat(xs) => {
+                if self.dynwidths {
+                    let widths: Vec<SExpr> = xs
+                        .iter()
+                        .map(|x| self.get_expr_width_var(&x).unwrap().clone())
+                        .collect();
+                    let sum = self.smt.plus_many(widths);
+                    self.width_assumptions
+                        .push(self.smt.eq(width.unwrap(), sum));
+                }
+                let mut sexprs: Vec<SExpr> = xs
+                    .iter()
+                    .map(|x| self.vir_expr_to_sexp(x.clone()))
+                    .collect();
+                let last = sexprs.remove(sexprs.len() - 1);
+
+                // AVH TODO: better solution for the width case
+                if self.onlywidths {
+                    return sexprs[0];
+                }
+                // Reverse to keep the order of the cases
+                sexprs
+                    .iter()
+                    .rev()
+                    .fold(last, |acc, x| self.smt.concat(*x, acc))
             }
         }
     }

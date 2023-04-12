@@ -15,6 +15,8 @@ pub const REG_WIDTH: usize = 64;
 
 pub const FLAGS_WIDTH: usize = 4;
 
+pub const WIDTHS: [usize; 4] = [8, 16, 32, 64];
+
 pub struct Config {
     pub term: String,
     pub names: Option<Vec<String>>,

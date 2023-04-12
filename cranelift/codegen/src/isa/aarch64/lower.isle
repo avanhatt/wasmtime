@@ -1705,7 +1705,7 @@
 ;;     if ty == i128:
 ;;         mov out_hi, 0
 
-(rule (lower (has_type $I8 (popcnt x)))
+(rule popcnt_8 (lower (has_type $I8 (popcnt x)))
       (let ((tmp Reg (mov_to_fpu x (ScalarSize.Size32)))
             (nbits Reg (vec_cnt tmp (VectorSize.Size8x8))))
         (mov_from_vec nbits 0 (ScalarSize.Size8))))

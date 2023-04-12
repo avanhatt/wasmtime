@@ -1219,6 +1219,16 @@
             Size64
             Size128))
 
+;; Verification annotations:
+;;@ (spec (sig (args) (r)) (assume (= (r) (8i8:isleType))))
+;;decl ScalarSize.Size8
+;;@ (spec (sig (args) (r)) (assume (= (r) (16i8:isleType))))
+;;decl ScalarSize.Size16
+;;@ (spec (sig (args) (r)) (assume (= (r) (32i8:isleType))))
+;;decl ScalarSize.Size32
+;;@ (spec (sig (args) (r)) (assume (= (r) (64i8:isleType))))
+;;decl ScalarSize.Size64
+
 ;; Helper for calculating the `ScalarSize` corresponding to a type
 (decl scalar_size (Type) ScalarSize)
 
@@ -1272,6 +1282,17 @@
     (Size32x4)
     (Size64x2)
 ))
+
+;; Verification annotations, model as an bv enum
+;; Current only support vector sizes that can be modeled with 64 bits
+
+;;@ (spec (sig (args) (r)) (assume (= (r) (0i8:bv8))))
+;;decl VectorSize.Size8x8
+;;@ (spec (sig (args) (r)) (assume (= (r) (2i8:bv8))))
+;;decl VectorSize.Size16x4
+;;@ (spec (sig (args) (r)) (assume (= (r) (3i8:bv8))))
+;;decl VectorSize.Size32x2
+
 
 ;; Helper for calculating the `VectorSize` corresponding to a type
 (decl vector_size (Type) VectorSize)
@@ -2334,6 +2355,10 @@
         dst))
 
 ;; Helper for emitting `MInst.MovToFpu` instructions.
+;; AVH TODO: add assertions on size
+;;@ (spec (sig (args x, s) (r))
+;;@   (assume (= (r) (zero_ext (64) (conv_to (s) (x)))))
+;;@)
 (decl mov_to_fpu (Reg ScalarSize) Reg)
 (rule (mov_to_fpu x size)
       (let ((dst WritableReg (temp_writable_reg $I8X16))
@@ -2355,6 +2380,40 @@
         dst))
 
 ;; Helper for emitting `MInst.MovFromVec` instructions.
+;; Supported sizes, for now
+;;0i8 VectorSize.Size8x8
+;;1i8 VectorSize.Size16x4
+;;2i8 VectorSize.Size32x2
+
+;; Helpers for generating `cnt` instructions.
+;;@ (spec (sig (args x, i, s) (r))
+;;@   (assume 
+;;@     (= (r) 
+;;@        (switch (s)
+;;@          ((8i8:isleType) 
+;;@            (switch (i)
+;;@              ((0i8:bv8) (zero_ext (64) (extract 7 0 (x))))
+;;@              ((1i8:bv8) (zero_ext (64) (extract 15 8 (x))))
+;;@              ((2i8:bv8) (zero_ext (64) (extract 23 16 (x))))
+;;@              ((3i8:bv8) (zero_ext (64) (extract 31 24 (x))))
+;;@              ((4i8:bv8) (zero_ext (64) (extract 39 32 (x))))
+;;@              ((5i8:bv8) (zero_ext (64) (extract 47 40 (x))))
+;;@              ((6i8:bv8) (zero_ext (64) (extract 55 48 (x))))
+;;@              ((7i8:bv8) (zero_ext (64) (extract 63 56 (x))))
+;;@          ))
+;;@          ((16i8:isleType)
+;;@            (switch (i)
+;;@              ((0i8:bv8) (zero_ext (64) (extract 15 0 (x))))
+;;@              ((1i8:bv8) (zero_ext (64) (extract 31 16 (x))))
+;;@              ((3i8:bv8) (zero_ext (64) (extract 47 32 (x))))
+;;@              ((4i8:bv8) (zero_ext (64) (extract 63 48 (x))))
+;;@          ))
+;;@          ((32i8:isleType) 
+;;@            (switch (i)
+;;@              ((0i8:bv8) (zero_ext (64) (extract 31 0 (x))))
+;;@              ((1i8:bv8) (zero_ext (64) (extract 63 32 (x))))
+;;@          ))
+;;@ ))))
 (decl mov_from_vec (Reg u8 ScalarSize) Reg)
 (rule (mov_from_vec rn idx size)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -2376,11 +2435,10 @@
 
 ;; Helper for emitting `MInst.Extend` instructions.
 ;;@ (spec (sig (args a, b, c, d) (ret))
-;;@     (assume  (if (b) 
-;;@                     (= (ret) (sign_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
-;;@                     (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
-;;@                 )
-;;@     ))
+;;@   (assume 
+;;@     (if (b) 
+;;@         (= (ret) (sign_ext (bv2int (d)) (conv_to (bv2int (c)) (a))))
+;;@         (= (ret) (zero_ext (bv2int (d)) (conv_to (bv2int (c)) (a)))))))
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3092,8 +3150,35 @@
 (decl eon (Type Reg Reg) Reg)
 (rule (eon ty x y) (alu_rrr (ALUOp.EorNot) ty x y))
 
-;; Helpers for generating `cnt` instructions.
 
+
+;; Supported sizes, for now
+;;0i8 VectorSize.Size8x8
+;;1i8 VectorSize.Size16x4
+;;2i8 VectorSize.Size32x2
+
+;; Helpers for generating `cnt` instructions.
+;;@ (spec (sig (args x, s) (r))
+;;@   (assume 
+;;@     (= (r) 
+;;@        (switch (s)
+;;@          ((0i8:bv8) 
+;;@            (concat 
+;;@              (popcnt (8i8:isleType) (extract 63 56 (x)))
+;;@              (popcnt (8i8:isleType) (extract 55 48 (x)))
+;;@              (popcnt (8i8:isleType) (extract 47 40 (x)))
+;;@              (popcnt (8i8:isleType) (extract 39 32 (x)))
+;;@              (popcnt (8i8:isleType) (extract 31 24 (x)))
+;;@              (popcnt (8i8:isleType) (extract 23 16 (x)))
+;;@              (popcnt (8i8:isleType) (extract 15  8 (x)))
+;;@              (popcnt (8i8:isleType) (extract 7   0 (x)))
+;;@          ))
+;;@          ((1i8:bv8) (r))
+;;@          ((2i8:bv8) (r))
+;;@   )))
+;;@   (assert 
+;;@     (|| (= (s) (0i8:bv8)) (|| (= (s) (1i8:bv8)) (= (s) (2i8:bv8)))))
+;;@ )
 (decl vec_cnt (Reg VectorSize) Reg)
 (rule (vec_cnt x size) (vec_misc (VecMisc2.Cnt) x size))
 

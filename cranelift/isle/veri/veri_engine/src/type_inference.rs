@@ -1136,6 +1136,25 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVExtract(l, r, Box::new(e1)), t)
         }
+        annotation_ir::Expr::BVConcat(xs, _) => {
+            // AVH todo: doesn't sum the various widths, has to be done in the solver
+            let t = tree.next_type_var;
+            tree.next_type_var += 1;
+
+            let mut exprs = vec![];
+            for x in xs {
+                let (xe, xt) = add_annotation_constraints(x, tree, annotation_info);
+                tree.bv_constraints
+                    .insert(TypeExpr::Concrete(xt, annotation_ir::Type::BitVector));
+                exprs.push(xe);
+            }
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+
+            tree.next_type_var += 1;
+
+            (veri_ir::Expr::BVConcat(exprs), t)
+        }
         annotation_ir::Expr::BVIntToBv(w, x, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
 
@@ -1318,6 +1337,23 @@ fn add_annotation_constraints(
                 veri_ir::Expr::BVSubs(Box::new(e0), Box::new(e1), Box::new(e2)),
                 t,
             )
+        }
+        annotation_ir::Expr::BVPopcnt(ty, x, _) => {
+            let (e0, t0) = add_annotation_constraints(*ty, tree, annotation_info);
+            let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
+
+            let t = tree.next_type_var;
+
+            tree.concrete_constraints
+                .insert(TypeExpr::Concrete(t0, annotation_ir::Type::Int));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            tree.var_constraints.insert(TypeExpr::Variable(t, t1));
+
+            tree.next_type_var += 1;
+            (veri_ir::Expr::BVPopcnt(Box::new(e0), Box::new(e1)), t)
         }
 
         _ => todo!("expr {:#?} not yet implemented", expr),

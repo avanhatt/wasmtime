@@ -1,11 +1,12 @@
 pub mod cls;
 pub mod clz;
+pub mod popcnt;
 pub mod rev;
 pub mod subs;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{*};
     use crate::solver::SolverCtx;
     use easy_smt::{Response, SExpr};
     use std::collections::HashMap;
@@ -55,23 +56,22 @@ mod tests {
 
         // Call the encoding function to be tested
         let output_from_call = match (encoding, width) {
-            ("rev", 1) => rev::rev1(&mut ctx, input_var, 0),
             ("rev", 8) => rev::rev8(&mut ctx, input_var, 0),
             ("rev", 16) => rev::rev16(&mut ctx, input_var, 0),
             ("rev", 32) => rev::rev32(&mut ctx, input_var, 0),
             ("rev", 64) => rev::rev64(&mut ctx, input_var, 0),
 
-            ("clz", 1) => clz::clz1(&mut ctx, input_var, 0),
             ("clz", 8) => clz::clz8(&mut ctx, input_var, 0),
             ("clz", 16) => clz::clz16(&mut ctx, input_var, 0),
             ("clz", 32) => clz::clz32(&mut ctx, input_var, 0),
             ("clz", 64) => clz::clz64(&mut ctx, input_var, 0),
 
-            ("cls", 1) => cls::cls1(&mut ctx, 0),
             ("cls", 8) => cls::cls8(&mut ctx, input_var, 0),
             ("cls", 16) => cls::cls16(&mut ctx, input_var, 0),
             ("cls", 32) => cls::cls32(&mut ctx, input_var, 0),
             ("cls", 64) => cls::cls64(&mut ctx, input_var, 0),
+
+            ("popcnt", ty) => popcnt::popcnt(&mut ctx, ty, input_var, 0),
             _ => unreachable!(),
         };
         check_encoding_with_solver(ctx, output_from_call, output, width)
@@ -80,14 +80,17 @@ mod tests {
     fn check_encoding_with_solver(mut ctx: SolverCtx, call: SExpr, output: &str, width: usize) {
         // Extract the width of bits that we care about.
         let output_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, call);
+        dbg!(ctx.smt.display(output_care_bits).to_string());
 
         // Bookkeeping: declare declarations, assert assumptions
         for (name, ty) in &ctx.additional_decls {
             ctx.smt.declare_const(name, *ty).unwrap();
         }
-        ctx.smt
-            .assert(ctx.smt.and_many(ctx.additional_assumptions.clone()))
-            .unwrap();
+        if ctx.additional_assumptions.len() > 1 {
+            ctx.smt
+                .assert(ctx.smt.and_many(ctx.additional_assumptions.clone()))
+                .unwrap();
+        }
 
         // Check that our expected output is valid
         ctx.smt.push().unwrap();
@@ -388,6 +391,13 @@ mod tests {
             "#b0000000000000000000000000000000000000000000000000000000000111111",
             64,
         );
+    }
+
+    #[test]
+    fn test_popcnt_8_with_solver() {
+        check_unary_encoding_with_solver("popcnt", "#b00000000", "#b00000000", 8);
+        check_unary_encoding_with_solver("popcnt", "#b11111111", "#b00001000", 8);
+        check_unary_encoding_with_solver("popcnt", "#b01010101", "#b00000100", 8);
     }
 
     fn check_subs_with_solver(width: usize, x_str: &str, y_str: &str, output: &str) {
