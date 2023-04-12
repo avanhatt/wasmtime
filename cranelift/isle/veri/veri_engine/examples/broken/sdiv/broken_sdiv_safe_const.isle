@@ -14,13 +14,13 @@
 (type ImmExtend
   (enum
     (Zero)
-    ;;(Sign)
+    (Sign)
 ))
 
 ;;@ (spec (sig (args) (ret))
-;;@     (assume  (= (1i0: isleType) (ret))))
-(decl ImmExtend.Sign () ImmExtend)
-(extern constructor ImmExtend.Sign ImmExtend.Sign)
+;;@     (assume  (= (1i1:bv1) (ret))))
+;;decl ImmExtend.Sign 
+
 
 (decl alu_rrr (ALUOp Type Reg Reg) Reg)
 (extern constructor alu_rrr alu_rrr)
@@ -33,8 +33,8 @@
 (rule (a64_udiv ty x y) (alu_rrr (ALUOp.UDiv) ty x y))
 
 ;;@ (spec (sig (args ty, ext, x) (ret))
-;;@       (assume  (|| (= (ext) (0i0:isleType)) (= (ext) (1i0:isleType))),
-;;@                   (if (= (ext) (0i0:isleType)) 
+;;@       (assume  (|| (= (ext) (0i1:bv1)) (= (ext) (1i1:bv1))),
+;;@                   (if (= (ext) (0i1:bv1)) 
 ;;@                       (= (ret) (zero_ext (regwidth) (conv_to (ty) (x))))
 ;;@                       (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))
 ;;@                    )
