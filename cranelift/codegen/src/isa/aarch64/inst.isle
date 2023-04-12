@@ -1686,6 +1686,8 @@
 (decl imm_shift_from_u8 (u8) ImmShift)
 (extern constructor imm_shift_from_u8 imm_shift_from_u8)
 
+;;@ (spec (sig (args arg) (ret))
+;;@     (assume  (= (zero_ext (regwidth) (arg)) (ret))))
 (decl imm12_from_u64 (Imm12) u64)
 (extern extractor imm12_from_u64 imm12_from_u64)
 
@@ -2141,8 +2143,7 @@
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@   (assume  
 ;;@     (= (ret) 
-;;@        (subs (ty) (x) (y))
-;;@   ))
+;;@        (subs (ty) (x) (y))))
 ;;@   (assert
 ;;@      (|| (= (ty) (32i8: isleType))
 ;;@          (= (ty) (64i8: isleType)))))
@@ -2152,6 +2153,17 @@
        (MInst.AluRRR (ALUOp.SubS) size (writable_zero_reg)
         src1 src2)))
 
+;; N: Set to 1 when the result of the operation is negative, cleared to 0 otherwise.
+;; Z: Set to 1 when the result of the operation is zero, cleared to 0 otherwise.
+;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
+;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (subs (ty) (x) (zero_ext (regwidth) (y)))))
+;;@   (assert
+;;@      (|| (= (ty) (32i8: isleType))
+;;@          (= (ty) (64i8: isleType)))))
 (decl cmp_imm (OperandSize Reg Imm12) ProducesFlags)
 (rule (cmp_imm size src1 src2)
       (ProducesFlags.ProducesFlagsSideEffect
@@ -4191,10 +4203,10 @@
       (if-let (imm12_from_u64 imm) (u64_sub b 1))
   (flags_and_cc (cmp_imm (operand_size ty) a imm) (IntCC.SignedGreaterThan)))
 
-(rule -1 (lower_icmp_const cond rn (imm12_from_u64 c) ty)
+(rule lower_icmp_const_32_64_imm -1 (lower_icmp_const cond rn (imm12_from_u64 c) ty)
       (if (ty_int_ref_scalar_64 ty))
   (flags_and_cc (cmp_imm (operand_size ty) rn c) cond))
-(rule -2 (lower_icmp_const cond rn c ty)
+(rule lower_icmp_const_32_64 -2 (lower_icmp_const cond rn c ty)
       (if (ty_int_ref_scalar_64 ty))
   (flags_and_cc (cmp (operand_size ty) rn (imm ty (ImmExtend.Zero) c)) cond))
 
