@@ -112,7 +112,7 @@ pub Expr: Box<Expr> = {
     "(" "a64rev" <ty:Expr> <u:Expr> ")" => Box::new(Expr::A64Rev(ty, u, 0)),
 
     "(" "subs" <ty:Expr> <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSubs(ty, u, v, 0)),
-    "(" "popcnt" <ty:Expr> <x:Expr> ")" => Box::new(Expr::BVPopcnt(ty, x, 0)),
+    "(" "popcnt" <x:Expr> ")" => Box::new(Expr::BVPopcnt(x, 0)),
 
     "(" "*" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVMul(u, v, 0)),
     "(" "/" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),

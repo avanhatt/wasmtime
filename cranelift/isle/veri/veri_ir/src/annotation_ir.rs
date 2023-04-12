@@ -194,7 +194,7 @@ pub enum Expr {
     A64CLS(Box<Expr>, Box<Expr>, u32),
     Rev(Box<Expr>, u32),
     A64Rev(Box<Expr>, Box<Expr>, u32),
-    BVPopcnt(Box<Expr>, Box<Expr>, u32),
+    BVPopcnt(Box<Expr>, u32),
 
 
     // Binary operators
@@ -320,7 +320,7 @@ impl Expr {
             | Expr::BVExtract(_, _, _, t)
             | Expr::BVConcat(_, t)
             | Expr::BVSubs(_, _, _, t)
-            | Expr::BVPopcnt(_, _, t)
+            | Expr::BVPopcnt(_, t)
             | Expr::Conditional(_, _, _, t)
             | Expr::Switch(_, _, t)  => *t,
         }

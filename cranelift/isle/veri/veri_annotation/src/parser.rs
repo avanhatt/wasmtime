@@ -1,5 +1,5 @@
 // auto-generated: "lalrpop 0.19.8"
-// sha3: bda59fe6c2f03b531f56f93418866f2c3fc72ed8e5fee4d4355285b4a0d8a48e
+// sha3: 5690eab8fb0f9c3f8ae5c3f88873434249d574ed5dab6a8f02406ebfbb526fbb
 use std::str::FromStr;
 use veri_ir as ast;
 use ast::annotation_ir::*;
@@ -47147,7 +47147,7 @@ fn __action62<
     (_, _, _): (usize, &'input str, usize),
 ) -> Box<Expr>
 {
-    Box::new(Expr::BVPopcnt(ty, x, 0))
+    Box::new(Expr::BVPopcnt(x, 0))
 }
 
 #[allow(unused_variables)]

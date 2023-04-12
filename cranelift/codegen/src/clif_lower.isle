@@ -1205,7 +1205,7 @@
 )
 
 ;;@ (spec (sig (args a) (r))
-;;@   (assume (= (r) (popcnt (widthof (a)) (a)))))
+;;@   (assume (= (r) (popcnt (a)))))
 (decl popcnt (Value) Inst)
 (extractor
     (popcnt x)

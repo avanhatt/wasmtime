@@ -1161,12 +1161,11 @@ impl SolverCtx {
                     encoded_64,
                 )
             }
-            Expr::BVPopcnt(ty, x) => {
+            Expr::BVPopcnt(x) => {
                 let tyvar = *tyvar.unwrap();
                 if self.dynwidths {
                     self.assume_same_width_from_sexpr(width.unwrap(), &*x);
                 }
-                let ety = self.vir_expr_to_sexp(*ty);
                 let ex = self.vir_expr_to_sexp(*x);
 
                 match static_expr_width {
