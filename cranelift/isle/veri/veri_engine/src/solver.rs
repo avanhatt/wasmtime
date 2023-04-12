@@ -24,7 +24,6 @@ use encoded_ops::rev;
 use encoded_ops::subs;
 
 use crate::REG_WIDTH;
-use crate::WIDTHS;
 
 pub struct SolverCtx {
     smt: easy_smt::Context,
@@ -1200,24 +1199,6 @@ impl SolverCtx {
                     Some(w) => unreachable!("Unexpected popcnt width {}", w),
                     None => unreachable!("Need static popcnt width"),
                 }
-
-                // let mut some_match = vec![];
-                // let mut case_sexprs = vec![];
-
-                // for i in WIDTHS {
-                //     let ty_match = self.smt.eq(ety, self.smt.numeral(i));
-                //     some_match.push(ty_match);
-                //     let popcnt = popcnt(self, i, ex, tyvar);
-                //     case_sexprs.push((ty_match, popcnt));
-                // }
-
-                // let (_, last_body) = case_sexprs.remove(case_sexprs.len() - 1);
-
-                // // Reverse to keep the order of the cases
-                // case_sexprs
-                //     .iter()
-                //     .rev()
-                //     .fold(last_body, |acc, (m, b)| self.smt.ite(*m, *b, acc))
             }
             Expr::BVConcat(xs) => {
                 if self.dynwidths {

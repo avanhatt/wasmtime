@@ -2822,6 +2822,37 @@
       (SideEffectNoResult.Inst (MInst.Brk)))
 
 ;; Helper for generating `addp` instructions.
+;; Supported sizes, for now
+;;0i8 VectorSize.Size8x8
+;;1i8 VectorSize.Size16x4
+;;2i8 VectorSize.Size32x2
+;;@ (spec (sig (args x, y, s) (r))
+;;@   (assume 
+;;@     (= (r) 
+;;@        (switch (s)
+;;@          ((0i8:bv8) (concat
+;;@          (+ (extract 55 48 (x)) (extract 63 56 (x)))
+;;@          (+ (extract 39 32 (x)) (extract 47 40 (x)))
+;;@          (+ (extract 23 16 (x)) (extract 31 24 (x)))
+;;@          (+ (extract 7   0 (x)) (extract 15  8 (x)))
+;;@          (+ (extract 55 48 (y)) (extract 63 56 (y)))
+;;@          (+ (extract 39 32 (y)) (extract 47 40 (y)))
+;;@          (+ (extract 23 16 (y)) (extract 31 24 (y)))
+;;@          (+ (extract 7   0 (y)) (extract 15  8 (y)))
+;;@          ))
+;;@          ((1i8:bv8) (concat
+;;@          (+ (extract 47 32 (x)) (extract 63 48 (x)))
+;;@          (+ (extract 15  0 (x)) (extract 31 16 (x)))
+;;@          (+ (extract 47 32 (y)) (extract 63 48 (y)))
+;;@          (+ (extract 15  0 (y)) (extract 31 16 (y)))
+;;@          ))
+;;@          ((2i8:bv8) (concat
+;;@          (+ (extract 31  0 (x)) (extract 63 32 (x)))
+;;@          (+ (extract 31  0 (y)) (extract 63 32 (y)))
+;;@   )))))
+;;@   (assert 
+;;@     (|| (= (s) (0i8:bv8)) (|| (= (s) (1i8:bv8)) (= (s) (2i8:bv8)))))
+;;@ )
 (decl addp (Reg Reg VectorSize) Reg)
 (rule (addp x y size) (vec_rrr (VecALUOp.Addp) x y size))
 
@@ -2841,6 +2872,38 @@
                                   (csneg (Cond.Gt) x x)) 0))
 
 ;; Helper for generating `addv` instructions.
+;; Supported sizes, for now
+;;0i8 VectorSize.Size8x8
+;;1i8 VectorSize.Size16x4
+;;2i8 VectorSize.Size32x2
+;;@ (spec (sig (args x, s) (r))
+;;@   (assume 
+;;@     (= (r) 
+;;@        (switch (s)
+;;@          ((0i8:bv8) (zero_ext (64)
+;;@          (+ (extract 7   0 (x))
+;;@          (+ (extract 15  8 (x))
+;;@          (+ (extract 23 16 (x))
+;;@          (+ (extract 31 24 (x))
+;;@          (+ (extract 39 32 (x))
+;;@          (+ (extract 47 40 (x))
+;;@          (+ (extract 55 48 (x))
+;;@          (extract 63 56 (x)))))))))
+;;@          ))
+;;@          ((1i8:bv8) (zero_ext (64)
+;;@          (+ (extract 15 0 (x))
+;;@          (+ (extract 31 16 (x))
+;;@          (+ (extract 47 32 (x))
+;;@          (extract 63 48 (x)))))
+;;@          ))
+;;@          ((2i8:bv8) (zero_ext (64)
+;;@          (+ (extract 31 0 (x))
+;;@          (extract 63 32 (x)))
+;;@          ))
+;;@   )))
+;;@   (assert 
+;;@     (|| (= (s) (0i8:bv8)) (|| (= (s) (1i8:bv8)) (= (s) (2i8:bv8)))))
+;;@ )
 (decl addv (Reg VectorSize) Reg)
 (rule (addv x size) (vec_lanes (VecLanesOp.Addv) x size))
 
@@ -3156,7 +3219,6 @@
 ;;0i8 VectorSize.Size8x8
 ;;1i8 VectorSize.Size16x4
 ;;2i8 VectorSize.Size32x2
-
 ;; Helpers for generating `cnt` instructions.
 ;;@ (spec (sig (args x, s) (r))
 ;;@   (assume 
