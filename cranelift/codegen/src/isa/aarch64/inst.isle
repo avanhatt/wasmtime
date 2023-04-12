@@ -2973,12 +2973,28 @@
 (rule (rbit ty x) (bit_rr (BitOp.RBit) ty x))
 
 ;; Helpers for generating `clz` instructions.
-
+;;@ (spec (sig (args ty, a) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (= (ty) (32i0:isleType))
+;;@            (a64clz (32i0:isleType) (a))
+;;@            (a64clz (64i0:isleType) (a))
+;;@   )))
+;;@   (assert (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))))
+;;@ )
 (decl a64_clz (Type Reg) Reg)
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 
 ;; Helpers for generating `cls` instructions.
-
+;;@ (spec (sig (args ty, a) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (= (ty) (32i0:isleType))
+;;@            (a64cls (32i0:isleType) (a))
+;;@            (a64cls (64i0:isleType) (a))
+;;@   )))
+;;@   (assert (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))))
+;;@ )
 (decl a64_cls (Type Reg) Reg)
 (rule (a64_cls ty x) (bit_rr (BitOp.Cls) ty x))
 

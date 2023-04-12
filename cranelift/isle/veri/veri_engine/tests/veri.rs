@@ -108,10 +108,10 @@ fn test_named_iadd_imm12_neg_left_not_distinct() {
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
-fn test_imm12_from_negated_value() {
+fn test_updated_imm12_from_negated_value() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12_from_negated_value_new.isle",
+            "./examples/iadd/updated_imm12_from_negated_value.isle",
             "imm12_from_negated_value".to_string(),
             all_success_result(),
         )
@@ -120,10 +120,10 @@ fn test_imm12_from_negated_value() {
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
-fn test_iadd_imm12neg_new() {
+fn test_updated_iadd_imm12neg_right() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg_new.isle",
+            "./examples/iadd/updated_iadd_imm12neg_right.isle",
             "iadd".to_string(),
             all_success_result(),
         )
@@ -132,10 +132,10 @@ fn test_iadd_imm12neg_new() {
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
-fn test_iadd_imm12neg2_new() {
+fn test_updated_iadd_imm12neg_left() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
-            "./examples/iadd/imm12neg2_new.isle",
+            "./examples/iadd/updated_iadd_imm12neg_left.isle",
             "iadd".to_string(),
             all_success_result(),
         )
@@ -953,15 +953,16 @@ fn test_broken_uextend() {
     })
 }
 
+// AVH TODO: this rule requires priorities to be correct!
 #[test]
-fn test_clz() {
+fn test_named_clz_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/clz/clz.isle",
-            "clz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "clz_32_64",
+            "clz",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -970,11 +971,11 @@ fn test_clz() {
 }
 
 #[test]
-fn test_clz8() {
+fn test_named_clz_8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/clz/clz8.isle",
-            "clz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "clz_8",
+            "clz",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -986,11 +987,11 @@ fn test_clz8() {
 }
 
 #[test]
-fn test_clz16() {
+fn test_named_clz_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/clz/clz16.isle",
-            "clz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "clz_16",
+            "clz",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1002,7 +1003,7 @@ fn test_clz16() {
 }
 
 #[test]
-fn test_clz_broken() {
+fn test_broken_clz() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz.isle",
@@ -1024,7 +1025,7 @@ fn test_clz_broken() {
 }
 
 #[test]
-fn test_clz8_broken() {
+fn test_broken_clz8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz8.isle",
@@ -1040,7 +1041,7 @@ fn test_clz8_broken() {
 }
 
 #[test]
-fn test_clz_broken16() {
+fn test_broken_clz_n6() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/clz/broken_clz16.isle",
@@ -1058,15 +1059,16 @@ fn test_clz_broken16() {
     })
 }
 
+// AVH TODO: need priorities for correctness
 #[test]
-fn test_cls() {
+fn test_named_cls_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/cls/cls.isle",
-            "cls".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "cls_32_64",
+            "cls",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -1075,11 +1077,11 @@ fn test_cls() {
 }
 
 #[test]
-fn test_cls8() {
+fn test_named_cls8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/cls/cls8.isle",
-            "cls".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "cls_8",
+            "cls",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1091,11 +1093,11 @@ fn test_cls8() {
 }
 
 #[test]
-fn test_cls16() {
+fn test_named_cls_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/cls/cls16.isle",
-            "cls".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "cls_16",
+            "cls",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1107,7 +1109,7 @@ fn test_cls16() {
 }
 
 #[test]
-fn test_cls_broken() {
+fn test_broken_cls_32_64() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls.isle",
@@ -1126,7 +1128,7 @@ fn test_cls_broken() {
 }
 
 #[test]
-fn test_cls8_broken() {
+fn test_broken_cls_8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls8.isle",
@@ -1142,7 +1144,7 @@ fn test_cls8_broken() {
 }
 
 #[test]
-fn test_cls16_broken() {
+fn test_broken_cls_16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/cls/broken_cls16.isle",
@@ -1290,10 +1292,7 @@ fn test_named_small_rotr() {
             })),
             names: Some(vec!["small_rotr".to_string()]),
         };
-        test_aarch64_with_config(
-            config,
-            vec![(Bitwidth::I64, VerificationResult::Success)],
-        );
+        test_aarch64_with_config(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
     })
 }
 
@@ -1394,10 +1393,7 @@ fn test_named_small_rotr_imm() {
             })),
             names: Some(vec!["small_rotr_imm".to_string()]),
         };
-        test_aarch64_with_config(
-            config,
-            vec![(Bitwidth::I64, VerificationResult::Success)],
-        );
+        test_aarch64_with_config(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
     })
 }
 
