@@ -2444,11 +2444,11 @@ fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
 // These fail to type check, rule is inapplicable because of priorities
 // https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_32_64() {
+fn test_named_lower_icmp_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_32_64.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_32_64",
+            "lower_icmp",
             vec![
                 // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
                 // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),

@@ -1202,6 +1202,12 @@
             Size64))
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
+;;@ (spec (sig (args ty) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (<= (ty) (32i8:isleType)) 
+;;@            (32i8:isleType) 
+;;@            (64i8:isleType)))))
 (decl operand_size (Type) OperandSize)
 (rule 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
@@ -2128,6 +2134,18 @@
        (MInst.AluRRImm12 (ALUOp.AddS) size (writable_zero_reg)
         src1 src2)))
 
+;; N: Set to 1 when the result of the operation is negative, cleared to 0 otherwise.
+;; Z: Set to 1 when the result of the operation is zero, cleared to 0 otherwise.
+;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
+;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (subs (ty) (x) (y))
+;;@   ))
+;;@   (assert
+;;@      (|| (= (ty) (32i8: isleType))
+;;@          (= (ty) (64i8: isleType)))))
 (decl cmp (OperandSize Reg Reg) ProducesFlags)
 (rule (cmp size src1 src2)
       (ProducesFlags.ProducesFlagsSideEffect
@@ -3925,6 +3943,15 @@
                                    (cc IntCC))))
 
 ;; Helper constructor for `FlagsAndCC`.
+;;@ (spec (sig (args pflags, c) (ret))
+;;@   (assume  
+;;@     (= (ret) (| (shl (zero_ext (12i8: isleType) 
+;;@        (extract 67 64 (pflags))
+;;@        )
+;;@        (8i12:bv12))
+;;@       (zero_ext (12i8: isleType) (c)))
+;;@     )
+;;@ ))
 (decl flags_and_cc (ProducesFlags IntCC) FlagsAndCC)
 (rule (flags_and_cc flags cc) (FlagsAndCC.FlagsAndCC flags cc))
 
