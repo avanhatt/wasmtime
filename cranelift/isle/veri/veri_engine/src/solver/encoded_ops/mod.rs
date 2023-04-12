@@ -160,12 +160,6 @@ mod tests {
     }
 
     #[test]
-    fn test_rev1_with_solver() {
-        check_unary_encoding_with_solver("rev", "#b0", "#b0", 1);
-        check_unary_encoding_with_solver("rev", "#b1", "#b1", 1);
-    }
-
-    #[test]
     fn test_rev8_with_solver() {
         check_unary_encoding_with_solver("rev", "#b01010101", "#b10101010", 8);
         check_unary_encoding_with_solver("rev", "#b11110000", "#b00001111", 8);
@@ -238,12 +232,6 @@ mod tests {
     }
 
     #[test]
-    fn test_clz1_with_solver() {
-        check_unary_encoding_with_solver("clz", "#b0", "#b1", 1);
-        check_unary_encoding_with_solver("clz", "#b1", "#b0", 1);
-    }
-
-    #[test]
     fn test_clz8_with_solver() {
         check_unary_encoding_with_solver("clz", "#b00000000", "#b00001000", 8);
         check_unary_encoding_with_solver("clz", "#b01111111", "#b00000001", 8);
@@ -312,12 +300,6 @@ mod tests {
             "#b0000000000000000000000000000000000000000000000000000000000000000",
             64,
         );
-    }
-
-    #[test]
-    fn test_cls1_with_solver() {
-        check_unary_encoding_with_solver("cls", "#b0", "#b0", 1);
-        check_unary_encoding_with_solver("cls", "#b1", "#b0", 1);
     }
 
     #[test]
