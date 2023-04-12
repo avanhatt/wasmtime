@@ -1691,6 +1691,9 @@
 (decl u8_into_imm12 (u8) Imm12)
 (extern constructor u8_into_imm12 u8_into_imm12)
 
+;;@ (spec (sig (args ty, a) (ret))
+;;@   (assume (= (a) (ret)))
+;;@   (assert (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))))
 (decl u64_into_imm_logic (Type u64) ImmLogic)
 (extern constructor u64_into_imm_logic u64_into_imm_logic)
 
@@ -2891,6 +2894,20 @@
 (decl orr (Type Reg Reg) Reg)
 (rule (orr ty x y) (alu_rrr (ALUOp.Orr) ty x y))
 
+;;@ (spec (sig (args ty, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (switch (ty) 
+;;@          ((32i8: isleType) (conv_to (regwidth) (| (extract 31 0 (x)) (extract 31 0 (y)))))
+;;@          ((64i8: isleType) (| (x) (zero_ext (regwidth) (y))))
+;;@        )
+;;@   ))
+;;@   (assert  
+;;@     (|| (<= (bv2int (y)) (4094i0:isleType))
+;;@         (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@             (= (extract 2 0 (y)) (0i3:bv))
+;;@   ))
+;;@ ))
 (decl orr_imm (Type Reg ImmLogic) Reg)
 (rule (orr_imm ty x y) (alu_rr_imm_logic (ALUOp.Orr) ty x y))
 
@@ -2968,7 +2985,15 @@
 (rule (a64_rotr_imm ty x y) (alu_rr_imm_shift (ALUOp.RotR) ty x y))
 
 ;; Helpers for generating `rbit` instructions.
-
+;;@ (spec (sig (args ty, a) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (if (= (ty) (32i0:isleType))
+;;@            (a64rev (32i0:isleType) (a))
+;;@            (a64rev (64i0:isleType) (a))
+;;@        )))
+;;@   (assert (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType))))
+;;@ )
 (decl rbit (Type Reg) Reg)
 (rule (rbit ty x) (bit_rr (BitOp.RBit) ty x))
 
@@ -3443,7 +3468,9 @@
 (extern constructor fp_cond_code fp_cond_code)
 
 ;; Lower an integer cond code.
+;;@ (spec (sig (args a) (r)) (assume  (= (a) (r))))
 (decl cond_code (IntCC) Cond)
+
 ;; TODO: Port lower_condcode() to ISLE.
 (extern constructor cond_code cond_code)
 
@@ -3902,6 +3929,32 @@
 (rule (flags_and_cc flags cc) (FlagsAndCC.FlagsAndCC flags cc))
 
 ;; Materialize a `FlagsAndCC` into a boolean `ValueRegs`.
+;;@ (spec (sig (args a) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (switch (extract 7 0 (a))
+;;@          ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+;;@          ((1i8:bv8) (if (= (extract 10 10 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
+;;@          ((2i8:bv8) (if (&& (= (extract 10 10 (a)) (0i1:bv1))
+;;@                             (= (extract 11 11 (a)) (extract 8 8 (a)))) 
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@          ((3i8:bv8) (if (= (extract 11 11 (a)) (extract 8 8 (a)))
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@          ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (1i8:bv8) (0i8:bv8)))
+;;@          ((5i8:bv8) (if (|| (= (extract 10 10 (a)) (1i1:bv1))
+;;@                             (! (= (extract 11 11 (a)) (extract 8 8 (a)))))
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@          ((6i8:bv8) (if (&& (= (extract 9 9 (a)) (1i1:bv1))
+;;@                             (= (extract 10 10 (a)) (0i1:bv1)))
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@          ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+;;@          ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
+;;@          ((9i8:bv8) (if (|| (= (extract 9 9 (a)) (0i1:bv1))
+;;@                             (= (extract 10 10 (a)) (1i1:bv1)))
+;;@                         (1i8:bv8) (0i8:bv8)))
+;;@        )))
+;;@    (assert (ulte (extract 7 0 (a)) (9i8:bv8)))
+;;@ )
 (decl flags_and_cc_to_bool (FlagsAndCC) ValueRegs)
 (rule (flags_and_cc_to_bool (FlagsAndCC.FlagsAndCC flags cc))
       (with_flags flags (materialize_bool_result (cond_code cc))))
@@ -3917,7 +3970,75 @@
 ;; Helpers for lowering `icmp` sequences.
 ;; `lower_icmp` contains shared functionality for lowering `icmp`
 ;; sequences, which `lower_icmp_into_{reg,flags}` extend from.
+;; (0i8:bv8) =
+;; (1i8:bv8) != 
+;; (2i8:bv8) sgt
+;; (3i8:bv8) sgte
+;; (4i8:bv8) slt
+;; (5i8:bv8) slte
+;; (6i8:bv8) ugt
+;; (7i8:bv8) ugte
+;; (8i8:bv8) ult
+;; (9i8:bv8) ulte
+;;@ (spec (sig (args c, x, y, in_ty) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (| (shl (zero_ext (12i8: isleType) 
+;;@           (extract 67 64 
+;;@           (if (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
+;;@             (if (<= (in_ty) (32i8:isleType))
+;;@               (subs (32i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y)))
+;;@               (subs (64i8:isleType) (sign_ext (regwidth) (x)) (sign_ext (regwidth) (y)))
+;;@             )
+;;@             (if (<= (in_ty) (32i8:isleType))
+;;@               (subs (32i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y)))
+;;@               (subs (64i8:isleType) (zero_ext (regwidth) (x)) (zero_ext (regwidth) (y)))
+;;@             )
+;;@           ))
+;;@          )
+;;@          (8i12:bv12))
+;;@       (zero_ext (12i8: isleType) (c)))
+;;@     ))
+;;@   (assert
+;;@     (ulte (c) (9i8:bv8)),
+;;@
+;;@     (|| (= (in_ty) (8i8: isleType))
+;;@     (|| (= (in_ty) (16i8: isleType))
+;;@     (|| (= (in_ty) (32i8: isleType))
+;;@     (= (in_ty) (64i8: isleType))))),
+;;@
+;;@     (= (in_ty) (widthof (x))),
+;;@     (= (in_ty) (widthof (y))),
+;;@ ))
 (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
+
+;;@ (spec (sig (args c, x, y, in_ty, out_ty) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (switch (c)
+;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((1i8:bv8) (if (! (= (x) (y))) (1i8:bv8) (0i8:bv8)))
+;;@          ((2i8:bv8) (if (sgt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((3i8:bv8) (if (sgte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((4i8:bv8) (if (slt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((5i8:bv8) (if (slte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((6i8:bv8) (if (ugt (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((7i8:bv8) (if (ugte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
+;;@     )))
+;;@     (assert
+;;@       (ulte (c) (9i8:bv8)),
+;;@
+;;@       (|| (= (in_ty) (8i8: isleType))
+;;@           (|| (= (in_ty) (16i8: isleType))
+;;@           (|| (= (in_ty) (32i8: isleType))
+;;@           (= (in_ty) (64i8: isleType))))),
+;;@
+;;@       (= (in_ty) (widthof (x))),
+;;@       (= (in_ty) (widthof (y))),
+;;@       (= (out_ty) (8i8: isleType)),
+;;@ ))
 (decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
 (decl lower_icmp_into_flags (IntCC Value Value Type) FlagsAndCC)
 (decl lower_icmp_const (IntCC Value u64 Type) FlagsAndCC)
@@ -3941,7 +4062,7 @@
 (rule (lower_extend_op $I16 $false) (ExtendOp.UXTH))
 
 ;; Integers <= 64-bits.
-(rule -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
+(rule lower_icmp_into_reg_8_16_32_64 -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
       (if (ty_int_ref_scalar_64 in_ty))
       (let ((cc Cond (cond_code cond)))
         (flags_and_cc_to_bool (lower_icmp cond rn rm in_ty))))

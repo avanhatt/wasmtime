@@ -953,7 +953,8 @@ fn test_broken_uextend() {
     })
 }
 
-// AVH TODO: this rule requires priorities to be correct!
+// AVH TODO: this rule requires priorities to be correct for narrow cases
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_clz_32_64() {
     run_and_retry(|| {
@@ -1059,7 +1060,8 @@ fn test_broken_clz_n6() {
     })
 }
 
-// AVH TODO: need priorities for correctness
+// AVH TODO: this rule requires priorities to be correct for narrow cases
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_cls_32_64() {
     run_and_retry(|| {
@@ -1163,14 +1165,14 @@ fn test_broken_cls_16() {
 }
 
 #[test]
-fn test_ctz() {
+fn test_named_ctz_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ctz/ctz.isle",
-            "ctz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ctz_32_64",
+            "ctz",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -1179,11 +1181,11 @@ fn test_ctz() {
 }
 
 #[test]
-fn test_ctz8() {
+fn test_named_ctz_8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ctz/ctz8.isle",
-            "ctz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ctz_8",
+            "ctz",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1195,11 +1197,11 @@ fn test_ctz8() {
 }
 
 #[test]
-fn test_ctz16() {
+fn test_named_ctz_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/ctz/ctz16.isle",
-            "ctz".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "ctz_16",
+            "ctz",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1211,7 +1213,7 @@ fn test_ctz16() {
 }
 
 #[test]
-fn test_ctz_broken() {
+fn test_broken_ctz_32_64() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz.isle",
@@ -1233,7 +1235,7 @@ fn test_ctz_broken() {
 }
 
 #[test]
-fn test_ctz8_broken() {
+fn test_broken_ctz_8() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz8.isle",
@@ -1249,7 +1251,7 @@ fn test_ctz8_broken() {
 }
 
 #[test]
-fn test_ctz16_broken() {
+fn test_broken_ctz_16() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname(
             "./examples/broken/ctz/broken_ctz16.isle",
@@ -2328,11 +2330,11 @@ fn test_if_let() {
 }
 
 #[test]
-fn test_icmp_to_lower_icmp() {
+fn test_named_icmp_8_16_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/icmp_to_lower_icmp.isle",
-            "icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "icmp_8_16_32_64",
+            "icmp",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -2344,11 +2346,11 @@ fn test_icmp_to_lower_icmp() {
 }
 
 #[test]
-fn test_lower_icmp_into_reg() {
+fn test_named_lower_icmp_into_reg_8_16_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_into_reg.isle",
-            "lower_icmp_into_reg".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_into_reg_8_16_32_64",
+            "lower_icmp_into_reg",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -2439,6 +2441,8 @@ fn test_lower_icmp_into_reg_concrete_eq2() {
     });
 }
 
+// These fail to type check, rule is inapplicable because of priorities
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_lower_icmp_32_64() {
     run_and_retry(|| {
@@ -2446,7 +2450,6 @@ fn test_lower_icmp_32_64() {
             "./examples/icmp/lower_icmp_32_64.isle",
             "lower_icmp".to_string(),
             vec![
-                // These fail to type check, rule is inapplicable because of priorities
                 // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
                 // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
                 (Bitwidth::I32, VerificationResult::Success),

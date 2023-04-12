@@ -1615,10 +1615,10 @@
 ;; then using a `clz` instruction since the tail zeros are the same as the
 ;; leading zeros of the reversed value.
 
-(rule (lower (has_type $I8 (ctz x)))
+(rule ctz_8 (lower (has_type $I8 (ctz x)))
       (a64_clz $I32 (orr_imm $I32 (rbit $I32 x) (u64_into_imm_logic $I32 0x800000))))
 
-(rule (lower (has_type $I16 (ctz x)))
+(rule ctz_16 (lower (has_type $I16 (ctz x)))
       (a64_clz $I32 (orr_imm $I32 (rbit $I32 x) (u64_into_imm_logic $I32 0x8000))))
 
 (rule (lower (has_type $I128 (ctz x)))
@@ -1627,7 +1627,7 @@
             (hi Reg (rbit $I64 (value_regs_get val 1))))
         (lower_clz128 (value_regs hi lo))))
 
-(rule -1 (lower (has_type ty (ctz x)))
+(rule ctz_32_64 -1 (lower (has_type ty (ctz x)))
       (a64_clz ty (rbit ty x)))
 
 ;;;; Rules for `cls` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1826,7 +1826,7 @@
             (vec_size VectorSize (vector_size ty)))
           (value_reg (int_cmp_zero_swap cond rn vec_size))))
 
-(rule -1 (lower (icmp cond x @ (value_type in_ty) y))
+(rule icmp_8_16_32_64 -1 (lower (icmp cond x @ (value_type in_ty) y))
       (lower_icmp_into_reg cond x y in_ty $I8))
 
 ;;;; Rules for `trap` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
