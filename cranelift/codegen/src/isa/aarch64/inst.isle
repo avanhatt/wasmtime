@@ -2162,6 +2162,29 @@
 (rule (cmp64_imm src1 src2)
       (cmp_imm (OperandSize.Size64) src1 src2))
 
+;; N: Set to 1 when the result of the operation is negative, cleared to 0 otherwise.
+;; Z: Set to 1 when the result of the operation is zero, cleared to 0 otherwise.
+;; C: Set to 1 when the operation results in a carry, or when a subtraction results in no borrow, cleared to 0 otherwise.
+;; V: Set to 1 when the operation causes overflow, cleared to 0 otherwise.
+;;@ (spec (sig (args ty, x, y, extend) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (subs (ty) (x) 
+;;@          (switch (extend)
+;;@            ((0i8: bv3) (zero_ext (regwidth) (extract 7 0 (y))))
+;;@            ((1i8: bv3) (zero_ext (regwidth) (extract 15 0 (y))))
+;;@            ((2i8: bv3) (zero_ext (regwidth) (extract 31 0 (y))))
+;;@            ((3i8: bv3) (zero_ext (regwidth) (extract 63 0 (y))))
+;;@            ((4i8: bv3) (sign_ext (regwidth) (extract 7 0 (y))))
+;;@            ((5i8: bv3) (sign_ext (regwidth) (extract 15 0 (y))))
+;;@            ((6i8: bv3) (sign_ext (regwidth) (extract 31 0 (y))))
+;;@            ((7i8: bv3) (sign_ext (regwidth) (extract 63 0 (y))))
+;;@          )
+;;@        )
+;;@      ))
+;;@   (assert
+;;@      (|| (= (ty) (32i8: isleType)) (= (ty) (64i8: isleType))),
+;;@ ))
 (decl cmp_extend (OperandSize Reg Reg ExtendOp) ProducesFlags)
 (rule (cmp_extend size src1 src2 extend)
       (ProducesFlags.ProducesFlagsSideEffect
@@ -4109,6 +4132,19 @@
        (vec_cmp rn rm in_ty cond)))
 
 ;; Determines the appropriate extend op given the value type and whether it is signed.
+;;@ (spec (sig (args ty, b) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (switch (ty) 
+;;@          ((8i8: isleType) (if (b) (4i8: bv3) (0i8: bv3)))
+;;@          ((16i8: isleType) (if (b) (5i8: bv3) (1i8: bv3)))
+;;@   )))
+;;@   (assert
+;;@     (|| (= (ty) (8i8: isleType))
+;;@     (|| (= (ty) (16i8: isleType))
+;;@     (|| (= (ty) (32i8: isleType))
+;;@     (= (ty) (64i8: isleType))))),
+;;@ ))
 (decl lower_extend_op (Type bool) ExtendOp)
 (rule (lower_extend_op $I8 $true) (ExtendOp.SXTB))
 (rule (lower_extend_op $I16 $true) (ExtendOp.SXTH))

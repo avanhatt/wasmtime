@@ -2441,7 +2441,7 @@ fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
     });
 }
 
-// These fail to type check, rule is inapplicable because of priorities
+// Narrow types fail because of rule priorities
 // https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_lower_icmp_32_64() {
@@ -2450,8 +2450,8 @@ fn test_named_lower_icmp_32_64() {
             "lower_icmp_32_64",
             "lower_icmp",
             vec![
-                // (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
-                // (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample { })),
+                (Bitwidth::I16, VerificationResult::Failure(Counterexample { })),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -2460,11 +2460,11 @@ fn test_named_lower_icmp_32_64() {
 }
 
 #[test]
-fn test_lower_icmp_fits_in_16_signed() {
+fn test_named_lower_icmp_8_16_signed() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_fits_in_16_signed.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_8_16_signed",
+            "lower_icmp",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
