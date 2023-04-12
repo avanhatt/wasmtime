@@ -2362,11 +2362,11 @@ fn test_named_lower_icmp_into_reg_8_16_32_64() {
 }
 
 #[test]
-fn test_lower_icmp_into_reg_concrete_eq1() {
+fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_1() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_into_reg.isle",
-            "lower_icmp_into_reg".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "lower_icmp_into_reg_8_16_32_64",
+            "lower_icmp_into_reg",
             false,
             ConcreteTest {
                 termname: "lower_icmp_into_reg".to_string(),
@@ -2402,11 +2402,11 @@ fn test_lower_icmp_into_reg_concrete_eq1() {
 }
 
 #[test]
-fn test_lower_icmp_into_reg_concrete_eq2() {
+fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
     run_and_retry(|| {
-        test_concrete_input_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_into_reg.isle",
-            "lower_icmp_into_reg".to_string(),
+        test_concrete_aarch64_rule_with_lhs_termname(
+            "lower_icmp_into_reg_8_16_32_64",
+            "lower_icmp_into_reg",
             false,
             ConcreteTest {
                 termname: "lower_icmp_into_reg".to_string(),
@@ -2507,15 +2507,17 @@ fn test_lower_icmp_fits_in_16_unsigned() {
     })
 }
 
+// AVH TODO: this rule requires priorities to be correct for narrow cases
+// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
-fn test_lower_icmp_32_64_to_lower_icmp_const() {
+fn test_named_lower_icmp_32_64_const() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
-            "./examples/icmp/lower_icmp_32_64_to_lower_icmp_const.isle",
-            "lower_icmp".to_string(),
+        test_aarch64_rule_with_lhs_termname(
+            "lower_icmp_32_64_const",
+            "lower_icmp",
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I8, VerificationResult::InapplicableRule),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],

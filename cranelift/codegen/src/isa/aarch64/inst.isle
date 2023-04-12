@@ -4041,6 +4041,33 @@
 ;;@ ))
 (decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
 (decl lower_icmp_into_flags (IntCC Value Value Type) FlagsAndCC)
+;;@ (spec (sig (args c, x, y, in_ty) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (| (shl (zero_ext (12i8: isleType) 
+;;@           (extract 67 64 
+;;@           (if (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
+;;@             (if (<= (in_ty) (32i8:isleType))
+;;@               (subs (32i8:isleType) (sign_ext (regwidth) (x)) (y))
+;;@               (subs (64i8:isleType) (sign_ext (regwidth) (x)) (y))
+;;@             )
+;;@             (if (<= (in_ty) (32i8:isleType))
+;;@               (subs (32i8:isleType) (zero_ext (regwidth) (x)) (y))
+;;@               (subs (64i8:isleType) (zero_ext (regwidth) (x)) (y))
+;;@             )
+;;@           ))
+;;@          )
+;;@          (8i12:bv12))
+;;@       (zero_ext (12i8: isleType) (c)))
+;;@   ))
+;;@   (assert
+;;@     (ulte (c) (9i8:bv8)),
+;;@
+;;@     (|| (= (in_ty) (32i8: isleType))
+;;@     (= (in_ty) (64i8: isleType))),
+;;@
+;;@     (= (in_ty) (widthof (x))),
+;;@ ))
 (decl lower_icmp_const (IntCC Value u64 Type) FlagsAndCC)
 ;; For most cases, `lower_icmp_into_flags` is the same as `lower_icmp`,
 ;; except for some I128 cases (see below).
