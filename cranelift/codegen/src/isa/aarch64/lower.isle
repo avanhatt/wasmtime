@@ -926,7 +926,8 @@
 ;;@                  (|| (= (cc) (3i8:bv8)) (= (cc) (8i8:bv8)))), 
 ;;@ ))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
-(rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
+;; TODO: name once we can support: cmp_and_choose_32_64
+(rule (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
             (y Reg (put_in_reg y)))
        (with_flags_reg (cmp (operand_size ty) x y)
@@ -934,7 +935,8 @@
 
 ;; `i16` and `i8` min/max require sign extension as
 ;; the comparison operates on (at least) 32 bits.
-(rule cmp_and_choose_8_16 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
+;; TODO: name once we can support: cmp_and_choose_8_16
+(rule 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
       (let ((x Reg (extend (put_in_reg x) signed (ty_bits ty) 32))
             (y Reg (extend (put_in_reg y) signed (ty_bits ty) 32)))
       (with_flags_reg (cmp (operand_size ty) x y)
