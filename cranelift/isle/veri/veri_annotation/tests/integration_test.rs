@@ -30,7 +30,7 @@ fn test_parser_multi_file() {
 fn test_parser_str() {
     let code = "
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+        ;;@     (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))
         (decl fits_in_64 (Type) Type)
         (extern extractor fits_in_64 fits_in_64)
         
@@ -38,7 +38,7 @@ fn test_parser_str() {
         (extern extractor fits_in_32 fits_in_32)
         
         ;;@ (spec (sig (args a, b) (r))
-        ;;@     (assume  (= (+ (a) (b)) (r))))
+        ;;@     (provide  (= (+ (a) (b)) (r))))
         (decl iadd (Value Value) Inst)
         (extern extractor iadd iadd)
     ";
@@ -56,7 +56,7 @@ fn test_parser_str() {
 fn test_parser_no_decl() {
     let code = "
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+        ;;@      (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))
         (extern extractor fits_in_64 fits_in_64)
     ";
     parse_annotations_str(code);
@@ -67,16 +67,16 @@ fn test_parser_no_decl() {
 fn test_parser_dup_term_same_file() {
     let code = "
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+        ;;@      (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))
         (decl fits_in_64 (Type) Type)
         
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assume  (= (arg) (ret)), (<= (arg) (32: isleType))))
+        ;;@      (provide  (= (arg) (ret)), (<= (arg) (32: Int))))
         (decl fits_in_32 (Type) Type)
         (extern extractor fits_in_32 fits_in_32)
         
         ;;@ (spec (sig (args arg) (ret))
-        ;;@     (assume  (= (arg) (ret)), (<= (arg) (16i128: isleType))))
+        ;;@      (provide  (= (arg) (ret)), (<= (arg) (16i128: Int))))
         (decl fits_in_64 (Type) Type)
     ";
     parse_annotations_str(code);

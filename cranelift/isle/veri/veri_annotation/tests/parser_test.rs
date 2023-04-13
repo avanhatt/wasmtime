@@ -6,7 +6,7 @@ fn test_type() {
     assert!(parser::TypeParser::new().parse("bv").is_ok());
     assert!(parser::TypeParser::new().parse("bv8").is_ok());
     assert!(parser::TypeParser::new().parse("bool").is_ok());
-    assert!(parser::TypeParser::new().parse("isleType").is_ok());
+    assert!(parser::TypeParser::new().parse("Int").is_ok());
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn test_expr() {
         .parse("(if (a) (+ (if (x) (+ (b) (c)) (d)) (c)) (d))")
         .is_ok());
     assert!(parser::ExprParser::new()
-        .parse("(if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType))")
+        .parse("(if (<= (t) (32i8: Int)) (32i8: Int) (64i8: Int))")
         .is_ok());
 }
 
@@ -114,7 +114,7 @@ fn test_term_annotation() {
     assert!(parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args x, y) (ret))
-            (assume  (= (+ (x) (y)) (ret))))"
+            (provide  (= (+ (x) (y)) (ret))))"
         )
         .is_ok());
 }
@@ -125,7 +125,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args arg) (ret))
-            (assume  (= (arg) (ret))))",
+            (provide  (= (arg) (ret))))",
         )
         .unwrap();
     let expected = isle_annotation_for_term("lower").unwrap();
@@ -135,7 +135,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args arg) (ret))
-            (assume  (= (arg) (tywidth))))",
+            (provide  (= (arg) (tywidth))))",
         )
         .unwrap();
     let expected = isle_annotation_for_term("value_type").unwrap();
@@ -145,7 +145,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args ty, arg) (ret))
-            (assume  (= (ty) (tywidth)), (= (arg) (ret))))",
+            (provide  (= (ty) (tywidth)), (= (arg) (ret))))",
         )
         .unwrap();
     let expected = isle_annotation_for_term("has_type").unwrap();
@@ -155,7 +155,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args arg) (ret))
-            (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))",
+            (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))",
         )
         .unwrap();
     let expected = isle_annotation_for_term("fits_in_64").unwrap();
@@ -165,7 +165,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args a, b) (r))
-            (assume  (= (+ (a) (b)) (r))))",
+            (provide  (= (+ (a) (b)) (r))))",
         )
         .unwrap();
     let expected = isle_annotation_for_term("iadd").unwrap();
@@ -175,7 +175,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args ty, a, b) (r))
-            (assume  (= (+ (a) (b)) (r))))",
+            (provide  (= (+ (a) (b)) (r))))",
         )
         .unwrap();
     //let expected = isle_annotation_for_term("add").unwrap();
@@ -185,7 +185,7 @@ fn test_real_annotations() {
     //let parsed = parser::TermAnnotationParser::new()
     //    .parse(
     //        "(spec (sig (args imm_arg) (ret))
-    //        (assume  (= (-(conv_from 12 (imm_arg))) (ret))))",
+    //        (provide  (= (-(conv_from 12 (imm_arg))) (ret))))",
     //    )
     //    .unwrap();
     //let expected = isle_annotation_for_term("imm12_from_negated_value").unwrap();
@@ -195,7 +195,7 @@ fn test_real_annotations() {
     //let parsed = parser::TermAnnotationParser::new()
     //    .parse(
     //        "(spec (sig (args ty, reg, imm_arg) (ret))
-    //        (assume  (= (-(reg) (conv_from 12 (imm_arg))) (ret))))",
+    //        (provide  (= (-(reg) (conv_from 12 (imm_arg))) (ret))))",
     //    )
     //    .unwrap();
     //let expected = isle_annotation_for_term("sub_imm").unwrap();
@@ -205,7 +205,7 @@ fn test_real_annotations() {
     // let parsed = parser::TermAnnotationParser::new()
     //     .parse(
     //         "(spec (sig (args a, b, c, d) (ret))
-    //          (assume  (if (b) {
+    //          (provide  (if (b) {
     //                          (= (ret) (signed_conv_to (d) (a)))
     //                    
     //                       (= (ret) (conv_to (d) (a)))}),
