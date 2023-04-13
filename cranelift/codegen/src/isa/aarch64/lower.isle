@@ -56,13 +56,14 @@
 (rule iadd_imm12_left 5 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
       (add_imm ty y x))
 
+;; ALDS: Disabled as a stopgap.
 ;; Same as the previous special cases, except we can switch the addition to a
 ;; subtraction if the negated immediate fits in 12 bits.
-(rule iadd_imm12_neg_right -1 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
-      (sub_imm ty x y))
+;; (rule iadd_imm12_neg_right -1 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
+;;       (sub_imm ty x y))
 
-(rule iadd_imm12_neg_left -2 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
-      (sub_imm ty y x))
+;; (rule iadd_imm12_neg_left -2 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
+;;       (sub_imm ty y x))
 
 ;; Special cases for when we're adding an extended register where the extending
 ;; operation can get folded into the add itself.

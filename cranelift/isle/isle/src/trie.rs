@@ -170,6 +170,9 @@ pub enum TrieNode {
         prio: Prio,
         /// The RHS expression to evaluate upon a successful LHS pattern match.
         output: ExprSequence,
+        /// ALDS: For statistics, the name/ID of this rule. (Just the name for now; I'll add the ID
+        /// later??)
+        rule_name: String,
     },
 
     /// No LHS pattern matches.
@@ -186,6 +189,7 @@ impl TrieNode {
         prio: Prio,
         mut input: impl Iterator<Item = TrieSymbol>,
         output: ExprSequence,
+        rule_name: String,
     ) -> bool {
         // Take one input symbol. There must be *at least* one, EOM if
         // nothing else.
@@ -227,10 +231,10 @@ impl TrieNode {
                 // we can't insert this one.
                 return false;
             }
-            edge.node = TrieNode::Leaf { prio, output };
+            edge.node = TrieNode::Leaf { prio, output, rule_name };
             true
         } else {
-            edge.node.insert(prio, input, output)
+            edge.node.insert(prio, input, output, rule_name)
         }
     }
 
@@ -307,7 +311,7 @@ impl TermFunctionsBuilder {
             self.builders_by_term
                 .entry(rule.root_term)
                 .or_insert(TrieNode::Empty)
-                .insert(rule.prio, symbols, expr);
+                .insert(rule.prio, symbols, expr, rule.name.clone().unwrap_or("TODO".to_string()));
         }
 
         for builder in self.builders_by_term.values_mut() {

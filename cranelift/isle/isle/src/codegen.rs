@@ -814,12 +814,21 @@ impl<'a> Codegen<'a> {
         match trie {
             &TrieNode::Empty => {}
 
-            &TrieNode::Leaf { ref output, .. } => {
+            &TrieNode::Leaf { ref output, ref rule_name, .. } => {
                 writeln!(
                     code,
                     "{}// Rule at {}.",
                     indent,
                     output.pos.pretty_print_line(&self.typeenv.filenames[..])
+                )
+                .unwrap();
+
+                // ALDS: Log the rule firing.
+                writeln!(
+                    code,
+                    "{}dbg!(\"FIRED: {}\");",
+                    indent,
+                    rule_name,
                 )
                 .unwrap();
 
