@@ -707,7 +707,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (zero_ext (64) (ret)))))
+;;@     (provide (= (arg) (zero_ext (64) (ret)))))
 (decl iconst (Imm64) Inst)
 (extractor
     (iconst N)
@@ -807,7 +807,7 @@
 ;;     )
 ;; )
 ;;@ (spec (sig (args c, x, y) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (c)
 ;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
@@ -836,7 +836,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (+ (x) (y)) (ret))))
+;;@       (provide (= (+ (x) (y)) (ret))))
 (decl iadd (Value Value) Inst)
 (extractor
     (iadd x y)
@@ -844,7 +844,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (- (x) (y)) (ret))))
+;;@       (provide (= (- (x) (y)) (ret))))
 (decl isub (Value Value) Inst)
 (extractor
     (isub x y)
@@ -852,7 +852,7 @@
 )
 
 ;;@ (spec (sig (args x) (ret))
-;;@     (provide  (= (-(x)) (ret))))
+;;@     (provide (= (-(x)) (ret))))
 (decl ineg (Value) Inst)
 (extractor
     (ineg x)
@@ -866,7 +866,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (* (x) (y)) (ret))))
+;;@       (provide (= (* (x) (y)) (ret))))
 (decl imul (Value Value) Inst)
 (extractor
     (imul x y)
@@ -874,7 +874,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
+;;@       (provide (= (extract 127 64 (* (zero_ext (128) (x)) (zero_ext (128) (y)))) (ret))))
 (decl umulhi (Value Value) Inst)
 (extractor
     (umulhi x y)
@@ -882,7 +882,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
+;;@       (provide (= (extract 127 64 (* (sign_ext (128) (x)) (sign_ext (128) (y)))) (ret))))
 (decl smulhi (Value Value) Inst)
 (extractor
     (smulhi x y)
@@ -896,7 +896,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (/ (x) (y)) (ret))))
+;;@       (provide (= (/ (x) (y)) (ret))))
 (decl udiv (Value Value) Inst)
 (extractor
     (udiv x y)
@@ -904,7 +904,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (sdiv (x) (y)) (ret))))
+;;@       (provide (= (sdiv (x) (y)) (ret))))
 (decl sdiv (Value Value) Inst)
 (extractor
     (sdiv x y)
@@ -912,7 +912,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (urem (x) (y)) (ret)),
+;;@       (provide (= (urem (x) (y)) (ret)),
 ;;@                   (! (= (bv2int (ret)) (0i0:Int)))
 ;;@ ))
 (decl urem (Value Value) Inst)
@@ -922,7 +922,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (srem (x) (y)) (ret)),
+;;@       (provide (= (srem (x) (y)) (ret)),
 ;;@                   (! (= (bv2int (ret)) (0i0:Int)))
 ;;@ ))
 (decl srem (Value Value) Inst)
@@ -938,7 +938,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (* (sign_ext (64) (x)) (y)) (ret))))
+;;@       (provide (= (* (sign_ext (64) (x)) (y)) (ret))))
 (decl imul_imm (Value Imm64) Inst)
 (extractor
     (imul_imm x Y)
@@ -976,7 +976,7 @@
 )
 
 ;;@ (spec (sig (args x, y, cin) (ret))
-;;@       (provide  (= (+ (+ (x) (y)) (cin)) (ret))))
+;;@       (provide (= (+ (+ (x) (y)) (cin)) (ret))))
 (decl iadd_cin (Value Value Value) Inst)
 (extractor
     (iadd_cin x y c_in)
@@ -1002,7 +1002,7 @@
 )
 
 ;;@ (spec (sig (args x, y, bin) (ret))
-;;@       (provide  (= (- (x) (+ (y) (bin))) (ret))))
+;;@       (provide (= (- (x) (+ (y) (bin))) (ret))))
 (decl isub_bin (Value Value Value) Inst)
 (extractor
     (isub_bin x y b_in)
@@ -1022,7 +1022,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (& (x) (y)) (ret))))
+;;@       (provide (= (& (x) (y)) (ret))))
 (decl band (Value Value) Inst)
 (extractor
     (band x y)
@@ -1030,7 +1030,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (| (x) (y)) (ret))))
+;;@       (provide (= (| (x) (y)) (ret))))
 (decl bor (Value Value) Inst)
 (extractor
     (bor x y)
@@ -1038,7 +1038,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (xor (x) (y)) (ret))))
+;;@       (provide (= (xor (x) (y)) (ret))))
 (decl bxor (Value Value) Inst)
 (extractor
     (bxor x y)
@@ -1046,7 +1046,7 @@
 )
 
 ;;@ (spec (sig (args x) (ret))
-;;@       (provide  (= (~ (x)) (ret))))
+;;@       (provide (= (~ (x)) (ret))))
 (decl bnot (Value) Inst)
 (extractor
     (bnot x)
@@ -1054,7 +1054,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (& (x) (~ (y))) (ret))))
+;;@       (provide (= (& (x) (~ (y))) (ret))))
 (decl band_not (Value Value) Inst)
 (extractor
     (band_not x y)
@@ -1092,7 +1092,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (rotl (x) (y)) (ret))))
+;;@       (provide (= (rotl (x) (y)) (ret))))
 (decl rotl (Value Value) Inst)
 (extractor
     (rotl x y)
@@ -1100,7 +1100,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide  (= (rotr (x) (y)) (ret))))
+;;@       (provide (= (rotr (x) (y)) (ret))))
 (decl rotr (Value Value) Inst)
 (extractor
     (rotr x y)
@@ -1127,7 +1127,7 @@
 ;; }
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (provide  (= (ret) (shl (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
+;;@     (provide (= (ret) (shl (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ishl (Value Value) Inst)
 (extractor
     (ishl x y)
@@ -1135,7 +1135,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (provide  (= (ret) (shr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
+;;@     (provide (= (ret) (shr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
@@ -1143,7 +1143,7 @@
 )
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (provide  (= (ret) (ashr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
+;;@     (provide (= (ret) (ashr (a) (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv))) (b))))))
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)
@@ -1175,7 +1175,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (provide  (= (ret) (clz (a)))))
+;;@     (provide (= (ret) (clz (a)))))
 (decl clz (Value) Inst)
 (extractor
     (clz x)
@@ -1183,7 +1183,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@     (provide  (= (ret) (cls (a)))))
+;;@     (provide (= (ret) (cls (a)))))
 (decl cls (Value) Inst)
 (extractor
     (cls x)
@@ -1191,7 +1191,7 @@
 )
 
 ;;@ (spec (sig (args a) (ret))
-;;@   (provide  (= (ret) (clz (rev (a))))))
+;;@   (provide (= (ret) (clz (rev (a))))))
 (decl ctz (Value) Inst)
 (extractor
     (ctz x)
@@ -1411,7 +1411,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (ret) (zero_ext (widthof (ret)) (arg)))))
+;;@     (provide (= (ret) (zero_ext (widthof (ret)) (arg)))))
 (decl uextend (Value) Inst)
 (extractor
     (uextend x)
@@ -1419,7 +1419,7 @@
 )
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (ret) (sign_ext (widthof (ret)) (arg)))))
+;;@     (provide (= (ret) (sign_ext (widthof (ret)) (arg)))))
 (decl sextend (Value) Inst)
 (extractor
     (sextend x)

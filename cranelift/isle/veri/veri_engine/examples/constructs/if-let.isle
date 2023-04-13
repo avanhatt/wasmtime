@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -9,7 +9,7 @@
 
 ;; Constructor to test whether two values are same.
 ;;@ (spec (sig (args x, y) (ret))
-;;@     (provide  (= (x) (ret)),
+;;@     (provide (= (x) (ret)),
 ;;@                 (= (x) (y))))
 (decl pure same_value (Value Value) Value)
 (extern constructor same_value same_value)
@@ -19,6 +19,6 @@
       (add ty z z))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (provide  (= (+ (a) (b)) (r))))
+;;@     (provide (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
 (extern constructor add add)

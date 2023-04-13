@@ -3,7 +3,7 @@
 ;; The main lowering constructor term: takes a clif `Inst` and returns the
 ;; register(s) within which the lowered instruction's result values live.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl partial lower (Inst) InstOutput)
 
 ;; Variant of the main lowering constructor term, which receives an
@@ -844,7 +844,7 @@
 
 ;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
 ;;@ (spec (sig (args x) (ret))
-;;@       (provide  (= (x) (ret)),
+;;@       (provide (= (x) (ret)),
 ;;@                   (! (= (0i64:bv) (ret))),
 ;;@                   (! (= (18446744073709551615i64:bv) (ret)))
 ;;@ ))
@@ -1191,7 +1191,7 @@
 ;; Note that this automatically handles the clif semantics of masking the
 ;; shift amount where necessary.
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (op) 
 ;;@          ((16i8:bv8) (conv_to (regwidth) 
@@ -1246,7 +1246,7 @@
         (alu_rrr op $I32 x masked_shift_amt)))
 
 ;;@ (spec (sig (args t) (ret))
-;;@   (provide  (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
+;;@   (provide (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
 (decl shift_mask (Type) ImmLogic)
 (extern constructor shift_mask shift_mask)
 
@@ -1415,7 +1415,7 @@
 ;;         imm
 ;;     }
 ;;@ (spec (sig (args ty, x) (r))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (r) (& (- (int2bv 6 (ty)) (x)) (- (int2bv 6 (ty)) (1i6:bv6))))
 ;;@   )
 ;;@ )
@@ -1477,7 +1477,7 @@
 ;;    lsl val_lshift, val, neg_amt
 ;;    orr rd, val_lshift val_rshift
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (t)
 ;;@          ((8i8: Int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
@@ -1503,7 +1503,7 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;;@ (spec (sig (args x) (ret))
-;;@   (provide  (= (- (int2bv 64 (x)) (1i64:bv64)) (ret))))
+;;@   (provide (= (- (int2bv 64 (x)) (1i64:bv64)) (ret))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 
@@ -1518,7 +1518,7 @@
 ;;    orr rd, val_lshift, val_rshift
 
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (t)
 ;;@          ((8i8: Int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
@@ -1541,7 +1541,7 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;;@ (spec (sig (args ty, x) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@    (= (- (int2bv 6 (ty)) (& (x) (- (int2bv 6 (ty)) (1i6:bv)))) (ret))))
 (decl rotr_opposite_amount (Type ImmShift) ImmShift)
 (extern constructor rotr_opposite_amount rotr_opposite_amount)

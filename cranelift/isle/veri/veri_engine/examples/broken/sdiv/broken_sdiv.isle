@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst (enum))
@@ -15,19 +15,19 @@
 ;; BROKEN: zero-extends instead of sign-extends
 ;; Place a `Value` into a register, sign extending it to 64-bits
 ;;@ (spec (sig (args x) (ret))
-;;@       (provide  (= (zero_ext (64) (x)) (ret))))
+;;@       (provide (= (zero_ext (64) (x)) (ret))))
 (decl put_in_reg_sext64 (Value) Reg)
 (extern constructor put_in_reg_sext64 put_in_reg_sext64)
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
 ;;@ (spec (sig (args x) (ret))
-;;@       (provide  (= (sign_ext (64) (x)) (ret)),
+;;@       (provide (= (sign_ext (64) (x)) (ret)),
 ;;@                   (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_sext64 (Value) Reg)
 (extern constructor put_nonzero_in_reg_sext64 put_nonzero_in_reg_sext64)
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@       (provide  (= (sdiv (x) (y)) (ret)),
+;;@       (provide (= (sdiv (x) (y)) (ret)),
 ;;@                   (= (ty) (64i0: Int))
 ;;@ ))
 (decl a64_sdiv (Type Reg Reg) Reg)
@@ -37,7 +37,7 @@
 ;; The following checks must be done in 32-bit or 64-bit, depending
 ;; on the input type.
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@       (provide  (= (x) (ret)),
+;;@       (provide (= (x) (ret)),
 ;;@       (if (= (ty) (32i0:Int)) 
 ;;@           (! (&& (= (0i32:bv) (extract 31 0 (y)))
 ;;@                  (= (2147483648i32:bv) (extract 31 0 (y)))))          
