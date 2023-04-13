@@ -2696,42 +2696,44 @@ fn test_named_smin() {
     })
 }
 
-#[test]
-fn test_named_cmp_and_choose_8_16() {
-    run_and_retry(|| {
-        let config = Config {
-            dyn_width: false,
-            term: "cmp_and_choose".to_string(),
-            distinct_check: true,
-            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
-                let ty_arg = *args.first().unwrap();
-                let lower_8_bits_eq = {
-                    let mask = smt.atom("#x00000000000000FF");
-                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
-                };
-                let lower_16_bits_eq = {
-                    let mask = smt.atom("#x000000000000FFFF");
-                    smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
-                };
-                smt.ite(
-                    smt.eq(ty_arg, smt.atom("8")),
-                    lower_8_bits_eq,
-                    lower_16_bits_eq,
-                )
-            })),
-            names: Some(vec!["cmp_and_choose_8_16".to_string()]),
-        };
-        test_aarch64_with_config(
-            config,
-            vec![
-                (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        );
-    })
-}
+// Can't currently verify because ConsumesFlags requires a non-functional
+// interpretation
+// #[test]
+// fn test_named_cmp_and_choose_8_16() {
+//     run_and_retry(|| {
+//         let config = Config {
+//             dyn_width: false,
+//             term: "cmp_and_choose".to_string(),
+//             distinct_check: true,
+//             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+//                 let ty_arg = *args.first().unwrap();
+//                 let lower_8_bits_eq = {
+//                     let mask = smt.atom("#x00000000000000FF");
+//                     smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+//                 };
+//                 let lower_16_bits_eq = {
+//                     let mask = smt.atom("#x000000000000FFFF");
+//                     smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+//                 };
+//                 smt.ite(
+//                     smt.eq(ty_arg, smt.atom("8")),
+//                     lower_8_bits_eq,
+//                     lower_16_bits_eq,
+//                 )
+//             })),
+//             names: Some(vec!["cmp_and_choose_8_16".to_string()]),
+//         };
+//         test_aarch64_with_config(
+//             config,
+//             vec![
+//                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {  })),
+//                 (Bitwidth::I16, VerificationResult::Failure(Counterexample {  })),
+//                 (Bitwidth::I32, VerificationResult::InapplicableRule),
+//                 (Bitwidth::I64, VerificationResult::InapplicableRule),
+//             ],
+//         );
+//     })
+// }
 
 #[test]
 fn test_named_popcnt_8() {

@@ -901,25 +901,16 @@
 ;;; Rules for integer min/max: umin, smin, umax, smax ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; `i64` and smaller.
-
 ;; cmp     $x, $y
 ;; csel    .., $x, $y, $cc
 ;;@ (spec (sig (args ty, cc, signed, x, y) (ret))
 ;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (conv_to (64) (switch (cc)
-;;@          ((3i8:bv8) (if (signed)
-;;@                          (if (sgte (x) (y)) (y) (x))
-;;@                          (if (ugte (x) (y)) (y) (x))))
-;;@          ((11i8:bv8) (if (signed)
-;;@                          (if (sgte (x) (y)) (y) (x))
-;;@                          (if (ugte (x) (y)) (y) (x))))
-;;@          ((8i8:bv8) (if (signed)
-;;@                         (if (sgte (x) (y)) (x) (y))
-;;@                         (if (ugte (x) (y)) (x) (y))))
-;;@          ((12i8:bv8) (if (signed)
-;;@                          (if (sgte (x) (y)) (x) (y))
-;;@                          (if (ugte (x) (y)) (x) (y))))
+;;@          ((3i8:bv8) (if (ult (x) (y)) (x) (y)))
+;;@          ((8i8:bv8) (if (ugt (x) (y)) (x) (y)))
+;;@          ((11i8:bv8) (if (slt (x) (y)) (x) (y)))
+;;@          ((12i8:bv8) (if (sgt (x) (y)) (x) (y)))
 ;;@   ))))
 ;;@   (assert
 ;;@     (|| (= (ty) (8i8:int))
@@ -930,9 +921,13 @@
 ;;@     (|| (= (cc) (8i8:bv8))
 ;;@     (|| (= (cc) (11i8:bv8))
 ;;@     (= (cc) (12i8:bv8))))), 
+;;@     (if (signed) (|| (= (cc) (11i8:bv8)) (= (cc) (12i8:bv8))) 
+;;@                  (|| (= (cc) (3i8:bv8)) (= (cc) (8i8:bv8)))), 
 ;;@ ))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
-(rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
+
+;; Can't currently verify because it requires a non-functional interpretation of csel
+(rule (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
             (y Reg (put_in_reg y)))
        (with_flags_reg (cmp (operand_size ty) x y)
@@ -940,7 +935,8 @@
 
 ;; `i16` and `i8` min/max require sign extension as
 ;; the comparison operates on (at least) 32 bits.
-(rule cmp_and_choose_8_16 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
+;; Can't currently verify because it requires a non-functional interpretation of csel
+(rule 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
       (let ((x Reg (extend (put_in_reg x) signed (ty_bits ty) 32))
             (y Reg (extend (put_in_reg y) signed (ty_bits ty) 32)))
       (with_flags_reg (cmp (operand_size ty) x y)

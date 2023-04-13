@@ -511,8 +511,10 @@
             (_ Unit (emit consumer_inst_4)))
         consumer_result))
 
+;; Can't currently verify because ConsumesFlags requires a non-functional
+;; interpretation
 ;;@ (spec (sig (args p, c) (r))
-;;@     (assume  (= (r) (c))))
+;;@     (assume (= (r) (c))))
 (decl with_flags_reg (ProducesFlags ConsumesFlags) Reg)
 (rule (with_flags_reg p c)
       (let ((v ValueRegs (with_flags p c)))

@@ -803,15 +803,6 @@ impl SolverCtx {
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
                 };
-                // If this is only a query to determine widths, we can skip bitvector equalities
-                if self.onlywidths && matches!(op, BinaryOp::Eq) {
-                    match (self.get_type(&x), self.get_type(&y)) {
-                        (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => {
-                            return self.smt.true_()
-                        }
-                        _ => (),
-                    }
-                };
                 // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation for the dynamic case.
                 match static_expr_width {
