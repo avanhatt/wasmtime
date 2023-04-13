@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -34,8 +34,8 @@
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@     (provide  (|| (<= (bv2int (y)) (4094i0:Int))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:Int))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
 ;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y))))
@@ -44,13 +44,13 @@
 (rule (sub_imm ty x y) (alu_rr_imm12 (ALUOp.Sub) ty x y))
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assume  (= (ret) 
-;;@                    (if (= (ty) (32i0:isleType))
-;;@                        (a64cls (32i0:isleType) (a))
-;;@                        (a64cls (64i0:isleType) (a))
+;;@     (provide  (= (ret) 
+;;@                    (if (= (ty) (32i0:Int))
+;;@                        (a64cls (32i0:Int) (a))
+;;@                        (a64cls (64i0:Int) (a))
 ;;@                    )
 ;;@                 ),
-;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@                 (|| (= (ty) (32i0:Int)) (= (ty) (64i0:Int)))
 ;;@     )
 ;;@ )
 (decl a64_cls (Type Reg) Reg)
@@ -64,8 +64,8 @@
 
 ;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (
-;;@          if (<= (32i0:isleType) (widthof (arg))) 
+;;@     (provide  (
+;;@          if (<= (32i0:Int) (widthof (arg))) 
 ;;@             (= (ret) (conv_to (regwidth) (arg)))             
 ;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
 ;;@          )
@@ -77,7 +77,7 @@
 (rule (put_in_reg_zext32 val @ (value_type $I64)) val)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (ret) (zero_ext (24) (arg)))))
+;;@     (provide  (= (ret) (zero_ext (24) (arg)))))
 (decl u8_into_imm12 (u8) Imm12)
 (extern constructor u8_into_imm12 u8_into_imm12)
 

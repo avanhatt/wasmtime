@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -17,10 +17,10 @@
 (extern constructor bit_rr bit_rr)
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assume  (= (ret) 
-;;@                    (if (= (ty) (32i0:isleType))
-;;@                        (a64cls (32i0:isleType) (a))
-;;@                        (a64cls (64i0:isleType) (a))
+;;@     (provide  (= (ret) 
+;;@                    (if (= (ty) (32i0:Int))
+;;@                        (a64cls (32i0:Int) (a))
+;;@                        (a64cls (64i0:Int) (a))
 ;;@                    )
 ;;@                 )
 ;;@     )

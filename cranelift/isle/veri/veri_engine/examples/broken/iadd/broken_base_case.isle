@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -15,7 +15,7 @@
 (extern constructor alu_rrr alu_rrr)
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assume  (= (+ (a) (b)) (r))))
+;;@     (provide  (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
 (rule (add ty x y) (alu_rrr (ALUOp.Add) ty x y))
 

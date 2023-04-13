@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -18,26 +18,26 @@
 (extern constructor bit_rr bit_rr)
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assume  (= (ret) 
-;;@                    (if (= (ty) (32i0:isleType))
-;;@                        (a64clz (32i0:isleType) (a))
-;;@                        (a64clz (64i0:isleType) (a))
+;;@     (provide  (= (ret) 
+;;@                    (if (= (ty) (32i0:Int))
+;;@                        (a64clz (32i0:Int) (a))
+;;@                        (a64clz (64i0:Int) (a))
 ;;@                    )
 ;;@                 ),
-;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@                 (|| (= (ty) (32i0:Int)) (= (ty) (64i0:Int)))
 ;;@     )
 ;;@ )
 (decl a64_clz (Type Reg) Reg)
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (assume  (= (ret) 
-;;@                    (if (= (ty) (32i0:isleType))
-;;@                        (a64rev (32i0:isleType) (a))
-;;@                        (a64rev (64i0:isleType) (a))
+;;@     (provide  (= (ret) 
+;;@                    (if (= (ty) (32i0:Int))
+;;@                        (a64rev (32i0:Int) (a))
+;;@                        (a64rev (64i0:Int) (a))
 ;;@                    )
 ;;@                 ),
-;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@                 (|| (= (ty) (32i0:Int)) (= (ty) (64i0:Int)))
 ;;@     )
 ;;@ )
 (decl rbit (Type Reg) Reg)

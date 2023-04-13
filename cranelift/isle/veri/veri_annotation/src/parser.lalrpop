@@ -19,7 +19,7 @@ Ident: String = {
 pub Type: Type = {
     "bv" => Type::BitVector,
     "bv" <n:UNum> => Type::BitVectorWithWidth(n),
-    "isleType" => Type::Int,
+    "Int" => Type::Int,
     "bool" => Type::Bool,
 };
 
@@ -151,13 +151,9 @@ pub Expr: Box<Expr> = {
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v, 0)),
 };
 
-pub AssertBlock: Vec<Box<Expr>> = {
-   "(" "assert" <a:ExprList> ")" => a,
-}
-
 pub TermAnnotation: TermAnnotation = {
-    "(" "spec" <s:TermSignature> "(" "assume" <a:ExprList> ")" "(" "assert" <b:ExprList> ")" ")" =>
+    "(" "spec" <s:TermSignature> "(" "provide" <a:ExprList> ")" "(" "require" <b:ExprList> ")" ")" =>
         TermAnnotation {sig: s, assumptions: a, assertions: b },
-    "(" "spec" <s:TermSignature> "(" "assume" <a:ExprList> ")" ")" =>
+    "(" "spec" <s:TermSignature> "(" "provide" <a:ExprList> ")" ")" =>
         TermAnnotation {sig: s, assumptions: a, assertions: vec![] },
 };

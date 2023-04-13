@@ -3,7 +3,7 @@
 ;; The main lowering constructor term: takes a clif `Inst` and returns the
 ;; register(s) within which the lowered instruction's result values live.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl partial lower (Inst) InstOutput)
 
 ;; Variant of the main lowering constructor term, which receives an
@@ -804,8 +804,8 @@
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
 ;;@ (spec (sig (args x) (ret))
-;;@       (assume (= (zero_ext (64) (x)) (ret)))
-;;@       (assert (! (= (0i64:bv) (ret)))))
+;;@       (provide (= (zero_ext (64) (x)) (ret)))
+;;@       (require (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_zext64 (Value) Reg)
 (rule -1 (put_nonzero_in_reg_zext64 val)
       (trap_if_zero_divisor (put_in_reg_zext64 val)))
@@ -844,7 +844,7 @@
 
 ;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
 ;;@ (spec (sig (args x) (ret))
-;;@       (assume  (= (x) (ret)),
+;;@       (provide  (= (x) (ret)),
 ;;@                   (! (= (0i64:bv) (ret))),
 ;;@                   (! (= (18446744073709551615i64:bv) (ret)))
 ;;@ ))
@@ -858,8 +858,8 @@
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
 ;;@ (spec (sig (args x) (ret))
-;;@       (assume (= (sign_ext (64) (x)) (ret)))
-;;@       (assert (! (= (0i64:bv) (ret)))))
+;;@       (provide (= (sign_ext (64) (x)) (ret)))
+;;@       (require (! (= (0i64:bv) (ret)))))
 (decl put_nonzero_in_reg_sext64 (Value) Reg)
 (rule -1 (put_nonzero_in_reg_sext64 val)
       (trap_if_zero_divisor (put_in_reg_sext64 val)))
@@ -1191,7 +1191,7 @@
 ;; Note that this automatically handles the clif semantics of masking the
 ;; shift amount where necessary.
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@   (assume  
+;;@   (provide  
 ;;@     (= (ret) 
 ;;@        (switch (op) 
 ;;@          ((16i8:bv8) (conv_to (regwidth) 
@@ -1208,24 +1208,24 @@
 ;;@                   (& (conv_to (widthof (b)) (- (int2bv 64 (widthof (b))) (1i64:bv64))) (b)))))))
 ;;@           ))
 ;;@   )
-;;@   (assert
+;;@   (require
 ;;@     (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (18i8:bv8)))),
 ;;@     (= (t) (widthof (b))),
-;;@     (|| (= (t) (8i8: isleType))
-;;@     (|| (= (t) (16i8: isleType))
-;;@     (|| (= (t) (32i8: isleType))
-;;@     (= (t) (64i8: isleType))))),
+;;@     (|| (= (t) (8i8: Int))
+;;@     (|| (= (t) (16i8: Int))
+;;@     (|| (= (t) (32i8: Int))
+;;@     (= (t) (64i8: Int))))),
 ;;@     (switch (op) 
 ;;@       ((16i8:bv8) (switch (t) 
-;;@         ((8i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
-;;@         ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
-;;@         ((32i32: isleType) (true))
-;;@         ((64i32: isleType) (true))))
+;;@         ((8i32: Int) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
+;;@         ((16i32: Int) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
+;;@         ((32i32: Int) (true))
+;;@         ((64i32: Int) (true))))
 ;;@      ((17i8:bv8) (switch (t) 
-;;@        ((8i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
-;;@        ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
-;;@        ((32i32: isleType) (true))
-;;@        ((64i32: isleType) (true))))
+;;@        ((8i32: Int) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
+;;@        ((16i32: Int) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
+;;@        ((32i32: Int) (true))
+;;@        ((64i32: Int) (true))))
 ;;@      ((18i8:bv8) (true))
 ;;@     )
 ;;@ ))
@@ -1246,7 +1246,7 @@
         (alu_rrr op $I32 x masked_shift_amt)))
 
 ;;@ (spec (sig (args t) (ret))
-;;@   (assume  (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
+;;@   (provide  (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
 (decl shift_mask (Type) ImmLogic)
 (extern constructor shift_mask shift_mask)
 
@@ -1415,7 +1415,7 @@
 ;;         imm
 ;;     }
 ;;@ (spec (sig (args ty, x) (r))
-;;@   (assume  
+;;@   (provide  
 ;;@     (= (r) (& (- (int2bv 6 (ty)) (x)) (- (int2bv 6 (ty)) (1i6:bv6))))
 ;;@   )
 ;;@ )
@@ -1477,19 +1477,19 @@
 ;;    lsl val_lshift, val, neg_amt
 ;;    orr rd, val_lshift val_rshift
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@   (assume  
+;;@   (provide  
 ;;@     (= (ret) 
 ;;@        (switch (t)
-;;@          ((8i8: isleType) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
-;;@          ((16i8: isleType) (conv_to (regwidth) (rotr (extract 15 0 (x)) (extract 15 0 (y)))))
+;;@          ((8i8: Int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
+;;@          ((16i8: Int) (conv_to (regwidth) (rotr (extract 15 0 (x)) (extract 15 0 (y)))))
 ;;@         ))
 ;;@     )
-;;@   (assert
-;;@     (|| (= (t) (8i8: isleType)) 
-;;@         (= (t) (16i8: isleType))),
+;;@   (require
+;;@     (|| (= (t) (8i8: Int)) 
+;;@         (= (t) (16i8: Int))),
 ;;@     (switch (t)
-;;@       ((8i8: isleType) (= (extract 31 8 (x)) (0i32:bv24)))
-;;@       ((16i8: isleType) (= (extract 31 16 (x)) (0i32:bv16)))
+;;@       ((8i8: Int) (= (extract 31 8 (x)) (0i32:bv24)))
+;;@       ((16i8: Int) (= (extract 31 16 (x)) (0i32:bv16)))
 ;;@     ),
 ;;@   )
 ;;@ )
@@ -1503,7 +1503,7 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;;@ (spec (sig (args x) (ret))
-;;@   (assume  (= (- (int2bv 64 (x)) (1i64:bv64)) (ret))))
+;;@   (provide  (= (- (int2bv 64 (x)) (1i64:bv64)) (ret))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 
@@ -1518,18 +1518,18 @@
 ;;    orr rd, val_lshift, val_rshift
 
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@   (assume  
+;;@   (provide  
 ;;@     (= (ret) 
 ;;@        (switch (t)
-;;@          ((8i8: isleType) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
-;;@          ((16i8: isleType) (conv_to (regwidth) (rotr (extract 15 0 (x)) (zero_ext (16) (y)))))
+;;@          ((8i8: Int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
+;;@          ((16i8: Int) (conv_to (regwidth) (rotr (extract 15 0 (x)) (zero_ext (16) (y)))))
 ;;@   )))
-;;@   (assert
-;;@     (|| (= (t) (8i8: isleType)) 
-;;@         (= (t) (16i8: isleType))),
+;;@   (require
+;;@     (|| (= (t) (8i8: Int)) 
+;;@         (= (t) (16i8: Int))),
 ;;@     (switch (t)
-;;@       ((8i8: isleType) (= (extract 31 8 (x)) (0i32:bv24)))
-;;@       ((16i8: isleType) (= (extract 31 16 (x)) (0i32:bv16)))
+;;@       ((8i8: Int) (= (extract 31 8 (x)) (0i32:bv24)))
+;;@       ((16i8: Int) (= (extract 31 16 (x)) (0i32:bv16)))
 ;;@     ),
 ;;@     (ult (y) (int2bv 6 (t)))
 ;;@   )
@@ -1541,7 +1541,7 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;;@ (spec (sig (args ty, x) (ret))
-;;@   (assume  
+;;@   (provide  
 ;;@    (= (- (int2bv 6 (ty)) (& (x) (- (int2bv 6 (ty)) (1i6:bv)))) (ret))))
 (decl rotr_opposite_amount (Type ImmShift) ImmShift)
 (extern constructor rotr_opposite_amount rotr_opposite_amount)

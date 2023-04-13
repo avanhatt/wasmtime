@@ -22,34 +22,34 @@
 
 ;; EXTRACTORS
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;;@ (spec (sig (args ty, arg) (ret))
-;;@ (assume  (= (ty) (widthof (arg))), (= (arg) (ret))))
+;;@ (provide  (= (ty) (widthof (arg))), (= (arg) (ret))))
 (decl has_type (Type Inst) Inst)
 (extern extractor has_type has_type)
 
-;; (decl (a) b SMTType) (assert (= a b) (<= a 64)))
+;; (decl (a) b SMTType) (require (= a b) (<= a 64)))
 ;; {((a : Type) b : Type) | a = b, a.ty.width <= 64}
 ;; (decl fits_in_64 (Type) Type)
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+;;@     (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
 (decl fits_in_32 (Type) Type)
 (extern extractor fits_in_32 fits_in_32)
 
-;; (decl (a b) c bvX) (assert (= c (+ a b)))
+;; (decl (a b) c bvX) (require (= c (+ a b)))
 ;;@ (spec (sig (args a, b) (r))
-;;@     (assume  (= (+ (a) (b)) (r))))
+;;@     (provide  (= (+ (a) (b)) (r))))
 (decl iadd (Value Value) Inst)
 (extern extractor iadd iadd)
 
 ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
+;;@     (provide  (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
 ;;@                     (&& (< (- (zero_ext (regwidth) (ret))) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) (0i3:bv))
 ;;@                 )),
@@ -61,40 +61,40 @@
 ;; CONSTRUCTORS
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@     (assume  (= (+ (a) (b)) (r))))
+;;@     (provide  (= (+ (a) (b)) (r))))
 (decl add (Type Reg Reg) Reg)
 (extern constructor add add)
 
 ;;@ (spec (sig (args ty, reg, imm_arg) (ret))
-;;@     (assume  (= (- (reg) (zero_ext (regwidth) (imm_arg))) (ret)))) 
+;;@     (provide  (= (- (reg) (zero_ext (regwidth) (imm_arg))) (ret)))) 
 (decl sub_imm (Type Reg Imm12) Reg)
 (extern constructor sub_imm sub_imm)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl value_reg (Reg) ValueRegs)
 (extern constructor value_reg value_reg)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (conv_to (regwidth) (arg)) (ret))))
+;;@     (provide  (= (conv_to (regwidth) (arg)) (ret))))
 (decl put_in_reg (Value) Reg)
 (extern constructor put_in_reg put_in_reg)
 
 ;; Construct a single-element `InstOutput`.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl output (ValueRegs) InstOutput)
 (extern constructor output output)
 
 ;; Construct a single-element `InstOutput` from a single register.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (conv_to (widthof (arg)) (ret)))))
+;;@     (provide  (= (arg) (conv_to (widthof (arg)) (ret)))))
 (decl output_reg (Reg) InstOutput)
 (rule (output_reg reg) (output (value_reg reg)))
 
 ;; Construct a single-element `InstOutput` from a value.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl output_value (Value) InstOutput)
 (rule (output_value val) (output (put_in_regs val)))
 
@@ -102,6 +102,6 @@
 ;;
 ;; As a side effect, this marks the value as used.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl put_in_regs (Value) ValueRegs)
 (extern constructor put_in_regs put_in_regs)

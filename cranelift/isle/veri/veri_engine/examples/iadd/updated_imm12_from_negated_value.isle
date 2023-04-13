@@ -5,17 +5,17 @@
 (type Imm12 (primitive Imm12))
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (zero_ext (regwidth) (arg)) (ret))))
+;;@     (provide  (= (zero_ext (regwidth) (arg)) (ret))))
 (decl imm12_from_u64 (Imm12) u64)
 (extern extractor imm12_from_u64 imm12_from_u64)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (ret) (- (arg)))))
+;;@     (provide  (= (ret) (- (arg)))))
 (decl pure i64_neg (i64) i64)
 (extern constructor i64_neg i64_neg)
 
 ;;@ (spec (sig (args ty, arg) (ret))
-;;@     (assume  (= (ret) (sign_ext (regwidth) (conv_to (ty) (arg))))))
+;;@     (provide  (= (ret) (sign_ext (regwidth) (conv_to (ty) (arg))))))
 (decl pure i64_sextend_imm64 (Type Imm64) i64)
 (extern constructor i64_sextend_imm64 i64_sextend_imm64)
 
@@ -24,7 +24,7 @@
 
  ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (|| (< (- (sign_ext (regwidth) (arg))) (4095i64:bv))
+;;@     (provide  (|| (< (- (sign_ext (regwidth) (arg))) (4095i64:bv))
 ;;@                     (&& (< (- (sign_ext (regwidth) (arg))) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (- (sign_ext (regwidth) (arg)))) (0i3:bv))
 ;;@                 )),
