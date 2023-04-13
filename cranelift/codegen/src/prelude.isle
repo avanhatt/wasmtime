@@ -292,6 +292,8 @@
 (extern extractor ty_int_ref_64 ty_int_ref_64)
 
 ;; An extractor that only matches integers.
+;;@ (spec (sig (args a) (r))
+;;@     (provide (= (r) (a))))
 (decl ty_int (Type) Type)
 (extern extractor ty_int ty_int)
 

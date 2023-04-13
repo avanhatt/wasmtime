@@ -108,6 +108,10 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("sdiv", bv_binary_8_to_64.clone());
     widths.insert("srem", bv_binary_8_to_64.clone());
     widths.insert("urem", bv_binary_8_to_64.clone());
+    widths.insert("smin", bv_binary_8_to_64.clone());
+    widths.insert("umin", bv_binary_8_to_64.clone());
+    widths.insert("smax", bv_binary_8_to_64.clone());
+    widths.insert("umax", bv_binary_8_to_64.clone());
 
     // Binary with possibly differing widths
     widths.insert("rotl", bv_binary_8_to_64.clone());

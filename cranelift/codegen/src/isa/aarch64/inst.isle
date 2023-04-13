@@ -1272,6 +1272,17 @@
     (Nv)
 ))
 
+;; Verification annotations, model as an bv enum
+
+;;@ (spec (sig (args) (r)) (provide (= (r) (3i8:bv8))))
+;;decl Cond.Lo
+;;@ (spec (sig (args) (r)) (provide (= (r) (8i8:bv8))))
+;;decl Cond.Hi
+;;@ (spec (sig (args) (r)) (provide (= (r) (11i8:bv8))))
+;;decl Cond.Lt
+;;@ (spec (sig (args) (r)) (provide (= (r) (12i8:bv8))))
+;;decl Cond.Gt
+
 (type VectorSize extern
   (enum
     (Size8x8)

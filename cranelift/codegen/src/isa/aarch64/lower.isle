@@ -904,6 +904,27 @@
 
 ;; cmp     $x, $y
 ;; csel    .., $x, $y, $cc
+;;@ (spec (sig (args ty, cc, signed, x, y) (ret))
+;;@   (provide  
+;;@     (= (ret) 
+;;@        (switch (cc)
+;;@          ((3i8:bv8) (if (ult (x) (y)) (x) (y)))
+;;@          ((8i8:bv8) (if (ugt (x) (y)) (x) (y)))
+;;@          ((11i8:bv8) (if (slt (x) (y)) (x) (y)))
+;;@          ((12i8:bv8) (if (sgt (x) (y)) (x) (y)))
+;;@   )))
+;;@   (require
+;;@     (|| (= (ty) (8i8:Int))
+;;@     (|| (= (ty) (16i8:Int))
+;;@     (|| (= (ty) (32i8:Int))
+;;@     (= (ty) (64i8:Int))))),
+;;@     (|| (= (cc) (3i8:bv8))
+;;@     (|| (= (cc) (8i8:bv8))
+;;@     (|| (= (cc) (11i8:bv8))
+;;@     (= (cc) (12i8:bv8))))), 
+;;@     (if (signed) (|| (= (cc) (11i8:bv8)) (= (cc) (12i8:bv8))) 
+;;@                  (|| (= (cc) (3i8:bv8)) (= (cc) (8i8:bv8)))), 
+;;@ ))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
 (rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
