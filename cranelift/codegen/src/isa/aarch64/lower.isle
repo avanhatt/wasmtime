@@ -904,6 +904,33 @@
 
 ;; cmp     $x, $y
 ;; csel    .., $x, $y, $cc
+;;@ (spec (sig (args ty, cc, signed, x, y) (ret))
+;;@   (assume  
+;;@     (= (ret) 
+;;@        (conv_to (64) (switch (cc)
+;;@          ((3i8:bv8) (if (signed)
+;;@                          (if (sgte (x) (y)) (y) (x))
+;;@                          (if (ugte (x) (y)) (y) (x))))
+;;@          ((11i8:bv8) (if (signed)
+;;@                          (if (sgte (x) (y)) (y) (x))
+;;@                          (if (ugte (x) (y)) (y) (x))))
+;;@          ((8i8:bv8) (if (signed)
+;;@                         (if (sgte (x) (y)) (x) (y))
+;;@                         (if (ugte (x) (y)) (x) (y))))
+;;@          ((12i8:bv8) (if (signed)
+;;@                          (if (sgte (x) (y)) (x) (y))
+;;@                          (if (ugte (x) (y)) (x) (y))))
+;;@   ))))
+;;@   (assert
+;;@     (|| (= (ty) (8i8:int))
+;;@     (|| (= (ty) (16i8:int))
+;;@     (|| (= (ty) (32i8:int))
+;;@     (= (ty) (64i8: int))))),
+;;@     (|| (= (cc) (3i8:bv8))
+;;@     (|| (= (cc) (8i8:bv8))
+;;@     (|| (= (cc) (11i8:bv8))
+;;@     (= (cc) (12i8:bv8))))), 
+;;@ ))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
 (rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
@@ -1211,21 +1238,21 @@
 ;;@   (assert
 ;;@     (|| (= (op) (16i8:bv8)) (|| (= (op) (17i8:bv8)) (= (op) (18i8:bv8)))),
 ;;@     (= (t) (widthof (b))),
-;;@     (|| (= (t) (8i8: isleType))
-;;@     (|| (= (t) (16i8: isleType))
-;;@     (|| (= (t) (32i8: isleType))
-;;@     (= (t) (64i8: isleType))))),
+;;@     (|| (= (t) (8i8: int))
+;;@     (|| (= (t) (16i8: int))
+;;@     (|| (= (t) (32i8: int))
+;;@     (= (t) (64i8: int))))),
 ;;@     (switch (op) 
 ;;@       ((16i8:bv8) (switch (t) 
-;;@         ((8i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
-;;@         ((16i32: isleType) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
-;;@         ((32i32: isleType) (true))
-;;@         ((64i32: isleType) (true))))
+;;@         ((8i32: int) (= (extract 31 0 (a)) (zero_ext (32) (extract 7 0 (a)))))
+;;@         ((16i32: int) (= (extract 31 0 (a)) (zero_ext (32) (extract 15 0 (a)))))
+;;@         ((32i32: int) (true))
+;;@         ((64i32: int) (true))))
 ;;@      ((17i8:bv8) (switch (t) 
-;;@        ((8i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
-;;@        ((16i32: isleType) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
-;;@        ((32i32: isleType) (true))
-;;@        ((64i32: isleType) (true))))
+;;@        ((8i32: int) (= (extract 31 0 (a)) (sign_ext (32) (extract 7 0 (a)))))
+;;@        ((16i32: int) (= (extract 31 0 (a)) (sign_ext (32) (extract 15 0 (a)))))
+;;@        ((32i32: int) (true))
+;;@        ((64i32: int) (true))))
 ;;@      ((18i8:bv8) (true))
 ;;@     )
 ;;@ ))
@@ -1480,16 +1507,16 @@
 ;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (switch (t)
-;;@          ((8i8: isleType) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
-;;@          ((16i8: isleType) (conv_to (regwidth) (rotr (extract 15 0 (x)) (extract 15 0 (y)))))
+;;@          ((8i8: int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
+;;@          ((16i8: int) (conv_to (regwidth) (rotr (extract 15 0 (x)) (extract 15 0 (y)))))
 ;;@         ))
 ;;@     )
 ;;@   (assert
-;;@     (|| (= (t) (8i8: isleType)) 
-;;@         (= (t) (16i8: isleType))),
+;;@     (|| (= (t) (8i8: int)) 
+;;@         (= (t) (16i8: int))),
 ;;@     (switch (t)
-;;@       ((8i8: isleType) (= (extract 31 8 (x)) (0i32:bv24)))
-;;@       ((16i8: isleType) (= (extract 31 16 (x)) (0i32:bv16)))
+;;@       ((8i8: int) (= (extract 31 8 (x)) (0i32:bv24)))
+;;@       ((16i8: int) (= (extract 31 16 (x)) (0i32:bv16)))
 ;;@     ),
 ;;@   )
 ;;@ )
@@ -1521,15 +1548,15 @@
 ;;@   (assume  
 ;;@     (= (ret) 
 ;;@        (switch (t)
-;;@          ((8i8: isleType) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
-;;@          ((16i8: isleType) (conv_to (regwidth) (rotr (extract 15 0 (x)) (zero_ext (16) (y)))))
+;;@          ((8i8: int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
+;;@          ((16i8: int) (conv_to (regwidth) (rotr (extract 15 0 (x)) (zero_ext (16) (y)))))
 ;;@   )))
 ;;@   (assert
-;;@     (|| (= (t) (8i8: isleType)) 
-;;@         (= (t) (16i8: isleType))),
+;;@     (|| (= (t) (8i8: int)) 
+;;@         (= (t) (16i8: int))),
 ;;@     (switch (t)
-;;@       ((8i8: isleType) (= (extract 31 8 (x)) (0i32:bv24)))
-;;@       ((16i8: isleType) (= (extract 31 16 (x)) (0i32:bv16)))
+;;@       ((8i8: int) (= (extract 31 8 (x)) (0i32:bv24)))
+;;@       ((16i8: int) (= (extract 31 16 (x)) (0i32:bv16)))
 ;;@     ),
 ;;@     (ult (y) (int2bv 6 (t)))
 ;;@   )

@@ -18,8 +18,8 @@
 ;; BROKEN: subtract instead of add
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@     (assume  (|| (<= (bv2int (y)) (4094i0:int))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:int))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
 ;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y)))),

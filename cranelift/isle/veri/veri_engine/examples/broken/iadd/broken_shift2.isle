@@ -28,7 +28,7 @@
 
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
 ;;@   (assume  
-;;@     (= (ret) (if (<= (ty) (32i32:isleType))
+;;@     (= (ret) (if (<= (ty) (32i32:int))
 ;;@       (conv_to (regwidth) (+ (extract 31 0 (a)) (switch (extract 9 8 (shift))
 ;;@         ((0i2:bv) (shl (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
 ;;@         ((1i2:bv) (shr (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))

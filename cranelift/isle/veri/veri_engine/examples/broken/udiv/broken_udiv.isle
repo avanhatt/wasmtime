@@ -14,7 +14,7 @@
 
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@       (assume  (= (/ (x) (y)) (ret)),
-;;@                   (= (ty) (64i0: isleType))
+;;@                   (= (ty) (64i0: int))
 ;;@ ))
 (decl a64_udiv (Type Reg Reg) Reg)
 (rule (a64_udiv ty x y) (alu_rrr (ALUOp.UDiv) ty x y))

@@ -21,14 +21,14 @@
 (extern constructor extend extend)
 
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@     (assume  (|| (<= (bv2int (y)) (4094i0:int))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:int))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
 ;;@       (= (ret) 
 ;;@          (switch (ty) 
-;;@            ((32i8: isleType) (conv_to (regwidth) (& (extract 31 0 (x)) (extract 31 0 (y)))))
-;;@            ((64i8: isleType) (& (x) (zero_ext (regwidth) (y))))
+;;@            ((32i8: int) (conv_to (regwidth) (& (extract 31 0 (x)) (extract 31 0 (y)))))
+;;@            ((64i8: int) (& (x) (zero_ext (regwidth) (y))))
 ;;@          )
 ;;@       )
 ;;@ ))
@@ -38,7 +38,7 @@
 ;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assume  (
-;;@          if (<= (32i0:isleType) (widthof (arg))) 
+;;@          if (<= (32i0:int) (widthof (arg))) 
 ;;@             (= (ret) (conv_to (regwidth) (arg)))             
 ;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
 ;;@          )
@@ -58,14 +58,14 @@
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@     (assume  (|| (<= (bv2int (y)) (4094i0:int))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:int))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
 ;;@       (= (ret) 
 ;;@          (switch (ty) 
-;;@            ((32i8: isleType) (conv_to (regwidth) (- (extract 31 0 (x)) (zero_ext (32) (y)))))
-;;@            ((64i8: isleType) (- (x) (zero_ext (regwidth) (y))))
+;;@            ((32i8: int) (conv_to (regwidth) (- (extract 31 0 (x)) (zero_ext (32) (y)))))
+;;@            ((64i8: int) (- (x) (zero_ext (regwidth) (y))))
 ;;@          )
 ;;@       )
 ;;@ ))
@@ -81,8 +81,8 @@
 ;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
-;;@            ((32i8: isleType) (conv_to (regwidth) (shr (extract 31 0 (a)) (extract 31 0 (b)))))
-;;@            ((64i8: isleType) (shr (a) (b)))
+;;@            ((32i8: int) (conv_to (regwidth) (shr (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            ((64i8: int) (shr (a) (b)))
 ;;@          )
 ;;@       )
 ;;@ ))
@@ -93,8 +93,8 @@
 ;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
-;;@            ((32i8: isleType) (conv_to (regwidth) (shl (extract 31 0 (a)) (extract 31 0 (b)))))
-;;@            ((64i8: isleType) (shl (a) (b)))
+;;@            ((32i8: int) (conv_to (regwidth) (shl (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            ((64i8: int) (shl (a) (b)))
 ;;@          )
 ;;@       )
 ;;@ ))
@@ -105,8 +105,8 @@
 ;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
-;;@            ((32i8: isleType) (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b)))))
-;;@            ((64i8: isleType) (| (a) (b)))
+;;@            ((32i8: int) (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            ((64i8: int) (| (a) (b)))
 ;;@          )
 ;;@       )
 ;;@ ))
@@ -123,14 +123,14 @@
 ;;@       (assume  
 ;;@          (= (ret) 
 ;;@             (switch (t)
-;;@               ((8i8: isleType) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
-;;@               ((16i8: isleType) (conv_to (regwidth) (rotr (extract 15 0 (x)) (extract 15 0 (y)))))
+;;@               ((8i8: int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
+;;@               ((16i8: int) (conv_to (regwidth) (rotr (extract 15 0 (x)) (extract 15 0 (y)))))
 ;;@             )),
-;;@          (|| (= (t) (8i8: isleType)) 
-;;@              (= (t) (16i8: isleType))),
+;;@          (|| (= (t) (8i8: int)) 
+;;@              (= (t) (16i8: int))),
 ;;@          (switch (t)
-;;@            ((8i8: isleType) (= (extract 31 8 (x)) (0i32:bv24)))
-;;@            ((16i8: isleType) (= (extract 31 16 (x)) (0i32:bv16)))
+;;@            ((8i8: int) (= (extract 31 8 (x)) (0i32:bv24)))
+;;@            ((16i8: int) (= (extract 31 16 (x)) (0i32:bv16)))
 ;;@          ),
 ;;@       )
 ;;@ )
@@ -140,8 +140,8 @@
 ;;@     (assume  
 ;;@       (= (r) 
 ;;@          (switch (ty) 
-;;@            ((32i8: isleType) (conv_to (regwidth) (& (extract 31 0 (a)) (extract 31 0 (b)))))
-;;@            ((64i8: isleType) (& (a) (b)))
+;;@            ((32i8: int) (conv_to (regwidth) (& (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            ((64i8: int) (& (a) (b)))
 ;;@          )
 ;;@       )
 ;;@ ))

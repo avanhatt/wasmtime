@@ -130,7 +130,7 @@
 ;; Get the `n`th register inside a `ValueRegs`.
 ;;@ (spec (sig (args arg, i) (ret))
 ;;@     (assume  (= (arg) (ret)),
-;;@                 (= (widthof (i)) (1i1:isleType))
+;;@                 (= (widthof (i)) (1i1:int))
 ;;@                 
 ;;@))
 (decl value_regs_get (ValueRegs usize) Reg)
@@ -511,6 +511,8 @@
             (_ Unit (emit consumer_inst_4)))
         consumer_result))
 
+;;@ (spec (sig (args p, c) (r))
+;;@     (assume  (= (r) (c))))
 (decl with_flags_reg (ProducesFlags ConsumesFlags) Reg)
 (rule (with_flags_reg p c)
       (let ((v ValueRegs (with_flags p c)))

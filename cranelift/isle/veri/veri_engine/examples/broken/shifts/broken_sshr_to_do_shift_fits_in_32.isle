@@ -80,17 +80,17 @@
 ;;@   (assert
 ;;@           (|| (= (op) (0i64:bv)) (|| (= (op) (1i64:bv)) (= (op) (2i64:bv)))),
 ;;@           (= (t) (widthof (b))),
-;;@           (|| (= (t) (8i8: isleType))
-;;@           (|| (= (t) (16i8: isleType))
-;;@           (|| (= (t) (32i8: isleType))
-;;@               (= (t) (64i8: isleType))))),
+;;@           (|| (= (t) (8i8: int))
+;;@           (|| (= (t) (16i8: int))
+;;@           (|| (= (t) (32i8: int))
+;;@               (= (t) (64i8: int))))),
 ;;@     ))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 (extern constructor do_shift do_shift)
 
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assume  (
-;;@          if (<= (32i0:isleType) (widthof (arg))) 
+;;@          if (<= (32i0:int) (widthof (arg))) 
 ;;@             (= (ret) (conv_to (regwidth) (arg)))             
 ;;@             (= (ret) (conv_to (regwidth) (sign_ext (32) (arg))))
 ;;@          )

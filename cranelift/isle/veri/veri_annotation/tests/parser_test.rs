@@ -6,7 +6,7 @@ fn test_type() {
     assert!(parser::TypeParser::new().parse("bv").is_ok());
     assert!(parser::TypeParser::new().parse("bv8").is_ok());
     assert!(parser::TypeParser::new().parse("bool").is_ok());
-    assert!(parser::TypeParser::new().parse("isleType").is_ok());
+    assert!(parser::TypeParser::new().parse("int").is_ok());
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn test_expr() {
         .parse("(if (a) (+ (if (x) (+ (b) (c)) (d)) (c)) (d))")
         .is_ok());
     assert!(parser::ExprParser::new()
-        .parse("(if (<= (t) (32i8: isleType)) (32i8: isleType) (64i8: isleType))")
+        .parse("(if (<= (t) (32i8: int)) (32i8: int) (64i8: int))")
         .is_ok());
 }
 
@@ -155,7 +155,7 @@ fn test_real_annotations() {
     let parsed = parser::TermAnnotationParser::new()
         .parse(
             "(spec (sig (args arg) (ret))
-            (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))",
+            (assume  (= (arg) (ret)), (<= (arg) (64i128: int))))",
         )
         .unwrap();
     let expected = isle_annotation_for_term("fits_in_64").unwrap();

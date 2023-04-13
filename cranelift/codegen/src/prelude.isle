@@ -240,13 +240,13 @@
 
 ;; An extractor that only matches types that can fit in 16 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret)), (<= (arg) (16i128: isleType))))
+;;@     (assume  (= (arg) (ret)), (<= (arg) (16i128: int))))
 (decl fits_in_16 (Type) Type)
 (extern extractor fits_in_16 fits_in_16)
 
 ;; An extractor that only matches types that can fit in 32 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret)), (<= (arg) (32i128: isleType))))
+;;@     (assume  (= (arg) (ret)), (<= (arg) (32i128: int))))
 (decl fits_in_32 (Type) Type)
 (extern extractor fits_in_32 fits_in_32)
 
@@ -256,7 +256,7 @@
 
 ;; An extractor that only matches types that can fit in 64 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: int))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
@@ -271,7 +271,7 @@
 ;; A pure constructor that only matches scalar integers, and references that can
 ;; fit in 64 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: int))))
 (decl pure partial ty_int_ref_scalar_64 (Type) Type)
 (extern constructor ty_int_ref_scalar_64 ty_int_ref_scalar_64)
 
@@ -292,6 +292,8 @@
 (extern extractor ty_int_ref_64 ty_int_ref_64)
 
 ;; An extractor that only matches integers.
+;;@ (spec (sig (args a) (r))
+;;@     (assume  (= (r) (a))))
 (decl ty_int (Type) Type)
 (extern extractor ty_int ty_int)
 

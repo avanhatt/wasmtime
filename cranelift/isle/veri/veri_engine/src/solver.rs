@@ -76,6 +76,7 @@ impl SolverCtx {
     }
 
     fn assert(&mut self, expr: SExpr) {
+        println!("pushing assertion {}", self.smt.display(expr).to_string());
         self.additional_assertions.push(expr);
     }
 
@@ -454,8 +455,13 @@ impl SolverCtx {
         narrow_decl: SExpr,
         name: Option<String>,
     ) -> SExpr {
-        let width = self.bitwidth.checked_sub(narrow_width).unwrap();
-        if width > 0 {
+        let diff = if let Some(diff) = self.bitwidth.checked_sub(narrow_width) {
+            diff
+        } else {
+            println!("Unexpected width! {}", narrow_width);
+            return self.new_fresh_bits(narrow_width);
+        };
+        if diff > 0 {
             let mut narrow_name = format!("narrow__{}", tyvar);
             let mut wide_name = format!("wide__{}", tyvar);
             if let Some(s) = name {
@@ -471,7 +477,7 @@ impl SolverCtx {
                 wide_name.clone(),
                 self.smt.bit_vec_sort(self.smt.numeral(self.bitwidth)),
             ));
-            let padding = self.new_fresh_bits(width);
+            let padding = self.new_fresh_bits(diff);
             self.assume(self.smt.eq(
                 self.smt.atom(&wide_name),
                 self.smt.concat(padding, self.smt.atom(narrow_name)),
@@ -796,6 +802,15 @@ impl SolverCtx {
                     BinaryOp::BVXor => "bvxor",
                     BinaryOp::BVShl => "bvshl",
                     _ => unreachable!("{:?}", op),
+                };
+                // If this is only a query to determine widths, we can skip bitvector equalities
+                if self.onlywidths && matches!(op, BinaryOp::Eq) {
+                    match (self.get_type(&x), self.get_type(&y)) {
+                        (Some(Type::BitVector(_)), Some(Type::BitVector(_))) => {
+                            return self.smt.true_()
+                        }
+                        _ => (),
+                    }
                 };
                 // If we have some static width that isn't the bitwidth, extract based on it
                 // before performing the operation for the dynamic case.
@@ -1667,7 +1682,6 @@ pub fn run_solver(
                         let eq = ctx
                             .smt
                             .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
-                        println!("Width from inference {} ({})", width_name, bitwidth);
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
@@ -1928,6 +1942,9 @@ pub fn run_solver(
     let full_condition = if assertions.len() > 1 {
         let assertion_conjunction = ctx.smt.and_many(assertions.clone());
         ctx.smt.and(condition, assertion_conjunction)
+    } else if assertions.len() == 1 {
+        // easy-smt `and_many` fails on a list with 1 element
+        ctx.smt.and(condition, assertions[0])
     } else {
         condition
     };

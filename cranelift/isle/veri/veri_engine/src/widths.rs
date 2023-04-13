@@ -108,6 +108,10 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("sdiv", bv_binary_8_to_64.clone());
     widths.insert("srem", bv_binary_8_to_64.clone());
     widths.insert("urem", bv_binary_8_to_64.clone());
+    widths.insert("umax", bv_binary_8_to_64.clone());
+    widths.insert("smax", bv_binary_8_to_64.clone());
+    widths.insert("umin", bv_binary_8_to_64.clone());
+    widths.insert("smin", bv_binary_8_to_64.clone());
 
     // Binary with possibly differing widths
     widths.insert("rotl", bv_binary_8_to_64.clone());
@@ -155,6 +159,7 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
+    // Intermediate terms
     widths.insert(
         "lower_icmp_into_reg",
         vec![
@@ -298,7 +303,61 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
-    // Intermediate terms
+    // (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
+    widths.insert(
+        "cmp_and_choose",
+        vec![
+            TermSignature {
+                args: vec![
+                    Type::Int,
+                    Type::BitVector(Some(8)),
+                    Type::Bool,
+                    Type::BitVector(Some(8)),
+                    Type::BitVector(Some(8)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::Int,
+                    Type::BitVector(Some(8)),
+                    Type::Bool,
+                    Type::BitVector(Some(16)),
+                    Type::BitVector(Some(16)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::Int,
+                    Type::BitVector(Some(8)),
+                    Type::Bool,
+                    Type::BitVector(Some(32)),
+                    Type::BitVector(Some(32)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![
+                    Type::Int,
+                    Type::BitVector(Some(8)),
+                    Type::Bool,
+                    Type::BitVector(Some(64)),
+                    Type::BitVector(Some(64)),
+                    Type::Int,
+                ],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
+
     // (decl small_rotr (Type Reg Reg) Reg)
     widths.insert(
         "small_rotr",

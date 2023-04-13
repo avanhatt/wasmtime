@@ -20,7 +20,7 @@
 (extern extractor has_type has_type)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: isleType))))
+;;@     (assume  (= (arg) (ret)), (<= (arg) (64i128: int))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 

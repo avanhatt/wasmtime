@@ -19,7 +19,7 @@ Ident: String = {
 pub Type: Type = {
     "bv" => Type::BitVector,
     "bv" <n:UNum> => Type::BitVectorWithWidth(n),
-    "isleType" => Type::Int,
+    "int" => Type::Int,
     "bool" => Type::Bool,
 };
 

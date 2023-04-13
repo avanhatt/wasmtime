@@ -460,24 +460,32 @@
     (inst_data (InstructionData.BinaryImm8 (Opcode.Extractlane) x Idx))
 )
 
+;;@ (spec (sig (args x, y) (r))
+;;@   (assume (= (r) (if (slte (x) (y)) (x) (y)))))
 (decl smin (Value Value) Inst)
 (extractor
     (smin x y)
     (inst_data (InstructionData.Binary (Opcode.Smin) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (r))
+;;@   (assume (= (r) (if (ulte (x) (y)) (x) (y)))))
 (decl umin (Value Value) Inst)
 (extractor
     (umin x y)
     (inst_data (InstructionData.Binary (Opcode.Umin) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (r))
+;;@   (assume (= (r) (if (sgte (x) (y)) (x) (y)))))
 (decl smax (Value Value) Inst)
 (extractor
     (smax x y)
     (inst_data (InstructionData.Binary (Opcode.Smax) (value_array_2 x y)))
 )
 
+;;@ (spec (sig (args x, y) (r))
+;;@   (assume (= (r) (if (ugte (x) (y)) (x) (y)))))
 (decl umax (Value Value) Inst)
 (extractor
     (umax x y)
@@ -913,7 +921,7 @@
 
 ;;@ (spec (sig (args x, y) (ret))
 ;;@       (assume  (= (urem (x) (y)) (ret)),
-;;@                   (! (= (bv2int (ret)) (0i0:isleType)))
+;;@                   (! (= (bv2int (ret)) (0i0:int)))
 ;;@ ))
 (decl urem (Value Value) Inst)
 (extractor
@@ -923,7 +931,7 @@
 
 ;;@ (spec (sig (args x, y) (ret))
 ;;@       (assume  (= (srem (x) (y)) (ret)),
-;;@                   (! (= (bv2int (ret)) (0i0:isleType)))
+;;@                   (! (= (bv2int (ret)) (0i0:int)))
 ;;@ ))
 (decl srem (Value Value) Inst)
 (extractor

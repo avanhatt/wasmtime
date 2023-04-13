@@ -34,8 +34,8 @@
 
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@     (assume  (|| (<= (bv2int (y)) (4094i0:int))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:int))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
 ;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y))))
@@ -45,12 +45,12 @@
 
 ;;@ (spec (sig (args ty, a) (ret))
 ;;@     (assume  (= (ret) 
-;;@                    (if (= (ty) (32i0:isleType))
-;;@                        (a64clz (32i0:isleType) (a))
-;;@                        (a64clz (64i0:isleType) (a))
+;;@                    (if (= (ty) (32i0:int))
+;;@                        (a64clz (32i0:int) (a))
+;;@                        (a64clz (64i0:int) (a))
 ;;@                    )
 ;;@                 ),
-;;@                 (|| (= (ty) (32i0:isleType)) (= (ty) (64i0:isleType)))
+;;@                 (|| (= (ty) (32i0:int)) (= (ty) (64i0:int)))
 ;;@     )
 ;;@ )
 (decl a64_clz (Type Reg) Reg)
@@ -66,7 +66,7 @@
 ;; Place a `Value` into a register, zero extending it to 32-bits
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (assume  (
-;;@          if (<= (widthof (arg)) (32i0:isleType)) 
+;;@          if (<= (widthof (arg)) (32i0:int)) 
 ;;@             (= (ret) (conv_to (regwidth) (arg)))             
 ;;@             (= (ret) (conv_to (regwidth) (zero_ext (32) (arg))))
 ;;@          )

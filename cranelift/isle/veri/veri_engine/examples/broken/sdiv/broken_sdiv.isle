@@ -28,7 +28,7 @@
 
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@       (assume  (= (sdiv (x) (y)) (ret)),
-;;@                   (= (ty) (64i0: isleType))
+;;@                   (= (ty) (64i0: int))
 ;;@ ))
 (decl a64_sdiv (Type Reg Reg) Reg)
 (rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
@@ -38,7 +38,7 @@
 ;; on the input type.
 ;;@ (spec (sig (args ty, x, y) (ret))
 ;;@       (assume  (= (x) (ret)),
-;;@       (if (= (ty) (32i0:isleType)) 
+;;@       (if (= (ty) (32i0:int)) 
 ;;@           (! (&& (= (0i32:bv) (extract 31 0 (y)))
 ;;@                  (= (2147483648i32:bv) (extract 31 0 (y)))))          
 ;;@           (! (&& (= (0i64:bv) (y))
