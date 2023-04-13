@@ -814,7 +814,7 @@ impl<'a> Codegen<'a> {
         match trie {
             &TrieNode::Empty => {}
 
-            &TrieNode::Leaf { ref output, ref rule_name, .. } => {
+            &TrieNode::Leaf { ref output, .. } => {
                 writeln!(
                     code,
                     "{}// Rule at {}.",
@@ -826,9 +826,10 @@ impl<'a> Codegen<'a> {
                 // ALDS: Log the rule firing.
                 writeln!(
                     code,
-                    "{}dbg!(\"FIRED: {}\");",
+                    "{}println!(\"{},{}\");",
                     indent,
-                    rule_name,
+                    output.rule_id,
+                    output.name.as_ref().unwrap_or(&"".to_string()),
                 )
                 .unwrap();
 

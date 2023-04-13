@@ -220,6 +220,10 @@ pub struct ExprSequence {
     pub insts: Vec<ExprInst>,
     /// Position at which the rule producing this sequence was located.
     pub pos: Pos,
+    /// The name of the rule that produced this sequence, if it has one.
+    pub name: Option<String>,
+    /// The ID of that rule.
+    pub rule_id: usize,
 }
 
 impl ExprSequence {
@@ -421,5 +425,7 @@ pub fn lower_rule(termenv: &TermEnv, rule: RuleId) -> (PatternSequence, ExprSequ
     let mut pattern_seq = PatternSequence::default();
     let mut expr_seq = ruledata.visit(&mut pattern_seq, termenv).seq;
     expr_seq.pos = ruledata.pos;
+    expr_seq.name = ruledata.name.clone();
+    expr_seq.rule_id = ruledata.id.index();
     (pattern_seq, expr_seq)
 }
