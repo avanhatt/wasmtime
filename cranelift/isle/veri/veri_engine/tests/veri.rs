@@ -2728,6 +2728,16 @@ fn test_named_iabs_8_16_32() {
         )
     })
 }
+#[test]
+fn test_named_bitselect() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "bitselect",
+            "bitselect",
+            all_success_result(),
+        )
+    })
+}
 
 // Can't currently verify because ConsumesFlags requires a non-functional
 // interpretation

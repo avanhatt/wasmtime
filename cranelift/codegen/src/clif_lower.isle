@@ -770,6 +770,10 @@
     (inst_data (InstructionData.Ternary (Opcode.SelectSpectreGuard) (value_array_3 c x y)))
 )
 
+;;@ (spec (sig (args c, x, y) (r))
+;;@   (provide 
+;;@     (= (r) (| (& (c) (x)) 
+;;@               (& (~ (c)) (y))))))    
 (decl bitselect (Value Value Value) Inst)
 (extractor
     (bitselect c x y)

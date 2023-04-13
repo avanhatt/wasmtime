@@ -3086,12 +3086,16 @@
 ;;@ (spec (sig (args ty, a, b) (r))
 ;;@   (provide 
 ;;@     (= (r) 
-;;@        (switch (ty) 
-;;@          ((32i8: Int) (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b)))))
-;;@          ((64i8: Int) (| (a) (b)))
+;;@        (if (<= (ty) (32i8: Int))
+;;@          (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b))))
+;;@          (| (a) (b))
 ;;@        )
-;;@     )
-;;@ ))
+;;@     ))
+;;@   (require
+;;@     (|| (= (ty) (8i8: Int))
+;;@     (|| (= (ty) (16i8: Int))
+;;@     (|| (= (ty) (32i8: Int))
+;;@     (= (ty) (64i8: Int)))))))
 (decl orr (Type Reg Reg) Reg)
 (rule (orr ty x y) (alu_rrr (ALUOp.Orr) ty x y))
 
@@ -3116,7 +3120,19 @@
 (rule (orr_vec x y size) (vec_rrr (VecALUOp.Orr) x y size))
 
 ;; Helpers for generating `and` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (provide 
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: Int))
+;;@          (conv_to (regwidth) (& (extract 31 0 (a)) (extract 31 0 (b))))
+;;@          (& (a) (b))
+;;@        )
+;;@   ))
+;;@   (require
+;;@     (|| (= (ty) (8i8: Int))
+;;@     (|| (= (ty) (16i8: Int))
+;;@     (|| (= (ty) (32i8: Int))
+;;@     (= (ty) (64i8: Int)))))))
 (decl and_reg (Type Reg Reg) Reg)
 (rule (and_reg ty x y) (alu_rrr (ALUOp.And) ty x y))
 
@@ -3145,7 +3161,19 @@
 (rule (eor_vec x y size) (vec_rrr (VecALUOp.Eor) x y size))
 
 ;; Helpers for generating `bic` instructions.
-
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (provide 
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: Int))
+;;@          (conv_to (regwidth) (& (extract 31 0 (a)) (~ (extract 31 0 (b)))))
+;;@          (& (a) (~ (b)))
+;;@        )
+;;@     ))
+;;@   (require
+;;@     (|| (= (ty) (8i8: Int))
+;;@     (|| (= (ty) (16i8: Int))
+;;@     (|| (= (ty) (32i8: Int))
+;;@     (= (ty) (64i8: Int)))))))
 (decl bic (Type Reg Reg) Reg)
 (rule (bic ty x y) (alu_rrr (ALUOp.AndNot) ty x y))
 
