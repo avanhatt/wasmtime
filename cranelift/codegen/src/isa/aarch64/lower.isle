@@ -905,7 +905,7 @@
 ;; cmp     $x, $y
 ;; csel    .., $x, $y, $cc
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
-(rule (cmp_and_choose (fits_in_64 ty) cc _ x y)
+(rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
             (y Reg (put_in_reg y)))
        (with_flags_reg (cmp (operand_size ty) x y)
@@ -913,19 +913,19 @@
 
 ;; `i16` and `i8` min/max require sign extension as
 ;; the comparison operates on (at least) 32 bits.
-(rule 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
+(rule cmp_and_choose_8_16 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
       (let ((x Reg (extend (put_in_reg x) signed (ty_bits ty) 32))
             (y Reg (extend (put_in_reg y) signed (ty_bits ty) 32)))
       (with_flags_reg (cmp (operand_size ty) x y)
                       (csel cc x y))))
 
-(rule 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (umin x y)))
+(rule umin 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (umin x y)))
       (cmp_and_choose ty (Cond.Lo) $false x y))
-(rule 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (smin x y)))
+(rule smin 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (smin x y)))
       (cmp_and_choose ty (Cond.Lt) $true x y))
-(rule 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (umax x y)))
+(rule umax 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (umax x y)))
       (cmp_and_choose ty (Cond.Hi) $false x y))
-(rule 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (smax x y)))
+(rule smax 2 (lower (has_type (and (fits_in_64 ty) (ty_int _)) (smax x y)))
       (cmp_and_choose ty (Cond.Gt) $true x y))
 
 ;; Vector types.
@@ -1705,25 +1705,25 @@
 ;;     if ty == i128:
 ;;         mov out_hi, 0
 
-(rule (lower (has_type $I8 (popcnt x)))
+(rule popcnt_8 (lower (has_type $I8 (popcnt x)))
       (let ((tmp Reg (mov_to_fpu x (ScalarSize.Size32)))
             (nbits Reg (vec_cnt tmp (VectorSize.Size8x8))))
         (mov_from_vec nbits 0 (ScalarSize.Size8))))
 
 ;; Note that this uses `addp` instead of `addv` as it's usually cheaper.
-(rule (lower (has_type $I16 (popcnt x)))
+(rule popcnt_16 (lower (has_type $I16 (popcnt x)))
       (let ((tmp Reg (mov_to_fpu x (ScalarSize.Size32)))
             (nbits Reg (vec_cnt tmp (VectorSize.Size8x8)))
             (added Reg (addp nbits nbits (VectorSize.Size8x8))))
         (mov_from_vec added 0 (ScalarSize.Size8))))
 
-(rule (lower (has_type $I32 (popcnt x)))
+(rule popcnt_32 (lower (has_type $I32 (popcnt x)))
       (let ((tmp Reg (mov_to_fpu x (ScalarSize.Size32)))
             (nbits Reg (vec_cnt tmp (VectorSize.Size8x8)))
             (added Reg (addv nbits (VectorSize.Size8x8))))
         (mov_from_vec added 0 (ScalarSize.Size8))))
 
-(rule (lower (has_type $I64 (popcnt x)))
+(rule popcnt_64 (lower (has_type $I64 (popcnt x)))
       (let ((tmp Reg (mov_to_fpu x (ScalarSize.Size64)))
             (nbits Reg (vec_cnt tmp (VectorSize.Size8x8)))
             (added Reg (addv nbits (VectorSize.Size8x8))))

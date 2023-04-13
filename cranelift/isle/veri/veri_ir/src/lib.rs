@@ -196,6 +196,8 @@ pub enum Expr {
     Rev(Box<Expr>),
     A64Rev(Box<Expr>, Box<Expr>),
 
+    BVPopcnt(Box<Expr>),
+
     BVSubs(Box<Expr>, Box<Expr>, Box<Expr>),
 
     // ITE
@@ -207,6 +209,9 @@ pub enum Expr {
     // Conversions
     // Extract specified bits
     BVExtract(usize, usize, Box<Expr>),
+
+    // Concat bitvectors
+    BVConcat(Vec<Expr>),
 
     // Convert integer to bitvector with that value
     BVIntToBV(usize, Box<Expr>),

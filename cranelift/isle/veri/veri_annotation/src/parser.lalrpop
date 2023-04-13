@@ -112,6 +112,7 @@ pub Expr: Box<Expr> = {
     "(" "a64rev" <ty:Expr> <u:Expr> ")" => Box::new(Expr::A64Rev(ty, u, 0)),
 
     "(" "subs" <ty:Expr> <u:Expr> <v:Expr> ")" => Box::new(Expr::BVSubs(ty, u, v, 0)),
+    "(" "popcnt" <x:Expr> ")" => Box::new(Expr::BVPopcnt(x, 0)),
 
     "(" "*" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVMul(u, v, 0)),
     "(" "/" <u:Expr> <v:Expr> ")" => Box::new(Expr::BVUDiv(u, v, 0)),
@@ -135,6 +136,7 @@ pub Expr: Box<Expr> = {
     "(" "sign_ext" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVSignExtToVarWidth(n, v, 0)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v, 0)),
+    "(" "concat" <xs:Expr+> ")" => Box::new(Expr::BVConcat(xs.iter().map(|x| *x.clone()).collect(), 0)),
     "(" "conv_to" <n:Width> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v, 0)),
     "(" "conv_to" <n:Expr> <v:Expr> ")" => 
         Box::new(Expr::BVConvToVarWidth(n, v, 0)),

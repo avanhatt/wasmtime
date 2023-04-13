@@ -2631,3 +2631,71 @@ fn test_named_lower_icmp_const_32_64() {
         )
     })
 }
+
+#[test]
+fn test_named_popcnt_8() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "popcnt_8",
+            "popcnt",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_popcnt_16() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "popcnt_16",
+            "popcnt",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+
+#[test]
+fn test_named_popcnt_32() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "popcnt_32",
+            "popcnt",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+
+// Currently too slow
+// https://github.com/avanhatt/wasmtime/issues/36
+#[test]
+fn test_named_popcnt_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "popcnt_64",
+            "popcnt",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
