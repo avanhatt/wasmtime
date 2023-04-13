@@ -2701,13 +2701,29 @@ fn test_named_smin() {
 fn test_named_iabs_64() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname(
-            "iabs_6",
+            "iabs_64",
             "iabs",
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
                 (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_iabs_8_16_32() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iabs_8_16_32",
+            "iabs",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
             ],
         )
     })

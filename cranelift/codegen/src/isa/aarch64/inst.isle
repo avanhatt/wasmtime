@@ -2882,6 +2882,17 @@
 
 ;; Helper for generating instruction sequences to calculate a scalar absolute
 ;; value.
+;;@ (spec (sig (args s, x) (r))
+;;@   (provide  
+;;@     (= (r) 
+;;@        (if (= (s) (32i8:Int)) 
+;;@            (conv_to (regwidth) 
+;;@                     (if (sgte (extract 31 0 (x)) (0i64:bv32)) 
+;;@                         (extract 31 0 (x)) 
+;;@                         (- (extract 31 0 (x)))))
+;;@            (if (sgte (x) (0i64:bv64)) (x) (- (x))))))
+;;@   (require 
+;;@     (|| (= (s) (32i8:Int)) (= (s) (64i8:Int)))))
 (decl abs (OperandSize Reg) Reg)
 (rule (abs size x)
       (value_regs_get (with_flags (cmp_imm size x (u8_into_imm12 0))
