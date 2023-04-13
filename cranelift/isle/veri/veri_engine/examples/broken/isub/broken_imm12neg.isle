@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -18,7 +18,7 @@
 ;; BROKEN: * instead of -
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (provide  (= (ret) (* (x) (zero_ext (regwidth) (y))))
+;;@     (provide (= (ret) (* (x) (zero_ext (regwidth) (y))))
 ;;@ ))
 (decl add_imm (Type Reg Imm12) Reg)
 (rule (add_imm ty x y) (alu_rr_imm12 (ALUOp.Add) ty x y))
@@ -28,7 +28,7 @@
 
 ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
+;;@     (provide (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
 ;;@                     (&& (< (- (zero_ext (regwidth) (ret))) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) (0i3:bv))
 ;;@                 )),

@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -13,7 +13,7 @@
 ))
 
 ;;@ (spec (sig (args ty, a, b, c) (r))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (r) 
 ;;@        (if (<= (ty) (32i8: Int)) 
 ;;@            (conv_to (regwidth) (+ (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))

@@ -2632,6 +2632,142 @@ fn test_named_lower_icmp_const_32_64() {
     })
 }
 
+
+#[test]
+fn test_named_umax() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "umax",
+            "umax",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_smax() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "smax",
+            "smax",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_umin() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "umin",
+            "umin",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_smin() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "smin",
+            "smin",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_iabs_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iabs_64",
+            "iabs",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_iabs_8_16_32() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iabs_8_16_32",
+            "iabs",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+// Can't currently verify because ConsumesFlags requires a non-functional
+// interpretation
+// #[test]
+// fn test_named_cmp_and_choose_8_16() {
+//     run_and_retry(|| {
+//         let config = Config {
+//             dyn_width: false,
+//             term: "cmp_and_choose".to_string(),
+//             distinct_check: true,
+//             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+//                 let ty_arg = *args.first().unwrap();
+//                 let lower_8_bits_eq = {
+//                     let mask = smt.atom("#x00000000000000FF");
+//                     smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+//                 };
+//                 let lower_16_bits_eq = {
+//                     let mask = smt.atom("#x000000000000FFFF");
+//                     smt.eq(smt.bvand(mask, lhs), smt.bvand(mask, rhs))
+//                 };
+//                 smt.ite(
+//                     smt.eq(ty_arg, smt.atom("8")),
+//                     lower_8_bits_eq,
+//                     lower_16_bits_eq,
+//                 )
+//             })),
+//             names: Some(vec!["cmp_and_choose_8_16".to_string()]),
+//         };
+//         test_aarch64_with_config(
+//             config,
+//             vec![
+//                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {  })),
+//                 (Bitwidth::I16, VerificationResult::Failure(Counterexample {  })),
+//                 (Bitwidth::I32, VerificationResult::InapplicableRule),
+//                 (Bitwidth::I64, VerificationResult::InapplicableRule),
+//             ],
+//         );
+//     })
+// }
+
 #[test]
 fn test_named_popcnt_8() {
     run_and_retry(|| {

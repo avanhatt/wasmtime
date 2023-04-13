@@ -40,7 +40,7 @@
 
 ;; Extract the type of a `Value`.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (widthof (ret)))))
+;;@     (provide (= (arg) (widthof (ret)))))
 (decl value_type (Type) Value)
 (extern extractor infallible value_type value_type)
 
@@ -102,7 +102,7 @@
 (extern constructor u32_as_u64 u32_as_u64)
 
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl pure i64_as_u64 (i64) u64)
 (extern constructor i64_as_u64 i64_as_u64)
 
@@ -112,7 +112,7 @@
 (extern constructor u64_add u64_add)
 
 ;;@ (spec (sig (args a, b) (ret))
-;;@     (provide  (= (ret) (- (a) (b)))))
+;;@     (provide (= (ret) (- (a) (b)))))
 (decl pure u64_sub (u64 u64) u64)
 (extern constructor u64_sub u64_sub)
 
@@ -155,7 +155,7 @@
 
 ;; x & 1 == 1
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (ret) (= (1i1:bv1) (extract 0 0 (arg))))))
+;;@     (provide (= (ret) (= (1i1:bv1) (extract 0 0 (arg))))))
 (decl pure u64_is_odd (u64) bool)
 (extern constructor u64_is_odd u64_is_odd)
 
@@ -188,7 +188,7 @@
 
 ;; Get the bit width of a given type.
 ;;@ (spec (sig (args x) (ret))
-;;@     (provide  (= (ret) (int2bv 8 (x)))))
+;;@     (provide (= (ret) (int2bv 8 (x)))))
 (decl pure ty_bits (Type) u8)
 (extern constructor ty_bits ty_bits)
 
@@ -240,13 +240,13 @@
 
 ;; An extractor that only matches types that can fit in 16 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret)), (<= (arg) (16i128: Int))))
+;;@     (provide (= (arg) (ret)), (<= (arg) (16i128: Int))))
 (decl fits_in_16 (Type) Type)
 (extern extractor fits_in_16 fits_in_16)
 
 ;; An extractor that only matches types that can fit in 32 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret)), (<= (arg) (32i128: Int))))
+;;@     (provide (= (arg) (ret)), (<= (arg) (32i128: Int))))
 (decl fits_in_32 (Type) Type)
 (extern extractor fits_in_32 fits_in_32)
 
@@ -256,7 +256,7 @@
 
 ;; An extractor that only matches types that can fit in 64 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))
+;;@     (provide (= (arg) (ret)), (<= (arg) (64i128: Int))))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
 
@@ -271,7 +271,7 @@
 ;; A pure constructor that only matches scalar integers, and references that can
 ;; fit in 64 bits.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret)), (<= (arg) (64i128: Int))))
+;;@     (provide (= (arg) (ret)), (<= (arg) (64i128: Int))))
 (decl pure partial ty_int_ref_scalar_64 (Type) Type)
 (extern constructor ty_int_ref_scalar_64 ty_int_ref_scalar_64)
 
@@ -292,6 +292,8 @@
 (extern extractor ty_int_ref_64 ty_int_ref_64)
 
 ;; An extractor that only matches integers.
+;;@ (spec (sig (args a) (r))
+;;@     (provide (= (r) (a))))
 (decl ty_int (Type) Type)
 (extern extractor ty_int ty_int)
 
@@ -359,7 +361,7 @@
 
 ;; Extract a `u64` from an `Imm64`.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl u64_from_imm64 (u64) Imm64)
 (extern extractor infallible u64_from_imm64 u64_from_imm64)
 
@@ -425,7 +427,7 @@
 
 ;; Pure constructor that only matches signed integer cond codes.
 ;;@ (spec (sig (args c) (ret))
-;;@     (provide  
+;;@     (provide 
 ;;@          (= (ret) (c)),
 ;;@          (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8))) 
 ;;@ ))

@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -27,7 +27,7 @@
 (extern constructor alu_rrr_shift alu_rrr_shift)
 
 ;;@ (spec (sig (args ty, a, b, shift) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) (if (<= (ty) (32i32:Int))
 ;;@       (conv_to (regwidth) (+ (extract 31 0 (a)) (switch (extract 9 8 (shift))
 ;;@         ((0i2:bv) (shl (extract 31 0 (b)) (zero_ext (32) (& (- (int2bv 8 (ty)) (1i8:bv8)) (extract 7 0 (shift))))))
@@ -44,7 +44,7 @@
 (rule (add_shift ty x y z) (alu_rrr_shift (ALUOp.Add) ty x y z))
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (provide  (= (extract 63 8 (a)) (0i56:bv)),
+;;@     (provide (= (extract 63 8 (a)) (0i56:bv)),
 ;;@                 (= (ret) (& (256i10:bv) (zero_ext (10) (extract 7 0 (a)))))))
 (decl pure lshr_from_u64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshr_from_u64 lshr_from_u64)

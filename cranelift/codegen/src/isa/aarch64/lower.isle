@@ -3,7 +3,7 @@
 ;; The main lowering constructor term: takes a clif `Inst` and returns the
 ;; register(s) within which the lowered instruction's result values live.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl partial lower (Inst) InstOutput)
 
 ;; Variant of the main lowering constructor term, which receives an
@@ -226,10 +226,10 @@
 (rule (lower (has_type ty @ (multi_lane _ _) (iabs x)))
       (vec_abs x (vector_size ty)))
 
-(rule 2 (lower (has_type $I64 (iabs x)))
+(rule iabs_64 2 (lower (has_type $I64 (iabs x)))
       (abs (OperandSize.Size64) x))
 
-(rule 1 (lower (has_type (fits_in_32 ty) (iabs x)))
+(rule iabs_8_16_32 1 (lower (has_type (fits_in_32 ty) (iabs x)))
       (abs (OperandSize.Size32) (put_in_reg_sext32 x)))
 
 ;;;; Rules for `avg_round` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -844,7 +844,7 @@
 
 ;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
 ;;@ (spec (sig (args x) (ret))
-;;@       (provide  (= (x) (ret)),
+;;@       (provide (= (x) (ret)),
 ;;@                   (! (= (0i64:bv) (ret))),
 ;;@                   (! (= (18446744073709551615i64:bv) (ret)))
 ;;@ ))
@@ -904,6 +904,27 @@
 
 ;; cmp     $x, $y
 ;; csel    .., $x, $y, $cc
+;;@ (spec (sig (args ty, cc, signed, x, y) (ret))
+;;@   (provide  
+;;@     (= (ret) 
+;;@        (switch (cc)
+;;@          ((3i8:bv8) (if (ult (x) (y)) (x) (y)))
+;;@          ((8i8:bv8) (if (ugt (x) (y)) (x) (y)))
+;;@          ((11i8:bv8) (if (slt (x) (y)) (x) (y)))
+;;@          ((12i8:bv8) (if (sgt (x) (y)) (x) (y)))
+;;@   )))
+;;@   (require
+;;@     (|| (= (ty) (8i8:Int))
+;;@     (|| (= (ty) (16i8:Int))
+;;@     (|| (= (ty) (32i8:Int))
+;;@     (= (ty) (64i8:Int))))),
+;;@     (|| (= (cc) (3i8:bv8))
+;;@     (|| (= (cc) (8i8:bv8))
+;;@     (|| (= (cc) (11i8:bv8))
+;;@     (= (cc) (12i8:bv8))))), 
+;;@     (if (signed) (|| (= (cc) (11i8:bv8)) (= (cc) (12i8:bv8))) 
+;;@                  (|| (= (cc) (3i8:bv8)) (= (cc) (8i8:bv8)))), 
+;;@ ))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
 (rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
@@ -1191,7 +1212,7 @@
 ;; Note that this automatically handles the clif semantics of masking the
 ;; shift amount where necessary.
 ;;@ (spec (sig (args op, t, a, b) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (op) 
 ;;@          ((16i8:bv8) (conv_to (regwidth) 
@@ -1246,7 +1267,7 @@
         (alu_rrr op $I32 x masked_shift_amt)))
 
 ;;@ (spec (sig (args t) (ret))
-;;@   (provide  (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
+;;@   (provide (= (- (int2bv 64 (t)) (1i64:bv)) (ret))))
 (decl shift_mask (Type) ImmLogic)
 (extern constructor shift_mask shift_mask)
 
@@ -1415,7 +1436,7 @@
 ;;         imm
 ;;     }
 ;;@ (spec (sig (args ty, x) (r))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (r) (& (- (int2bv 6 (ty)) (x)) (- (int2bv 6 (ty)) (1i6:bv6))))
 ;;@   )
 ;;@ )
@@ -1477,7 +1498,7 @@
 ;;    lsl val_lshift, val, neg_amt
 ;;    orr rd, val_lshift val_rshift
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (t)
 ;;@          ((8i8: Int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (extract 7 0 (y)))))
@@ -1503,7 +1524,7 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;;@ (spec (sig (args x) (ret))
-;;@   (provide  (= (- (int2bv 64 (x)) (1i64:bv64)) (ret))))
+;;@   (provide (= (- (int2bv 64 (x)) (1i64:bv64)) (ret))))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 
@@ -1518,7 +1539,7 @@
 ;;    orr rd, val_lshift, val_rshift
 
 ;;@ (spec (sig (args t, x, y) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (ret) 
 ;;@        (switch (t)
 ;;@          ((8i8: Int) (conv_to (regwidth) (rotr (extract 7 0 (x)) (zero_ext (8) (y)))))
@@ -1541,7 +1562,7 @@
         (orr $I32 val_lshift val_rshift)))
 
 ;;@ (spec (sig (args ty, x) (ret))
-;;@   (provide  
+;;@   (provide 
 ;;@    (= (- (int2bv 6 (ty)) (& (x) (- (int2bv 6 (ty)) (1i6:bv)))) (ret))))
 (decl rotr_opposite_amount (Type ImmShift) ImmShift)
 (extern constructor rotr_opposite_amount rotr_opposite_amount)

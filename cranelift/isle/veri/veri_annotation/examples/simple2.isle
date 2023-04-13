@@ -16,5 +16,5 @@
 
 ;; EXTRACTORS
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) ValueRegs)

@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -16,7 +16,7 @@
 ))
 
 ;;@ (spec (sig (args ty, a, b) (r))
-;;@   (provide  
+;;@   (provide 
 ;;@     (= (r) 
 ;;@        (if (<= (ty) (32i8: Int)) 
 ;;@            (conv_to (regwidth) (- (extract 31 0 (a)) (zero_ext (32) (b))))
@@ -34,7 +34,7 @@
 
 ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (|| (< (- (sign_ext (regwidth) (arg))) (4095i64:bv))
+;;@     (provide (|| (< (- (sign_ext (regwidth) (arg))) (4095i64:bv))
 ;;@                     (&& (< (- (sign_ext (regwidth) (arg))) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (- (sign_ext (regwidth) (arg)))) (0i3:bv))
 ;;@                 )),

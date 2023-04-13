@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide  (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -18,7 +18,7 @@
 (extern constructor bit_rr bit_rr)
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (provide  (= (ret) 
+;;@     (provide (= (ret) 
 ;;@                    (if (= (ty) (32i0:Int))
 ;;@                        (a64clz (32i0:Int) (a))
 ;;@                        (a64clz (64i0:Int) (a))
@@ -31,7 +31,7 @@
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 
 ;;@ (spec (sig (args ty, a) (ret))
-;;@     (provide  (= (ret) 
+;;@     (provide (= (ret) 
 ;;@                    (if (= (ty) (32i0:Int))
 ;;@                        (a64rev (32i0:Int) (a))
 ;;@                        (a64rev (64i0:Int) (a))
