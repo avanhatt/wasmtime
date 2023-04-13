@@ -2740,6 +2740,11 @@ fn test_named_iconst() {
     run_and_retry(|| test_aarch64_rule_with_lhs_termname("iconst", "iconst", all_success_result()))
 }
 
+#[test]
+fn test_named_null() {
+    run_and_retry(|| test_aarch64_rule_with_lhs_termname("null", "null", all_success_result()))
+}
+
 // Can't currently verify because ConsumesFlags requires a non-functional
 // interpretation
 // #[test]

@@ -746,6 +746,7 @@
     (inst_data (InstructionData.Shuffle (Opcode.Shuffle) (value_array_2 a b) mask))
 )
 
+;;@ (spec (sig (args) (r)) (provide (= (r) (conv_to (widthof (r)) (0i64:bv)))))
 (decl null () Inst)
 (extractor
     (null )
