@@ -860,13 +860,15 @@
 )
 
 ;;@ (spec (sig (args x) (ret))
-;;@     (provide (= (-(x)) (ret))))
+;;@       (provide (= (-(x)) (ret))))
 (decl ineg (Value) Inst)
 (extractor
     (ineg x)
     (inst_data (InstructionData.Unary (Opcode.Ineg) x))
 )
 
+;;@ (spec (sig (args x) (r))
+;;@   (provide (= (r) (if (sgte (x) (0i64:bv)) (x) (bvneg (x))))))
 (decl iabs (Value) Inst)
 (extractor
     (iabs x)
@@ -874,7 +876,7 @@
 )
 
 ;;@ (spec (sig (args x, y) (ret))
-;;@       (provide (= (* (x) (y)) (ret))))
+;;@   (provide (= (* (x) (y)) (ret))))
 (decl imul (Value Value) Inst)
 (extractor
     (imul x y)

@@ -1201,6 +1201,11 @@
       (enum Size32
             Size64))
 
+;;@ (spec (sig (args) (r)) (provide (= (r) (32i64:Int))))
+;;decl OperandSize.Size32
+;;@ (spec (sig (args) (r)) (provide (= (r) (64i64:Int))))
+;;decl OperandSize.Size64
+
 ;; Helper for calculating the `OperandSize` corresponding to a type
 ;;@ (spec (sig (args ty) (ret))
 ;;@   (provide 

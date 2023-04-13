@@ -2697,6 +2697,22 @@ fn test_named_smin() {
     })
 }
 
+#[test]
+fn test_named_iabs_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "iabs_6",
+            "iabs",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
 // Can't currently verify because ConsumesFlags requires a non-functional
 // interpretation
 // #[test]
