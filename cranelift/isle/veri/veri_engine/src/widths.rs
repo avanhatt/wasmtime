@@ -128,8 +128,60 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("rotl", bv_binary_8_to_64.clone());
     widths.insert("rotr", bv_binary_8_to_64.clone());
 
-    // Ternary 
+    // Ternary
     widths.insert("bitselect", bv_ternary_8_to_64.clone());
+
+    widths.insert(
+        "iconst",
+        vec![
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(16)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(32)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
+
+    widths.insert(
+        "null",
+        vec![
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(16)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(32)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
     widths.insert(
         "icmp",

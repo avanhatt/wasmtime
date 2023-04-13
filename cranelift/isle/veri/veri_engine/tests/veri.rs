@@ -2632,7 +2632,6 @@ fn test_named_lower_icmp_const_32_64() {
     })
 }
 
-
 #[test]
 fn test_named_umax() {
     run_and_retry(|| {
@@ -2728,15 +2727,22 @@ fn test_named_iabs_8_16_32() {
         )
     })
 }
+
 #[test]
 fn test_named_bitselect() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
-            "bitselect",
-            "bitselect",
-            all_success_result(),
-        )
+        test_aarch64_rule_with_lhs_termname("bitselect", "bitselect", all_success_result())
     })
+}
+
+#[test]
+fn test_named_iconst() {
+    run_and_retry(|| test_aarch64_rule_with_lhs_termname("iconst", "iconst", all_success_result()))
+}
+
+#[test]
+fn test_named_null() {
+    run_and_retry(|| test_aarch64_rule_with_lhs_termname("null", "null", all_success_result()))
 }
 
 // Can't currently verify because ConsumesFlags requires a non-functional
@@ -2810,7 +2816,6 @@ fn test_named_popcnt_16() {
     })
 }
 
-
 #[test]
 fn test_named_popcnt_32() {
     run_and_retry(|| {
@@ -2826,7 +2831,6 @@ fn test_named_popcnt_32() {
         )
     })
 }
-
 
 // Currently too slow
 // https://github.com/avanhatt/wasmtime/issues/36
