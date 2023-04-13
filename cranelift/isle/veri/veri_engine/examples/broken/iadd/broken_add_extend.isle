@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume (= (arg) (ret))))
+;;@     (provide (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -37,7 +37,7 @@
 
 ;; Only including the i8 to i32 opcodes, based on the impl of extended_value_from_value
 ;;@ (spec (sig (args x) (ret))
-;;@   (assume
+;;@   (provide
 ;;@     (switch (extract 66 64 (x))
 ;;@       ((0i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 7 0 (zero_ext (64) (ret))))))
 ;;@       ((1i3:bv) (= (extract 63 0 (x)) (zero_ext (64) (extract 15 0 (zero_ext (64) (ret))))))
@@ -49,16 +49,16 @@
 ;;@     (ulte (extract 66 64 (x)) (6i3:bv)),
 ;;@     (! (= (extract 66 64 (x)) (3i3:bv))),
 ;;@     (= (ret) (conv_to (widthof (ret)) (x))),
-;;@     (|| (= (8i32:isleType) (widthof (ret))) (|| (= (16i32:isleType) (widthof (ret))) (= (32i32:isleType) (widthof (ret)))))
+;;@     (|| (= (8i32:Int) (widthof (ret))) (|| (= (16i32:Int) (widthof (ret))) (= (32i32:Int) (widthof (ret)))))
 ;;@ ))
 (decl extended_value_from_value (ExtendedValue) Value)
 (extern extractor extended_value_from_value extended_value_from_value)
 
 ;; BROKEN: all sign_extend with no zero_extend
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume
+;;@     (provide
 ;;@       (= (ret) 
-;;@          (if (<= (ty) (32i32:isleType))
+;;@          (if (<= (ty) (32i32:Int))
 ;;@          (conv_to (regwidth) (+ (extract 31 0 (x)) 
 ;;@             (switch (extract 66 64 (y))
 ;;@               ((0i3:bv) (sign_ext (32) (extract 7 0 (y))))

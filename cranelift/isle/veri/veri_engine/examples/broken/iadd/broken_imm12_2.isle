@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -18,8 +18,8 @@
 ;; BROKEN: subtract instead of add
 ;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 ;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (assume  (|| (<= (bv2int (y)) (4094i0:isleType))
-;;@                     (&& (<= (bv2int (y)) (16773119i0:isleType))
+;;@     (provide  (|| (<= (bv2int (y)) (4094i0:Int))
+;;@                     (&& (<= (bv2int (y)) (16773119i0:Int))
 ;;@                         (= (extract 2 0 (y)) (0i3:bv))
 ;;@                 )),
 ;;@                 (= (ret) (- (x) (zero_ext (regwidth) (y)))),
@@ -32,7 +32,7 @@
 
 ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (|| (< (zero_ext (regwidth) (ret)) (4095i64:bv))
+;;@     (provide  (|| (< (zero_ext (regwidth) (ret)) (4095i64:bv))
 ;;@                     (&& (< (zero_ext (regwidth) (ret)) (16773120i64:bv))
 ;;@                         (= (extract 2 0 (zero_ext (regwidth) (ret))) (0i3:bv))
 ;;@                 )),

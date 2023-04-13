@@ -1,5 +1,5 @@
 ;;@ (spec (sig (args arg) (ret))
-;;@     (assume  (= (arg) (ret))))
+;;@     (provide  (= (arg) (ret))))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -35,7 +35,7 @@
 (extern constructor alu_rrrr alu_rrrr)
 
 ;;@ (spec (sig (args) (r))
-;;@     (assume  (= (zero_ext (regwidth) (0i1:bv)) (r))))
+;;@     (provide  (= (zero_ext (regwidth) (0i1:bv)) (r))))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
@@ -46,9 +46,9 @@
 
 ;; Helpers for generating `madd` instructions.
 ;;@ (spec (sig (args ty, a, b, c) (r))
-;;@   (assume  
+;;@   (provide  
 ;;@     (= (r) 
-;;@        (if (<= (ty) (32i8: isleType)) 
+;;@        (if (<= (ty) (32i8: Int)) 
 ;;@            (conv_to (regwidth) (+ (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))
 ;;@            (+ (c) (* (a) (b)))))))
 (decl madd (Type Reg Reg Reg) Reg)
