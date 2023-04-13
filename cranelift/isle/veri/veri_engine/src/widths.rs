@@ -30,6 +30,16 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         })
         .collect();
 
+    let bv_ternary_8_to_64: Vec<TermSignature> = bv_types_8_to_64
+        .iter()
+        .copied()
+        .map(|x| TermSignature {
+            args: vec![x.clone(), x.clone(), x.clone()],
+            ret: x.clone(),
+            canonical_type: Some(x),
+        })
+        .collect();
+
     let mut widths = HashMap::new();
 
     // Simple unary
@@ -117,6 +127,9 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     // Binary with possibly differing widths
     widths.insert("rotl", bv_binary_8_to_64.clone());
     widths.insert("rotr", bv_binary_8_to_64.clone());
+
+    // Ternary 
+    widths.insert("bitselect", bv_ternary_8_to_64.clone());
 
     widths.insert(
         "icmp",

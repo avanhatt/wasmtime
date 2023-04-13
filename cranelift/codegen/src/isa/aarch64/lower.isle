@@ -1763,7 +1763,7 @@
 
 ;;;; Rules for `bitselect` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type ty (bitselect c x y)))
+(rule bitselect (lower (has_type ty (bitselect c x y)))
       (if (ty_int_ref_scalar_64 ty))
       (let ((tmp1 Reg (and_reg ty x c))
             (tmp2 Reg (bic ty y c)))
