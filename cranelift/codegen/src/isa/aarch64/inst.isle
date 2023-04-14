@@ -3313,6 +3313,18 @@
 
 ;; Helpers for generating various load instructions, with varying
 ;; widths and sign/zero-extending properties.
+;;         103                        96 95           32 31
+;; Amode: [ 8 bit size (widthof Value) ] [ 64 bit base ] [ 32 bit offset ]
+;; Load: [ 1 bit flag ][ 8 bit size (widthof Value) ][ 64 bit address (zext (Value + offset)) ]
+;;@ (spec (sig (args am, f) (r))
+;;@   (provide 
+;;@     (= (r)
+;;@        (mem 
+;;@          0
+;;@          (f)
+;;@          (8i8:Int)
+;;@          (+ (extract 95 32 (am)) (zero_ext (64) (extract 31 0 (am))))
+;;@ ))))
 (decl aarch64_uload8 (AMode MemFlags) Reg)
 (rule (aarch64_uload8 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3692,6 +3704,17 @@
         dst))
 
 ;; Lower the address of a load or a store.
+;; (amode $I8 address offset)
+;; [ 8 bit size (widthof Value) ] [ 64 bit base ] [ 32 bit offset ]
+;;@ (spec (sig (args ty, p, o) (r))
+;;@   (provide 
+;;@     (= (r)
+;;@        (concat 104
+;;@          (int2bv 8 (widthof (p)))
+;;@          (zero_ext (64) (p)) 
+;;@          (o))))
+;;@    (require (= (ty) (widthof (p))))
+;;@ )
 (decl amode (Type Value u32) AMode)
 ;; TODO: Port lower_address() to ISLE.
 (extern constructor amode amode)

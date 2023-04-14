@@ -38,6 +38,7 @@ pub struct SolverCtx {
     pub additional_assumptions: Vec<SExpr>,
     pub additional_assertions: Vec<SExpr>,
     fresh_bits_idx: usize,
+    mem_func: Option<SExpr>
 }
 
 impl SolverCtx {
@@ -454,7 +455,13 @@ impl SolverCtx {
         narrow_decl: SExpr,
         name: Option<String>,
     ) -> SExpr {
-        let width = self.bitwidth.checked_sub(narrow_width).unwrap();
+        let width = if let Some(w) = self.bitwidth.checked_sub(narrow_width) {
+            w
+        } else if self.onlywidths {
+            return self.new_fresh_bits(self.bitwidth)
+        } else {
+            unreachable!("Unexpected width in dynwiths mode");
+        };
         if width > 0 {
             let mut narrow_name = format!("narrow__{}", tyvar);
             let mut wide_name = format!("wide__{}", tyvar);
@@ -1200,7 +1207,7 @@ impl SolverCtx {
                     None => unreachable!("Need static popcnt width"),
                 }
             }
-            Expr::BVConcat(xs) => {
+            Expr::BVConcat(s, xs) => {
                 if self.dynwidths {
                     let widths: Vec<SExpr> = xs
                         .iter()
@@ -1209,6 +1216,10 @@ impl SolverCtx {
                     let sum = self.smt.plus_many(widths);
                     self.width_assumptions
                         .push(self.smt.eq(width.unwrap(), sum));
+                    if let Some(s) = s {
+                        self.width_assumptions
+                            .push(self.smt.eq(width.unwrap(), self.smt.numeral(s)));
+                    }
                 }
                 let mut sexprs: Vec<SExpr> = xs
                     .iter()
@@ -1225,6 +1236,34 @@ impl SolverCtx {
                     .iter()
                     .rev()
                     .fold(last, |acc, x| self.smt.concat(*x, acc))
+            }
+            Expr::Mem(kind, flags, addr, w) => {
+                let kind_int = self.smt.numeral(kind);
+                let f_expr =  self.vir_expr_to_sexp(*flags);
+                let a_expr =  self.vir_expr_to_sexp(*addr);
+                let w_expr =  self.vir_expr_to_sexp(*w);
+
+                let mem = self.mem_func.unwrap();
+                if self.dynwidths {
+                    if self.onlywidths {
+                        self.width_assumptions.push(self.smt.eq(width.unwrap(), w_expr));
+                        return self.new_fresh_bits(64);
+                    } else {
+                        unreachable!("can only handle memory once static widths are determined");
+                    }
+                } else {
+                    let mem_call = self.smt.list(
+                        vec![mem, 
+                        kind_int,
+                        f_expr,
+                        a_expr]
+                    );
+                    // let extract_mem_call = 
+                    self.smt.extract(7, 0, mem_call)
+                    // let fresh = self.new_fresh_bits(32);
+                    // self.assume(self.smt.eq(fresh, extract_mem_call));
+                    // fresh   
+                }
             }
         }
     }
@@ -1263,7 +1302,7 @@ impl SolverCtx {
 
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
-                if !config.distinct_check || term_input_bs.len() < 1{
+                if !config.distinct_check || term_input_bs.len() < 1 {
                     println!("Assertion list is feasible for at least one input!");
                     self.smt.pop().unwrap();
                     return VerificationResult::Success;
@@ -1561,8 +1600,24 @@ impl SolverCtx {
         println!("\n{} =>\n{}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
+    fn setup_mem(&mut self) {
+        let mem = self
+            .smt
+            .declare_fun(
+                "mem", 
+                vec![
+                    self.smt.int_sort(),
+                    self.smt.bit_vec_sort(self.smt.numeral(1)),
+                    self.smt.bit_vec_sort(self.smt.numeral(64)),
+                ], 
+                self.smt.bit_vec_sort(self.smt.numeral(64)))
+            .unwrap();
+        self.mem_func = Some(mem);
+    }
+
     fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
         let mut assumptions: Vec<SExpr> = vec![];
+        self.setup_mem();
         println!("Declaring quantified variables");
         for v in &rule_sem.quantified_vars {
             let name = &v.name;
@@ -1649,6 +1704,7 @@ pub fn run_solver(
         additional_assumptions: vec![],
         additional_assertions: vec![],
         fresh_bits_idx: 0,
+        mem_func: None,
     };
 
     let mut some_dyn_width = false;
@@ -1667,7 +1723,6 @@ pub fn run_solver(
                         let eq = ctx
                             .smt
                             .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
-                        println!("Width from inference {} ({})", width_name, bitwidth);
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
@@ -1778,6 +1833,7 @@ pub fn run_solver(
             additional_assumptions: vec![],
             additional_assertions: vec![],
             fresh_bits_idx: 0,
+            mem_func: None,
         };
         assumptions = ctx.declare_variables(&rule_sem);
     } else {

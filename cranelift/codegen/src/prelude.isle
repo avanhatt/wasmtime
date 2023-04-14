@@ -416,6 +416,8 @@
 (extern extractor ty_dyn128_int ty_dyn128_int)
 
 ;; Convert an `Offset32` to a primitive number.
+;;@ (spec (sig (args a) (r))
+;;@   (provide (= (r) (a))))
 (decl pure offset32_to_u32 (Offset32) u32)
 (extern constructor offset32_to_u32 offset32_to_u32)
 

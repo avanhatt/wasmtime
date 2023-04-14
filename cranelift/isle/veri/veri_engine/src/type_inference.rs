@@ -1136,7 +1136,7 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVExtract(l, r, Box::new(e1)), t)
         }
-        annotation_ir::Expr::BVConcat(xs, _) => {
+        annotation_ir::Expr::BVConcat(s, xs, _) => {
             // AVH todo: doesn't sum the various widths, has to be done in the solver
             let t = tree.next_type_var;
             tree.next_type_var += 1;
@@ -1148,12 +1148,19 @@ fn add_annotation_constraints(
                     .insert(TypeExpr::Concrete(xt, annotation_ir::Type::BitVector));
                 exprs.push(xe);
             }
-            tree.bv_constraints
-                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            if let Some(s) = s {
+                tree.concrete_constraints.insert(TypeExpr::Concrete(
+                    t,
+                    annotation_ir::Type::BitVectorWithWidth(s),
+                ));
+            } else {
+                tree.bv_constraints
+                    .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            }
 
             tree.next_type_var += 1;
 
-            (veri_ir::Expr::BVConcat(exprs), t)
+            (veri_ir::Expr::BVConcat(s, exprs), t)
         }
         annotation_ir::Expr::BVIntToBv(w, x, _) => {
             let (ex, tx) = add_annotation_constraints(*x.clone(), tree, annotation_info);
@@ -1351,6 +1358,33 @@ fn add_annotation_constraints(
 
             tree.next_type_var += 1;
             (veri_ir::Expr::BVPopcnt(Box::new(e1)), t)
+        }
+        annotation_ir::Expr::Mem(kind, flags, width, addr, _) => {
+            let (e0, t0) = add_annotation_constraints(*flags, tree, annotation_info);
+            let (e2, t1) = add_annotation_constraints(*width, tree, annotation_info);
+            let (e1, t2) = add_annotation_constraints(*addr, tree, annotation_info);
+            let t = tree.next_type_var;
+
+            tree.bv_constraints
+                .insert(TypeExpr::Concrete(t, annotation_ir::Type::BitVector));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t0,
+                annotation_ir::Type::BitVectorWithWidth(1),
+            ));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t1,
+                annotation_ir::Type::Int
+            ));
+            tree.concrete_constraints.insert(TypeExpr::Concrete(
+                t2,
+                annotation_ir::Type::BitVectorWithWidth(64),
+            ));
+
+            tree.next_type_var += 1;
+            (
+                veri_ir::Expr::Mem(kind, Box::new(e0), Box::new(e1), Box::new(e2)),
+                t,
+            )
         }
 
         _ => todo!("expr {:#?} not yet implemented", expr),

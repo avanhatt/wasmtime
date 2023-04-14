@@ -522,6 +522,17 @@
     (inst_data (InstructionData.Binary (Opcode.SsubSat) (value_array_2 x y)))
 )
 
+;; Load: [ 1 bit flag ][ 8 bit size (widthof Value) ][ 64 bit address (zext (Value + offset)) ]
+;;@ (spec (sig (args f, p, o) (r))
+;;@   (provide 
+;;@     (= (r)
+;;@        (mem 
+;;@          0
+;;@          (f)
+;;@          (widthof (r))
+;;@          (+ (zero_ext (64) (p)) (zero_ext (64) (o)))
+;;@     ))
+;;@ ))
 (decl load (MemFlags Value Offset32) Inst)
 (extractor
     (load MemFlags p Offset)

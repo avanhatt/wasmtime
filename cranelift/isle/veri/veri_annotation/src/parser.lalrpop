@@ -136,7 +136,8 @@ pub Expr: Box<Expr> = {
     "(" "sign_ext" <n:Expr> <v:Expr> ")" => Box::new(Expr::BVSignExtToVarWidth(n, v, 0)),
     "(" "extract" <s:UNum> <t:UNum> <v:Expr> ")" => 
         Box::new(Expr::BVExtract(s, t, v, 0)),
-    "(" "concat" <xs:Expr+> ")" => Box::new(Expr::BVConcat(xs.iter().map(|x| *x.clone()).collect(), 0)),
+    "(" "concat" <s:UNum> <xs:Expr+> ")" => Box::new(Expr::BVConcat(Some(s), xs.iter().map(|x| *x.clone()).collect(), 0)),
+    "(" "concat" <xs:Expr+> ")" => Box::new(Expr::BVConcat(None, xs.iter().map(|x| *x.clone()).collect(), 0)),
     "(" "conv_to" <n:Width> <v:Expr> ")" => Box::new(Expr::BVConvTo(n, v, 0)),
     "(" "conv_to" <n:Expr> <v:Expr> ")" => 
         Box::new(Expr::BVConvToVarWidth(n, v, 0)),
@@ -149,6 +150,7 @@ pub Expr: Box<Expr> = {
     "(" "int2bv" <n:UNum> <v:Expr> ")" => Box::new(Expr::BVIntToBv(n, v, 0)),
     "(" "bv2int" <v:Expr> ")" => Box::new(Expr::BVToInt(v, 0)),
     "(" "widthof" <v:Expr> ")" => Box::new(Expr::WidthOf(v, 0)),
+    "(" "mem" <k:UNum> <f:Expr> <a:Expr> <w:Expr> ")" => Box::new(Expr::Mem(k, f, a, w, 0)),
 };
 
 pub TermAnnotation: TermAnnotation = {

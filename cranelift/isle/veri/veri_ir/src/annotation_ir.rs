@@ -230,7 +230,7 @@ pub enum Expr {
     BVExtract(usize, usize, Box<Expr>, u32),
 
     // Concat two bitvectors 
-    BVConcat(Vec<Expr>, u32),
+    BVConcat(Option<usize>, Vec<Expr>, u32),
 
     // Convert integer to bitvector
     BVIntToBv(usize, Box<Expr>, u32),
@@ -242,6 +242,9 @@ pub enum Expr {
     BVConvTo(Box<Width>, Box<Expr>, u32),
     // Allow the destination width to be symbolic.
     BVConvToVarWidth(Box<Expr>, Box<Expr>, u32),
+
+    // kind (i1) , flags (i1), width (i8), addr (i64)
+    Mem(usize, Box<Expr>, Box<Expr>, Box<Expr>, u32),
 
     // Conditional if-then-else
     Conditional(Box<Expr>, Box<Expr>, Box<Expr>, u32),
@@ -318,9 +321,10 @@ impl Expr {
             | Expr::BVConvTo(_, _, t)
             | Expr::BVConvToVarWidth(_, _, t)
             | Expr::BVExtract(_, _, _, t)
-            | Expr::BVConcat(_, t)
+            | Expr::BVConcat(_, _, t)
             | Expr::BVSubs(_, _, _, t)
             | Expr::BVPopcnt(_, t)
+            | Expr::Mem(_, _, _, _, t)
             | Expr::Conditional(_, _, _, t)
             | Expr::Switch(_, _, t)  => *t,
         }

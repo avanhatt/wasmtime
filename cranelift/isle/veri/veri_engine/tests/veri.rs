@@ -2849,3 +2849,19 @@ fn test_named_popcnt_64() {
         )
     })
 }
+
+#[test]
+fn test_named_load_8() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "load_8",
+            "load",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::InapplicableRule),
+                // (Bitwidth::I32, VerificationResult::InapplicableRule),
+                // (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
