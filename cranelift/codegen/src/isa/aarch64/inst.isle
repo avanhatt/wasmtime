@@ -3335,6 +3335,15 @@
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.SLoad8 dst amode flags))))
         dst))
+;;@ (spec (sig (args am, f) (r))
+;;@   (provide 
+;;@     (= (r)
+;;@        (mem 
+;;@          0
+;;@          (f)
+;;@          (16i8:Int)
+;;@          (+ (extract 95 32 (am)) (zero_ext (64) (extract 31 0 (am))))
+;;@ ))))
 (decl aarch64_uload16 (AMode MemFlags) Reg)
 (rule (aarch64_uload16 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3345,6 +3354,15 @@
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.SLoad16 dst amode flags))))
         dst))
+;;@ (spec (sig (args am, f) (r))
+;;@   (provide 
+;;@     (= (r)
+;;@        (mem 
+;;@          0
+;;@          (f)
+;;@          (32i8:Int)
+;;@          (+ (extract 95 32 (am)) (zero_ext (64) (extract 31 0 (am))))
+;;@ ))))
 (decl aarch64_uload32 (AMode MemFlags) Reg)
 (rule (aarch64_uload32 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3355,6 +3373,16 @@
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.SLoad32 dst amode flags))))
         dst))
+
+;;@ (spec (sig (args am, f) (r))
+;;@   (provide 
+;;@     (= (r)
+;;@        (mem 
+;;@          0
+;;@          (f)
+;;@          (64i8:Int)
+;;@          (+ (extract 95 32 (am)) (zero_ext (64) (extract 31 0 (am))))
+;;@ ))))
 (decl aarch64_uload64 (AMode MemFlags) Reg)
 (rule (aarch64_uload64 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3710,10 +3738,9 @@
 ;;@   (provide 
 ;;@     (= (r)
 ;;@        (concat 104
-;;@          (int2bv 8 (widthof (p)))
+;;@          (int2bv 8 (ty))
 ;;@          (zero_ext (64) (p)) 
 ;;@          (o))))
-;;@    (require (= (ty) (widthof (p))))
 ;;@ )
 (decl amode (Type Value u32) AMode)
 ;; TODO: Port lower_address() to ISLE.

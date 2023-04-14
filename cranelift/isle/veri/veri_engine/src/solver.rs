@@ -23,7 +23,7 @@ use encoded_ops::clz;
 use encoded_ops::rev;
 use encoded_ops::subs;
 
-use crate::REG_WIDTH;
+use crate::{REG_WIDTH, WIDTHS};
 
 pub struct SolverCtx {
     smt: easy_smt::Context,
@@ -38,7 +38,7 @@ pub struct SolverCtx {
     pub additional_assumptions: Vec<SExpr>,
     pub additional_assertions: Vec<SExpr>,
     fresh_bits_idx: usize,
-    mem_func: Option<SExpr>
+    mem_func: Option<Vec<(SExpr, SExpr)>>
 }
 
 impl SolverCtx {
@@ -1238,12 +1238,13 @@ impl SolverCtx {
                     .fold(last, |acc, x| self.smt.concat(*x, acc))
             }
             Expr::Mem(kind, flags, addr, w) => {
-                let kind_int = self.smt.numeral(kind);
+                // let kind_int = self.smt.numeral(kind);
+                assert_eq!(kind, 0);
                 let f_expr =  self.vir_expr_to_sexp(*flags);
                 let a_expr =  self.vir_expr_to_sexp(*addr);
                 let w_expr =  self.vir_expr_to_sexp(*w);
 
-                let mem = self.mem_func.unwrap();
+                // let mem = self.mem_func.unwrap();
                 if self.dynwidths {
                     if self.onlywidths {
                         self.width_assumptions.push(self.smt.eq(width.unwrap(), w_expr));
@@ -1252,17 +1253,44 @@ impl SolverCtx {
                         unreachable!("can only handle memory once static widths are determined");
                     }
                 } else {
-                    let mem_call = self.smt.list(
-                        vec![mem, 
-                        kind_int,
-                        f_expr,
-                        a_expr]
-                    );
+                    // SMT Uninterp func
+                    // let mem_call = self.smt.list(
+                    //     vec![mem, 
+                    //     // kind_int,
+                    //     self.smt.concat(f_expr, a_expr),
+                    //     // f_expr,
+                    //     // a_expr
+                    //     ]
+                    // );
                     // let extract_mem_call = 
-                    self.smt.extract(7, 0, mem_call)
-                    // let fresh = self.new_fresh_bits(32);
-                    // self.assume(self.smt.eq(fresh, extract_mem_call));
-                    // fresh   
+                    // self.smt.extract(7, 0, mem_call)
+
+                    // SMT array
+                    // let load64 = self.smt.select(self.mem_func.unwrap(), self.smt.concat(f_expr, a_expr));
+                    // self.smt.extract(7, 0, load64)
+
+                    // Check that the width is one of the expected widths
+                    // let check_widths: Vec<SExpr> = WIDTHS.iter().map(|w|
+                    //     self.smt.eq(self.smt.atom(w.to_string()), w_expr)
+                    // ).collect();
+                    // self.assert(self.smt.or_many(check_widths));
+
+                    let addr_concat = self.smt.concat(f_expr, a_expr);
+                    // ITE blocks
+                    let mem_func = self.mem_func.as_ref();
+                    let mem_access_idx = mem_func.unwrap().len();
+                    let name = format!("mem{mem_access_idx}");
+                    self.declare(name.clone(), self.smt.bit_vec_sort(self.smt.numeral(64)));
+                    let name = self.smt.atom(name);
+                    self.mem_func.as_mut().unwrap().push((name, addr_concat));
+
+                    match static_expr_width.unwrap() {
+                        8 => self.smt.extract(7, 0, name),
+                        16 => self.smt.extract(15, 0, name),
+                        32 => self.smt.extract(31, 0, name),
+                        64 => name,
+                        _ => unreachable!("Expected width for memory")
+                    }
                 }
             }
         }
@@ -1601,18 +1629,42 @@ impl SolverCtx {
     }
 
     fn setup_mem(&mut self) {
-        let mem = self
-            .smt
-            .declare_fun(
-                "mem", 
-                vec![
-                    self.smt.int_sort(),
-                    self.smt.bit_vec_sort(self.smt.numeral(1)),
-                    self.smt.bit_vec_sort(self.smt.numeral(64)),
-                ], 
-                self.smt.bit_vec_sort(self.smt.numeral(64)))
-            .unwrap();
-        self.mem_func = Some(mem);
+        // let mem = self
+        //     .smt
+        //     .declare_fun(
+        //         "mem", 
+        //         vec![
+        //             // self.smt.int_sort(),
+        //             // self.smt.bit_vec_sort(self.smt.numeral(1)),
+        //             self.smt.bit_vec_sort(self.smt.numeral(65)),
+        //         ], 
+        //         self.smt.bit_vec_sort(self.smt.numeral(64)))
+        //     .unwrap();
+
+        // let mem = self.smt.array_sort(
+        //     self.smt.bit_vec_sort(self.smt.numeral(65)),
+        //     self.smt.bit_vec_sort(self.smt.numeral(64))
+        // );
+        // let mem_array = self.smt.declare_const("mem", mem).unwrap();
+        // self.mem_func = Some(mem_array);
+        self.mem_func = Some(vec![])
+    }
+
+    fn resolve_mem(&mut self) {
+        let mem_func_len = self.mem_func.as_ref().unwrap().len();
+
+        let mut fresh = vec![];
+        for _ in 0 .. mem_func_len {
+            fresh.push(self.new_fresh_bits(64));
+        }
+        let no_match = self.new_fresh_bits(64);
+        // Reverse to keep the order of the switch
+        for (cur_name, cur_pointer) in self.mem_func.clone().unwrap() {
+            let ite = self.mem_func.as_ref().unwrap().iter().enumerate().fold(no_match, |acc, (i, (_, pointer))| {
+                self.smt.ite(self.smt.eq(cur_pointer, *pointer), fresh[i], acc)
+            });
+            self.assume(self.smt.eq(cur_name, ite));
+        }
     }
 
     fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
@@ -1647,6 +1699,8 @@ impl SolverCtx {
             let p = self.vir_expr_to_sexp(a.clone());
             assumptions.push(p)
         }
+        self.resolve_mem();
+
         if self.dynwidths {
             println!("Adding width assumptions");
             for a in &self.width_assumptions {
