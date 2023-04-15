@@ -1,13 +1,15 @@
 mod utils;
-use utils::{all_failure_result, all_success_result, custom_result, lte_64_success_result};
+use utils::{all_failure_result, all_success_result, custom_result};
 use utils::{
-    run_and_retry, test_aarch64_rule_with_lhs_termname, test_aarch64_with_config,
+    run_and_retry, test_aarch64_rule_with_lhs_termname_simple, test_aarch64_with_config_simple,
     test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
-    test_from_file_with_config, test_from_file_with_lhs_termname,
-    test_from_file_with_lhs_termname_dynwidth, Bitwidth,
+    test_from_file_with_config_simple,
+    test_from_file_with_lhs_termname_simple, Bitwidth,
+    test_from_file_with_lhs_termname, TestResult
 };
 use veri_engine_lib::Config;
-use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult};
+use veri_engine_lib::widths::isle_inst_types;
+use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult, TermSignature};
 
 #[test]
 fn test_named_iadd_base_concrete() {
@@ -40,28 +42,28 @@ fn test_named_iadd_base_concrete() {
 #[test]
 fn test_named_iadd_base() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("iadd_base_case", "iadd", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("iadd_base_case", "iadd", all_success_result())
     });
 }
 
 #[test]
 fn test_named_iadd_imm12_right() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("iadd_imm12_right", "iadd", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("iadd_imm12_right", "iadd", all_success_result())
     });
 }
 
 #[test]
 fn test_named_iadd_imm12_left() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("iadd_imm12_left", "iadd", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("iadd_imm12_left", "iadd", all_success_result())
     });
 }
 
 #[test]
 fn test_named_iadd_imm12_neg_left() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_imm12_neg_left",
             "iadd",
             vec![
@@ -77,7 +79,7 @@ fn test_named_iadd_imm12_neg_left() {
 #[test]
 fn test_named_iadd_imm12_neg_right_not_distinct() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_imm12_neg_right",
             "iadd",
             vec![
@@ -93,7 +95,7 @@ fn test_named_iadd_imm12_neg_right_not_distinct() {
 #[test]
 fn test_named_iadd_imm12_neg_left_not_distinct() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_imm12_neg_left",
             "iadd",
             vec![
@@ -110,7 +112,7 @@ fn test_named_iadd_imm12_neg_left_not_distinct() {
 #[test]
 fn test_updated_imm12_from_negated_value() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/iadd/updated_imm12_from_negated_value.isle",
             "imm12_from_negated_value".to_string(),
             all_success_result(),
@@ -122,7 +124,7 @@ fn test_updated_imm12_from_negated_value() {
 #[test]
 fn test_updated_iadd_imm12neg_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/iadd/updated_iadd_imm12neg_right.isle",
             "iadd".to_string(),
             all_success_result(),
@@ -134,7 +136,7 @@ fn test_updated_iadd_imm12neg_right() {
 #[test]
 fn test_updated_iadd_imm12neg_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/iadd/updated_iadd_imm12neg_left.isle",
             "iadd".to_string(),
             all_success_result(),
@@ -145,7 +147,7 @@ fn test_updated_iadd_imm12neg_left() {
 #[test]
 fn test_named_iadd_extend_right() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_extend_right",
             "iadd",
             vec![
@@ -209,7 +211,7 @@ fn test_named_iadd_extend_right_concrete() {
 #[test]
 fn test_named_iadd_extend_left() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_extend_left",
             "iadd",
             vec![
@@ -225,7 +227,7 @@ fn test_named_iadd_extend_left() {
 #[test]
 fn test_broken_iadd_extend() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_add_extend.isle",
             "iadd".to_string(),
             vec![
@@ -248,21 +250,21 @@ fn test_broken_iadd_extend() {
 #[test]
 fn test_named_iadd_ishl_left() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("iadd_ishl_left", "iadd", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("iadd_ishl_left", "iadd", all_success_result())
     });
 }
 
 #[test]
 fn test_named_iadd_ishl_right() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("iadd_ishl_right", "iadd", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("iadd_ishl_right", "iadd", all_success_result())
     });
 }
 
 #[test]
 fn test_named_iadd_imul_right() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_imul_right",
             "iadd",
             vec![
@@ -279,7 +281,7 @@ fn test_named_iadd_imul_right() {
 #[test]
 fn test_named_iadd_imul_left() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iadd_imul_left",
             "iadd",
             vec![
@@ -296,7 +298,7 @@ fn test_named_iadd_imul_left() {
 #[test]
 fn test_named_isub_imul() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "isub_imul",
             "isub",
             vec![
@@ -313,7 +315,7 @@ fn test_named_isub_imul() {
 #[test]
 fn test_broken_iadd_base_case() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_base_case.isle",
             "iadd".to_string(),
             all_failure_result(),
@@ -324,7 +326,7 @@ fn test_broken_iadd_base_case() {
 #[test]
 fn test_broken_iadd_imm12() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_imm12.isle",
             "iadd".to_string(),
             vec![
@@ -349,7 +351,7 @@ fn test_broken_iadd_imm12() {
 #[test]
 fn test_broken_iadd_imm12_2() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_imm12_2.isle",
             "iadd".to_string(),
             vec![
@@ -374,7 +376,7 @@ fn test_broken_iadd_imm12_2() {
 #[test]
 fn test_broken_iadd_imm12neg_not_distinct() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_imm12neg.isle",
             "iadd".to_string(),
             vec![
@@ -393,7 +395,7 @@ fn test_broken_iadd_imm12neg_not_distinct() {
 #[test]
 fn test_broken_iadd_imm12neg_2_not_distinct() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_imm12neg2.isle",
             "iadd".to_string(),
             vec![
@@ -412,7 +414,7 @@ fn test_broken_iadd_imm12neg_2_not_distinct() {
 #[test]
 fn test_broken_iadd_imul_right() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_madd.isle",
             "iadd".to_string(),
             all_failure_result(),
@@ -423,7 +425,7 @@ fn test_broken_iadd_imul_right() {
 #[test]
 fn test_broken_iadd_imul_left() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_madd2.isle",
             "iadd".to_string(),
             all_failure_result(),
@@ -434,7 +436,7 @@ fn test_broken_iadd_imul_left() {
 #[test]
 fn test_broken_iadd_msub() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_msub.isle",
             "isub".to_string(),
             vec![
@@ -459,7 +461,7 @@ fn test_broken_iadd_msub() {
 #[test]
 fn test_broken_iadd_shift() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_shift.isle",
             "iadd".to_string(),
             all_failure_result(),
@@ -470,7 +472,7 @@ fn test_broken_iadd_shift() {
 #[test]
 fn test_broken_iadd_shift2() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/iadd/broken_shift2.isle",
             "iadd".to_string(),
             all_failure_result(),
@@ -481,14 +483,14 @@ fn test_broken_iadd_shift2() {
 #[test]
 fn test_named_isub_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("isub_base_case", "isub", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("isub_base_case", "isub", all_success_result())
     })
 }
 
 #[test]
 fn test_named_isub_imm12() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("isub_imm12", "isub", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("isub_imm12", "isub", all_success_result())
     })
 }
 
@@ -523,7 +525,7 @@ fn test_named_isub_imm12_concrete() {
 #[test]
 fn test_named_isub_imm12_neg_not_distinct() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "isub_imm12_neg",
             "isub",
             vec![
@@ -540,7 +542,7 @@ fn test_named_isub_imm12_neg_not_distinct() {
 #[test]
 fn test_isub_imm12neg_new() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/isub/imm12neg_new.isle",
             "isub".to_string(),
             all_success_result(),
@@ -617,7 +619,7 @@ fn test_named_isub_imm12_neg_concrete64() {
 #[test]
 fn test_named_isub_extend() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "isub_extend",
             "isub",
             vec![
@@ -633,13 +635,13 @@ fn test_named_isub_extend() {
 #[test]
 fn test_named_isub_ishl() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("isub_ishl", "isub", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("isub_ishl", "isub", all_success_result())
     })
 }
 
 #[test]
 fn test_broken_isub_base_case() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/isub/broken_base_case.isle",
         "isub".to_string(),
         vec![
@@ -662,7 +664,7 @@ fn test_broken_isub_base_case() {
 
 #[test]
 fn test_broken_isub_imm12() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/isub/broken_imm12.isle",
         "isub".to_string(),
         vec![
@@ -685,7 +687,7 @@ fn test_broken_isub_imm12() {
 
 #[test]
 fn test_broken_isub_imm12neg_not_distinct() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/isub/broken_imm12neg.isle",
         "isub".to_string(),
         vec![
@@ -702,7 +704,7 @@ fn test_broken_isub_imm12neg_not_distinct() {
 
 #[test]
 fn test_broken_isub_shift() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/isub/broken_shift.isle",
         "isub".to_string(),
         all_failure_result(),
@@ -712,14 +714,14 @@ fn test_broken_isub_shift() {
 #[test]
 fn test_named_ineg_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("ineg_base_case", "ineg", lte_64_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("ineg_base_case", "ineg", all_success_result())
     })
 }
 
 #[test]
 fn test_named_imul_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "imul_base_case",
             "imul",
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -737,7 +739,7 @@ fn test_named_imul_base_case() {
 #[test]
 fn test_named_udiv() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "udiv",
             "udiv",
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
@@ -754,7 +756,7 @@ fn test_named_udiv() {
 #[test]
 fn test_broken_udiv() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/udiv/broken_udiv.isle",
             "udiv".to_string(),
             vec![
@@ -776,7 +778,7 @@ fn test_broken_udiv() {
 #[test]
 fn test_named_sdiv_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "sdiv_base_case",
             "sdiv",
             vec![
@@ -793,7 +795,7 @@ fn test_named_sdiv_base_case() {
 #[test]
 fn test_named_sdiv_safe_divisor() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "sdiv_safe_divisor",
             "sdiv",
             vec![
@@ -810,7 +812,7 @@ fn test_named_sdiv_safe_divisor() {
 #[test]
 fn test_broken_sdiv_safe_const() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/sdiv/broken_sdiv_safe_const.isle",
             "sdiv".to_string(),
             vec![
@@ -835,7 +837,7 @@ fn test_broken_sdiv_safe_const() {
 #[test]
 fn test_broken_sdiv() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/sdiv/broken_sdiv.isle",
             "sdiv".to_string(),
             vec![
@@ -857,7 +859,7 @@ fn test_broken_sdiv() {
 #[test]
 fn test_named_srem() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "srem",
             "srem",
             vec![
@@ -874,7 +876,7 @@ fn test_named_srem() {
 #[test]
 fn test_named_urem() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "urem",
             "urem",
             vec![
@@ -919,38 +921,40 @@ fn test_named_urem_concrete() {
 #[test]
 fn test_named_uextend() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("uextend", "uextend", all_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("uextend", "uextend", all_success_result())
     })
 }
 
 #[test]
 fn test_named_sextend() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("sextend", "sextend", all_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("sextend", "sextend", all_success_result())
     })
 }
 
 #[test]
 fn test_broken_uextend() {
     // In the spec for extend, zero_extend and sign_extend are swapped.
-    // However, this should still work in the case where the query with
-    // is the same as the register width (64).
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname_dynwidth(
-            "./examples/broken/broken_uextend.isle",
-            "uextend".to_string(),
-            custom_result(&|w| {
-                (
-                    w,
-                    if (w as usize) < 64 {
-                        VerificationResult::Failure(Counterexample {})
-                    } else {
-                        VerificationResult::Success
-                    },
-                )
-            }),
-        )
-    })
+    // However, this should still succeed if the input and output
+    // widths are the same
+    let instantiations : Vec<(TermSignature, VerificationResult)> = isle_inst_types()
+        .get(&"uextend")
+        .unwrap()
+        .iter()
+        .map(|sig| {
+            let expected = if sig.args[0] == sig.ret {
+                VerificationResult::Success
+            } else {
+                VerificationResult::Failure(Counterexample {})
+            };
+            (sig.clone(), expected)
+        }).collect();
+
+    test_from_file_with_lhs_termname(
+        "./examples/broken/broken_uextend.isle",
+        "uextend".to_string(),
+        TestResult::MultiType(instantiations)
+    );
 }
 
 // AVH TODO: this rule requires priorities to be correct for narrow cases
@@ -958,7 +962,7 @@ fn test_broken_uextend() {
 #[test]
 fn test_named_clz_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "clz_32_64",
             "clz",
             vec![
@@ -974,7 +978,7 @@ fn test_named_clz_32_64() {
 #[test]
 fn test_named_clz_8() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "clz_8",
             "clz",
             vec![
@@ -990,7 +994,7 @@ fn test_named_clz_8() {
 #[test]
 fn test_named_clz_16() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "clz_16",
             "clz",
             vec![
@@ -1006,7 +1010,7 @@ fn test_named_clz_16() {
 #[test]
 fn test_broken_clz() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/clz/broken_clz.isle",
             "clz".to_string(),
             vec![
@@ -1028,7 +1032,7 @@ fn test_broken_clz() {
 #[test]
 fn test_broken_clz8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/clz/broken_clz8.isle",
             "clz".to_string(),
             vec![
@@ -1044,7 +1048,7 @@ fn test_broken_clz8() {
 #[test]
 fn test_broken_clz_n6() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/clz/broken_clz16.isle",
             "clz".to_string(),
             vec![
@@ -1065,7 +1069,7 @@ fn test_broken_clz_n6() {
 #[test]
 fn test_named_cls_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "cls_32_64",
             "cls",
             vec![
@@ -1081,7 +1085,7 @@ fn test_named_cls_32_64() {
 #[test]
 fn test_named_cls8() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "cls_8",
             "cls",
             vec![
@@ -1097,7 +1101,7 @@ fn test_named_cls8() {
 #[test]
 fn test_named_cls_16() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "cls_16",
             "cls",
             vec![
@@ -1113,7 +1117,7 @@ fn test_named_cls_16() {
 #[test]
 fn test_broken_cls_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/cls/broken_cls.isle",
             "cls".to_string(),
             vec![
@@ -1132,7 +1136,7 @@ fn test_broken_cls_32_64() {
 #[test]
 fn test_broken_cls_8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/cls/broken_cls8.isle",
             "cls".to_string(),
             vec![
@@ -1148,7 +1152,7 @@ fn test_broken_cls_8() {
 #[test]
 fn test_broken_cls_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/cls/broken_cls16.isle",
             "cls".to_string(),
             vec![
@@ -1167,7 +1171,7 @@ fn test_broken_cls_16() {
 #[test]
 fn test_named_ctz_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "ctz_32_64",
             "ctz",
             vec![
@@ -1183,7 +1187,7 @@ fn test_named_ctz_32_64() {
 #[test]
 fn test_named_ctz_8() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "ctz_8",
             "ctz",
             vec![
@@ -1199,7 +1203,7 @@ fn test_named_ctz_8() {
 #[test]
 fn test_named_ctz_16() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "ctz_16",
             "ctz",
             vec![
@@ -1215,7 +1219,7 @@ fn test_named_ctz_16() {
 #[test]
 fn test_broken_ctz_32_64() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/ctz/broken_ctz.isle",
             "clz".to_string(),
             vec![
@@ -1237,7 +1241,7 @@ fn test_broken_ctz_32_64() {
 #[test]
 fn test_broken_ctz_8() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/ctz/broken_ctz8.isle",
             "ctz".to_string(),
             vec![
@@ -1253,7 +1257,7 @@ fn test_broken_ctz_8() {
 #[test]
 fn test_broken_ctz_16() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/ctz/broken_ctz16.isle",
             "ctz".to_string(),
             vec![
@@ -1294,7 +1298,7 @@ fn test_named_small_rotr() {
             })),
             names: Some(vec!["small_rotr".to_string()]),
         };
-        test_aarch64_with_config(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
+        test_aarch64_with_config_simple(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
     })
 }
 
@@ -1323,7 +1327,7 @@ fn test_broken_small_rotr_to_shifts() {
             })),
             names: None,
         };
-        test_from_file_with_config(
+        test_from_file_with_config_simple(
             "./examples/broken/broken_mask_small_rotr.isle",
             config,
             vec![(
@@ -1359,7 +1363,7 @@ fn test_broken_small_rotr_to_shifts_2() {
             })),
             names: None,
         };
-        test_from_file_with_config(
+        test_from_file_with_config_simple(
             "./examples/broken/broken_rule_or_small_rotr.isle",
             config,
             vec![(
@@ -1395,14 +1399,14 @@ fn test_named_small_rotr_imm() {
             })),
             names: Some(vec!["small_rotr_imm".to_string()]),
         };
-        test_aarch64_with_config(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
+        test_aarch64_with_config_simple(config, vec![(Bitwidth::I64, VerificationResult::Success)]);
     })
 }
 
 #[test]
 fn test_named_rotl_fits_in_16() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotl_fits_in_16",
             "rotl",
             vec![
@@ -1419,7 +1423,7 @@ fn test_named_rotl_fits_in_16() {
 fn test_named_rotl_32_base_case() {
     run_and_retry(|| {
         run_and_retry(|| {
-            test_aarch64_rule_with_lhs_termname(
+            test_aarch64_rule_with_lhs_termname_simple(
                 "rotl_32_base_case",
                 "rotl",
                 vec![
@@ -1436,7 +1440,7 @@ fn test_named_rotl_32_base_case() {
 #[test]
 fn test_broken_32_general_rotl_to_rotr() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/broken_32_general_rotl_to_rotr.isle",
             "rotl".to_string(),
             vec![
@@ -1455,7 +1459,7 @@ fn test_broken_32_general_rotl_to_rotr() {
 #[test]
 fn test_named_rotl_64_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotl_64_base_case",
             "rotl",
             vec![
@@ -1471,7 +1475,7 @@ fn test_named_rotl_64_base_case() {
 #[test]
 fn test_broken_fits_in_16_rotl_to_rotr() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/broken_fits_in_16_rotl_to_rotr.isle",
             "rotl".to_string(),
             vec![
@@ -1490,7 +1494,7 @@ fn test_broken_fits_in_16_rotl_to_rotr() {
 #[test]
 fn test_named_rotl_fits_in_16_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotl_fits_in_16_imm",
             "rotl",
             vec![
@@ -1506,7 +1510,7 @@ fn test_named_rotl_fits_in_16_imm() {
 #[test]
 fn test_named_rotl_64_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotl_64_imm",
             "rotl",
             vec![
@@ -1522,7 +1526,7 @@ fn test_named_rotl_64_imm() {
 #[test]
 fn test_named_rotl_32_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotl_32_imm",
             "rotl",
             vec![
@@ -1537,7 +1541,7 @@ fn test_named_rotl_32_imm() {
 
 #[test]
 fn test_broken_fits_in_16_with_imm_rotl_to_rotr() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/broken_fits_in_16_with_imm_rotl_to_rotr.isle",
         "rotl".to_string(),
         vec![
@@ -1555,7 +1559,7 @@ fn test_broken_fits_in_16_with_imm_rotl_to_rotr() {
 #[test]
 fn test_named_rotr_fits_in_16() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotr_fits_in_16",
             "rotr",
             vec![
@@ -1571,7 +1575,7 @@ fn test_named_rotr_fits_in_16() {
 #[test]
 fn test_named_rotr_fits_in_16_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotr_fits_in_16_imm",
             "rotr",
             vec![
@@ -1587,7 +1591,7 @@ fn test_named_rotr_fits_in_16_imm() {
 #[test]
 fn test_named_rotr_32_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotr_32_base_case",
             "rotr",
             vec![
@@ -1603,7 +1607,7 @@ fn test_named_rotr_32_base_case() {
 #[test]
 fn test_named_rotr_32_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "rotr_32_imm",
             "rotr",
             vec![
@@ -1618,7 +1622,7 @@ fn test_named_rotr_32_imm() {
 
 #[test]
 fn test_named_rotr_64_base_case() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "rotr_64_base_case",
         "rotr",
         vec![
@@ -1632,7 +1636,7 @@ fn test_named_rotr_64_base_case() {
 
 #[test]
 fn test_named_rotr_64_imm() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "rotr_64_imm",
         "rotr",
         vec![
@@ -1647,7 +1651,7 @@ fn test_named_rotr_64_imm() {
 #[test]
 fn test_named_band_fits_in_32() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "band_fits_in_32",
             "band",
             vec![
@@ -1663,7 +1667,7 @@ fn test_named_band_fits_in_32() {
 #[test]
 fn test_broken_band_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/broken_fits_in_32_band.isle",
             "band".to_string(),
             vec![
@@ -1685,7 +1689,7 @@ fn test_broken_band_fits_in_32() {
 #[test]
 fn test_named_band_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "band_64",
             "band",
             vec![
@@ -1701,7 +1705,7 @@ fn test_named_band_64() {
 #[test]
 fn test_named_bor_fits_in_32() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "bor_fits_in_32",
             "bor",
             vec![
@@ -1717,7 +1721,7 @@ fn test_named_bor_fits_in_32() {
 #[test]
 fn test_named_bor_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "bor_64",
             "bor",
             vec![
@@ -1733,7 +1737,7 @@ fn test_named_bor_64() {
 #[test]
 fn test_broken_bor_fits_in_32() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname(
+        test_from_file_with_lhs_termname_simple(
             "./examples/broken/broken_fits_in_32_bor.isle",
             "bor".to_string(),
             vec![
@@ -1755,7 +1759,7 @@ fn test_broken_bor_fits_in_32() {
 #[test]
 fn test_named_bxor_fits_in_32() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "bxor_fits_in_32",
             "bxor",
             vec![
@@ -1771,7 +1775,7 @@ fn test_named_bxor_fits_in_32() {
 #[test]
 fn test_named_bxor_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "bxor_64",
             "bxor",
             vec![
@@ -1787,7 +1791,7 @@ fn test_named_bxor_64() {
 #[test]
 fn test_named_band_not_fits_in_32() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "band_not_fits_in_32",
             "band_not",
             vec![
@@ -1803,7 +1807,7 @@ fn test_named_band_not_fits_in_32() {
 #[test]
 fn test_named_band_not_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "band_not_64",
             "band_not",
             vec![
@@ -1819,18 +1823,20 @@ fn test_named_band_not_64() {
 #[test]
 fn test_named_bnot() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("bnot_base_case", "bnot", all_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("bnot_base_case", "bnot", all_success_result())
     })
 }
 
 #[test]
 fn test_named_bnot_ishl() {
-    run_and_retry(|| test_aarch64_rule_with_lhs_termname("bnot_ishl", "bnot", all_success_result()))
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple("bnot_ishl", "bnot", all_success_result())
+    })
 }
 
 #[test]
 fn test_named_ishl_64() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "ishl_64",
         "ishl",
         vec![
@@ -1877,7 +1883,7 @@ fn test_named_ishl_64_concrete() {
 
 #[test]
 fn test_named_ishl_fits_in_32() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "ishl_fits_in_32",
         "ishl",
         vec![
@@ -1919,7 +1925,7 @@ fn test_named_ishl_fits_in_32_concrete() {
 
 #[test]
 fn test_named_sshr_64() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "sshr_64",
         "sshr",
         vec![
@@ -1933,7 +1939,7 @@ fn test_named_sshr_64() {
 
 #[test]
 fn test_named_sshr_fits_in_32() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "sshr_fits_in_32",
         "sshr",
         vec![
@@ -1973,7 +1979,7 @@ fn test_named_sshr_fits_in_32_concrete() {
 
 #[test]
 fn test_named_ushr_64() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "ushr_64",
         "ushr",
         vec![
@@ -1987,7 +1993,7 @@ fn test_named_ushr_64() {
 
 #[test]
 fn test_named_ushr_fits_in_32() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "ushr_fits_in_32",
         "ushr",
         vec![
@@ -2028,7 +2034,7 @@ fn test_named_ushr_fits_in_32_concrete() {
 #[test]
 fn test_named_do_shift_64_base_case() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "do_shift_64_base_case",
             "do_shift",
             vec![
@@ -2056,7 +2062,7 @@ fn test_named_do_shift_imm() {
         })),
         names: Some(vec!["do_shift_imm".to_string()]),
     };
-    test_aarch64_with_config(config, vec![(Bitwidth::I8, VerificationResult::Success)]);
+    test_aarch64_with_config_simple(config, vec![(Bitwidth::I8, VerificationResult::Success)]);
     let config = Config {
         dyn_width: false,
         term: "do_shift".to_string(),
@@ -2070,7 +2076,7 @@ fn test_named_do_shift_imm() {
         })),
         names: Some(vec!["do_shift_imm".to_string()]),
     };
-    test_aarch64_with_config(config, vec![(Bitwidth::I16, VerificationResult::Success)]);
+    test_aarch64_with_config_simple(config, vec![(Bitwidth::I16, VerificationResult::Success)]);
     let config = Config {
         dyn_width: false,
         term: "do_shift".to_string(),
@@ -2084,8 +2090,8 @@ fn test_named_do_shift_imm() {
         })),
         names: Some(vec!["do_shift_imm".to_string()]),
     };
-    test_aarch64_with_config(config, vec![(Bitwidth::I32, VerificationResult::Success)]);
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_with_config_simple(config, vec![(Bitwidth::I32, VerificationResult::Success)]);
+    test_aarch64_rule_with_lhs_termname_simple(
         "do_shift_imm",
         "do_shift",
         vec![(Bitwidth::I64, VerificationResult::Success)],
@@ -2117,7 +2123,7 @@ fn test_named_do_shift_fits_in_16() {
             })),
             names: Some(vec!["do_shift_fits_in_16".to_string()]),
         };
-        test_aarch64_with_config(
+        test_aarch64_with_config_simple(
             config,
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
@@ -2125,7 +2131,7 @@ fn test_named_do_shift_fits_in_16() {
             ],
         );
     });
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "do_shift_fits_in_16",
         "do_shift",
         vec![
@@ -2177,7 +2183,7 @@ fn test_named_do_shift_fits_in_16_concrete() {
 
 #[test]
 fn test_named_do_shift_32_base_case() {
-    test_aarch64_rule_with_lhs_termname(
+    test_aarch64_rule_with_lhs_termname_simple(
         "do_shift_32_base_case",
         "do_shift",
         vec![
@@ -2199,12 +2205,12 @@ fn test_named_do_shift_32_base_case() {
         })),
         names: Some(vec!["do_shift_32_base_case".to_string()]),
     };
-    test_aarch64_with_config(config, vec![(Bitwidth::I32, VerificationResult::Success)]);
+    test_aarch64_with_config_simple(config, vec![(Bitwidth::I32, VerificationResult::Success)]);
 }
 
 #[test]
 fn test_broken_do_shift_32() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/shifts/broken_do_shift_32.isle",
         "do_shift".to_string(),
         vec![
@@ -2226,7 +2232,7 @@ fn test_broken_do_shift_32() {
         })),
         names: None,
     };
-    test_from_file_with_config(
+    test_from_file_with_config_simple(
         "./examples/broken/shifts/broken_do_shift_32.isle",
         config,
         vec![(
@@ -2238,7 +2244,7 @@ fn test_broken_do_shift_32() {
 
 #[test]
 fn test_broken_ishl_to_do_shift_64() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/shifts/broken_ishl_to_do_shift_64.isle",
         "ishl".to_string(),
         vec![
@@ -2255,7 +2261,7 @@ fn test_broken_ishl_to_do_shift_64() {
 
 #[test]
 fn test_broken_sshr_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/shifts/broken_sshr_to_do_shift_fits_in_32.isle",
         "sshr".to_string(),
         vec![
@@ -2302,7 +2308,7 @@ fn test_broken_sshr_to_do_shift_fits_in_32_concrete() {
 
 #[test]
 fn test_broken_ushr_to_do_shift_fits_in_32() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/broken/shifts/broken_ushr_to_do_shift_fits_in_32.isle",
         "ushr".to_string(),
         vec![
@@ -2322,7 +2328,7 @@ fn test_broken_ushr_to_do_shift_fits_in_32() {
 
 #[test]
 fn test_if_let() {
-    test_from_file_with_lhs_termname(
+    test_from_file_with_lhs_termname_simple(
         "./examples/constructs/if-let.isle",
         "iadd".to_string(),
         all_success_result(),
@@ -2332,7 +2338,7 @@ fn test_if_let() {
 #[test]
 fn test_named_icmp_8_16_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "icmp_8_16_32_64",
             "icmp",
             vec![
@@ -2348,7 +2354,7 @@ fn test_named_icmp_8_16_32_64() {
 #[test]
 fn test_named_lower_icmp_into_reg_8_16_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_into_reg_8_16_32_64",
             "lower_icmp_into_reg",
             vec![
@@ -2446,7 +2452,7 @@ fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
 #[test]
 fn test_named_lower_icmp_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_32_64",
             "lower_icmp",
             vec![
@@ -2465,7 +2471,7 @@ fn test_named_lower_icmp_32_64() {
 #[test]
 fn test_named_lower_icmp_8_16_signed() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_8_16_signed",
             "lower_icmp",
             vec![
@@ -2484,7 +2490,7 @@ fn test_named_lower_icmp_8_16_signed() {
 #[test]
 fn test_named_lower_icmp_8_16_unsigned_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_8_16_unsigned_imm",
             "lower_icmp",
             vec![
@@ -2503,7 +2509,7 @@ fn test_named_lower_icmp_8_16_unsigned_imm() {
 #[test]
 fn test_named_lower_icmp_8_16_unsigned() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_8_16_unsigned",
             "lower_icmp",
             vec![
@@ -2521,7 +2527,7 @@ fn test_named_lower_icmp_8_16_unsigned() {
 #[test]
 fn test_named_lower_icmp_32_64_const() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_32_64_const",
             "lower_icmp",
             vec![
@@ -2537,7 +2543,7 @@ fn test_named_lower_icmp_32_64_const() {
 #[test]
 fn test_named_lower_icmp_const_32_64_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_const_32_64_imm",
             "lower_icmp_const",
             vec![
@@ -2564,7 +2570,7 @@ fn test_named_lower_icmp_const_32_64_sgte() {
             custom_verification_condition: None,
             names: Some(vec!["lower_icmp_const_32_64_sgte".to_string()]),
         };
-        test_aarch64_with_config(
+        test_aarch64_with_config_simple(
             config,
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
@@ -2597,7 +2603,7 @@ fn test_named_lower_icmp_const_32_64_ugte() {
             custom_verification_condition: None,
             names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
         };
-        test_aarch64_with_config(
+        test_aarch64_with_config_simple(
             config,
             vec![
                 (Bitwidth::I8, VerificationResult::InapplicableRule),
@@ -2619,7 +2625,7 @@ fn test_named_lower_icmp_const_32_64_ugte() {
 #[test]
 fn test_named_lower_icmp_const_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "lower_icmp_const_32_64",
             "lower_icmp_const",
             vec![
@@ -2635,7 +2641,7 @@ fn test_named_lower_icmp_const_32_64() {
 #[test]
 fn test_named_umax() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "umax",
             "umax",
             vec![
@@ -2651,7 +2657,7 @@ fn test_named_umax() {
 #[test]
 fn test_named_smax() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "smax",
             "smax",
             vec![
@@ -2667,7 +2673,7 @@ fn test_named_smax() {
 #[test]
 fn test_named_umin() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "umin",
             "umin",
             vec![
@@ -2683,7 +2689,7 @@ fn test_named_umin() {
 #[test]
 fn test_named_smin() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "smin",
             "smin",
             vec![
@@ -2699,7 +2705,7 @@ fn test_named_smin() {
 #[test]
 fn test_named_iabs_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iabs_64",
             "iabs",
             vec![
@@ -2715,7 +2721,7 @@ fn test_named_iabs_64() {
 #[test]
 fn test_named_iabs_8_16_32() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "iabs_8_16_32",
             "iabs",
             vec![
@@ -2731,18 +2737,22 @@ fn test_named_iabs_8_16_32() {
 #[test]
 fn test_named_bitselect() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname("bitselect", "bitselect", all_success_result())
+        test_aarch64_rule_with_lhs_termname_simple("bitselect", "bitselect", all_success_result())
     })
 }
 
 #[test]
 fn test_named_iconst() {
-    run_and_retry(|| test_aarch64_rule_with_lhs_termname("iconst", "iconst", all_success_result()))
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple("iconst", "iconst", all_success_result())
+    })
 }
 
 #[test]
 fn test_named_null() {
-    run_and_retry(|| test_aarch64_rule_with_lhs_termname("null", "null", all_success_result()))
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple("null", "null", all_success_result())
+    })
 }
 
 // Can't currently verify because ConsumesFlags requires a non-functional
@@ -2772,7 +2782,7 @@ fn test_named_null() {
 //             })),
 //             names: Some(vec!["cmp_and_choose_8_16".to_string()]),
 //         };
-//         test_aarch64_with_config(
+//         test_aarch64_with_config_simple(
 //             config,
 //             vec![
 //                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {  })),
@@ -2787,7 +2797,7 @@ fn test_named_null() {
 #[test]
 fn test_named_popcnt_8() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "popcnt_8",
             "popcnt",
             vec![
@@ -2803,7 +2813,7 @@ fn test_named_popcnt_8() {
 #[test]
 fn test_named_popcnt_16() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "popcnt_16",
             "popcnt",
             vec![
@@ -2819,7 +2829,7 @@ fn test_named_popcnt_16() {
 #[test]
 fn test_named_popcnt_32() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "popcnt_32",
             "popcnt",
             vec![
@@ -2837,7 +2847,7 @@ fn test_named_popcnt_32() {
 #[test]
 fn test_named_popcnt_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname(
+        test_aarch64_rule_with_lhs_termname_simple(
             "popcnt_64",
             "popcnt",
             vec![
