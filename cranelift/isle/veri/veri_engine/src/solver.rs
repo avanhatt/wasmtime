@@ -1263,7 +1263,7 @@ impl SolverCtx {
 
         let res = match self.smt.check() {
             Ok(Response::Sat) => {
-                if !config.distinct_check || term_input_bs.len() < 1{
+                if !config.distinct_check || term_input_bs.len() < 1 {
                     println!("Assertion list is feasible for at least one input!");
                     self.smt.pop().unwrap();
                     return VerificationResult::Success;

@@ -20,59 +20,49 @@ pub enum Bitwidth {
 }
 
 type Result = (Bitwidth, VerificationResult);
-type TestResult = Vec<Result>;
+
+pub enum TestResult {
+    Simple(Vec<(Bitwidth, VerificationResult)>),
+    MultiType(Vec<(TermSignature, VerificationResult)>),
+}
 type TestResultBuilder = dyn Fn(Bitwidth) -> (Bitwidth, VerificationResult);
 
 // Some examples of functions we might need
 #[allow(dead_code)]
 pub fn just_8_result() -> TestResult {
-    vec![(Bitwidth::I8, VerificationResult::Success)]
+    TestResult::Simple(vec![(Bitwidth::I8, VerificationResult::Success)])
 }
 
 #[allow(dead_code)]
 pub fn just_16_result() -> TestResult {
-    vec![(Bitwidth::I16, VerificationResult::Success)]
+    TestResult::Simple(vec![(Bitwidth::I16, VerificationResult::Success)])
 }
 
 #[allow(dead_code)]
 pub fn just_32_result() -> TestResult {
-    vec![(Bitwidth::I32, VerificationResult::Success)]
+    TestResult::Simple(vec![(Bitwidth::I32, VerificationResult::Success)])
 }
 
 #[allow(dead_code)]
 pub fn just_64_result() -> TestResult {
-    vec![(Bitwidth::I64, VerificationResult::Success)]
+    TestResult::Simple(vec![(Bitwidth::I64, VerificationResult::Success)])
 }
 
 /// All bitwidths verify
 #[allow(dead_code)]
-pub fn all_success_result() -> TestResult {
+pub fn all_success_result() -> Vec<(Bitwidth, VerificationResult)> {
     custom_result(&|w| (w, VerificationResult::Success))
 }
 
 /// All bitwidths fail
 #[allow(dead_code)]
-pub fn all_failure_result() -> TestResult {
+pub fn all_failure_result() -> Vec<(Bitwidth, VerificationResult)> {
     custom_result(&|w| (w, VerificationResult::Failure(Counterexample {})))
-}
-
-/// Only bitwidths under and including 64 should verify, rest inapplicable
-pub fn lte_64_success_result() -> TestResult {
-    custom_result(&|w| {
-        (
-            w,
-            if w as usize <= 64 {
-                VerificationResult::Success
-            } else {
-                VerificationResult::InapplicableRule
-            },
-        )
-    })
 }
 
 /// Specify a custom set expected result (helpful if you want to test all the bitwidths and expect
 /// a range of different success, failure, and inapplicable outcomes)
-pub fn custom_result(f: &TestResultBuilder) -> TestResult {
+pub fn custom_result(f: &TestResultBuilder) -> Vec<(Bitwidth, VerificationResult)> {
     Bitwidth::iter().map(|w| f(w)).collect()
 }
 
@@ -125,52 +115,66 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
     let (typeenv, termenv) = create_envs(&defs).unwrap();
     let annotation_env = parse_annotations(&inputs);
 
-    // Get the types/widths for this particular term
-    let types = isle_inst_types()
-        .get(config.term.as_str())
-        .expect(format!("Missing term width for {}", config.term).as_str())
-        .clone();
+    let instantiations = match tr {
+        TestResult::Simple(s) => {
+            let mut res = vec![];
+            for (width, result) in s {
+                let ty = match width {
+                    Bitwidth::I8 => veri_ir::Type::BitVector(Some(8)),
+                    Bitwidth::I16 => veri_ir::Type::BitVector(Some(16)),
+                    Bitwidth::I32 => veri_ir::Type::BitVector(Some(32)),
+                    Bitwidth::I64 => veri_ir::Type::BitVector(Some(64)),
+                };
+                let types = isle_inst_types()
+                    .get(config.term.as_str())
+                    .expect(format!("Missing term width for {}", config.term).as_str())
+                    .clone();
+                // Find the type instantiations with this as the canonical type
+                let all_instantiations: Vec<&TermSignature> = types
+                    .iter()
+                    .filter(|sig| sig.canonical_type.unwrap() == ty)
+                    .collect();
+                if all_instantiations.len() < 1 {
+                    panic!("Missing type instantiation for width {:?}", width);
+                }
+                for i in all_instantiations {
+                    res.push((i.clone(), result.clone()));
+                }
+            }
+            res
+        }
+        TestResult::MultiType(c) => c,
+    };
 
-    for type_instantiation in &types {
-        let ty = type_instantiation.canonical_type.unwrap();
-        let all_expected: Vec<&(Bitwidth, VerificationResult)> = tr
-            .iter()
-            .filter(|(bw, _)| match *bw {
-                Bitwidth::I8 => ty == veri_ir::Type::BitVector(Some(8)),
-                Bitwidth::I16 => ty == veri_ir::Type::BitVector(Some(16)),
-                Bitwidth::I32 => ty == veri_ir::Type::BitVector(Some(32)),
-                Bitwidth::I64 => ty == veri_ir::Type::BitVector(Some(64)),
-            })
-            .collect();
-        if !(all_expected.len() > 0) {
-            println!(
-                "WARNING: type instantiation {:?} not checked in this test!",
-                type_instantiation
-            )
-        }
-        for expected in all_expected {
-            let (_, expected_result) = expected;
-            println!("Expected result: {:?}", expected_result);
-            let type_sols = type_rules_with_term_and_types(
-                defs.clone(),
-                &termenv,
-                &typeenv,
-                &annotation_env,
-                &config,
-                type_instantiation,
-                &None,
-            );
-            let result = verify_rules_for_term(
-                &termenv,
-                &typeenv,
-                &type_sols,
-                type_instantiation.clone(),
-                &None,
-                &config,
-            );
-            assert_eq!(result, *expected_result);
-        }
+    for (type_instantiation, expected_result) in instantiations {
+        println!("Expected result: {:?}", expected_result);
+        let type_sols = type_rules_with_term_and_types(
+            defs.clone(),
+            &termenv,
+            &typeenv,
+            &annotation_env,
+            &config,
+            &type_instantiation,
+            &None,
+        );
+        let result = verify_rules_for_term(
+            &termenv,
+            &typeenv,
+            &type_sols,
+            type_instantiation,
+            &None,
+            &config,
+        );
+        assert_eq!(result, expected_result);
     }
+}
+
+pub fn test_from_file_with_lhs_termname_simple(
+    file: &str,
+    termname: String,
+    tr: Vec<(Bitwidth, VerificationResult)>,
+) -> () {
+    test_from_file_with_lhs_termname(file, termname, TestResult::Simple(tr))
 }
 
 pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestResult) -> () {
@@ -192,6 +196,14 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         names: None,
     };
     test_rules_with_term(inputs, tr, config);
+}
+
+pub fn test_aarch64_rule_with_lhs_termname_simple(
+    rulename: &str,
+    termname: &str,
+    tr: Vec<(Bitwidth, VerificationResult)>,
+) -> () {
+    test_aarch64_rule_with_lhs_termname(rulename, termname, TestResult::Simple(tr))
 }
 
 pub fn test_aarch64_rule_with_lhs_termname(rulename: &str, termname: &str, tr: TestResult) -> () {
@@ -224,6 +236,13 @@ pub fn test_aarch64_rule_with_lhs_termname(rulename: &str, termname: &str, tr: T
     test_rules_with_term(inputs, tr, config);
 }
 
+pub fn test_from_file_with_config_simple(
+    file: &str,
+    config: Config,
+    tr: Vec<(Bitwidth, VerificationResult)>,
+) -> () {
+    test_from_file_with_config(file, config, TestResult::Simple(tr))
+}
 pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) -> () {
     println!("Verifying {} rules in file: {}", config.term, file);
     // TODO: clean up path logic
@@ -236,6 +255,13 @@ pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) ->
     let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
     inputs.push(PathBuf::from(file));
     test_rules_with_term(inputs, tr, config);
+}
+
+pub fn test_aarch64_with_config_simple(
+    config: Config,
+    tr: Vec<(Bitwidth, VerificationResult)>,
+) -> () {
+    test_aarch64_with_config(config, TestResult::Simple(tr))
 }
 
 pub fn test_aarch64_with_config(config: Config, tr: TestResult) -> () {
@@ -382,39 +408,3 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     let result = verify_rules_for_term(&termenv, &typeenv, &type_sols, t, &Some(concrete), &config);
     assert_eq!(result, VerificationResult::Success);
 }
-
-pub fn test_from_file_with_lhs_termname_dynwidth(
-    file: &str,
-    termname: String,
-    tr: TestResult,
-) -> () {
-    println!("Verifying {} rules in file: {}", termname, file);
-    // TODO: clean up path logic
-    let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
-    let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
-    let prelude_lower_isle = cur_dir
-        .join("../../../codegen/src")
-        .join("prelude_lower.isle");
-    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
-    inputs.push(PathBuf::from(file));
-    let config = Config {
-        dyn_width: true,
-        term: termname.clone(),
-        distinct_check: false,
-        custom_verification_condition: None,
-        names: None,
-    };
-    test_rules_with_term(inputs, tr, config);
-}
-
-// pub fn test_from_file_self_contained(s: &str, tr: TestResult) -> () {
-//     let input = PathBuf::from(s);
-//     test(vec![input], tr);
-// }
-
-// pub fn test_from_file_custom_prelude(p: &str, s: &str, tr: TestResult) -> () {
-//     let prelude = PathBuf::from(p);
-//     let input = PathBuf::from(s);
-//     test(vec![prelude, input], tr);
-// }
