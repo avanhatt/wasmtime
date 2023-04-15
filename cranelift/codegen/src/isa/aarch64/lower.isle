@@ -1462,7 +1462,7 @@
 
 ;; General 8/16-bit case.
 (rule rotr_fits_in_16 -3 (lower (has_type (fits_in_16 ty) (rotr x y)))
-      (small_rotr ty (put_in_reg_zext32 x) (value_regs_get y 0)))
+      (small_rotr ty (put_in_reg_zext32 x) y))
 
 ;; General 32-bit case.
 (rule rotr_32_base_case -1 (lower (has_type $I32 (rotr x y)))
@@ -1471,6 +1471,9 @@
 ;; General 64-bit case.
 (rule rotr_64_base_case -1 (lower (has_type $I64 (rotr x y)))
       (a64_rotr $I64 x (value_regs_get y 0)))
+
+(rule rotr -5 (lower (rotr x y))
+        (a64_rotr $I64 x y))
 
 ;; Specialization for the 8/16-bit case when the rotation amount is an immediate.
 (rule rotr_fits_in_16_imm -2 (lower (has_type (fits_in_16 ty) (rotr x (iconst k))))

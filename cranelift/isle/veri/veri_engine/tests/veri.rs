@@ -1453,6 +1453,22 @@ fn test_broken_32_general_rotl_to_rotr() {
 }
 
 #[test]
+fn test_named_broken_rotr() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname(
+            "rotr",
+            "rotr",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                // (Bitwidth::I16, VerificationResult::Success),
+                // (Bitwidth::I32, VerificationResult::Success),
+                // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
 fn test_named_rotl_64_base_case() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname(
