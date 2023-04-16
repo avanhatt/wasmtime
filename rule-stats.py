@@ -6,8 +6,9 @@ TOP_K = 10
 
 
 def rule_stats():
-    names = {}
     counts = Counter()
+    names = {}
+    poss = {}
 
     # Ingest the trace.
     for row in csv.reader(sys.stdin):
@@ -18,14 +19,15 @@ def rule_stats():
 
         if rule_id in names:
             assert names[rule_id] == name
+            assert poss[rule_id] == pos
         else:
             names[rule_id] = name
+            poss[rule_id] = pos
 
     # Print the most frequently triggered rules, for fun.
     print(f'Top {TOP_K} rules:')
-    for rule_id, count in counts.most_common(10):
-        name = names.get(rule_id)
-        print('{}{}: {}'.format(rule_id, f' ({name})' if name else '', count))
+    for rule_id, count in counts.most_common(TOP_K):
+        print(count, rule_id, names[rule_id], poss[rule_id])
 
     # How many uses (times a rule was triggered) were of named rules?
     named_uses = sum(c for (i, c) in counts.items() if names.get(i))
