@@ -3,13 +3,12 @@ use utils::{all_failure_result, all_success_result, custom_result};
 use utils::{
     run_and_retry, test_aarch64_rule_with_lhs_termname_simple, test_aarch64_with_config_simple,
     test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
-    test_from_file_with_config_simple,
-    test_from_file_with_lhs_termname_simple, Bitwidth,
-    test_from_file_with_lhs_termname, TestResult
+    test_from_file_with_config_simple, test_from_file_with_lhs_termname,
+    test_from_file_with_lhs_termname_simple, Bitwidth, TestResult,
 };
-use veri_engine_lib::Config;
 use veri_engine_lib::widths::isle_inst_types;
-use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, VerificationResult, TermSignature};
+use veri_engine_lib::Config;
+use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, TermSignature, VerificationResult};
 
 #[test]
 fn test_named_iadd_base_concrete() {
@@ -937,7 +936,7 @@ fn test_broken_uextend() {
     // In the spec for extend, zero_extend and sign_extend are swapped.
     // However, this should still succeed if the input and output
     // widths are the same
-    let instantiations : Vec<(TermSignature, VerificationResult)> = isle_inst_types()
+    let instantiations: Vec<(TermSignature, VerificationResult)> = isle_inst_types()
         .get(&"uextend")
         .unwrap()
         .iter()
@@ -948,12 +947,13 @@ fn test_broken_uextend() {
                 VerificationResult::Failure(Counterexample {})
             };
             (sig.clone(), expected)
-        }).collect();
+        })
+        .collect();
 
     test_from_file_with_lhs_termname(
         "./examples/broken/broken_uextend.isle",
         "uextend".to_string(),
-        TestResult::MultiType(instantiations)
+        TestResult::MultiType(instantiations),
     );
 }
 

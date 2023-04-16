@@ -127,6 +127,16 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("smax", bv_binary_8_to_64.clone());
     widths.insert("umax", bv_binary_8_to_64.clone());
 
+    // x86 binary
+    widths.insert(
+        "amode_add",
+        vec![TermSignature {
+            args: vec![Type::BitVector(Some(64)), Type::BitVector(Some(64))],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
+
     // Binary with possibly differing widths
     widths.insert("rotl", bv_binary_8_to_64.clone());
     widths.insert("rotr", bv_binary_8_to_64.clone());
