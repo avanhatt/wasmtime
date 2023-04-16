@@ -1792,7 +1792,7 @@ pub fn run_solver(
     let feasibility =
         ctx.check_assumptions_feasibility(&assumptions, &rule_sem.term_input_bvs, config);
     if feasibility != VerificationResult::Success {
-        println!("Rule not applicable as written for rule assumptions, skipping full query");
+        println!("Rule not applicable, skipping full query");
         return feasibility;
     }
 

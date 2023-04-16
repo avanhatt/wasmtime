@@ -540,7 +540,7 @@ fn test_named_isub_imm12_neg_not_distinct() {
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
-fn test_isub_imm12neg_new() {
+fn test_updated_isub_imm12neg() {
     run_and_retry(|| {
         test_from_file_with_lhs_termname_simple(
             "./examples/isub/imm12neg_new.isle",
