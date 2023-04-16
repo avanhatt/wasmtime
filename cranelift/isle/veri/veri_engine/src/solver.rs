@@ -639,6 +639,10 @@ impl SolverCtx {
                         | BinaryOp::BVRotr => {
                             self.assume_same_width_from_sexpr(width.unwrap(), &*x)
                         }
+                        BinaryOp::Eq => match self.get_type(&x) {
+                            Some(Type::BitVector(_)) => self.assume_comparable_types(&*x, &*y),
+                            _ => (),
+                        },
                         _ => (),
                     };
                     self.assume_comparable_types(&*x, &*y);
@@ -1634,6 +1638,8 @@ pub fn run_solver(
         .set_option(":produce-unsat-cores", solver.true_())
         .unwrap();
 
+    assert!(!config.dyn_width);
+
     // We start with logic to determine the width of all bitvectors
     let mut ctx = SolverCtx {
         smt: solver,
@@ -1651,7 +1657,7 @@ pub fn run_solver(
         fresh_bits_idx: 0,
     };
 
-    let mut some_dyn_width = false;
+    let mut unresolved_widths = vec![];
 
     // Check whether the non-solver type inference was able to resolve all bitvector widths,
     // and add assumptions for known widths
@@ -1675,7 +1681,7 @@ pub fn run_solver(
                         // Assume the width is greater than 0
                         ctx.width_assumptions
                             .push(ctx.smt.gt(ctx.smt.atom(&width_name), ctx.smt.numeral(0)));
-                        some_dyn_width = true;
+                        unresolved_widths.push(width_name.clone());
                     }
                 };
                 ctx.width_vars.insert(*t, width_name.clone());
@@ -1684,106 +1690,177 @@ pub fn run_solver(
         }
     }
 
-    let mut assumptions: Vec<SExpr>;
+    let assumptions: Vec<SExpr>;
+    if unresolved_widths.len() == 0 {
+        return run_solver_with_static_widths(
+            rule_sem, rule, termenv, typeenv, &ctx.tyctx, concrete, config,
+        );
+    }
 
-    // If we explicitly want dynamic widths, keep going with those. Otherwise, use static widths
-    // (that is, allow smaller bitvectors, in particular, typically for LHS clif terms).
-    if !config.dyn_width {
-        if some_dyn_width {
-            println!("Some unresolved widths after basic type inference");
-            println!("Finding widths from the solver");
-            ctx.onlywidths = true;
-            assumptions = ctx.declare_variables(&rule_sem);
-            ctx.smt.push().unwrap();
-            println!("Adding assumptions to determine widths");
-            for (i, a) in assumptions.iter().enumerate() {
-                println!("dyn{}: {}", i, ctx.smt.display(*a));
-                ctx.smt
-                    .assert(ctx.smt.named(format!("dyn{i}"), *a))
-                    .unwrap();
-            }
-            match ctx.smt.check() {
-                Ok(Response::Sat) => {
-                    for (e, t) in &ctx.tyctx.tyvars {
-                        let ty = &ctx.tyctx.tymap[&t];
-                        match ty {
-                            Type::BitVector(w) => {
-                                let width_name = format!("width__{}", t);
-                                let atom = ctx.smt.atom(&width_name);
-                                let width =
-                                    ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
-                                let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
+    println!("Some unresolved widths after basic type inference");
+    println!("Finding widths from the solver");
+    ctx.onlywidths = true;
+    assumptions = ctx.declare_variables(&rule_sem);
+    ctx.smt.push().unwrap();
+    println!("Adding assumptions to determine widths");
+    for (i, a) in assumptions.iter().enumerate() {
+        println!("dyn{}: {}", i, ctx.smt.display(*a));
+        ctx.smt
+            .assert(ctx.smt.named(format!("dyn{i}"), *a))
+            .unwrap();
+    }
 
-                                // Check that we haven't contradicted previous widths
-                                match w {
-                                    Some(before_width) => {
-                                        assert_eq!(*before_width, width_int as usize)
-                                    }
-                                    _ => (),
-                                };
+    return resolve_dynamic_widths(
+        rule_sem,
+        rule,
+        termenv,
+        typeenv,
+        concrete,
+        config,
+        &mut ctx,
+        unresolved_widths,
+        0,
+    );
+}
 
-                                // Check that the width is nonzero
-                                if width_int <= 0 {
-                                    panic!("Unexpected, zero width! {} {:?}", t, e);
-                                }
+fn resolve_dynamic_widths(
+    rule_sem: &RuleSemantics,
+    rule: &Rule,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    concrete: &Option<ConcreteTest>,
+    config: &Config,
+    ctx: &mut SolverCtx,
+    unresolved_widths: Vec<String>,
+    attempt: usize,
+) -> VerificationResult {
+    if attempt > 10 {
+        panic!("Unexpected number of attempts to resolve dynamic widths!")
+    }
+    match ctx.smt.check() {
+        Ok(Response::Sat) => {
+            let mut cur_tyctx = ctx.tyctx.clone();
+            let mut width_resolutions = HashMap::new();
+            for (e, t) in &ctx.tyctx.tyvars {
+                let ty = &ctx.tyctx.tymap[&t];
+                match ty {
+                    Type::BitVector(w) => {
+                        let width_name = format!("width__{}", t);
+                        let atom = ctx.smt.atom(&width_name);
+                        let width = ctx.smt.get_value(vec![atom]).unwrap().first().unwrap().1;
+                        let width_int = u8::try_from(ctx.smt.get(width)).unwrap();
 
-                                println!("width: {}, {}", width_name, width_int);
-                                ctx.tyctx
-                                    .tymap
-                                    .insert(*t, Type::BitVector(Some(width_int as usize)));
+                        // Check that we haven't contradicted previous widths
+                        match w {
+                            Some(before_width) => {
+                                assert_eq!(*before_width, width_int as usize)
                             }
                             _ => (),
+                        };
+
+                        // Check that the width is nonzero
+                        if width_int <= 0 {
+                            panic!("Unexpected, zero width! {} {:?}", t, e);
+                        }
+
+                        if unresolved_widths.contains(&width_name) {
+                            println!("\tResolved width: {}, {}", width_name, width_int);
+                            width_resolutions.insert(width_name, width_int);
+                            cur_tyctx
+                                .tymap
+                                .insert(*t, Type::BitVector(Some(width_int as usize)));
                         }
                     }
+                    _ => (),
                 }
-                Ok(Response::Unsat) => {
-                    println!(
-                        "Rule not applicable as written for rule assumptions, skipping full query"
-                    );
-                    let unsat = ctx.smt.get_unsat_core().unwrap();
-                    println!("Unsat core:\n{}", ctx.smt.display(unsat));
-                    return VerificationResult::InapplicableRule;
-                }
-                Ok(Response::Unknown) => {
-                    panic!("Solver said 'unk'");
-                }
-                Err(err) => {
-                    unreachable!("Error! {:?}", err);
-                }
-            };
-            ctx.smt.pop().unwrap();
-        } else {
-            println!("All widths statically known, not asking solver.");
-        }
+            }
+            let static_result = run_solver_with_static_widths(
+                rule_sem, rule, termenv, typeenv, &cur_tyctx, concrete, config,
+            );
 
-        // Declare variables again, this time with all static widths
-        let mut solver = easy_smt::ContextBuilder::new()
-            .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
-            .solver("z3", ["-smt2", "-in"])
-            .build()
-            .unwrap();
-        solver
-            .set_option(":produce-unsat-cores", solver.true_())
-            .unwrap();
-        ctx = SolverCtx {
-            smt: solver,
-            dynwidths: false,
-            onlywidths: false,
-            tyctx: ctx.tyctx.clone(),
-            bitwidth: REG_WIDTH,
-            var_map: HashMap::new(),
-            width_vars: HashMap::new(),
-            width_assumptions: vec![],
-            additional_decls: vec![],
-            additional_assumptions: vec![],
-            additional_assertions: vec![],
-            fresh_bits_idx: 0,
-        };
-        assumptions = ctx.declare_variables(&rule_sem);
-    } else {
-        // onlywidths == false
-        assumptions = ctx.declare_variables(&rule_sem);
+            // If we have a failure or unknown, return right away
+            if !matches!(static_result, VerificationResult::Success) {
+                return static_result;
+            }
+
+            // Otherwise, try again, but adding the assertion that some width is
+            // different than our current assigment
+            let not_equals = width_resolutions.iter().map(|(s, w)| {
+                ctx.smt.not(
+                    ctx.smt
+                        .eq(ctx.smt.atom(s.clone()), ctx.smt.atom((*w).to_string())),
+                )
+            });
+            ctx.smt.assert(ctx.smt.or_many(not_equals)).unwrap();
+
+            resolve_dynamic_widths(
+                rule_sem,
+                rule,
+                termenv,
+                typeenv,
+                concrete,
+                config,
+                ctx,
+                unresolved_widths,
+                attempt + 1,
+            )
+        }
+        Ok(Response::Unsat) => {
+            if attempt == 0 {
+                println!(
+                    "Rule not applicable as written for rule assumptions, skipping full query"
+                );
+                let unsat = ctx.smt.get_unsat_core().unwrap();
+                println!("Unsat core:\n{}", ctx.smt.display(unsat));
+                return VerificationResult::InapplicableRule;
+            } else {
+                // If this is not the first attempt, some previous width assignment must
+                // have succeeded.
+                return VerificationResult::Success;
+            }
+        }
+        Ok(Response::Unknown) => {
+            panic!("Solver said 'unk'");
+        }
+        Err(err) => {
+            unreachable!("Error! {:?}", err);
+        }
     }
+}
+
+pub fn run_solver_with_static_widths(
+    rule_sem: &RuleSemantics,
+    rule: &Rule,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    tyctx: &TypeContext,
+    concrete: &Option<ConcreteTest>,
+    config: &Config,
+) -> VerificationResult {
+    // Declare variables again, this time with all static widths
+    let mut solver = easy_smt::ContextBuilder::new()
+        .replay_file(Some(std::fs::File::create("static_widths.smt2").unwrap()))
+        .solver("z3", ["-smt2", "-in"])
+        .build()
+        .unwrap();
+    solver
+        .set_option(":produce-unsat-cores", solver.true_())
+        .unwrap();
+    let mut ctx = SolverCtx {
+        smt: solver,
+        dynwidths: false,
+        onlywidths: false,
+        tyctx: tyctx.clone(),
+        bitwidth: REG_WIDTH,
+        var_map: HashMap::new(),
+        width_vars: HashMap::new(),
+        width_assumptions: vec![],
+        additional_decls: vec![],
+        additional_assumptions: vec![],
+        additional_assertions: vec![],
+        fresh_bits_idx: 0,
+    };
+    let assumptions = ctx.declare_variables(&rule_sem);
 
     let lhs = ctx.vir_expr_to_sexp(rule_sem.lhs.clone());
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
@@ -1819,81 +1896,19 @@ pub fn run_solver(
     let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
     let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
 
-    // Test code only: test against concrete input/output
     if let Some(concrete) = concrete {
-        // Check that our expected output is valid
-        for (i, a) in assumptions.iter().enumerate() {
-            println!("conc{}: {}", i, ctx.smt.display(*a));
-            ctx.smt
-                .assert(ctx.smt.named(format!("conc{i}"), *a))
-                .unwrap();
-        }
-        for (i, e) in ctx.additional_assertions.iter().enumerate() {
-            ctx.smt
-                .assert(ctx.smt.named(format!("conc_assert{i}"), *e))
-                .unwrap();
-        }
-        ctx.smt.push().unwrap();
-        let eq = ctx
-            .smt
-            .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone()));
-
-        ctx.smt
-            .assert(ctx.smt.named(format!("conceq"), eq))
-            .unwrap();
-
-        for (i, a) in rule_sem.rhs_assertions.iter().enumerate() {
-            let p = ctx.vir_expr_to_sexp(a.clone());
-            ctx.smt
-                .assert(ctx.smt.named(format!("rhs_assert{i}"), p))
-                .unwrap();
-        }
-
-        if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
-            // Bad! This is a bug!
-            // Pop the output assertion
-            ctx.smt.pop().unwrap();
-            // Try again
-            assert!(matches!(ctx.smt.check(), Ok(Response::Sat)));
-            // Get the value for what output is to panic with a useful message
-            let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
-            ctx.display_model(termenv, typeenv, rule, lhs, rhs);
-            panic!(
-                "Expected {}, got {}",
-                concrete.output.literal,
-                ctx.display_hex_to_bin(val)
-            );
-        } else {
-            println!(
-                "Expected concrete result matched: {}",
-                concrete.output.literal
-            );
-            ctx.smt.pop().unwrap();
-        }
-
-        // Check that there is no other possible output
-        ctx.smt.push().unwrap();
-        ctx.smt
-            .assert(
-                ctx.smt.not(
-                    ctx.smt
-                        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone())),
-                ),
-            )
-            .unwrap();
-        if !matches!(ctx.smt.check(), Ok(Response::Unsat)) {
-            // Get the value for what output is to panic with a useful message
-            let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
-            ctx.display_model(termenv, typeenv, rule, lhs, rhs);
-            // AVH TODO: should probably elevate back to an error with custom verification condition
-            println!(
-                "WARNING: Expected ONLY {}, got POSSIBLE {}",
-                concrete.output.literal,
-                ctx.display_hex_to_bin(val)
-            );
-        }
-        ctx.smt.pop().unwrap();
-        return VerificationResult::Success;
+        return test_concrete_with_static_widths(
+            rule_sem,
+            rule,
+            termenv,
+            typeenv,
+            concrete,
+            lhs,
+            rhs,
+            rhs_care_bits,
+            &mut ctx,
+            assumptions,
+        );
     }
 
     let condition = if let Some(condition) = &config.custom_verification_condition {
@@ -1975,4 +1990,92 @@ pub fn run_solver(
             unreachable!("Error! {:?}", err);
         }
     }
+}
+
+pub fn test_concrete_with_static_widths(
+    rule_sem: &RuleSemantics,
+    rule: &Rule,
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    concrete: &ConcreteTest,
+    lhs: SExpr,
+    rhs: SExpr,
+    rhs_care_bits: SExpr,
+    ctx: &mut SolverCtx,
+    assumptions: Vec<SExpr>,
+) -> VerificationResult {
+    // Test code only: test against concrete input/output
+    // Check that our expected output is valid
+    for (i, a) in assumptions.iter().enumerate() {
+        println!("conc{}: {}", i, ctx.smt.display(*a));
+        ctx.smt
+            .assert(ctx.smt.named(format!("conc{i}"), *a))
+            .unwrap();
+    }
+    for (i, e) in ctx.additional_assertions.iter().enumerate() {
+        ctx.smt
+            .assert(ctx.smt.named(format!("conc_assert{i}"), *e))
+            .unwrap();
+    }
+    ctx.smt.push().unwrap();
+    let eq = ctx
+        .smt
+        .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone()));
+
+    ctx.smt
+        .assert(ctx.smt.named(format!("conceq"), eq))
+        .unwrap();
+
+    for (i, a) in rule_sem.rhs_assertions.iter().enumerate() {
+        let p = ctx.vir_expr_to_sexp(a.clone());
+        ctx.smt
+            .assert(ctx.smt.named(format!("rhs_assert{i}"), p))
+            .unwrap();
+    }
+
+    if !matches!(ctx.smt.check(), Ok(Response::Sat)) {
+        // Bad! This is a bug!
+        // Pop the output assertion
+        ctx.smt.pop().unwrap();
+        // Try again
+        assert!(matches!(ctx.smt.check(), Ok(Response::Sat)));
+        // Get the value for what output is to panic with a useful message
+        let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+        ctx.display_model(termenv, typeenv, rule, lhs, rhs);
+        panic!(
+            "Expected {}, got {}",
+            concrete.output.literal,
+            ctx.display_hex_to_bin(val)
+        );
+    } else {
+        println!(
+            "Expected concrete result matched: {}",
+            concrete.output.literal
+        );
+        ctx.smt.pop().unwrap();
+    }
+
+    // Check that there is no other possible output
+    ctx.smt.push().unwrap();
+    ctx.smt
+        .assert(
+            ctx.smt.not(
+                ctx.smt
+                    .eq(rhs_care_bits, ctx.smt.atom(concrete.output.literal.clone())),
+            ),
+        )
+        .unwrap();
+    if !matches!(ctx.smt.check(), Ok(Response::Unsat)) {
+        // Get the value for what output is to panic with a useful message
+        let val = ctx.smt.get_value(vec![rhs_care_bits]).unwrap()[0].1;
+        ctx.display_model(termenv, typeenv, rule, lhs, rhs);
+        // AVH TODO: should probably elevate back to an error with custom verification condition
+        println!(
+            "WARNING: Expected ONLY {}, got POSSIBLE {}",
+            concrete.output.literal,
+            ctx.display_hex_to_bin(val)
+        );
+    }
+    ctx.smt.pop().unwrap();
+    return VerificationResult::Success;
 }
