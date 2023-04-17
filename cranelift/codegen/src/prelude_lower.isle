@@ -46,7 +46,7 @@
 
 ;; Construct a single-element `InstOutput`.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+;;@     (provide (= (arg) (conv_to (widthof (arg)) (ret)))))
 (decl output (ValueRegs) InstOutput)
 (extern constructor output output)
 
@@ -58,7 +58,7 @@
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (provide (= (arg) (conv_to (widthof (arg)) (ret)))))
 (decl output_reg (Reg) InstOutput)
-(rule (output_reg reg) (output (value_reg reg)))
+(rule output_reg (output_reg reg) (output (value_reg reg)))
 
 ;; Construct a single-element `InstOutput` from a value.
 ;;@ (spec (sig (args arg) (ret))

@@ -1565,7 +1565,7 @@ impl SolverCtx {
         println!("\n{} =>\n{}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
-    fn declare_variables(&mut self, rule_sem: &RuleSemantics) -> Vec<SExpr> {
+    fn declare_variables(&mut self, rule_sem: &RuleSemantics, config: &Config) -> Vec<SExpr> {
         let mut assumptions: Vec<SExpr> = vec![];
         println!("Declaring quantified variables");
         for v in &rule_sem.quantified_vars {
@@ -1611,6 +1611,20 @@ impl SolverCtx {
         for (name, ty) in &self.additional_decls {
             // println!("\t{} : {}", name, self.smt.display(*ty));
             self.smt.declare_const(name, *ty).unwrap();
+        }
+
+        if let Some(a) = &config.custom_assumptions {
+            let term_args = rule_sem
+                .term_args
+                .iter()
+                .map(|s| self.smt.atom(s))
+                .collect();
+            let custom_assumptions = a(&self.smt, term_args);
+            println!(
+                "Custom assumptions:\n\t{}\n",
+                self.smt.display(custom_assumptions)
+            );
+            assumptions.push(custom_assumptions);
         }
         assumptions
     }
@@ -1673,7 +1687,7 @@ pub fn run_solver(
                         let eq = ctx
                             .smt
                             .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
-                        println!("Width from inference {} ({})", width_name, bitwidth);
+                        // println!("Width from inference {} ({})", width_name, bitwidth);
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
@@ -1692,6 +1706,7 @@ pub fn run_solver(
 
     let assumptions: Vec<SExpr>;
     if unresolved_widths.len() == 0 {
+        println!("All widths resolved after basic type inference");
         return run_solver_with_static_widths(
             rule_sem, rule, termenv, typeenv, &ctx.tyctx, concrete, config,
         );
@@ -1700,7 +1715,7 @@ pub fn run_solver(
     println!("Some unresolved widths after basic type inference");
     println!("Finding widths from the solver");
     ctx.onlywidths = true;
-    assumptions = ctx.declare_variables(&rule_sem);
+    assumptions = ctx.declare_variables(&rule_sem, config);
     ctx.smt.push().unwrap();
     println!("Adding assumptions to determine widths");
     for (i, a) in assumptions.iter().enumerate() {
@@ -1860,7 +1875,7 @@ pub fn run_solver_with_static_widths(
         additional_assertions: vec![],
         fresh_bits_idx: 0,
     };
-    let assumptions = ctx.declare_variables(&rule_sem);
+    let assumptions = ctx.declare_variables(&rule_sem, config);
 
     let lhs = ctx.vir_expr_to_sexp(rule_sem.lhs.clone());
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
@@ -1893,8 +1908,14 @@ pub fn run_solver_with_static_widths(
         }
     };
 
-    let lhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs);
-    let rhs_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs);
+    let (lhs_care_bits, rhs_care_bits) = if width == REG_WIDTH {
+        (lhs, rhs)
+    } else {
+        (
+            ctx.smt.extract((width - 1).try_into().unwrap(), 0, lhs),
+            ctx.smt.extract((width - 1).try_into().unwrap(), 0, rhs),
+        )
+    };
 
     if let Some(concrete) = concrete {
         return test_concrete_with_static_widths(

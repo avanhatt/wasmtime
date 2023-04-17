@@ -91,6 +91,7 @@ fn main() {
         names: names,
         distinct_check: !args.nodistinct,
         custom_verification_condition: None,
+        custom_assumptions: None,
     };
     verify_rules(inputs, &config)
 }
