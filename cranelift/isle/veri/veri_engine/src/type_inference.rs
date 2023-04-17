@@ -173,7 +173,7 @@ fn convert_type(aty: &annotation_ir::Type) -> veri_ir::Type {
         annotation_ir::Type::BitVectorWithWidth(w) => veri_ir::Type::BitVector(Some(*w)),
         annotation_ir::Type::Int => veri_ir::Type::Int,
         annotation_ir::Type::Bool => veri_ir::Type::Bool,
-        annotation_ir::Type::Poly(_) => unreachable!(),
+        annotation_ir::Type::Poly(_) => veri_ir::Type::BitVector(None),
     }
 }
 
@@ -1399,6 +1399,7 @@ fn add_isle_constraints(
         ("OperandSize".to_owned(), annotation_ir::Type::Int),
         ("Reg".to_owned(), annotation_ir::Type::BitVector),
         ("Inst".to_owned(), annotation_ir::Type::BitVector),
+        ("Amode".to_owned(), annotation_ir::Type::BitVector),
         ("Value".to_owned(), annotation_ir::Type::BitVector),
         (
             "ExtendedValue".to_owned(),

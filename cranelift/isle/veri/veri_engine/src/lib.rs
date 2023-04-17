@@ -23,8 +23,24 @@ pub struct Config {
     pub dyn_width: bool,
     pub distinct_check: bool,
 
+    // Closure arguments: SMT context, arguments to the term, lhs, rhs
     pub custom_verification_condition:
         Option<Box<dyn Fn(&easy_smt::Context, Vec<SExpr>, SExpr, SExpr) -> SExpr>>,
+    // Closure arguments: SMT context, arguments to the term
+    pub custom_assumptions: Option<Box<dyn Fn(&easy_smt::Context, Vec<SExpr>) -> SExpr>>,
+}
+
+impl Config {
+    pub fn with_term_and_name(term: &str, name: &str) -> Self {
+        Config {
+            dyn_width: false,
+            term: term.to_string(),
+            distinct_check: true,
+            custom_verification_condition: None,
+            custom_assumptions: None,
+            names: Some(vec![name.to_string()]),
+        }
+    }
 }
 
 /// Given a file, lexes and parses the file to an ISLE term and type environment tuple

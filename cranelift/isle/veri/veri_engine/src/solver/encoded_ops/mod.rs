@@ -6,7 +6,7 @@ pub mod subs;
 
 #[cfg(test)]
 mod tests {
-    use super::{*};
+    use super::*;
     use crate::solver::SolverCtx;
     use easy_smt::{Response, SExpr};
     use std::collections::HashMap;

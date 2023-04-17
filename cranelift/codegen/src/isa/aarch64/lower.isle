@@ -18,12 +18,12 @@
 
 ;;;; Rules for `iconst` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type ty (iconst (u64_from_imm64 n))))
+(rule iconst (lower (has_type ty (iconst (u64_from_imm64 n))))
       (imm ty (ImmExtend.Zero) n))
 
 ;;;; Rules for `null` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type ty (null)))
+(rule null (lower (has_type ty (null)))
       (imm ty (ImmExtend.Zero) 0))
 
 ;;;; Rules for `f32const` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,14 +56,13 @@
 (rule iadd_imm12_left 5 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_value x) y)))
       (add_imm ty y x))
 
-;; ALDS: Disabled as a stopgap.
 ;; Same as the previous special cases, except we can switch the addition to a
 ;; subtraction if the negated immediate fits in 12 bits.
-;; (rule iadd_imm12_neg_right -1 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
-;;       (sub_imm ty x y))
+(rule iadd_imm12_neg_right 2 (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_negated_value y))))
+      (sub_imm ty x y))
 
-;; (rule iadd_imm12_neg_left -2 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
-;;       (sub_imm ty y x))
+(rule iadd_imm12_neg_left 3 (lower (has_type (fits_in_64 ty) (iadd (imm12_from_negated_value x) y)))
+      (sub_imm ty y x))
 
 ;; Special cases for when we're adding an extended register where the extending
 ;; operation can get folded into the add itself.
@@ -927,7 +926,8 @@
 ;;@                  (|| (= (cc) (3i8:bv8)) (= (cc) (8i8:bv8)))), 
 ;;@ ))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
-(rule cmp_and_choose_32_64 (cmp_and_choose (fits_in_64 ty) cc _ x y)
+;; TODO: name once we can support: cmp_and_choose_32_64
+(rule (cmp_and_choose (fits_in_64 ty) cc _ x y)
       (let ((x Reg (put_in_reg x))
             (y Reg (put_in_reg y)))
        (with_flags_reg (cmp (operand_size ty) x y)
@@ -935,7 +935,8 @@
 
 ;; `i16` and `i8` min/max require sign extension as
 ;; the comparison operates on (at least) 32 bits.
-(rule cmp_and_choose_8_16 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
+;; TODO: name once we can support: cmp_and_choose_8_16
+(rule 1 (cmp_and_choose (fits_in_16 ty) cc signed x y)
       (let ((x Reg (extend (put_in_reg x) signed (ty_bits ty) 32))
             (y Reg (extend (put_in_reg y) signed (ty_bits ty) 32)))
       (with_flags_reg (cmp (operand_size ty) x y)
@@ -1764,7 +1765,7 @@
 
 ;;;; Rules for `bitselect` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rule (lower (has_type ty (bitselect c x y)))
+(rule bitselect (lower (has_type ty (bitselect c x y)))
       (if (ty_int_ref_scalar_64 ty))
       (let ((tmp1 Reg (and_reg ty x c))
             (tmp2 Reg (bic ty y c)))

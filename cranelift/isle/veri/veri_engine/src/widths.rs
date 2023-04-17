@@ -30,6 +30,16 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         })
         .collect();
 
+    let bv_ternary_8_to_64: Vec<TermSignature> = bv_types_8_to_64
+        .iter()
+        .copied()
+        .map(|x| TermSignature {
+            args: vec![x.clone(), x.clone(), x.clone()],
+            ret: x.clone(),
+            canonical_type: Some(x),
+        })
+        .collect();
+
     let mut widths = HashMap::new();
 
     // Simple unary
@@ -41,15 +51,40 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("ctz", bv_unary_8_to_64.clone());
     widths.insert("popcnt", bv_unary_8_to_64.clone());
 
+    widths.insert(
+        "operand_size",
+        bv_types_8_to_64
+            .iter()
+            .copied()
+            .map(|t| TermSignature {
+                args: vec![Type::Int],
+                ret: Type::Int,
+                canonical_type: Some(t),
+            })
+            .collect(),
+    );
+
+    // (decl output_reg (Reg) InstOutput)
+    widths.insert(
+        "output_reg",
+        bv_types_8_to_64
+            .iter()
+            .copied()
+            .map(|t| TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: t.clone(),
+                canonical_type: Some(t),
+            })
+            .collect(),
+    );
+
     // Unary with variable return width
-    // No-ops commented out for now because not easy to hook differing success results
-    // into broken tests
     let extends = vec![
-        // TermSignature {
-        //     args: vec![Type::BitVector(Some(8))],
-        //     ret: Type::BitVector(Some(8)),
-        //     canonical_type: Some(Type::BitVector(Some(8))),
-        // },
+        TermSignature {
+            args: vec![Type::BitVector(Some(8))],
+            ret: Type::BitVector(Some(8)),
+            canonical_type: Some(Type::BitVector(Some(8))),
+        },
         TermSignature {
             args: vec![Type::BitVector(Some(8))],
             ret: Type::BitVector(Some(16)),
@@ -65,11 +100,11 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(8))),
         },
-        // TermSignature {
-        //     args: vec![Type::BitVector(Some(16))],
-        //     ret: Type::BitVector(Some(16)),
-        //     canonical_type: Some(Type::BitVector(Some(16))),
-        // },
+        TermSignature {
+            args: vec![Type::BitVector(Some(16))],
+            ret: Type::BitVector(Some(16)),
+            canonical_type: Some(Type::BitVector(Some(16))),
+        },
         TermSignature {
             args: vec![Type::BitVector(Some(16))],
             ret: Type::BitVector(Some(32)),
@@ -80,15 +115,20 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(16))),
         },
-        // TermSignature {
-        //     args: vec![Type::BitVector(Some(32))],
-        //     ret: Type::BitVector(Some(32)),
-        //     canonical_type: Some(Type::BitVector(Some(32))),
-        // },
+        TermSignature {
+            args: vec![Type::BitVector(Some(32))],
+            ret: Type::BitVector(Some(32)),
+            canonical_type: Some(Type::BitVector(Some(32))),
+        },
         TermSignature {
             args: vec![Type::BitVector(Some(32))],
             ret: Type::BitVector(Some(64)),
             canonical_type: Some(Type::BitVector(Some(32))),
+        },
+        TermSignature {
+            args: vec![Type::BitVector(Some(64))],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
         },
     ];
     widths.insert("sextend", extends.clone());
@@ -114,9 +154,74 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("smax", bv_binary_8_to_64.clone());
     widths.insert("umax", bv_binary_8_to_64.clone());
 
+    // x86 binary
+    widths.insert(
+        "amode_add",
+        vec![TermSignature {
+            args: vec![Type::BitVector(Some(64)), Type::BitVector(Some(64))],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
+
     // Binary with possibly differing widths
     widths.insert("rotl", bv_binary_8_to_64.clone());
     widths.insert("rotr", bv_binary_8_to_64.clone());
+
+    // Ternary
+    widths.insert("bitselect", bv_ternary_8_to_64.clone());
+
+    widths.insert(
+        "iconst",
+        vec![
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(16)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(32)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
+
+    widths.insert(
+        "null",
+        vec![
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(8)),
+                canonical_type: Some(Type::BitVector(Some(8))),
+            },
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(16)),
+                canonical_type: Some(Type::BitVector(Some(16))),
+            },
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(32)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
+    );
 
     widths.insert(
         "icmp",
