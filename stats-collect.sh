@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
-for fn in tests/spec_testsuite/*.wast ; do
-    ./target/debug/wasmtime wast $fn
-done
-# | grep '^\d*,' > rule-trace.csv
+shopt -s extglob
+tests=tests/spec_testsuite/!(simd*).wast
+
+ts=`date +'%Y-%m-%d-%s'`
+
+for fn in $tests ; do
+    ./target/debug/wasmtime wast --disable-cache $fn
+done | grep '^\d*,' > rule-trace-$ts.csv
