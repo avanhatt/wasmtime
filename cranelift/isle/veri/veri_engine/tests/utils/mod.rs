@@ -12,14 +12,13 @@ use veri_engine_lib::Config;
 use veri_ir::{ConcreteTest, Counterexample, TermSignature, VerificationResult};
 
 #[derive(Debug, EnumIter, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
+#[repr(usize)]
 pub enum Bitwidth {
     I8 = 8,
     I16 = 16,
     I32 = 32,
     I64 = 64,
 }
-
-type Result = (Bitwidth, VerificationResult);
 
 pub enum TestResult {
     Simple(Vec<(Bitwidth, VerificationResult)>),
@@ -193,6 +192,7 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         term: termname,
         distinct_check: true,
         custom_verification_condition: None,
+        custom_assumptions: None,
         names: None,
     };
     test_rules_with_term(inputs, tr, config);
@@ -231,6 +231,7 @@ pub fn test_aarch64_rule_with_lhs_termname(rulename: &str, termname: &str, tr: T
         term: termname.to_string(),
         distinct_check: true,
         custom_verification_condition: None,
+        custom_assumptions: None,
         names: Some(vec![rulename.to_string()]),
     };
     test_rules_with_term(inputs, tr, config);
@@ -329,6 +330,7 @@ pub fn test_concrete_aarch64_rule_with_lhs_termname(
         term: termname.to_string(),
         distinct_check: false,
         custom_verification_condition: None,
+        custom_assumptions: None,
         names: Some(vec![rulename.to_string()]),
     };
 
@@ -384,6 +386,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
         term: termname.clone(),
         distinct_check: false,
         custom_verification_condition: None,
+        custom_assumptions: None,
         names: None,
     };
 

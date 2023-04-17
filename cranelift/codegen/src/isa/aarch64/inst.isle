@@ -1212,10 +1212,15 @@
 ;;@     (= (ret) 
 ;;@        (if (<= (ty) (32i8:Int)) 
 ;;@            (32i8:Int) 
-;;@            (64i8:Int)))))
+;;@            (64i8:Int))))
+;;@   (require
+;;@     (|| (= (ty) (8i8: Int))
+;;@     (|| (= (ty) (16i8: Int))
+;;@     (|| (= (ty) (32i8: Int))
+;;@     (= (ty) (64i8: Int)))))))
 (decl operand_size (Type) OperandSize)
-(rule 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
-(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+(rule operand_size_32 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule operand_size_64 (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
 (type ScalarSize extern
       (enum Size8

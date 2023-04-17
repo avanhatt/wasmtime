@@ -1280,6 +1280,7 @@ fn test_named_small_rotr() {
             dyn_width: false,
             term: "small_rotr".to_string(),
             distinct_check: true,
+            custom_assumptions: None,
             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
                 let ty_arg = *args.first().unwrap();
                 let lower_8_bits_eq = {
@@ -1309,6 +1310,7 @@ fn test_broken_small_rotr_to_shifts() {
             dyn_width: false,
             term: "small_rotr".to_string(),
             distinct_check: true,
+            custom_assumptions: None,
             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
                 let ty_arg = *args.first().unwrap();
                 let lower_8_bits_eq = {
@@ -1345,6 +1347,7 @@ fn test_broken_small_rotr_to_shifts_2() {
             dyn_width: false,
             term: "small_rotr".to_string(),
             distinct_check: true,
+            custom_assumptions: None,
             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
                 let ty_arg = *args.first().unwrap();
                 let lower_8_bits_eq = {
@@ -1381,6 +1384,7 @@ fn test_named_small_rotr_imm() {
             dyn_width: false,
             term: "small_rotr_imm".to_string(),
             distinct_check: true,
+            custom_assumptions: None,
             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
                 let ty_arg = *args.first().unwrap();
                 let lower_8_bits_eq = {
@@ -2053,6 +2057,7 @@ fn test_named_do_shift_imm() {
         dyn_width: false,
         term: "do_shift".to_string(),
         distinct_check: true,
+        custom_assumptions: None,
         custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
             let lower_8_bits_eq = {
                 let mask = smt.atom("#x00000000000000FF");
@@ -2067,6 +2072,7 @@ fn test_named_do_shift_imm() {
         dyn_width: false,
         term: "do_shift".to_string(),
         distinct_check: true,
+        custom_assumptions: None,
         custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
             let lower_16_bits_eq = {
                 let mask = smt.atom("#x000000000000FFFF");
@@ -2081,6 +2087,7 @@ fn test_named_do_shift_imm() {
         dyn_width: false,
         term: "do_shift".to_string(),
         distinct_check: true,
+        custom_assumptions: None,
         custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
             let lower_32_bits_eq = {
                 let mask = smt.atom("#x00000000FFFFFFFF");
@@ -2105,6 +2112,7 @@ fn test_named_do_shift_fits_in_16() {
             dyn_width: false,
             term: "do_shift".to_string(),
             distinct_check: true,
+            custom_assumptions: None,
             custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
                 let ty_arg = args[1];
                 let lower_8_bits_eq = {
@@ -2196,6 +2204,7 @@ fn test_named_do_shift_32_base_case() {
         dyn_width: false,
         term: "do_shift".to_string(),
         distinct_check: true,
+        custom_assumptions: None,
         custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
             let lower_32_bits_eq = {
                 let mask = smt.atom("#x00000000FFFFFFFF");
@@ -2223,6 +2232,7 @@ fn test_broken_do_shift_32() {
         dyn_width: false,
         term: "do_shift".to_string(),
         distinct_check: true,
+        custom_assumptions: None,
         custom_verification_condition: Some(Box::new(|smt, _args, lhs, rhs| {
             let lower_32_bits_eq = {
                 let mask = smt.atom("#x00000000FFFFFFFF");
@@ -2568,6 +2578,7 @@ fn test_named_lower_icmp_const_32_64_sgte() {
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
             custom_verification_condition: None,
+            custom_assumptions: None,
             names: Some(vec!["lower_icmp_const_32_64_sgte".to_string()]),
         };
         test_aarch64_with_config_simple(
@@ -2601,6 +2612,7 @@ fn test_named_lower_icmp_const_32_64_ugte() {
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
             custom_verification_condition: None,
+            custom_assumptions: None,
             names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
         };
         test_aarch64_with_config_simple(
@@ -2857,5 +2869,68 @@ fn test_named_popcnt_64() {
                 // (Bitwidth::I64, VerificationResult::Success),
             ],
         )
+    })
+}
+
+#[test]
+fn test_named_operand_size_32() {
+    // Since there are no bitvectors in the signature, need a custom assumption
+    // hook to pass through the value of the type argument
+    run_and_retry(|| {
+        static EXPECTED : [(Bitwidth, VerificationResult); 4] = [
+            (Bitwidth::I8, VerificationResult::Success),
+            (Bitwidth::I16, VerificationResult::Success),
+            (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::InapplicableRule),
+        ];
+        for (ty, result) in &EXPECTED {
+            let config = Config {
+                dyn_width: false,
+                term: "operand_size".to_string(),
+                distinct_check: true,
+                custom_verification_condition: None,
+                custom_assumptions: Some(Box::new(|smt, args| {
+                    let ty_arg = *args.first().unwrap();
+                    smt.eq(ty_arg, smt.numeral(*ty as usize))
+                })),
+                names: Some(vec!["operand_size_32".to_string()]),
+            };
+            test_aarch64_with_config_simple(
+                config,
+                vec![(ty.clone(), result.clone())],
+            );
+        }
+    })
+}
+
+#[test]
+fn test_named_operand_size_64() {
+    // Since there are no bitvectors in the signature, need a custom assumption
+    // hook to pass through the value of the type argument
+    run_and_retry(|| {
+        // Lower types precluded by priorities
+        static EXPECTED : [(Bitwidth, VerificationResult); 1] = [
+            // (Bitwidth::I8, VerificationResult::Success),
+            // (Bitwidth::I16, VerificationResult::Success),
+            // (Bitwidth::I32, VerificationResult::Success),
+            (Bitwidth::I64, VerificationResult::Success),
+        ];
+        for (ty, result) in &EXPECTED {
+            let config = Config {
+                dyn_width: false,
+                term: "operand_size".to_string(),
+                distinct_check: true,
+                custom_verification_condition: None,
+                custom_assumptions: Some(Box::new(|smt, args| {
+                    let ty_arg = *args.first().unwrap();
+                    smt.eq(ty_arg, smt.numeral(*ty as usize))
+                })),
+                names: Some(vec!["operand_size_64".to_string()]),
+            };
+            test_aarch64_with_config_simple(
+                config,
+                vec![(ty.clone(), result.clone())],
+            );
+        }
     })
 }
