@@ -1614,14 +1614,18 @@ impl SolverCtx {
         }
 
         if let Some(a) = &config.custom_assumptions {
-            let term_args = rule_sem.term_args.iter().map(|s| self.smt.atom(s)).collect();
+            let term_args = rule_sem
+                .term_args
+                .iter()
+                .map(|s| self.smt.atom(s))
+                .collect();
             let custom_assumptions = a(&self.smt, term_args);
             println!(
                 "Custom assumptions:\n\t{}\n",
                 self.smt.display(custom_assumptions)
             );
             assumptions.push(custom_assumptions);
-        } 
+        }
         assumptions
     }
 }
@@ -1683,7 +1687,7 @@ pub fn run_solver(
                         let eq = ctx
                             .smt
                             .eq(ctx.smt.atom(&width_name), ctx.smt.numeral(bitwidth));
-                        println!("Width from inference {} ({})", width_name, bitwidth);
+                        // println!("Width from inference {} ({})", width_name, bitwidth);
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
@@ -1702,6 +1706,7 @@ pub fn run_solver(
 
     let assumptions: Vec<SExpr>;
     if unresolved_widths.len() == 0 {
+        println!("All widths resolved after basic type inference");
         return run_solver_with_static_widths(
             rule_sem, rule, termenv, typeenv, &ctx.tyctx, concrete, config,
         );

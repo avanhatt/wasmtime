@@ -1023,6 +1023,7 @@ fn add_annotation_constraints(
                 .insert(TypeExpr::Concrete(wt, annotation_ir::Type::Int));
 
             if let Some(w) = const_fold_to_int(&we) {
+                dbg!("const folded");
                 tree.concrete_constraints.insert(TypeExpr::Concrete(
                     t,
                     annotation_ir::Type::BitVectorWithWidth(w.try_into().unwrap()),
@@ -1032,7 +1033,8 @@ fn add_annotation_constraints(
 
                 (veri_ir::Expr::BVConvTo(Box::new(e1)), t)
             } else {
-                tree.concrete_constraints.insert(TypeExpr::WidthInt(t, wt));
+                dbg!("not const folded");
+                // tree.concrete_constraints.insert(TypeExpr::WidthInt(t, wt));
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(t1, annotation_ir::Type::BitVector));
                 tree.bv_constraints

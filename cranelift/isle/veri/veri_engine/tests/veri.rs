@@ -2877,7 +2877,7 @@ fn test_named_operand_size_32() {
     // Since there are no bitvectors in the signature, need a custom assumption
     // hook to pass through the value of the type argument
     run_and_retry(|| {
-        static EXPECTED : [(Bitwidth, VerificationResult); 4] = [
+        static EXPECTED: [(Bitwidth, VerificationResult); 4] = [
             (Bitwidth::I8, VerificationResult::Success),
             (Bitwidth::I16, VerificationResult::Success),
             (Bitwidth::I32, VerificationResult::Success),
@@ -2895,10 +2895,7 @@ fn test_named_operand_size_32() {
                 })),
                 names: Some(vec!["operand_size_32".to_string()]),
             };
-            test_aarch64_with_config_simple(
-                config,
-                vec![(ty.clone(), result.clone())],
-            );
+            test_aarch64_with_config_simple(config, vec![(ty.clone(), result.clone())]);
         }
     })
 }
@@ -2909,7 +2906,7 @@ fn test_named_operand_size_64() {
     // hook to pass through the value of the type argument
     run_and_retry(|| {
         // Lower types precluded by priorities
-        static EXPECTED : [(Bitwidth, VerificationResult); 1] = [
+        static EXPECTED: [(Bitwidth, VerificationResult); 1] = [
             // (Bitwidth::I8, VerificationResult::Success),
             // (Bitwidth::I16, VerificationResult::Success),
             // (Bitwidth::I32, VerificationResult::Success),
@@ -2927,10 +2924,23 @@ fn test_named_operand_size_64() {
                 })),
                 names: Some(vec!["operand_size_64".to_string()]),
             };
-            test_aarch64_with_config_simple(
-                config,
-                vec![(ty.clone(), result.clone())],
-            );
+            test_aarch64_with_config_simple(config, vec![(ty.clone(), result.clone())]);
         }
+    })
+}
+
+#[test]
+fn test_named_output_reg() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "output_reg",
+            "output_reg",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
     })
 }
