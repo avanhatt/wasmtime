@@ -5,21 +5,35 @@ from collections import Counter
 TOP_K = 10
 
 
-def rule_stats():
+def is_fp(inst):
+    """Given a traced IL instruction string, check if it has anything to
+    do with floating point values.
+    """
+    return ('f32' in inst) or ('f64' in inst)
+
+
+def rule_stats(exclude_fp=False):
     counts = Counter()
     names = {}
     poss = {}
 
     # Ingest the trace.
+    exclude = False
     for row in csv.reader(sys.stdin):
-        rule_id, name, pos, opcode = row
+        rule_id, name, pos, inst = row
 
-        # Log messages either have an opcode (indicating a new
-        # instruction is being lowered) or have all the other fields
+        # Log messages either have an opcode/types string (indicating a
+        # new instruction is being lowered) or have all the other fields
         # (indicating a rule was triggered).
-        if opcode:
+        if inst:
             assert not (rule_id or name or pos)
-            print(opcode)
+            if exclude_fp:
+                exclude = is_fp(inst)
+            continue
+
+        # This is a rule invocation event. If it's associated with an
+        # instruction we're excluding, don't count it.
+        if exclude:
             continue
 
         rule_id = int(rule_id)
@@ -52,4 +66,4 @@ def rule_stats():
 
 
 if __name__ == "__main__":
-    rule_stats()
+    rule_stats('--no-fp' in sys.argv[1:])
