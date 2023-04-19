@@ -4,6 +4,17 @@ from collections import Counter
 
 TOP_K = 10
 
+MEM_OPS = ('load', 'store', 'uload8', 'sload8', 'istore8', 'uload16',
+           'sload16', 'istore16', 'uload32', 'sload32', 'istore32', 'uload8x8',
+           'sload8x8', 'uload16x4', 'sload16x4', 'uload32x2', 'sload32x2',
+           'stack_load', 'stack_store', 'stack_addr', 'dynamic_stack_load',
+           'dynamic_stack_store', 'dynamic_stack_addr', 'get_frame_pointer',
+           'get_stack_pointer', 'table_addr', 'atomic_rmw', 'atomic_cas',
+           'atomic_load', 'atomic_store', 'fence')
+CTRL_OPS = ('jump', 'brz', 'brnz', 'br_table', 'debugtrap', 'trap', 'trapz',
+            'resumable_trap', 'trapnz', 'resumable_trapnz', 'return', 'call',
+            'call_indirect', 'func_addr')
+
 
 def is_fp(inst):
     """Given a traced IL instruction string, check if it has anything to
@@ -12,7 +23,7 @@ def is_fp(inst):
     return ('f32' in inst) or ('f64' in inst)
 
 
-def rule_stats(exclude_fp=False):
+def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
     counts = Counter()
     names = {}
     poss = {}
@@ -27,8 +38,17 @@ def rule_stats(exclude_fp=False):
         # (indicating a rule was triggered).
         if inst:
             assert not (rule_id or name or pos)
+            opcode, _ = inst.split(None, 1)
+
+            # Should we exclude this instruction?
+            exclude = False
             if exclude_fp:
-                exclude = is_fp(inst)
+                exclude |= is_fp(inst)
+            if exclude_mem:
+                exclude |= opcode in MEM_OPS
+            if exclude_ctrl:
+                exclude |= opcode in CTRL_OPS
+
             continue
 
         # This is a rule invocation event. If it's associated with an
@@ -66,4 +86,8 @@ def rule_stats(exclude_fp=False):
 
 
 if __name__ == "__main__":
-    rule_stats('--no-fp' in sys.argv[1:])
+    rule_stats(
+        '--no-fp' in sys.argv[1:],
+        '--no-mem' in sys.argv[1:],
+        '--no-ctrl' in sys.argv[1:],
+    )
