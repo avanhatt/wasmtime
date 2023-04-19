@@ -826,7 +826,7 @@ impl<'a> Codegen<'a> {
                 // ALDS: Log the rule firing.
                 writeln!(
                     code,
-                    "{}println!(\"{},{},{}\");",
+                    "{}println!(\"{},{},{},\");",
                     indent,
                     output.rule_id,
                     output.name.as_ref().unwrap_or(&"".to_string()),

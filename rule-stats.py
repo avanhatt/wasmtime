@@ -12,7 +12,16 @@ def rule_stats():
 
     # Ingest the trace.
     for row in csv.reader(sys.stdin):
-        rule_id, name, pos = row
+        rule_id, name, pos, opcode = row
+
+        # Log messages either have an opcode (indicating a new
+        # instruction is being lowered) or have all the other fields
+        # (indicating a rule was triggered).
+        if opcode:
+            assert not (rule_id or name or pos)
+            print(opcode)
+            continue
+
         rule_id = int(rule_id)
 
         counts[rule_id] += 1

@@ -745,6 +745,8 @@ impl LowerBackend for AArch64Backend {
     type MInst = Inst;
 
     fn lower(&self, ctx: &mut Lower<Inst>, ir_inst: IRInst) -> Option<InstOutput> {
+        // ALDS: Record every IR instruction opcode before we trace the rules it triggers.
+        println!(",,,{:?}", ctx.data(ir_inst).opcode());
         isle::lower(ctx, self, ir_inst)
     }
 
