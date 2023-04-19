@@ -21,5 +21,6 @@ sed -i.bak '/trunc_sat_/d' tests/spec_testsuite/conversions.wast
 ts=`date +'%Y-%m-%d-%s'`
 
 for fn in $tests ; do
-    ./target/debug/wasmtime wast --disable-cache $fn
+    ./target/debug/wasmtime wast --disable-cache \
+        --disable-parallel-compilation $fn
 done | grep '^\d*,' > rule-trace-$ts.csv
