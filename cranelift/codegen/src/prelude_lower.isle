@@ -56,7 +56,7 @@
 
 ;; Construct a single-element `InstOutput` from a single register.
 ;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (conv_to (widthof (arg)) (ret)))))
+;;@     (provide (= (ret) (conv_to (widthof (ret)) (arg)))))
 (decl output_reg (Reg) InstOutput)
 (rule output_reg (output_reg reg) (output (value_reg reg)))
 
