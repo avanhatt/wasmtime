@@ -1,5 +1,6 @@
 mod utils;
-use utils::{all_failure_result, all_success_result, custom_result};
+use easy_smt::SExpr;
+use utils::{all_failure_result, all_success_result};
 use utils::{
     run_and_retry, test_aarch64_rule_with_lhs_termname_simple, test_aarch64_with_config_simple,
     test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
@@ -11,7 +12,7 @@ use veri_engine_lib::Config;
 use veri_ir::{ConcreteInput, ConcreteTest, Counterexample, TermSignature, VerificationResult};
 
 #[test]
-fn test_named_iadd_base_concrete() {
+fn test_concrete_named_iadd_base() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "iadd_base_case",
@@ -160,7 +161,7 @@ fn test_named_iadd_extend_right() {
 }
 
 #[test]
-fn test_named_iadd_extend_right_concrete() {
+fn test_concrete_named_iadd_extend_right() {
     test_concrete_aarch64_rule_with_lhs_termname(
         "iadd_extend_right",
         "iadd",
@@ -494,7 +495,7 @@ fn test_named_isub_imm12() {
 }
 
 #[test]
-fn test_named_isub_imm12_concrete() {
+fn test_concrete_named_isub_imm12() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "isub_imm12",
@@ -550,7 +551,7 @@ fn test_isub_imm12neg_new() {
 }
 
 #[test]
-fn test_named_isub_imm12_neg_concrete32() {
+fn test_concrete_named_isub_imm12_neg_32() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "isub_imm12_neg",
@@ -583,7 +584,7 @@ fn test_named_isub_imm12_neg_concrete32() {
 }
 
 #[test]
-fn test_named_isub_imm12_neg_concrete64() {
+fn test_concrete_named_isub_imm12_neg_64() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "isub_imm12_neg",
@@ -890,7 +891,7 @@ fn test_named_urem() {
 }
 
 #[test]
-fn test_named_urem_concrete() {
+fn test_concrete_named_urem() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "urem",
@@ -962,9 +963,16 @@ fn test_broken_uextend() {
 #[test]
 fn test_named_clz_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "clz_32_64",
-            "clz",
+        let config = Config {
+            dyn_width: false,
+            term: "clz".to_string(),
+            distinct_check: true,
+            custom_verification_condition: None,
+            custom_assumptions: None,
+            names: Some(vec!["clz_32_64".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
             vec![
                 // (Bitwidth::I8, VerificationResult::InapplicableRule),
                 // (Bitwidth::I16, VerificationResult::InapplicableRule),
@@ -1853,7 +1861,7 @@ fn test_named_ishl_64() {
 }
 
 #[test]
-fn test_named_ishl_64_concrete() {
+fn test_concrete_named_ishl_64() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "ishl_64",
@@ -1900,7 +1908,7 @@ fn test_named_ishl_fits_in_32() {
 }
 
 #[test]
-fn test_named_ishl_fits_in_32_concrete() {
+fn test_concrete_named_ishl_fits_in_32() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "ishl_fits_in_32",
@@ -1956,7 +1964,7 @@ fn test_named_sshr_fits_in_32() {
 }
 
 #[test]
-fn test_named_sshr_fits_in_32_concrete() {
+fn test_concrete_named_sshr_fits_in_32() {
     test_concrete_aarch64_rule_with_lhs_termname(
         "sshr_fits_in_32",
         "sshr",
@@ -2010,7 +2018,7 @@ fn test_named_ushr_fits_in_32() {
 }
 
 #[test]
-fn test_named_ushr_fits_in_32_concrete() {
+fn test_concrete_named_ushr_fits_in_32() {
     test_concrete_aarch64_rule_with_lhs_termname(
         "ushr_fits_in_32",
         "ushr",
@@ -2150,7 +2158,7 @@ fn test_named_do_shift_fits_in_16() {
 }
 
 #[test]
-fn test_named_do_shift_fits_in_16_concrete() {
+fn test_concrete_named_do_shift_fits_in_16() {
     // (decl do_shift (ALUOp Type Reg Value) Reg)
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
@@ -2378,7 +2386,7 @@ fn test_named_lower_icmp_into_reg_8_16_32_64() {
 }
 
 #[test]
-fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_1() {
+fn test_concrete_named_lower_icmp_into_reg_8_16_32_64_1() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "lower_icmp_into_reg_8_16_32_64",
@@ -2418,7 +2426,7 @@ fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_1() {
 }
 
 #[test]
-fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
+fn test_concrete_named_lower_icmp_into_reg_8_16_32_64_2() {
     run_and_retry(|| {
         test_concrete_aarch64_rule_with_lhs_termname(
             "lower_icmp_into_reg_8_16_32_64",
@@ -2457,20 +2465,26 @@ fn test_named_lower_icmp_into_reg_8_16_32_64_concrete_2() {
     });
 }
 
-// Narrow types fail because of rule priorities
-// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_lower_icmp_32_64() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "lower_icmp_32_64",
-            "lower_icmp",
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp".to_string(),
+            distinct_check: true,
+            custom_verification_condition: None,
+            custom_assumptions: Some(Box::new(|smt, args| {
+                // (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
+                let ty_arg = args[3];
+                smt.gt(ty_arg, smt.numeral(16))
+            })),
+            names: Some(vec!["lower_icmp_32_64".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
             vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -2494,18 +2508,37 @@ fn test_named_lower_icmp_8_16_signed() {
     })
 }
 
-// TODO AVH: Currently fails because needs priorities to show this
-// only applies to unsigned cond codes
-// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_lower_icmp_8_16_unsigned_imm() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "lower_icmp_8_16_unsigned_imm",
-            "lower_icmp",
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp".to_string(),
+            distinct_check: true,
+            custom_verification_condition: None,
+            custom_assumptions: Some(Box::new(|smt, args| {
+                let bv_2_bv8 = smt.list(vec![
+                    smt.atoms().und,
+                    smt.atom(format!("bv{}", 2)),
+                    smt.numeral(8),
+                ]);
+                let bv_5_bv8 = smt.list(vec![
+                    smt.atoms().und,
+                    smt.atom(format!("bv{}", 5)),
+                    smt.numeral(8),
+                ]);
+                // (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
+                // Signed: (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8)))
+                let cc_arg = args[0];
+                smt.or(smt.bvult(cc_arg, bv_2_bv8), smt.bvugt(cc_arg, bv_5_bv8))
+            })),
+            names: Some(vec!["lower_icmp_8_16_unsigned_imm".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
             vec![
-                // (Bitwidth::I8, VerificationResult::Success),
-                // (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::InapplicableRule),
             ],
@@ -2513,18 +2546,37 @@ fn test_named_lower_icmp_8_16_unsigned_imm() {
     })
 }
 
-// TODO AVH: Currently fails because needs priorities to show this
-// only applies to unsigned cond codes
-// https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_lower_icmp_8_16_unsigned() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "lower_icmp_8_16_unsigned",
-            "lower_icmp",
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp".to_string(),
+            distinct_check: true,
+            custom_verification_condition: None,
+            custom_assumptions: Some(Box::new(|smt, args| {
+                let bv_2_bv8 = smt.list(vec![
+                    smt.atoms().und,
+                    smt.atom(format!("bv{}", 2)),
+                    smt.numeral(8),
+                ]);
+                let bv_5_bv8 = smt.list(vec![
+                    smt.atoms().und,
+                    smt.atom(format!("bv{}", 5)),
+                    smt.numeral(8),
+                ]);
+                // (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
+                // Signed: (&& (ugte (c) (2i8:bv8)) (ulte (c) (5i8:bv8)))
+                let cc_arg = args[0];
+                smt.or(smt.bvult(cc_arg, bv_2_bv8), smt.bvugt(cc_arg, bv_5_bv8))
+            })),
+            names: Some(vec!["lower_icmp_8_16_unsigned".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
             vec![
-                // (Bitwidth::I8, VerificationResult::Success),
-                // (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::InapplicableRule),
             ],
@@ -2537,12 +2589,23 @@ fn test_named_lower_icmp_8_16_unsigned() {
 #[test]
 fn test_named_lower_icmp_32_64_const() {
     run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "lower_icmp_32_64_const",
-            "lower_icmp",
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp".to_string(),
+            distinct_check: true,
+            custom_verification_condition: None,
+            custom_assumptions: Some(Box::new(|smt, args| {
+                // (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
+                let ty_arg = args[3];
+                smt.gt(ty_arg, smt.numeral(16))
+            })),
+            names: Some(vec!["lower_icmp_32_64_const".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
             vec![
-                // (Bitwidth::I8, VerificationResult::InapplicableRule),
-                // (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -2604,6 +2667,54 @@ fn test_named_lower_icmp_const_32_64_sgte() {
 // https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_lower_icmp_const_32_64_ugte() {
+    // (switch (extract 7 0 (a))
+    //   ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+    //   ((1i8:bv8) (if (= (extract 10 10 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
+    //   ((2i8:bv8) (if (&& (= (extract 10 10 (a)) (0i1:bv1))
+    //                      (= (extract 11 11 (a)) (extract 8 8 (a))))
+    //                  (1i8:bv8) (0i8:bv8)))
+    //   ((3i8:bv8) (if (= (extract 11 11 (a)) (extract 8 8 (a)))
+    //                  (1i8:bv8) (0i8:bv8)))
+    //   ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (1i8:bv8) (0i8:bv8)))
+    //   ((5i8:bv8) (if (|| (= (extract 10 10 (a)) (1i1:bv1))
+    //                      (! (= (extract 11 11 (a)) (extract 8 8 (a)))))
+    //                  (1i8:bv8) (0i8:bv8)))
+    //   ((6i8:bv8) (if (&& (= (extract 9 9 (a)) (1i1:bv1))
+    //                      (= (extract 10 10 (a)) (0i1:bv1)))
+    //                  (1i8:bv8) (0i8:bv8)))
+    //   ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+    //   ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
+    //   ((9i8:bv8) (if (|| (= (extract 9 9 (a)) (0i1:bv1))
+    //                      (= (extract 10 10 (a)) (1i1:bv1)))
+    //                  (1i8:bv8) (0i8:bv8)))
+    fn flags_and_cc_to_bool(smt: &easy_smt::Context, s: SExpr) -> SExpr {
+        let bv0 = smt.list(vec![
+            smt.atoms().und,
+            smt.atom(format!("bv{}", 0)),
+            smt.numeral(1),
+        ]);
+        let bv1 = smt.list(vec![
+            smt.atoms().und,
+            smt.atom(format!("bv{}", 1)),
+            smt.numeral(1),
+        ]);
+        let mut cases = vec![];
+        let code = smt.extract(7, 0, s);
+        for i in 0..9 {
+            let bool : SExpr = match i {
+                0 => smt.eq(smt.extract(10, 10, s), bv1),
+
+                _ => unreachable!()
+            };
+            cases.push((smt.atom(i.to_string()), bool))
+        };
+        let (_, last_body) = cases.remove(cases.len() - 1);
+
+        // Reverse to keep the order of the switch
+        cases.iter().rev().fold(last_body, |acc, (m, b)| {
+            smt.ite(smt.eq(code, *m), *b, acc)
+        })
+    }
     // Note: only one distinct condition code is matched on, so need to disable
     // distinctness check
     run_and_retry(|| {
@@ -2611,7 +2722,12 @@ fn test_named_lower_icmp_const_32_64_ugte() {
             dyn_width: false,
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
-            custom_verification_condition: None,
+            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
+                smt.eq(
+                    flags_and_cc_to_bool(smt, lhs),
+                    flags_and_cc_to_bool(smt, rhs),
+                )
+            })),
             custom_assumptions: None,
             names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
         };
@@ -2906,10 +3022,10 @@ fn test_named_operand_size_64() {
     // hook to pass through the value of the type argument
     run_and_retry(|| {
         // Lower types precluded by priorities
-        static EXPECTED: [(Bitwidth, VerificationResult); 1] = [
-            // (Bitwidth::I8, VerificationResult::Success),
-            // (Bitwidth::I16, VerificationResult::Success),
-            // (Bitwidth::I32, VerificationResult::Success),
+        static EXPECTED: [(Bitwidth, VerificationResult); 4] = [
+            (Bitwidth::I8, VerificationResult::InapplicableRule),
+            (Bitwidth::I16, VerificationResult::InapplicableRule),
+            (Bitwidth::I32, VerificationResult::InapplicableRule),
             (Bitwidth::I64, VerificationResult::Success),
         ];
         for (ty, result) in &EXPECTED {
@@ -2920,7 +3036,10 @@ fn test_named_operand_size_64() {
                 custom_verification_condition: None,
                 custom_assumptions: Some(Box::new(|smt, args| {
                     let ty_arg = *args.first().unwrap();
-                    smt.eq(ty_arg, smt.numeral(*ty as usize))
+                    let eq = smt.eq(ty_arg, smt.numeral(*ty as usize));
+
+                    let priority = smt.eq(ty_arg, smt.numeral(64));
+                    smt.and_many(vec![eq, priority])
                 })),
                 names: Some(vec!["operand_size_64".to_string()]),
             };
@@ -2951,9 +3070,15 @@ fn test_broken_imm_udiv_cve() {
     // hook to pass through the value of the type argument
     run_and_retry(|| {
         static EXPECTED: [(Bitwidth, VerificationResult); 4] = [
-            (Bitwidth::I8, VerificationResult::Failure(Counterexample {  })),
-            (Bitwidth::I16, VerificationResult::Failure(Counterexample {  })),
-            (Bitwidth::I32, VerificationResult::Failure(Counterexample {  })),
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
             (Bitwidth::I64, VerificationResult::Success),
         ];
         for (ty, result) in &EXPECTED {
@@ -2970,7 +3095,9 @@ fn test_broken_imm_udiv_cve() {
             };
             test_from_file_with_config_simple(
                 "./examples/broken/udiv/udiv_cve_underlying.isle",
-                config, vec![(ty.clone(), result.clone())]);
+                config,
+                vec![(ty.clone(), result.clone())],
+            );
         }
     })
 }

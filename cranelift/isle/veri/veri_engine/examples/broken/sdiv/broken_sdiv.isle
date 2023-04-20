@@ -26,10 +26,12 @@
 (decl put_nonzero_in_reg_sext64 (Value) Reg)
 (extern constructor put_nonzero_in_reg_sext64 put_nonzero_in_reg_sext64)
 
-;;@ (spec (sig (args ty, x, y) (ret))
-;;@       (provide (= (sdiv (x) (y)) (ret)),
-;;@                   (= (ty) (64i0: Int))
-;;@ ))
+;;@ (spec (sig (args ty, a, b) (r))
+;;@   (provide 
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: Int)) 
+;;@            (conv_to (regwidth) (sdiv (extract 31 0 (a)) (extract 31 0 (b))))
+;;@            (sdiv (a) (b))))))
 (decl a64_sdiv (Type Reg Reg) Reg)
 (rule (a64_sdiv ty x y) (alu_rrr (ALUOp.SDiv) ty x y))
 

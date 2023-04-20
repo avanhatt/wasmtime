@@ -1709,6 +1709,8 @@
 (decl pure partial move_wide_const_from_inverted_u64 (Type u64) MoveWideConst)
 (extern constructor move_wide_const_from_inverted_u64 move_wide_const_from_inverted_u64)
 
+;;@ (spec (sig (args t, arg) (ret))
+;;@     (provide (= (ret) (conv_to (widthof (ret)) (conv_to (t) (arg))))))
 (decl pure partial imm_logic_from_u64 (Type u64) ImmLogic)
 (extern constructor imm_logic_from_u64 imm_logic_from_u64)
 

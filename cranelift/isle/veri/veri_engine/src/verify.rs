@@ -80,7 +80,10 @@ pub fn verify_rules_for_term(
             if rule.name.is_none() || !names.contains(rule.name.as_ref().unwrap()) {
                 continue;
             } else {
-                println!("VERIFYING rule with name: {}", rule.name.as_ref().unwrap());
+                println!(
+                    "\nVERIFYING rule with name: {}",
+                    rule.name.as_ref().unwrap()
+                );
             }
         }
         let ctx = Context::new(typesols);
