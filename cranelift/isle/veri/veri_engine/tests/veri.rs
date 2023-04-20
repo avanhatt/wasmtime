@@ -2636,6 +2636,7 @@ fn test_named_lower_icmp_const_32_64_sgte() {
     // Note: only one distinct condition code is matched on, so need to disable
     // distinctness check
     run_and_retry(|| {
+        // First, the version that fails:
         let config = Config {
             dyn_width: false,
             term: "lower_icmp_const".to_string(),
@@ -2659,75 +2660,121 @@ fn test_named_lower_icmp_const_32_64_sgte() {
                     VerificationResult::Failure(Counterexample {}),
                 ),
             ],
+        );
+
+        // Then, the verion that succeeds:
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+            custom_verification_condition: Some(Box::new(|smt, _, lhs, rhs| {
+                smt.eq(
+                    flags_and_cc_to_bool(smt, lhs),
+                    flags_and_cc_to_bool(smt, rhs),
+                )
+            })),
+            custom_assumptions: None,
+            names: Some(vec!["lower_icmp_const_32_64_sgte".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
+            vec![
+                // Suceeds with custom condition
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
         )
     })
+}
+
+// (switch (extract 7 0 (a))
+//   ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+//   ((1i8:bv8) (if (= (extract 10 10 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
+//   ((2i8:bv8) (if (&& (= (extract 10 10 (a)) (0i1:bv1))
+//                      (= (extract 11 11 (a)) (extract 8 8 (a))))
+//                  (1i8:bv8) (0i8:bv8)))
+//   ((3i8:bv8) (if (= (extract 11 11 (a)) (extract 8 8 (a)))
+//                  (1i8:bv8) (0i8:bv8)))
+//   ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (1i8:bv8) (0i8:bv8)))
+//   ((5i8:bv8) (if (|| (= (extract 10 10 (a)) (1i1:bv1))
+//                      (! (= (extract 11 11 (a)) (extract 8 8 (a)))))
+//                  (1i8:bv8) (0i8:bv8)))
+//   ((6i8:bv8) (if (&& (= (extract 9 9 (a)) (1i1:bv1))
+//                      (= (extract 10 10 (a)) (0i1:bv1)))
+//                  (1i8:bv8) (0i8:bv8)))
+//   ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
+//   ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
+//   ((9i8:bv8) (if (|| (= (extract 9 9 (a)) (0i1:bv1))
+//                      (= (extract 10 10 (a)) (1i1:bv1)))
+//                  (1i8:bv8) (0i8:bv8)))
+fn flags_and_cc_to_bool(smt: &easy_smt::Context, s: SExpr) -> SExpr {
+    let bv0 = smt.list(vec![
+        smt.atoms().und,
+        smt.atom(format!("bv{}", 0)),
+        smt.numeral(1),
+    ]);
+    let bv1 = smt.list(vec![
+        smt.atoms().und,
+        smt.atom(format!("bv{}", 1)),
+        smt.numeral(1),
+    ]);
+    let mut cases = vec![];
+    let code = smt.extract(7, 0, s);
+    for i in 0..9 {
+        let bool: SExpr = match i {
+            0 => smt.eq(smt.extract(10, 10, s), bv1),
+            1 => smt.eq(smt.extract(10, 10, s), bv0),
+            2 => smt.and(
+                smt.eq(smt.extract(10, 10, s), bv0),
+                smt.eq(smt.extract(11, 11, s), smt.extract(8, 8, s)),
+            ),
+            3 => smt.eq(smt.extract(11, 11, s), smt.extract(8, 8, s)),
+            4 => smt.not(smt.eq(smt.extract(11, 11, s), smt.extract(8, 8, s))),
+            5 => smt.or(
+                smt.eq(smt.extract(10, 10, s), bv1),
+                smt.not(smt.eq(smt.extract(11, 11, s), smt.extract(8, 8, s))),
+            ),
+            6 => smt.and(
+                smt.eq(smt.extract(9, 9, s), bv1),
+                smt.eq(smt.extract(10, 10, s), bv0),
+            ),
+            7 => smt.eq(smt.extract(9, 9, s), bv1),
+            8 => smt.eq(smt.extract(9, 9, s), bv0),
+            9 => smt.or(
+                smt.eq(smt.extract(9, 9, s), bv0),
+                smt.not(smt.eq(smt.extract(10, 10, s), bv1)),
+            ),
+            _ => smt.false_(),
+        };
+        let i_bv = smt.list(vec![
+            smt.atoms().und,
+            smt.atom(format!("bv{}", i)),
+            smt.numeral(8),
+        ]);
+        cases.push((i_bv, bool))
+    }
+    let (_, last_body) = cases.remove(cases.len() - 1);
+
+    // Reverse to keep the order of the switch
+    cases
+        .iter()
+        .rev()
+        .fold(last_body, |acc, (m, b)| smt.ite(smt.eq(code, *m), *b, acc))
 }
 
 // AVH TODO: this rule requires priorities and a custom verification condition
 // https://github.com/avanhatt/wasmtime/issues/32
 #[test]
 fn test_named_lower_icmp_const_32_64_ugte() {
-    // (switch (extract 7 0 (a))
-    //   ((0i8:bv8) (if (= (extract 10 10 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
-    //   ((1i8:bv8) (if (= (extract 10 10 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
-    //   ((2i8:bv8) (if (&& (= (extract 10 10 (a)) (0i1:bv1))
-    //                      (= (extract 11 11 (a)) (extract 8 8 (a))))
-    //                  (1i8:bv8) (0i8:bv8)))
-    //   ((3i8:bv8) (if (= (extract 11 11 (a)) (extract 8 8 (a)))
-    //                  (1i8:bv8) (0i8:bv8)))
-    //   ((4i8:bv8) (if (! (= (extract 11 11 (a)) (extract 8 8 (a)))) (1i8:bv8) (0i8:bv8)))
-    //   ((5i8:bv8) (if (|| (= (extract 10 10 (a)) (1i1:bv1))
-    //                      (! (= (extract 11 11 (a)) (extract 8 8 (a)))))
-    //                  (1i8:bv8) (0i8:bv8)))
-    //   ((6i8:bv8) (if (&& (= (extract 9 9 (a)) (1i1:bv1))
-    //                      (= (extract 10 10 (a)) (0i1:bv1)))
-    //                  (1i8:bv8) (0i8:bv8)))
-    //   ((7i8:bv8) (if (= (extract 9 9 (a)) (1i1:bv1)) (1i8:bv8) (0i8:bv8)))
-    //   ((8i8:bv8) (if (= (extract 9 9 (a)) (0i1:bv1)) (1i8:bv8) (0i8:bv8)))
-    //   ((9i8:bv8) (if (|| (= (extract 9 9 (a)) (0i1:bv1))
-    //                      (= (extract 10 10 (a)) (1i1:bv1)))
-    //                  (1i8:bv8) (0i8:bv8)))
-    fn flags_and_cc_to_bool(smt: &easy_smt::Context, s: SExpr) -> SExpr {
-        let bv0 = smt.list(vec![
-            smt.atoms().und,
-            smt.atom(format!("bv{}", 0)),
-            smt.numeral(1),
-        ]);
-        let bv1 = smt.list(vec![
-            smt.atoms().und,
-            smt.atom(format!("bv{}", 1)),
-            smt.numeral(1),
-        ]);
-        let mut cases = vec![];
-        let code = smt.extract(7, 0, s);
-        for i in 0..9 {
-            let bool : SExpr = match i {
-                0 => smt.eq(smt.extract(10, 10, s), bv1),
-
-                _ => unreachable!()
-            };
-            cases.push((smt.atom(i.to_string()), bool))
-        };
-        let (_, last_body) = cases.remove(cases.len() - 1);
-
-        // Reverse to keep the order of the switch
-        cases.iter().rev().fold(last_body, |acc, (m, b)| {
-            smt.ite(smt.eq(code, *m), *b, acc)
-        })
-    }
     // Note: only one distinct condition code is matched on, so need to disable
     // distinctness check
     run_and_retry(|| {
+        // First, the version that fails:
         let config = Config {
             dyn_width: false,
             term: "lower_icmp_const".to_string(),
             distinct_check: false,
-            custom_verification_condition: Some(Box::new(|smt, args, lhs, rhs| {
-                smt.eq(
-                    flags_and_cc_to_bool(smt, lhs),
-                    flags_and_cc_to_bool(smt, rhs),
-                )
-            })),
+            custom_verification_condition: None,
             custom_assumptions: None,
             names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
         };
@@ -2745,6 +2792,29 @@ fn test_named_lower_icmp_const_32_64_ugte() {
                     Bitwidth::I64,
                     VerificationResult::Failure(Counterexample {}),
                 ),
+            ],
+        );
+
+        // Then, the verion that succeeds:
+        let config = Config {
+            dyn_width: false,
+            term: "lower_icmp_const".to_string(),
+            distinct_check: false,
+            custom_verification_condition: Some(Box::new(|smt, _, lhs, rhs| {
+                smt.eq(
+                    flags_and_cc_to_bool(smt, lhs),
+                    flags_and_cc_to_bool(smt, rhs),
+                )
+            })),
+            custom_assumptions: None,
+            names: Some(vec!["lower_icmp_const_32_64_ugte".to_string()]),
+        };
+        test_aarch64_with_config_simple(
+            config,
+            vec![
+                // Suceeds with custom condition
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
