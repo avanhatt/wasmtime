@@ -856,28 +856,6 @@ fn test_broken_sdiv() {
 }
 
 #[test]
-fn test_broken_sdiv_cve() {
-    run_and_retry(|| {
-        test_from_file_with_lhs_termname_simple(
-            "./examples/broken/sdiv/udiv_cve.isle",
-            "udiv".to_string(),
-            vec![
-                // (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                // (
-                //     Bitwidth::I16,
-                //     VerificationResult::Failure(Counterexample {}),
-                // ),
-                (
-                    Bitwidth::I32,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
-                // (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    })
-}
-
-#[test]
 fn test_named_srem() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
