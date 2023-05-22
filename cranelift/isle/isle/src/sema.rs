@@ -473,6 +473,8 @@ pub struct Rule {
     pub prio: i64,
     /// The source position where this rule is defined.
     pub pos: Pos,
+    /// The optional name for this rule.
+    pub name: Option<Sym>,
 }
 
 /// A name bound in a pattern or let-expression.
@@ -1763,6 +1765,7 @@ impl TermEnv {
                         vars: bindings.seen,
                         prio,
                         pos,
+                        name: rule.name.as_ref().map(|i| tyenv.intern_mut(i))
                     });
                 }
                 _ => {}
