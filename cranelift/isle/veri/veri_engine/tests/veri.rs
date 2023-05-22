@@ -1,5 +1,5 @@
 mod utils;
-use utils::{all_failure_result, all_success_result, custom_result};
+use utils::{all_failure_result, all_success_result};
 use utils::{
     run_and_retry, test_aarch64_rule_with_lhs_termname_simple, test_aarch64_with_config_simple,
     test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
