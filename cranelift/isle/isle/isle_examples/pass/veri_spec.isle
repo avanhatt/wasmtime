@@ -1,0 +1,12 @@
+(type u32 (primitive u32))
+
+(spec (A i j) (provide))
+(decl A (u32 u32) u32)
+
+(spec (B i) (provide) (require))
+(decl B (u32) u32)
+
+(rule first 1 (A x x) x)
+(rule second 0 (A x _) 0)
+
+(rule third 1 (B x) x)

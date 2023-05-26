@@ -333,7 +333,7 @@ impl<'a> Parser<'a> {
 
     fn parse_spec(&mut self) -> Result<Spec> {
         let pos = self.pos();
-        self.expect_lparen()?; // term with args: (spec (<term> <args>) <body>)
+        self.expect_lparen()?; // term with args: (spec (<term> <args>) (provide ...) ...)
         let term = self.parse_ident()?;
         let mut args = vec![];
         while !self.is_rparen() {
@@ -345,7 +345,7 @@ impl<'a> Parser<'a> {
         if !self.eat_sym_str("provide")? {
             return Err(self.error(
                 pos,
-                "Invalid spec: expected sig (spec (sig ...) ...)"
+                "Invalid spec: expected (spec (<term> <args>) (provide ...) ...)"
                 .to_string(),
             ))
         };
@@ -355,8 +355,15 @@ impl<'a> Parser<'a> {
         }
         self.expect_rparen()?; // end provide
 
-        // AVH todo: does this need to eat the lparen?
-        let requires = if self.is_lparen() && self.eat_sym_str("require")? {
+        let requires = if self.is_lparen() {
+            self.expect_lparen()?;
+            if !self.eat_sym_str("require")? {
+                return Err(self.error(
+                    pos,
+                    "Invalid spec: expected (spec (<term> <args>) (provide ...) (require ...))"
+                    .to_string(),
+                ))
+            }
             let mut require = vec![];
             while !self.is_rparen() {
                 require.push(self.parse_spec_expr()?);
