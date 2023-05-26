@@ -155,6 +155,7 @@ impl<'a> Parser<'a> {
             "pragma" => Def::Pragma(self.parse_pragma()?),
             "type" => Def::Type(self.parse_type()?),
             "decl" => Def::Decl(self.parse_decl()?),
+            "spec" => Def::Spec(self.parse_spec()?),
             "rule" => Def::Rule(self.parse_rule()?),
             "extractor" => Def::Extractor(self.parse_etor()?),
             "extern" => Def::Extern(self.parse_extern()?),
@@ -328,6 +329,54 @@ impl<'a> Parser<'a> {
             partial,
             pos,
         })
+    }
+
+    fn parse_spec(&mut self) -> Result<Spec> {
+        let pos = self.pos();
+        self.expect_lparen()?; // term with args: (spec (<term> <args>) <body>)
+        let term = self.parse_ident()?;
+        let mut args = vec![];
+        while !self.is_rparen() {
+            args.push(self.parse_ident()?);
+        }
+        self.expect_rparen()?; // end term with args
+
+        self.expect_lparen()?; // provide
+        if !self.eat_sym_str("provide")? {
+            return Err(self.error(
+                pos,
+                "Invalid spec: expected sig (spec (sig ...) ...)"
+                .to_string(),
+            ))
+        };
+        let mut provides = vec![];
+        while !self.is_rparen() {
+            provides.push(self.parse_spec_expr()?);
+        }
+        self.expect_rparen()?; // end provide
+
+        // AVH todo: does this need to eat the lparen?
+        let requires = if self.is_lparen() && self.eat_sym_str("require")? {
+            let mut require = vec![];
+            while !self.is_rparen() {
+                require.push(self.parse_spec_expr()?);
+            }
+            self.expect_rparen()?; // end provide
+            require
+        } else {
+            vec![]
+        };
+
+        Ok(Spec{
+            term: term,
+            args,
+            provides,
+            requires,
+    })
+    }
+
+    fn parse_spec_expr(&mut self) -> Result<SpecExpr> {
+        todo!()
     }
 
     fn parse_extern(&mut self) -> Result<Extern> {

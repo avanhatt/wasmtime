@@ -22,6 +22,7 @@ pub enum Def {
     Rule(Rule),
     Extractor(Extractor),
     Decl(Decl),
+    Spec(Spec),
     Extern(Extern),
     Converter(Converter),
 }
@@ -86,6 +87,19 @@ pub struct Decl {
     /// Whether this term's constructor can fail to match.
     pub partial: bool,
     pub pos: Pos,
+}
+
+/// An expression used to specify term semantics, similar to SMTLIB syntax.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct SpecExpr {
+}
+/// A specification of the semantics of a term.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Spec {
+    pub term: Ident,
+    pub args: Vec<Ident>,
+    pub provides: Vec<SpecExpr>,
+    pub requires: Vec<SpecExpr>,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
