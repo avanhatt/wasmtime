@@ -1,0 +1,12 @@
+;test run
+test compile precise-output
+target aarch64
+
+function %f(i32) -> i32 {
+block0(v0: i32):
+    v1 = iconst.i32 32
+    v2 = ushr v0, v1
+    return v2
+}
+
+; run: %f(0x000000FF) == 0x000000FF
