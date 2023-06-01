@@ -405,7 +405,7 @@ impl<'a> Parser<'a> {
         } else if self.is_spec_bit_vector() {
             let (val, width) = self.parse_spec_bit_vector()?;
             Ok(SpecExpr::ConstBitVec { val, width, pos })
-        } else if self.is_spec_bit_vector() {
+        } else if self.is_spec_bool() {
             let val = self.parse_spec_bool()?;
             Ok(SpecExpr::ConstBool { val, pos })
         } else if self.is_sym() {
@@ -413,7 +413,7 @@ impl<'a> Parser<'a> {
             Ok(SpecExpr::Var { var, pos })
         } else if self.is_lparen() {
             self.expect_lparen()?;
-            let op = self.parse_spec_op()?;
+            let op: SpecOp = self.parse_spec_op()?;
             let mut args: Vec<SpecExpr> = vec![];
             while !self.is_rparen() {
                 args.push(self.parse_spec_expr()?);
@@ -430,6 +430,12 @@ impl<'a> Parser<'a> {
         let s = self.expect_symbol()?;
         match s.as_str() {
             "=" => Ok(SpecOp::Eq),
+            "and" => Ok(SpecOp::And),
+            "or" => Ok(SpecOp::Or),
+            "<=" => Ok(SpecOp::Lte),
+            "<" => Ok(SpecOp::Lt),
+            ">=" => Ok(SpecOp::Gte),
+            ">" => Ok(SpecOp::Gt),
             "bvnot" => Ok(SpecOp::BVNot),
             "bvand" => Ok(SpecOp::BVAnd),
             "bvor" => Ok(SpecOp::BVOr),
@@ -446,6 +452,7 @@ impl<'a> Parser<'a> {
             "bvlshr" => Ok(SpecOp::BVLshr),
             "bvashr" => Ok(SpecOp::BVAshr),
             "bvule" => Ok(SpecOp::BVUle),
+            "bvult" => Ok(SpecOp::BVUlt),
             "bvugt" => Ok(SpecOp::BVUgt),
             "bvuge" => Ok(SpecOp::BVUge),
             "bvslt" => Ok(SpecOp::BVSlt),
@@ -454,6 +461,7 @@ impl<'a> Parser<'a> {
             "bvsge" => Ok(SpecOp::BVSge), 
             "rotr" => Ok(SpecOp::Rotr),
             "rotl" => Ok(SpecOp::Rotl),
+            "extract" => Ok(SpecOp::Extract),
             "zero_ext" => Ok(SpecOp::ZeroExt),
             "sign_ext" => Ok(SpecOp::SignExt),
             "concat" => Ok(SpecOp::Concat),

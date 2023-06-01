@@ -1175,6 +1175,14 @@
             Size64))
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
+(spec (operand_size args ty)
+      (provide 
+            (= ret (if (<= ty 32) 32 64)))
+      (require
+            (or (= ty 8)
+            (or (= ty 16)
+            (or (= ty 32)
+            (= ty 64))))))
 (decl operand_size (Type) OperandSize)
 (rule 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
@@ -1666,6 +1674,10 @@
 (decl pure partial imm_logic_from_imm64 (Type Imm64) ImmLogic)
 (extern constructor imm_logic_from_imm64 imm_logic_from_imm64)
 
+(spec (imm_shift_from_imm64 ty x)
+      (provide 
+            (= r (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x000000000000001))))
+            (bvult (bvand x (bvsub (int2bv 64 ty)  #x000000000000001)) #x000000000000040)))
 (decl pure partial imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
 

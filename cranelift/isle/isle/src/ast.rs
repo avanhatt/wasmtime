@@ -124,6 +124,17 @@ pub enum SpecExpr {
 /// An operation used to specify term semantics, similar to SMTLIB syntax.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum SpecOp {
+    // Boolean operations
+    Eq,
+    And,
+    Or,
+
+    // Integer comparisons
+    Lt,
+    Lte,
+    Gt,
+    Gte,
+
     // Bitwise bitvector operations (directly SMTLIB)
     BVNot,
     BVAnd,
@@ -145,20 +156,21 @@ pub enum SpecOp {
 
     // Bitvector comparison operations  (directly SMTLIB)
     BVUle,
+    BVUlt,
     BVUgt,
     BVUge,
     BVSlt,
     BSSle,
     BVSgt,
     BVSge, 
-    
+
     // Desugared bitvector arithmetic operations 
     Rotr,
     Rotl,
+    Extract,
     ZeroExt,
     SignExt,
     Concat,
-    Eq,
 
     // Conversion operations
     ConvTo,
