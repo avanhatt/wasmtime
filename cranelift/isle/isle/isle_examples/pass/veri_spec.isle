@@ -4,7 +4,7 @@
 (decl A (u8 u8) u8)
 
 (spec (B i) 
-  (provide (= i #b00000000)) 
+  (provide (= (bvadd i #xff) #b00000000)) 
   (require))
 (decl B (u8) u8)
 

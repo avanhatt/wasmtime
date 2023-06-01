@@ -104,9 +104,16 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn is_bit_vector(&self) -> bool {
+    fn is_spec_bit_vector(&self) -> bool {
         self.is(|tok| match tok {
             Token::Symbol(tok_s) if tok_s.starts_with("#x") || tok_s.starts_with("#b") => true,
+            _ => false,
+        })
+    }
+
+    fn is_spec_bool(&self) -> bool {
+        self.is(|tok| match tok {
+            Token::Symbol(tok_s) if tok_s == "true" || tok_s == "false" => true,
             _ => false,
         })
     }
@@ -395,11 +402,12 @@ impl<'a> Parser<'a> {
                 val: self.expect_int()?,
                 pos,
             })
-        } else if self.is_bit_vector() {
-            dbg!("parse bv");
-            let (val, width) = self.parse_bit_vector()?;
-            dbg!("after");
+        } else if self.is_spec_bit_vector() {
+            let (val, width) = self.parse_spec_bit_vector()?;
             Ok(SpecExpr::ConstBitVec { val, width, pos })
+        } else if self.is_spec_bit_vector() {
+            let val = self.parse_spec_bool()?;
+            Ok(SpecExpr::ConstBool { val, pos })
         } else if self.is_sym() {
             let var = self.parse_ident()?;
             Ok(SpecExpr::Var { var, pos })
@@ -459,7 +467,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_bit_vector(&mut self) -> Result<(i128, i8)> {
+    fn parse_spec_bit_vector(&mut self) -> Result<(i128, i8)> {
         let pos = self.pos();
         let s = self.expect_symbol()?;
         if let Some(s) = s.strip_prefix("#b") {
@@ -478,6 +486,16 @@ impl<'a> Parser<'a> {
                 "Not a constant bit vector; must start with `#x` (hex) or `#b` (binary)"
                     .to_string(),
             ))
+        }
+    }
+
+    fn parse_spec_bool(&mut self) -> Result<i8> {
+        let pos = self.pos();
+        let s = self.expect_symbol()?;
+        match s.as_str() {
+            "true" => Ok(0),
+            "false" => Ok(1),
+            x => Err(self.error(pos, format!("Not a valid spec boolean: {x}"))),
         }
     }
 
