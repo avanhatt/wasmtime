@@ -104,6 +104,13 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn is_bit_vector(&self) -> bool {
+        self.is(|tok| match tok {
+            Token::Symbol(tok_s) if tok_s.starts_with("#x") || tok_s.starts_with("#b") => true,
+            _ => false,
+        })
+    }
+
     fn expect_lparen(&mut self) -> Result<()> {
         self.expect(|tok| *tok == Token::LParen).map(|_| ())
     }
@@ -345,9 +352,8 @@ impl<'a> Parser<'a> {
         if !self.eat_sym_str("provide")? {
             return Err(self.error(
                 pos,
-                "Invalid spec: expected (spec (<term> <args>) (provide ...) ...)"
-                .to_string(),
-            ))
+                "Invalid spec: expected (spec (<term> <args>) (provide ...) ...)".to_string(),
+            ));
         };
         let mut provides = vec![];
         while !self.is_rparen() {
@@ -361,8 +367,8 @@ impl<'a> Parser<'a> {
                 return Err(self.error(
                     pos,
                     "Invalid spec: expected (spec (<term> <args>) (provide ...) (require ...))"
-                    .to_string(),
-                ))
+                        .to_string(),
+                ));
             }
             let mut require = vec![];
             while !self.is_rparen() {
@@ -374,16 +380,105 @@ impl<'a> Parser<'a> {
             vec![]
         };
 
-        Ok(Spec{
+        Ok(Spec {
             term: term,
             args,
             provides,
             requires,
-    })
+        })
     }
 
     fn parse_spec_expr(&mut self) -> Result<SpecExpr> {
-        todo!()
+        let pos = self.pos();
+        if self.is_int() {
+            Ok(SpecExpr::ConstInt {
+                val: self.expect_int()?,
+                pos,
+            })
+        } else if self.is_bit_vector() {
+            dbg!("parse bv");
+            let (val, width) = self.parse_bit_vector()?;
+            dbg!("after");
+            Ok(SpecExpr::ConstBitVec { val, width, pos })
+        } else if self.is_sym() {
+            let var = self.parse_ident()?;
+            Ok(SpecExpr::Var { var, pos })
+        } else if self.is_lparen() {
+            self.expect_lparen()?;
+            let op = self.parse_spec_op()?;
+            let mut args: Vec<SpecExpr> = vec![];
+            while !self.is_rparen() {
+                args.push(self.parse_spec_expr()?);
+            }
+            self.expect_rparen()?;
+            Ok(SpecExpr::Op { op, args, pos })
+        } else {
+            Err(self.error(pos, "Unexpected spec expression".into()))
+        }
+    }
+
+    fn parse_spec_op(&mut self) -> Result<SpecOp> {
+        let pos = self.pos();
+        let s = self.expect_symbol()?;
+        match s.as_str() {
+            "=" => Ok(SpecOp::Eq),
+            "bvnot" => Ok(SpecOp::BVNot),
+            "bvand" => Ok(SpecOp::BVAnd),
+            "bvor" => Ok(SpecOp::BVOr),
+            "bvxor" => Ok(SpecOp::BVXor),
+            "bvneg" => Ok(SpecOp::BVNeg),
+            "bvadd" => Ok(SpecOp::BVAdd),
+            "bvsub" => Ok(SpecOp::BVSub),
+            "bvmul" => Ok(SpecOp::BVMul),
+            "bvudiv" => Ok(SpecOp::BVUdiv),
+            "bvurem" => Ok(SpecOp::BVUrem),
+            "bvsdiv" => Ok(SpecOp::BVSdiv),
+            "bvsrem" => Ok(SpecOp::BVSrem),
+            "bvshl" => Ok(SpecOp::BVShl),
+            "bvlshr" => Ok(SpecOp::BVLshr),
+            "bvashr" => Ok(SpecOp::BVAshr),
+            "bvule" => Ok(SpecOp::BVUle),
+            "bvugt" => Ok(SpecOp::BVUgt),
+            "bvuge" => Ok(SpecOp::BVUge),
+            "bvslt" => Ok(SpecOp::BVSlt),
+            "bvsle" => Ok(SpecOp::BSSle),
+            "bvsgt" => Ok(SpecOp::BVSgt),
+            "bvsge" => Ok(SpecOp::BVSge), 
+            "rotr" => Ok(SpecOp::Rotr),
+            "rotl" => Ok(SpecOp::Rotl),
+            "zero_ext" => Ok(SpecOp::ZeroExt),
+            "sign_ext" => Ok(SpecOp::SignExt),
+            "concat" => Ok(SpecOp::Concat),
+            "conv_to" => Ok(SpecOp::ConvTo),
+            "int2bv" => Ok(SpecOp::Int2BV),
+            "bv2int" => Ok(SpecOp::BV2Int),
+            "width_of" => Ok(SpecOp::WidthOf),
+            "if" => Ok(SpecOp::If),
+            "switch" => Ok(SpecOp::Switch),
+            x => Err(self.error(pos, format!("Not a valid spec operator: {x}"))),
+        }
+    }
+
+    fn parse_bit_vector(&mut self) -> Result<(i128, i8)> {
+        let pos = self.pos();
+        let s = self.expect_symbol()?;
+        if let Some(s) = s.strip_prefix("#b") {
+            match i128::from_str_radix(s, 2) {
+                Ok(i) => Ok((i, s.len() as i8)),
+                Err(_) => Err(self.error(pos, "Not a constant binary bit vector".to_string())),
+            }
+        } else if let Some(s) = s.strip_prefix("#x") {
+            match i128::from_str_radix(s, 16) {
+                Ok(i) => Ok((i, (s.len() as i8) * 4)),
+                Err(_) => Err(self.error(pos, "Not a constant hex bit vector".to_string())),
+            }
+        } else {
+            Err(self.error(
+                pos,
+                "Not a constant bit vector; must start with `#x` (hex) or `#b` (binary)"
+                    .to_string(),
+            ))
+        }
     }
 
     fn parse_extern(&mut self) -> Result<Extern> {
@@ -468,7 +563,7 @@ impl<'a> Parser<'a> {
                         expr,
                         pos,
                         prio,
-                        name
+                        name,
                     });
                 }
             }

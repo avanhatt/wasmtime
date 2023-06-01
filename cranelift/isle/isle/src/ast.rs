@@ -91,8 +91,86 @@ pub struct Decl {
 
 /// An expression used to specify term semantics, similar to SMTLIB syntax.
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct SpecExpr {
+pub enum SpecExpr {
+    /// An operator that matches a constant integer value.
+    ConstInt {
+        val: i128,
+        pos: Pos,
+    },
+    /// An operator that matches a constant bitvector value.
+    ConstBitVec {
+        val: i128,
+        width: i8,
+        pos: Pos,
+    },
+    /// An operator that matches a constant boolean value.
+    ConstBool {
+        val: i8,
+        pos: Pos,
+    },
+    // A variable
+    Var {
+        var: Ident,
+        pos: Pos,
+    },
+    /// An application of a type variant or term.
+    Op {
+        op: SpecOp,
+        args: Vec<SpecExpr>,
+        pos: Pos,
+    },
 }
+
+/// An operation used to specify term semantics, similar to SMTLIB syntax.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum SpecOp {
+    // Bitwise bitvector operations (directly SMTLIB)
+    BVNot,
+    BVAnd,
+    BVOr,
+    BVXor,
+
+    // Bitvector arithmetic operations  (directly SMTLIB)
+    BVNeg,
+    BVAdd,
+    BVSub,
+    BVMul,
+    BVUdiv,
+    BVUrem,
+    BVSdiv,
+    BVSrem,
+    BVShl,
+    BVLshr,
+    BVAshr,
+
+    // Bitvector comparison operations  (directly SMTLIB)
+    BVUle,
+    BVUgt,
+    BVUge,
+    BVSlt,
+    BSSle,
+    BVSgt,
+    BVSge, 
+    
+    // Desugared bitvector arithmetic operations 
+    Rotr,
+    Rotl,
+    ZeroExt,
+    SignExt,
+    Concat,
+    Eq,
+
+    // Conversion operations
+    ConvTo,
+    Int2BV,
+    BV2Int,
+    WidthOf,
+
+    // Control operations
+    If,
+    Switch,
+}
+
 /// A specification of the semantics of a term.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Spec {

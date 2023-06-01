@@ -1765,7 +1765,7 @@ impl TermEnv {
                         vars: bindings.seen,
                         prio,
                         pos,
-                        name: rule.name.as_ref().map(|i| tyenv.intern_mut(i))
+                        name: rule.name.as_ref().map(|i| tyenv.intern_mut(i)),
                     });
                 }
                 _ => {}
