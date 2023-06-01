@@ -1675,9 +1675,8 @@
 (extern constructor imm_logic_from_imm64 imm_logic_from_imm64)
 
 (spec (imm_shift_from_imm64 ty x)
-      (provide 
-            (= r (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x000000000000001))))
-            (bvult (bvand x (bvsub (int2bv 64 ty)  #x000000000000001)) #x000000000000040)))
+      (provide (= r (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x000000000000001)))))
+      (require (bvult (bvand x (bvsub (int2bv 64 ty)  #x000000000000001)) #x000000000000040)))
 (decl pure partial imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
 
