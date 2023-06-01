@@ -958,6 +958,11 @@
                        (end Reg)
                        (step Imm12))))
 
+;; Verification annotations:
+;;@ (spec (ALUOp.Add) (provide (= ret 0)))
+;;decl ALUOp.Add
+;;@ (spec (ALUOp.Add) (provide (= ret 1)))
+
 ;; An ALU operation. This can be paired with several instruction formats
 ;; below (see `Inst`) in any combination.
 (type ALUOp
@@ -1170,6 +1175,10 @@
 (type FPUOpRI extern (enum))
 (type FPUOpRIMod extern (enum))
 
+;;@ (spec (OperandSize.Size32) (provide (= ret 32)))
+;;decl OperandSize.Size32
+;;@ (spec (OperandSize.Size32) (provide (= ret 64)))
+;;decl OperandSize.Size64
 (type OperandSize extern
       (enum Size32
             Size64))
