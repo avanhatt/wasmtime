@@ -12,11 +12,15 @@
 (decl pure unit () Unit)
 (extern constructor unit unit)
 
+(model bool (type Bool))
 (type bool (primitive bool))
 (extern const $true bool)
 (extern const $false bool)
 
+(model u8 (type (bv 8)))
 (type u8 (primitive u8))
+
+(model u16 (type (bv 16)))
 (type u16 (primitive u16))
 (type u32 (primitive u32))
 (type u64 (primitive u64))

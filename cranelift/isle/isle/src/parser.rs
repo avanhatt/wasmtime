@@ -170,6 +170,7 @@ impl<'a> Parser<'a> {
             "type" => Def::Type(self.parse_type()?),
             "decl" => Def::Decl(self.parse_decl()?),
             "spec" => Def::Spec(self.parse_spec()?),
+            "model" => Def::Model(self.parse_model()?),
             "rule" => Def::Rule(self.parse_rule()?),
             "extractor" => Def::Extractor(self.parse_etor()?),
             "extern" => Def::Extern(self.parse_extern()?),
@@ -504,6 +505,60 @@ impl<'a> Parser<'a> {
             "true" => Ok(0),
             "false" => Ok(1),
             x => Err(self.error(pos, format!("Not a valid spec boolean: {x}"))),
+        }
+    }
+
+    fn parse_model(&mut self) -> Result<Model> {
+        let pos = self.pos();
+        let name = self.parse_ident()?;
+        self.expect_lparen()?; // body
+        let val = if self.eat_sym_str("type")? {
+            let ty = self.parse_model_type();
+            ModelValue::TypeValue(ty?)
+        } else if self.eat_sym_str("enum")? {
+            let mut variants = vec![];
+            while !self.is_rparen() {
+                self.expect_lparen()?; // enum value 
+                let name = self.parse_ident()?;
+                let val = self.parse_spec_expr()?;
+                self.expect_rparen()?; // end enum value 
+                variants.push((name, val));
+            }
+            ModelValue::EnumValues(variants)
+        } else {
+            return Err(self.error(pos, "Model must be a type or enum".to_string()))
+        };
+
+        self.expect_rparen()?; // end body
+        Ok(Model{
+            name,
+            val,
+        })
+    }
+
+    fn parse_model_type(&mut self) -> Result<ModelType> {
+        let pos = self.pos();
+        if self.eat_sym_str("Bool")? {
+            Ok(ModelType::Bool)
+        } else if self.eat_sym_str("Int")? {
+            Ok(ModelType::Int)
+        } else if self.is_lparen() {
+            self.expect_lparen()?;
+            let width = if self.eat_sym_str("bv")? {
+                if self.is_rparen() {
+                    None
+                } else if self.is_int() {
+                    Some(usize::try_from(self.expect_int()?).map_err(|err| self.error(pos, format!("Invalid BitVector width: {}", err)))?)
+                } else {
+                    return Err(self.error(pos, "Badly formed BitVector (bv ...)".to_string()))
+                }
+            } else {
+                return Err(self.error(pos, "Badly formed BitVector (bv ...)".to_string()))
+            };
+            self.expect_rparen()?;
+            Ok(ModelType::BitVec(width))
+        } else {
+            Err(self.error(pos, "Model type be a Bool, Int, or BitVector (bv ...)".to_string()))
         }
     }
 

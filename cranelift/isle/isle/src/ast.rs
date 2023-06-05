@@ -23,6 +23,7 @@ pub enum Def {
     Extractor(Extractor),
     Decl(Decl),
     Spec(Spec),
+    Model(Model),
     Extern(Extern),
     Converter(Converter),
 }
@@ -115,10 +116,13 @@ pub enum SpecExpr {
     },
     /// An application of a type variant or term.
     Op {
-        op: SpecOp,
+        op: SpecOp, // <=
         args: Vec<SpecExpr>,
         pos: Pos,
     },
+    Enum {
+
+    }
 }
 
 /// An operation used to specify term semantics, similar to SMTLIB syntax.
@@ -190,6 +194,29 @@ pub struct Spec {
     pub args: Vec<Ident>,
     pub provides: Vec<SpecExpr>,
     pub requires: Vec<SpecExpr>,
+}
+
+
+/// A model of an SMTLIB type.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum ModelType {
+    Int, 
+    Bool,
+    BitVec(Option<usize>)
+}
+
+/// A model of a construct into SMTLIB.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum ModelValue {
+    TypeValue(ModelType),
+    EnumValues(Vec<(Ident, SpecExpr)>),
+}
+
+/// A model of a construct into SMTLIB.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Model {
+    pub name: Ident,
+    pub val: ModelValue,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]

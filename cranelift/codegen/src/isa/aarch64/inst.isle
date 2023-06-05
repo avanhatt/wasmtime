@@ -1175,10 +1175,9 @@
 (type FPUOpRI extern (enum))
 (type FPUOpRIMod extern (enum))
 
-;;@ (spec (OperandSize.Size32) (provide (= ret 32)))
-;;decl OperandSize.Size32
-;;@ (spec (OperandSize.Size32) (provide (= ret 64)))
-;;decl OperandSize.Size64
+(model OperandSize
+      (enum (Size32 32)
+            (Size64 64)))
 (type OperandSize extern
       (enum Size32
             Size64))
