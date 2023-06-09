@@ -1,3 +1,10 @@
+
+;; Note: we like this style, but should warn on using the number.
+(model MInst (enum 
+      (Nop0)      ;; 0
+      (Nop4)
+      (AluRRR)))  ;; 1
+
 ;; Instruction formats.
 (type MInst
       (enum

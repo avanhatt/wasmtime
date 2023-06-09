@@ -517,11 +517,30 @@ impl<'a> Parser<'a> {
             ModelValue::TypeValue(ty?)
         } else if self.eat_sym_str("enum")? {
             let mut variants = vec![];
+            let mut has_explicit_value = false;
+            let mut implicit_idx = None;
+
             while !self.is_rparen() {
                 self.expect_lparen()?; // enum value 
                 let name = self.parse_ident()?;
-                let val = self.parse_spec_expr()?;
-                self.expect_rparen()?; // end enum value 
+                let val = if self.is_rparen() { // has implicit enum value
+                    if has_explicit_value {
+                        return Err(self.error(pos, format!("Spec enum has unexpected implicit value after implicit value.")));
+                    }
+                    implicit_idx = Some(if let Some(idx) = implicit_idx {
+                        idx + 1
+                    } else {
+                        0
+                    });
+                    SpecExpr::ConstInt { val: implicit_idx.unwrap(), pos, }
+                } else {
+                    if implicit_idx.is_some() {
+                        return Err(self.error(pos, format!("Spec enum has unexpected explicit value after implicit value.")));
+                    }
+                    has_explicit_value = true;
+                    self.parse_spec_expr()?
+                };
+                self.expect_rparen()?;
                 variants.push((name, val));
             }
             ModelValue::EnumValues(variants)

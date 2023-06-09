@@ -22,9 +22,15 @@
 
 (model u16 (type (bv 16)))
 (type u16 (primitive u16))
+
+(model u32 (type (bv 32)))
 (type u32 (primitive u32))
+
+(model u64 (type (bv 64)))
 (type u64 (primitive u64))
 (type u128 (primitive u128))
+
+(model usize (type (bv 64)))
 (type usize (primitive usize))
 
 (type i8 (primitive i8))
