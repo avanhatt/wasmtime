@@ -1,10 +1,4 @@
 
-;; Note: we like this style, but should warn on using the number.
-(model MInst (enum 
-      (Nop0)      ;; 0
-      (Nop4)
-      (AluRRR)))  ;; 1
-
 ;; Instruction formats.
 (type MInst
       (enum
@@ -969,6 +963,23 @@
 ;;@ (spec (ALUOp.Add) (provide (= ret 0)))
 ;;decl ALUOp.Add
 ;;@ (spec (ALUOp.Add) (provide (= ret 1)))
+
+(model ALUOp (enum 
+      (Add)      ;; 0
+      (Sub)
+      (Orr)
+      (OrrNot)
+      (And)
+      (AndNot)
+      (Eor)
+      (EorNot)
+      (SubS)
+      (SDiv)
+      (UDiv)
+      (RotR)
+      (Lsr)
+      (Asr)
+      (Lsl)))
 
 ;; An ALU operation. This can be paired with several instruction formats
 ;; below (see `Inst`) in any combination.
