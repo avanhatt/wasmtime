@@ -120,8 +120,12 @@ pub enum SpecExpr {
         args: Vec<SpecExpr>,
         pos: Pos,
     },
+    Pair {
+        l: Box<SpecExpr>,
+        r: Box<SpecExpr>,
+    },
     Enum {
-
+        name: Ident,
     }
 }
 

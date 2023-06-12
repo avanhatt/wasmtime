@@ -959,13 +959,8 @@
                        (end Reg)
                        (step Imm12))))
 
-;; Verification annotations:
-;;@ (spec (ALUOp.Add) (provide (= ret 0)))
-;;decl ALUOp.Add
-;;@ (spec (ALUOp.Add) (provide (= ret 1)))
-
 (model ALUOp (enum 
-      (Add)      ;; 0
+      (Add) ;; 0
       (Sub)
       (Orr)
       (OrrNot)
@@ -1196,6 +1191,7 @@
 (model OperandSize
       (enum (Size32 32)
             (Size64 64)))
+
 (type OperandSize extern
       (enum Size32
             Size64))
@@ -1203,7 +1199,7 @@
 ;; Helper for calculating the `OperandSize` corresponding to a type
 (spec (operand_size args ty)
       (provide 
-            (= ret (if (<= ty 32) 32 64)))
+            (= result (if (<= ty 32) 32 64)))
       (require
             (or (= ty 8)
             (or (= ty 16)
@@ -1213,6 +1209,13 @@
 (rule 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
+(model ScalarSize
+      (enum (Size8 8)
+            (Size16 16)
+            (Size32 32)
+            (Size64 64)
+            (Size128 128)))
+            
 (type ScalarSize extern
       (enum Size8
             Size16
@@ -1252,6 +1255,12 @@
 (rule (vector_lane_size (VectorSize.Size32x4)) (ScalarSize.Size32))
 (rule (vector_lane_size (VectorSize.Size32x2)) (ScalarSize.Size32))
 (rule (vector_lane_size (VectorSize.Size64x2)) (ScalarSize.Size64))
+
+(model Cond
+      (enum (Lo)
+            (Hi)
+            (Lt)
+            (Gt)))
 
 (type Cond extern
   (enum
@@ -1701,7 +1710,7 @@
 (extern constructor imm_logic_from_imm64 imm_logic_from_imm64)
 
 (spec (imm_shift_from_imm64 ty x)
-      (provide (= ret (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x000000000000001)))))
+      (provide (= result (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x000000000000001)))))
       (require (bvult (bvand x (bvsub (int2bv 64 ty)  #x000000000000001)) #x000000000000040)))
 (decl pure partial imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
@@ -1710,7 +1719,7 @@
 (extern constructor imm_shift_from_u8 imm_shift_from_u8)
 
 (spec (imm12_from_u64 arg)
-      (provide (= ret (zero_ext 64 arg))))
+      (provide (= result (zero_ext 64 arg))))
 (decl imm12_from_u64 (Imm12) u64)
 (extern extractor imm12_from_u64 imm12_from_u64)
 
@@ -1718,12 +1727,12 @@
 (extern constructor u8_into_uimm5 u8_into_uimm5)
 
 (spec (u8_into_imm12 arg)
-      (provide (= ret (zero_ext 24 arg))))
+      (provide (= result (zero_ext 24 arg))))
 (decl u8_into_imm12 (u8) Imm12)
 (extern constructor u8_into_imm12 u8_into_imm12)
 
 (spec (u64_into_imm_logic ty a)
-      (provide (= ret a))
+      (provide (= result a))
       (require (or (= ty 32) (= ty 64))))
 (decl u64_into_imm_logic (Type u64) ImmLogic)
 (extern constructor u64_into_imm_logic u64_into_imm_logic)
@@ -1793,12 +1802,12 @@
 ;; Helper to go directly from a `Value`, when it's an `iconst`, to an `Imm12`.
 (spec (imm12_from_value arg)
       (provide 
-            (= ret (conv_to (width_of ret) (zero_ext 64 arg)))
-            (= arg (conv_to (width_of arg) (zero_ext 64 ret))))
+            (= result (conv_to (width_of result) (zero_ext 64 arg)))
+            (= arg (conv_to (width_of arg) (zero_ext 64 result))))
       (require 
-            (or (bvult (zero_ext 64 ret) #x0000000000000fff)
-                (and (bvult (zero_ext 64 ret) #x0000000000fff000)
-                     (= (extract 2 0 (zero_ext 64 ret)) #b000))))
+            (or (bvult (zero_ext 64 result) #x0000000000000fff)
+                (and (bvult (zero_ext 64 result) #x0000000000fff000)
+                     (= (extract 2 0 (zero_ext 64 result)) #b000))))
 )
 (decl imm12_from_value (Imm12) Value)
 (extractor
@@ -3741,6 +3750,14 @@
        (vec_cmp rn rm in_ty cond)))
 
 ;; Determines the appropriate extend op given the value type and the given ArgumentExtension.
+
+(spec (lower_extend_op ty b)
+      (provide
+            (= result 
+               (switch ty 
+                       (8 (if b (ExtendOp.SXTB) (ExtendOp.UXTB)))
+                       (16 (if b (ExtendOp.SXTH) (ExtendOp.UXTH)) ))))
+      (require))
 (decl lower_extend_op (Type ArgumentExtension) ExtendOp)
 (rule (lower_extend_op $I8 (ArgumentExtension.Sext)) (ExtendOp.SXTB))
 (rule (lower_extend_op $I16 (ArgumentExtension.Sext)) (ExtendOp.SXTH))

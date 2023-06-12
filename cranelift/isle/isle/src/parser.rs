@@ -414,22 +414,38 @@ impl<'a> Parser<'a> {
             Ok(SpecExpr::Var { var, pos })
         } else if self.is_lparen() {
             self.expect_lparen()?;
-            let op: SpecOp = self.parse_spec_op()?;
-            let mut args: Vec<SpecExpr> = vec![];
-            while !self.is_rparen() {
-                args.push(self.parse_spec_expr()?);
+            if self.is_sym() {
+                let sym = self.expect_symbol()?;
+                if let Ok(op) = self.parse_spec_op(sym.as_str()) {
+                    let mut args: Vec<SpecExpr> = vec![];
+                    while !self.is_rparen() {
+                        args.push(self.parse_spec_expr()?);
+                    }
+                    self.expect_rparen()?;
+                    return Ok(SpecExpr::Op { op, args, pos })
+                };
+                let ident = self.str_to_ident(pos, &sym)?;
+                if self.is_rparen() {
+                    self.expect_rparen()?;
+                    return Ok(SpecExpr::Enum { name: ident })
+                };
+                let r = Box::new(self.parse_spec_expr()?);
+                self.expect_rparen()?;
+                Ok(SpecExpr::Pair { l: Box::new(SpecExpr::Var { var: ident, pos }), r })
+            } else {
+                let l = Box::new(self.parse_spec_expr()?);
+                let r = Box::new(self.parse_spec_expr()?);
+                self.expect_rparen()?;
+                Ok(SpecExpr::Pair { l, r })
             }
-            self.expect_rparen()?;
-            Ok(SpecExpr::Op { op, args, pos })
         } else {
             Err(self.error(pos, "Unexpected spec expression".into()))
         }
     }
 
-    fn parse_spec_op(&mut self) -> Result<SpecOp> {
+    fn parse_spec_op(&mut self, s: &str) -> Result<SpecOp> {
         let pos = self.pos();
-        let s = self.expect_symbol()?;
-        match s.as_str() {
+        match s {
             "=" => Ok(SpecOp::Eq),
             "and" => Ok(SpecOp::And),
             "or" => Ok(SpecOp::Or),
