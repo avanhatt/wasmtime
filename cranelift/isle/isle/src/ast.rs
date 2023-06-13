@@ -136,6 +136,7 @@ pub enum SpecOp {
     Eq,
     And,
     Or,
+    Not,
 
     // Integer comparisons
     Lt,
