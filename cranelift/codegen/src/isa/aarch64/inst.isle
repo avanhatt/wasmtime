@@ -3730,35 +3730,42 @@
 ;; Helpers for lowering `icmp` sequences.
 ;; `lower_icmp` contains shared functionality for lowering `icmp`
 ;; sequences, which `lower_icmp_into_{reg,flags}` extend from.
+(spec (lower_icmp c x y in_ty)
+      (provide 
+            (= result
+               (concat
+                  (extract 67 64 
+                    (if (or (= c (IntCC.SignedGreaterThanOrEqual))
+                            (= c (IntCC.SignedGreaterThan))
+                            (= c (IntCC.SignedLessThanOrEqual))
+                            (= c (IntCC.SignedLessThan)))
+                        (if (<= in_ty 32)
+                            (subs 32 (sign_ext 64 x) (sign_ext 64 y))
+                            (subs 64 (sign_ext 64 x) (sign_ext 64 y)))
+                        (if (<= in_ty 32)
+                            (subs 32 (zero_ext 64 x) (zero_ext 64 y))
+                            (subs 64 (zero_ext 64 x) (zero_ext 64 y)))))
+                  (int2bv 3 c))))
+      (require
+            (or 
+                (= c (IntCC.Equal))
+                (= c (IntCC.NotEqual))
+                (= c (IntCC.UnsignedGreaterThanOrEqual))
+                (= c (IntCC.UnsignedGreaterThan))
+                (= c (IntCC.UnsignedLessThanOrEqual))
+                (= c (IntCC.UnsignedLessThan))
+                (= c (IntCC.SignedGreaterThanOrEqual))
+                (= c (IntCC.SignedGreaterThan))
+                (= c (IntCC.SignedLessThanOrEqual))
+                (= c (IntCC.SignedLessThan)))
+            (or (= in_ty 8)
+                (= in_ty 16)
+                (= in_ty 32)
+                (= in_ty 64))
+            (= in_ty (widthof x))
+            (= in_ty (widthof y))))
 (decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
 
-;;@ (spec (sig (args c, x, y, in_ty, out_ty) (ret))
-;;@   (provide 
-;;@     (= (ret) 
-;;@        (switch (c)
-;;@          ((0i8:bv8) (if (= (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((1i8:bv8) (if (! (= (x) (y))) (1i8:bv8) (0i8:bv8)))
-;;@          ((2i8:bv8) (if (sgt (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((3i8:bv8) (if (sgte (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((4i8:bv8) (if (slt (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((5i8:bv8) (if (slte (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((6i8:bv8) (if (ugt (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((7i8:bv8) (if (ugte (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((8i8:bv8) (if (ult (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@          ((9i8:bv8) (if (ulte (x) (y)) (1i8:bv8) (0i8:bv8)))
-;;@     )))
-;;@     (require
-;;@       (ulte (c) (9i8:bv8)),
-;;@
-;;@       (|| (= (in_ty) (8i8: Int))
-;;@           (|| (= (in_ty) (16i8: Int))
-;;@           (|| (= (in_ty) (32i8: Int))
-;;@           (= (in_ty) (64i8: Int))))),
-;;@
-;;@       (= (in_ty) (widthof (x))),
-;;@       (= (in_ty) (widthof (y))),
-;;@       (= (out_ty) (8i8: Int)),
-;;@ ))
 (spec (lower_icmp_into_reg c x y in_ty out_ty)
       (provide
             (= result
@@ -3785,14 +3792,13 @@
                 (= c (IntCC.SignedGreaterThan))
                 (= c (IntCC.SignedLessThanOrEqual))
                 (= c (IntCC.SignedLessThan)))
-      (or (= in_ty 8)
-          (= in_ty 16)
-          (= in_ty 32)
-          (= in_ty 64))
-      (= in_ty (widthof x))
-      (= in_ty (widthof y))
-      (= out_ty 8)
-))
+            (or (= in_ty 8)
+                (= in_ty 16)
+                (= in_ty 32)
+                (= in_ty 64))
+            (= in_ty (widthof x))
+            (= in_ty (widthof y))
+            (= out_ty 8)))
 (decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
 (decl lower_icmp_into_flags (IntCC Value Value Type) FlagsAndCC)
 (decl lower_icmp_const (IntCC Value u64 Type) FlagsAndCC)
