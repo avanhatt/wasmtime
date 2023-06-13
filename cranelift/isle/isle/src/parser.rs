@@ -488,6 +488,11 @@ impl<'a> Parser<'a> {
             "width_of" => Ok(SpecOp::WidthOf),
             "if" => Ok(SpecOp::If),
             "switch" => Ok(SpecOp::Switch),
+            "subs"=> Ok(SpecOp::Subs),
+            "popcnt"=> Ok(SpecOp::Popcnt),
+            "rev"=> Ok(SpecOp::Rev),
+            "cls"=> Ok(SpecOp::Cls),
+            "clz"=> Ok(SpecOp::Clz),
             x => Err(self.error(pos, format!("Not a valid spec operator: {x}"))),
         }
     }

@@ -180,6 +180,13 @@ pub enum SpecOp {
     SignExt,
     Concat,
 
+    // Custom encodings
+    Subs,
+    Popcnt,
+    Clz,
+    Cls,
+    Rev,
+
     // Conversion operations
     ConvTo,
     Int2BV,

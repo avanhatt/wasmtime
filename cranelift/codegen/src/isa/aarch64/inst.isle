@@ -1201,10 +1201,7 @@
       (provide 
             (= result (if (<= ty 32) 32 64)))
       (require
-            (or (= ty 8)
-            (or (= ty 16)
-            (or (= ty 32)
-            (= ty 64))))))
+            (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl operand_size (Type) OperandSize)
 (rule 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
 (rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
@@ -3756,8 +3753,8 @@
             (= result 
                (switch ty 
                        (8 (if b (ExtendOp.SXTB) (ExtendOp.UXTB)))
-                       (16 (if b (ExtendOp.SXTH) (ExtendOp.UXTH)) ))))
-      (require))
+                       (16 (if b (ExtendOp.SXTH) (ExtendOp.UXTH))))))
+      (require (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl lower_extend_op (Type ArgumentExtension) ExtendOp)
 (rule (lower_extend_op $I8 (ArgumentExtension.Sext)) (ExtendOp.SXTB))
 (rule (lower_extend_op $I16 (ArgumentExtension.Sext)) (ExtendOp.SXTH))
@@ -3787,6 +3784,35 @@
       (if (ty_int_ref_scalar_64 ty))
       (flags_and_cc (cmp (operand_size ty) rn rm) cond))
 
+(spec (lower_icmp_const c x y in_ty)
+      (provide 
+            (= result 
+               (concat (extract 67 64 
+                              (if (or (= c (IntCC.SignedGreaterThanOrEqual))
+                                      (= c (IntCC.SignedGreaterThan))
+                                      (= c (IntCC.SignedLessThanOrEqual))
+                                      (= c (IntCC.SignedLessThan))) 
+                                    (if (<= in_ty 32)
+                                          (subs 32 (sign_ext 64 x) y)
+                                          (subs 64 (sign_ext 64 x) y))
+                                    (if (<= in_ty 32)
+                                          (subs 32 (zero_ext 64 x) y)
+                                          (subs 64 (zero_ext 64 x) y))))
+                       (int2bv 3 c))))
+       (require 
+            (or 
+                (= c (IntCC.Equal))
+                (= c (IntCC.NotEqual))
+                (= c (IntCC.UnsignedGreaterThanOrEqual))
+                (= c (IntCC.UnsignedGreaterThan))
+                (= c (IntCC.UnsignedLessThanOrEqual))
+                (= c (IntCC.UnsignedLessThan))
+                (= c (IntCC.SignedGreaterThanOrEqual))
+                (= c (IntCC.SignedGreaterThan))
+                (= c (IntCC.SignedLessThanOrEqual))
+                (= c (IntCC.SignedLessThan)))
+            (or (= in_ty 32) (= in_ty 64))
+            (= in_ty (widthof x))))
 ;; We get better encodings when testing against an immediate that's even instead
 ;; of odd, so rewrite comparisons to use even immediates:
 ;;
