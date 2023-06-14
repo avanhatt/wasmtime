@@ -1,0 +1,28 @@
+;;@ (spec (sig (args arg) (ret))
+;;@     (provide (= (arg) (ret))))
+(decl lower (Inst) InstOutput)
+
+;; Instruction formats.
+(type MInst
+  (enum
+))
+
+(type ALUOp3
+  (enum
+    (MAdd)
+))
+
+;;@ (spec (sig (args ty, a, b, c) (r))
+;;@   (provide 
+;;@     (= (r) 
+;;@        (if (<= (ty) (32i8: Int)) 
+;;@            (conv_to (regwidth) (+ (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))
+;;@            (+ (c) (* (a) (b)))))))
+(decl madd (Type Reg Reg Reg) Reg)
+(rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
+
+(decl alu_rrrr (ALUOp3 Type Reg Reg Reg) Reg)
+(extern constructor alu_rrrr alu_rrrr)
+
+(rule (lower (has_type (fits_in_64 ty) (iadd (imul x y) z)))
+      (madd ty x y x))
