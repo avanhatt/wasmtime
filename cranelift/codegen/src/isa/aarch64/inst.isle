@@ -3710,10 +3710,40 @@
 (type FlagsAndCC (enum (FlagsAndCC (flags ProducesFlags)
                                    (cc IntCC))))
 
+(spec (flags_and_cc pflags c)
+      (provide 
+            (= result (concat (extract 67 64 pflags) c)))
+      (require 
+            (or 
+                  (= c (IntCC.Equal))
+                  (= c (IntCC.NotEqual))
+                  (= c (IntCC.UnsignedGreaterThanOrEqual))
+                  (= c (IntCC.UnsignedGreaterThan))
+                  (= c (IntCC.UnsignedLessThanOrEqual))
+                  (= c (IntCC.UnsignedLessThan))
+                  (= c (IntCC.SignedGreaterThanOrEqual))
+                  (= c (IntCC.SignedGreaterThan))
+                  (= c (IntCC.SignedLessThanOrEqual))
+                  (= c (IntCC.SignedLessThan)))))
 ;; Helper constructor for `FlagsAndCC`.
 (decl flags_and_cc (ProducesFlags IntCC) FlagsAndCC)
 (rule (flags_and_cc flags cc) (FlagsAndCC.FlagsAndCC flags cc))
 
+(spec (flags_and_cc_to_bool a)
+      (provide 
+            (= result (concat (extract 67 64 pflags) c)))
+      (require 
+            (or 
+                  (= c (IntCC.Equal))
+                  (= c (IntCC.NotEqual))
+                  (= c (IntCC.UnsignedGreaterThanOrEqual))
+                  (= c (IntCC.UnsignedGreaterThan))
+                  (= c (IntCC.UnsignedLessThanOrEqual))
+                  (= c (IntCC.UnsignedLessThan))
+                  (= c (IntCC.SignedGreaterThanOrEqual))
+                  (= c (IntCC.SignedGreaterThan))
+                  (= c (IntCC.SignedLessThanOrEqual))
+                  (= c (IntCC.SignedLessThan)))))
 ;; Materialize a `FlagsAndCC` into a boolean `ValueRegs`.
 (decl flags_and_cc_to_bool (FlagsAndCC) ValueRegs)
 (rule (flags_and_cc_to_bool (FlagsAndCC.FlagsAndCC flags cc))
@@ -3745,7 +3775,9 @@
                         (if (<= in_ty 32)
                             (subs 32 (zero_ext 64 x) (zero_ext 64 y))
                             (subs 64 (zero_ext 64 x) (zero_ext 64 y)))))
-                  (int2bv 3 c))))
+                  ;; AVH TODO: this could be handled better, with a type-systemy thing
+                  ;; Note that SMTLIB typeclass support might have perf implications
+                  (int2bv 4 c))))
       (require
             (or 
                 (= c (IntCC.Equal))

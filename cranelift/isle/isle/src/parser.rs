@@ -413,6 +413,7 @@ impl<'a> Parser<'a> {
             let var = self.parse_ident()?;
             Ok(SpecExpr::Var { var, pos })
         } else if self.is_lparen() {
+            // TODO AVH: 
             self.expect_lparen()?;
             if self.is_sym() {
                 let sym = self.expect_symbol()?;
@@ -448,6 +449,7 @@ impl<'a> Parser<'a> {
         match s {
             "=" => Ok(SpecOp::Eq),
             "and" => Ok(SpecOp::And),
+            "not" => Ok(SpecOp::Not),
             "or" => Ok(SpecOp::Or),
             "<=" => Ok(SpecOp::Lte),
             "<" => Ok(SpecOp::Lt),

@@ -1,14 +1,14 @@
 (model IntCC (enum 
-        (Equal)
-        (NotEqual)
-        (SignedGreaterThan)
-        (SignedGreaterThanOrEqual)
-        (SignedLessThan)
-        (SignedLessThanOrEqual)
-        (UnsignedGreaterThan)
-        (UnsignedGreaterThanOrEqual)
-        (UnsignedLessThan)
-        (UnsignedLessThanOrEqual)))
+    (Equal)
+    (NotEqual)
+    (SignedGreaterThan)
+    (SignedGreaterThanOrEqual)
+    (SignedLessThan)
+    (SignedLessThanOrEqual)
+    (UnsignedGreaterThan)
+    (UnsignedGreaterThanOrEqual)
+    (UnsignedLessThan)
+    (UnsignedLessThanOrEqual)))
 
 (spec (smin x y) 
     (provide (= result (if (bvsle x y) x y))))
@@ -46,6 +46,7 @@
                 ((IntCC.SignedLessThanOrEqual) (if (bvult x y) #x01 #x00))
                 ((IntCC.SignedLessThan) (if (bvule x y) #x01 #x00)))))
     (require
+        ;; AVH TODO: if we understand enums we can generate this
         (or 
             (= c (IntCC.Equal))
             (= c (IntCC.NotEqual))
