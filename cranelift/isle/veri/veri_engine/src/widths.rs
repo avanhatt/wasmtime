@@ -78,6 +78,20 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
             .collect(),
     );
 
+    // (decl imm (Type u64) Reg)
+    widths.insert(
+        "imm",
+        bv_types_8_to_64
+            .iter()
+            .copied()
+            .map(|t| TermSignature {
+                args: vec![Type::Int, Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(t.clone()),
+            })
+            .collect(),
+    );
+
     // Unary with variable return width
     let extends = vec![
         TermSignature {

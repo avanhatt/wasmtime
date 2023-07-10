@@ -1,0 +1,25 @@
+
+(type MInst (enum))
+
+;;@ (spec (sig (args ty) (ret))
+;;@   (provide (= (ret) (ty)))
+;;@   (require
+;;@     (|| (= (ty) (8i8: Int))
+;;@     (|| (= (ty) (16i8: Int))
+;;@     (|| (= (ty) (32i8: Int))
+;;@     (= (ty) (64i8: Int)))))))
+(decl integral_ty (Type) Type)
+(extern extractor integral_ty integral_ty)
+
+;;@ (spec (sig (args ty, x) (ret))
+;;@       (provide (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))  
+;;@ ))
+(decl imm (Type u64) Reg)
+
+;;@ (spec (sig (args x) (ret)) (provide (= (ret) (x))))
+(decl load_constant64_full (u64) Reg)
+(extern constructor load_constant64_full load_constant64_full)
+
+(rule (imm (integral_ty _ty) n)
+       (load_constant64_full n))
+
