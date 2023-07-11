@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use veri_annotation::parser_wrapper::parse_annotations;
+use veri_engine_lib::annotations::parse_annotations;
 use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
@@ -180,7 +180,7 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
     println!("Verifying {} rules in file: {}", termname, file);
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("inst_specs.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
@@ -210,7 +210,7 @@ pub fn test_aarch64_rule_with_lhs_termname(rulename: &str, termname: &str, tr: T
     println!("Verifying rule `{}` with termname {} ", rulename, termname);
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("inst_specs.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
@@ -248,7 +248,7 @@ pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) ->
     println!("Verifying {} rules in file: {}", config.term, file);
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("inst_specs.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
@@ -272,7 +272,7 @@ pub fn test_aarch64_with_config(config: Config, tr: TestResult) -> () {
     );
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("inst_specs.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
@@ -303,7 +303,7 @@ pub fn test_concrete_aarch64_rule_with_lhs_termname(
     );
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("inst_specs.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
@@ -368,7 +368,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     );
     // TODO: clean up path logic
     let cur_dir = env::current_dir().expect("Can't access current working directory");
-    let clif_isle = cur_dir.join("../../../codegen/src").join("clif_lower.isle");
+    let clif_isle = cur_dir.join("../../../codegen/src").join("inst_specs.isle");
     let prelude_isle = cur_dir.join("../../../codegen/src").join("prelude.isle");
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")

@@ -4,7 +4,6 @@
 //!
 //! Note: annotations use the higher-level IR in annotation_ir.rs.
 pub mod annotation_ir;
-pub mod isle_annotations;
 
 use std::collections::HashMap;
 

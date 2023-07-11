@@ -13,10 +13,10 @@ cargo run -- <path-to-file>
 ```
 
 Right now, this will check equivalence of all rules that start with `lower` on the left hand side. 
-The engine will also include ISLE definitions from these two files:
+The engine will also include ISLE definitions from these files:
 - `cranelift/codegen/src/prelude.isle`
 - `cranelift/codegen/src/prelude_lower.isle`
-- `cranelift/codegen/src/clif_lower.isle`
+- `cranelift/codegen/src/inst_specs.isle`
 
 
 ## Testing

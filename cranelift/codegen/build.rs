@@ -285,7 +285,7 @@ fn get_isle_compilations(
     })
 }
 
-fn build_isle(
+pub fn build_isle(
     crate_dir: &std::path::Path,
     isle_dir: &std::path::Path,
 ) -> Result<(), Box<dyn std::error::Error + 'static>> {

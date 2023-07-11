@@ -6,8 +6,8 @@ use isle::compile::create_envs;
 use isle::sema::{Pattern, RuleId, TermEnv, TypeEnv};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use veri_annotation::parser_wrapper::parse_annotations;
 
+use crate::annotations::parse_annotations;
 use crate::solver::run_solver;
 use crate::type_inference::RuleSemantics;
 use crate::{interp::Context, termname::pattern_contains_termname};
@@ -77,10 +77,11 @@ pub fn verify_rules_for_term(
             continue;
         }
         if let Some(names) = &config.names {
-            if rule.name.is_none() || !names.contains(rule.name.as_ref().unwrap()) {
+            let name = &typeenv.syms[rule.name.unwrap().index()];
+            if rule.name.is_none() || !names.contains(name) {
                 continue;
             } else {
-                println!("VERIFYING rule with name: {}", rule.name.as_ref().unwrap());
+                println!("VERIFYING rule with name: {}", name);
             }
         }
         let ctx = Context::new(typesols);

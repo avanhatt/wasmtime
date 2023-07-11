@@ -4,6 +4,7 @@ use isle::compile::create_envs;
 use isle::sema::{TermEnv, TypeEnv};
 use std::path::PathBuf;
 
+pub mod annotations;
 pub mod interp;
 pub mod solver;
 pub mod termname;

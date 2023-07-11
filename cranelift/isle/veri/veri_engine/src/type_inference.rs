@@ -7,9 +7,9 @@ use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
 use itertools::izip;
-use veri_annotation::parser_wrapper::AnnotationEnv;
 use veri_ir::{annotation_ir, ConcreteTest, Expr, TermSignature, Type, TypeContext};
 
+use crate::annotations::AnnotationEnv;
 use crate::{Config, FLAGS_WIDTH, REG_WIDTH};
 
 #[derive(Clone, Debug)]
@@ -125,7 +125,8 @@ pub fn type_rules_with_term_and_types(
             continue;
         }
         if let Some(names) = &config.names {
-            if rule.name.is_none() || !names.contains(rule.name.as_ref().unwrap()) {
+            let name = &typeenv.syms[rule.name.unwrap().index()];
+            if rule.name.is_none() || !names.contains(name) {
                 continue;
             }
         }
@@ -1588,27 +1589,11 @@ fn add_rule_constraints(
                 let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
                 curr.assertions.push(typed_expr.clone());
                 tree.assumptions.push(typed_expr);
-                if tree.decls.contains_key(t) {
-                    add_isle_constraints(
-                        cranelift_isle::ast::Def::Decl(tree.decls[t].clone()),
-                        tree,
-                        &mut annotation_info,
-                        annotation.sig.clone(),
-                    );
-                }
             }
             // For assertions, global assume if not RHS, otherwise assert
             for expr in annotation.assertions {
                 let (typed_expr, _) = add_annotation_constraints(*expr, tree, &mut annotation_info);
                 curr.assertions.push(typed_expr.clone());
-                if tree.decls.contains_key(t) {
-                    add_isle_constraints(
-                        cranelift_isle::ast::Def::Decl(tree.decls[t].clone()),
-                        tree,
-                        &mut annotation_info,
-                        annotation.sig.clone(),
-                    );
-                }
                 if rhs {
                     tree.rhs_assertions.push(typed_expr);
                 } else {
