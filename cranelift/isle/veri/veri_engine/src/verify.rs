@@ -23,7 +23,7 @@ pub fn verify_rules(inputs: Vec<PathBuf>, config: &Config) {
     // names to types
     let (typeenv, termenv) = create_envs(&defs).unwrap();
 
-    let annotation_env = parse_annotations(&inputs);
+    let annotation_env = parse_annotations(&defs, &typeenv);
 
     // Get the types/widths for this particular term
     let types = isle_inst_types()
@@ -77,8 +77,11 @@ pub fn verify_rules_for_term(
             continue;
         }
         if let Some(names) = &config.names {
+            if rule.name.is_none() {
+                continue;
+            } 
             let name = &typeenv.syms[rule.name.unwrap().index()];
-            if rule.name.is_none() || !names.contains(name) {
+            if !names.contains(name) {
                 continue;
             } else {
                 println!("VERIFYING rule with name: {}", name);

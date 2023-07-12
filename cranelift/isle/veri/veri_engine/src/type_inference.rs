@@ -125,8 +125,11 @@ pub fn type_rules_with_term_and_types(
             continue;
         }
         if let Some(names) = &config.names {
+            if rule.name.is_none() {
+                continue;
+            }
             let name = &typeenv.syms[rule.name.unwrap().index()];
-            if rule.name.is_none() || !names.contains(name) {
+            if !names.contains(name) {
                 continue;
             }
         }
