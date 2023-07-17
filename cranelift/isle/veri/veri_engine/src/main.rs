@@ -5,10 +5,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process;
 use veri_engine_lib::verify::verify_rules;
-use veri_engine_lib::Config;
-
-use cranelift_codegen_meta as meta;
-use meta::isa::Isa;
+use veri_engine_lib::{Config, build_clif_lower_isle};
 
 #[derive(Parser)]
 #[clap(about, version, author)]
@@ -51,20 +48,7 @@ fn main() {
     let mut inputs = vec![];
 
     // Build the relevant ISLE prelude using the meta crate
-    let out_dir = "isle-tmp";
-    let isle_dir = std::path::Path::new(&out_dir);
-    std::fs::create_dir_all(isle_dir).expect("Could not create ISLE source directory");
-
-    // For now, build ISLE files for x86 and aarch64
-    let isas = vec![Isa::X86, Isa::Arm64];
-
-    if let Err(err) = meta::generate(&isas, &out_dir, isle_dir.to_str().unwrap()) {
-        println!("Meta generate error: {}", err);
-        process::exit(1);
-    }
-
-    let clif_lower_isle = isle_dir.join("clif_lower.isle");
-    inputs.push(PathBuf::from(clif_lower_isle));
+    inputs.push(build_clif_lower_isle());
 
 
     if !args.noprelude {

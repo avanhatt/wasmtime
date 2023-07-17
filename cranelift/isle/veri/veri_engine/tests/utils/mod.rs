@@ -9,6 +9,7 @@ use veri_engine_lib::type_inference::type_rules_with_term_and_types;
 use veri_engine_lib::verify::verify_rules_for_term;
 use veri_engine_lib::widths::isle_inst_types;
 use veri_engine_lib::Config;
+use veri_engine_lib::build_clif_lower_isle;
 use veri_ir::{ConcreteTest, Counterexample, TermSignature, VerificationResult};
 
 #[derive(Debug, EnumIter, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
@@ -112,7 +113,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&inputs);
+    let annotation_env = parse_annotations(&defs, &typeenv);
 
     let instantiations = match tr {
         TestResult::Simple(s) => {
@@ -186,6 +187,7 @@ pub fn test_from_file_with_lhs_termname(file: &str, termname: String, tr: TestRe
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
     let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    inputs.push(build_clif_lower_isle());
     inputs.push(PathBuf::from(file));
     let config = Config {
         dyn_width: false,
@@ -215,7 +217,7 @@ pub fn test_aarch64_rule_with_lhs_termname(rulename: &str, termname: &str, tr: T
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
-    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    let mut inputs = vec![build_clif_lower_isle(), prelude_isle, prelude_lower_isle, clif_isle];
     inputs.push(
         cur_dir
             .join("../../../codegen/src/isa/aarch64")
@@ -323,7 +325,7 @@ pub fn test_concrete_aarch64_rule_with_lhs_termname(
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&inputs);
+    let annotation_env = parse_annotations(&defs, &typeenv);
 
     let config = Config {
         dyn_width: dynwidth,
@@ -379,7 +381,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&inputs);
+    let annotation_env = parse_annotations(&defs, &typeenv);
 
     let config = Config {
         dyn_width: dynwidth,

@@ -3,6 +3,8 @@ use easy_smt::SExpr;
 use isle::compile::create_envs;
 use isle::sema::{TermEnv, TypeEnv};
 use std::path::PathBuf;
+use cranelift_codegen_meta as meta;
+use meta::isa::Isa;
 
 pub mod annotations;
 pub mod interp;
@@ -58,4 +60,28 @@ pub fn parse_isle_to_terms(lexer: isle::lexer::Lexer) -> (TypeEnv, TermEnv) {
     // Produces environments including terms, rules, and maps from symbols and
     // names to types
     create_envs(&defs).unwrap()
+}
+
+pub fn build_clif_lower_isle() -> PathBuf {
+    // Build the relevant ISLE prelude using the meta crate
+    let out_dir = "veri-isle-clif-gen";
+    let isle_dir = std::path::Path::new(&out_dir);
+
+
+    if isle_dir.is_dir() {
+        let clif_lower_isle = isle_dir.join("clif_lower.isle");
+        if clif_lower_isle.is_file() {
+            return clif_lower_isle
+        } 
+    }
+    std::fs::create_dir_all(isle_dir).expect("Could not create directory for CLIF ISLE meta-generated code");
+
+    // For now, build ISLE files for x86 and aarch64
+    let isas = vec![Isa::X86, Isa::Arm64];
+
+    if let Err(err) = meta::generate(&isas, &out_dir, isle_dir.to_str().unwrap()) {
+        panic!("Meta generate error: {}", err);
+    }
+
+    PathBuf::from( isle_dir.join("clif_lower.isle"))
 }
