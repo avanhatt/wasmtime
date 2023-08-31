@@ -26,6 +26,12 @@ To see an examples of our current output, run tests without capturing standard o
 cargo test -- --nocapture
 ```
 
+To run a specific rule, you can provide the test name (most rules are tested in `cranelift/isle/veri/veri_engine/tests/veri.rs`):
+
+```bash
+cargo test test_named_band_64 -- --nocapture  
+```
+
 To see the x86-64 CVE repro, run:
 
 ```bash
