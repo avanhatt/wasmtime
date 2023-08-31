@@ -171,11 +171,18 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
     // x86 binary
     widths.insert(
         "amode_add",
-        vec![TermSignature {
-            args: vec![Type::BitVector(Some(64)), Type::BitVector(Some(64))],
-            ret: Type::BitVector(Some(64)),
-            canonical_type: Some(Type::BitVector(Some(64))),
-        }],
+        vec![
+            TermSignature {
+                args: vec![Type::BitVector(Some(64)), Type::BitVector(Some(32))],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(32))),
+            },
+            TermSignature {
+                args: vec![Type::BitVector(Some(64)), Type::BitVector(Some(64))],
+                ret: Type::BitVector(Some(64)),
+                canonical_type: Some(Type::BitVector(Some(64))),
+            },
+        ],
     );
 
     // Binary with possibly differing widths
