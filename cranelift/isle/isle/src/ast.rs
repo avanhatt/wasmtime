@@ -22,6 +22,8 @@ pub enum Def {
     Rule(Rule),
     Extractor(Extractor),
     Decl(Decl),
+    Spec(Spec),
+    Model(Model),
     Extern(Extern),
     Converter(Converter),
 }
@@ -86,6 +88,147 @@ pub struct Decl {
     /// Whether this term's constructor can fail to match.
     pub partial: bool,
     pub pos: Pos,
+}
+
+/// An expression used to specify term semantics, similar to SMTLIB syntax.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum SpecExpr {
+    /// An operator that matches a constant integer value.
+    ConstInt {
+        val: i128,
+        pos: Pos,
+    },
+    /// An operator that matches a constant bitvector value.
+    ConstBitVec {
+        val: i128,
+        width: i8,
+        pos: Pos,
+    },
+    /// An operator that matches a constant boolean value.
+    ConstBool {
+        val: i8,
+        pos: Pos,
+    },
+    // A variable
+    Var {
+        var: Ident,
+        pos: Pos,
+    },
+    /// An application of a type variant or term.
+    Op {
+        op: SpecOp, // <=
+        args: Vec<SpecExpr>,
+        pos: Pos,
+    },
+    Pair {
+        l: Box<SpecExpr>,
+        r: Box<SpecExpr>,
+    },
+    Enum {
+        name: Ident,
+    }
+}
+
+/// An operation used to specify term semantics, similar to SMTLIB syntax.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum SpecOp {
+    // Boolean operations
+    Eq,
+    And,
+    Or,
+    Not,
+
+    // Integer comparisons
+    Lt,
+    Lte,
+    Gt,
+    Gte,
+
+    // Bitwise bitvector operations (directly SMTLIB)
+    BVNot,
+    BVAnd,
+    BVOr,
+    BVXor,
+
+    // Bitvector arithmetic operations  (directly SMTLIB)
+    BVNeg,
+    BVAdd,
+    BVSub,
+    BVMul,
+    BVUdiv,
+    BVUrem,
+    BVSdiv,
+    BVSrem,
+    BVShl,
+    BVLshr,
+    BVAshr,
+
+    // Bitvector comparison operations  (directly SMTLIB)
+    BVUle,
+    BVUlt,
+    BVUgt,
+    BVUge,
+    BVSlt,
+    BSSle,
+    BVSgt,
+    BVSge, 
+
+    // Desugared bitvector arithmetic operations 
+    Rotr,
+    Rotl,
+    Extract,
+    ZeroExt,
+    SignExt,
+    Concat,
+
+    // Custom encodings
+    Subs,
+    Popcnt,
+    Clz,
+    Cls,
+    Rev,
+
+    // Conversion operations
+    ConvTo,
+    Int2BV,
+    BV2Int,
+    WidthOf,
+
+    // Control operations
+    If,
+    Switch,
+}
+
+/// A specification of the semantics of a term.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Spec {
+    pub term: Ident,
+    pub args: Vec<Ident>,
+    pub provides: Vec<SpecExpr>,
+    pub requires: Vec<SpecExpr>,
+}
+
+
+/// A model of an SMTLIB type.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum ModelType {
+    Int, 
+    Bool,
+    BitVec(Option<usize>)
+}
+
+/// A model of a construct into SMTLIB.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum ModelValue {
+    TypeValue(ModelType),
+    EnumValues(Vec<(Ident, SpecExpr)>),
+}
+
+/// A model of a construct into SMTLIB.
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Model {
+    pub name: Ident,
+    pub val: ModelValue,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
