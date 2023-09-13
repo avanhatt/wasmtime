@@ -38,7 +38,8 @@ pub struct SolverCtx {
     pub additional_assumptions: Vec<SExpr>,
     pub additional_assertions: Vec<SExpr>,
     fresh_bits_idx: usize,
-    mem_func: Option<Vec<(SExpr, SExpr)>>,
+    // mem_func: Option<Vec<(SExpr, SExpr)>>,
+    mem_func: Option<SExpr>,
 }
 
 impl SolverCtx {
@@ -1247,7 +1248,7 @@ impl SolverCtx {
                 let a_expr = self.vir_expr_to_sexp(*addr);
                 let w_expr = self.vir_expr_to_sexp(*w);
 
-                // let mem = self.mem_func.unwrap();
+                let mem = self.mem_func.unwrap();
                 if self.dynwidths {
                     if self.onlywidths {
                         self.width_assumptions
@@ -1258,20 +1259,31 @@ impl SolverCtx {
                     }
                 } else {
                     // SMT Uninterp func
-                    // let mem_call = self.smt.list(
-                    //     vec![mem,
-                    //     // kind_int,
-                    //     self.smt.concat(f_expr, a_expr),
-                    //     // f_expr,
-                    //     // a_expr
-                    //     ]
-                    // );
-                    // let extract_mem_call =
-                    // self.smt.extract(7, 0, mem_call)
+                    let mem_result = self.smt.list(
+                        vec![mem,
+                        kind_int,
+                        f_expr,
+                        a_expr
+                        ]
+                    );
 
                     // SMT array
                     // let load64 = self.smt.select(self.mem_func.unwrap(), self.smt.concat(f_expr, a_expr));
                     // self.smt.extract(7, 0, load64)
+
+                    // let addr_concat = self.smt.concat(kind_int, self.smt.concat(f_expr, a_expr));
+
+                    // Intentionally break the flag: 
+                    // let fresh = self.new_fresh_bits(1);
+                    // let addr_concat = self.smt.concat(fresh, a_expr);
+
+                    // ITE blocks
+                    // let mem_func = self.mem_func.as_ref();
+                    // let mem_access_idx = mem_func.unwrap().len();
+                    // let name = format!("mem{mem_access_idx}");
+                    // self.declare(name.clone(), self.smt.bit_vec_sort(self.smt.numeral(64)));
+                    // let name = self.smt.atom(name);
+                    // self.mem_func.as_mut().unwrap().push((name, addr_concat));
 
                     // Check that the width is one of the expected widths
                     let check_widths: Vec<SExpr> = vec![8, 16, 32, 64].iter().map(|w|
@@ -1279,29 +1291,14 @@ impl SolverCtx {
                     ).collect();
                     self.assert(self.smt.or_many(check_widths));
 
-
-                    let addr_concat = self.smt.concat(kind_int, self.smt.concat(f_expr, a_expr));
-
-                    // Intentionally break the flag: 
-                    // let fresh = self.new_fresh_bits(1);
-                    // let addr_concat = self.smt.concat(fresh, a_expr);
-
-                    // ITE blocks
-                    let mem_func = self.mem_func.as_ref();
-                    let mem_access_idx = mem_func.unwrap().len();
-                    let name = format!("mem{mem_access_idx}");
-                    self.declare(name.clone(), self.smt.bit_vec_sort(self.smt.numeral(64)));
-                    let name = self.smt.atom(name);
-                    self.mem_func.as_mut().unwrap().push((name, addr_concat));
-
                     match static_expr_width.unwrap() {
-                        8 => self.smt.extract(7, 0, name),
-                        16 => self.smt.extract(15, 0, name),
-                        32 => self.smt.extract(31, 0, name),
-                        64 => name,
+                        8 => self.smt.extract(7, 0, mem_result),
+                        16 => self.smt.extract(15, 0, mem_result),
+                        32 => self.smt.extract(31, 0, mem_result),
+                        64 => mem_result,
                         _ => unreachable!("Expected width for memory"),
                     }
-                }
+}
             }
         }
     }
@@ -1636,45 +1633,53 @@ impl SolverCtx {
     }
 
     fn setup_mem(&mut self) {
-        // let mem = self
-        //     .smt
-        //     .declare_fun(
-        //         "mem",
-        //         vec![
-        //             // self.smt.int_sort(),
-        //             // self.smt.bit_vec_sort(self.smt.numeral(1)),
-        //             self.smt.bit_vec_sort(self.smt.numeral(65)),
-        //         ],
-        //         self.smt.bit_vec_sort(self.smt.numeral(64)))
-        //     .unwrap();
+        // Uninterp fn encoding
+        let mem = self
+            .smt
+            .declare_fun(
+                "mem",
+                vec![
+                    self.smt.bit_vec_sort(self.smt.numeral(1)),
+                    self.smt.bit_vec_sort(self.smt.numeral(1)),
+                    self.smt.bit_vec_sort(self.smt.numeral(64)),
+                ],
+                self.smt.bit_vec_sort(self.smt.numeral(64)))
+            .unwrap();
+        self.mem_func = Some(mem)
 
+        // Arrays encoding
         // let mem = self.smt.array_sort(
         //     self.smt.bit_vec_sort(self.smt.numeral(65)),
         //     self.smt.bit_vec_sort(self.smt.numeral(64))
         // );
         // let mem_array = self.smt.declare_const("mem", mem).unwrap();
         // self.mem_func = Some(mem_array);
-        self.mem_func = Some(vec![])
+
+        // ITE encoding
+        // self.mem_func = Some(vec![])
     }
 
     fn resolve_mem(&mut self) {
-        let mem_func_len = self.mem_func.as_ref().unwrap().len();
+        // This function only needed for ITE encoding
 
-        let mut fresh = vec![];
-        for _ in 0..mem_func_len {
-            fresh.push(self.new_fresh_bits(64));
-        }
-        let no_match = self.new_fresh_bits(64);
-        for (cur_name, cur_pointer) in self.mem_func.clone().unwrap() {
-            let ite = self.mem_func.as_ref().unwrap().iter().enumerate().fold(
-                no_match,
-                |acc, (i, (_, pointer))| {
-                    self.smt
-                        .ite(self.smt.eq(cur_pointer, *pointer), fresh[i], acc)
-                },
-            );
-            self.assume(self.smt.eq(cur_name, ite));
-        }
+        // ITE encoding
+        // let mem_func_len = self.mem_func.as_ref().unwrap().len();
+
+        // let mut fresh = vec![];
+        // for _ in 0..mem_func_len {
+        //     fresh.push(self.new_fresh_bits(64));
+        // }
+        // let no_match = self.new_fresh_bits(64);
+        // for (cur_name, cur_pointer) in self.mem_func.clone().unwrap() {
+        //     let ite = self.mem_func.as_ref().unwrap().iter().enumerate().fold(
+        //         no_match,
+        //         |acc, (i, (_, pointer))| {
+        //             self.smt
+        //                 .ite(self.smt.eq(cur_pointer, *pointer), fresh[i], acc)
+        //         },
+        //     );
+        //     self.assume(self.smt.eq(cur_name, ite));
+        // }
     }
 
     fn declare_variables(&mut self, rule_sem: &RuleSemantics, config: &Config) -> Vec<SExpr> {
