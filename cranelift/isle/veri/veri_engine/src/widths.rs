@@ -532,5 +532,47 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
+    // (decl load (MemFlags Value Offset32) Inst)
+    widths.insert(
+        "load",
+        vec![
+            TermSignature {
+            args: vec![
+                Type::BitVector(Some(1)),
+                Type::BitVector(Some(32)),
+                Type::BitVector(Some(32)),
+            ],
+            ret: Type::BitVector(Some(8)),
+            canonical_type: Some(Type::BitVector(Some(8))),
+        },
+        TermSignature {
+            args: vec![
+                Type::BitVector(Some(1)),
+                Type::BitVector(Some(32)),
+                Type::BitVector(Some(32)),
+            ],
+            ret: Type::BitVector(Some(16)),
+            canonical_type: Some(Type::BitVector(Some(16))),
+        },
+        TermSignature {
+            args: vec![
+                Type::BitVector(Some(1)),
+                Type::BitVector(Some(32)),
+                Type::BitVector(Some(32)),
+            ],
+            ret: Type::BitVector(Some(32)),
+            canonical_type: Some(Type::BitVector(Some(32))),
+        },
+        TermSignature {
+            args: vec![
+                Type::BitVector(Some(1)),
+                Type::BitVector(Some(32)),
+                Type::BitVector(Some(32)),
+            ],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }
+        ],
+    );
     return widths;
 }

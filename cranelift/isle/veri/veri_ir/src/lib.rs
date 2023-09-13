@@ -210,8 +210,8 @@ pub enum Expr {
     // Extract specified bits
     BVExtract(usize, usize, Box<Expr>),
 
-    // Concat bitvectors
-    BVConcat(Vec<Expr>),
+    // Concat bitvectors, optionally providing destination size
+    BVConcat(Option<usize>, Vec<Expr>),
 
     // Convert integer to bitvector with that value
     BVIntToBV(usize, Box<Expr>),
@@ -230,6 +230,9 @@ pub enum Expr {
     // Conversion to wider/narrower bits, without an explicit extend
     BVConvTo(Box<Expr>),
     BVConvToVarWidth(Box<Expr>, Box<Expr>),
+
+    // kind (i1) , flags (i1), width (i8), addr (i64)
+    Mem(usize, Box<Expr>, Box<Expr>, Box<Expr>),
 
     WidthOf(Box<Expr>),
 }

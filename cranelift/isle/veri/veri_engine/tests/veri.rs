@@ -268,10 +268,6 @@ fn test_named_iadd_imul_right() {
             "iadd",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
-                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                // (Bitwidth::I16, VerificationResult::Success),
-                // (Bitwidth::I32, VerificationResult::Success),
-                // (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     });
@@ -3109,7 +3105,6 @@ fn test_named_output_reg() {
         )
     })
 }
-
 #[test]
 fn test_broken_imm_udiv_cve() {
     // Since there are no bitvectors in the signature, need a custom assumption
@@ -3145,5 +3140,69 @@ fn test_broken_imm_udiv_cve() {
                 vec![(ty.clone(), result.clone())],
             );
         }
+    })
+}
+
+#[test]
+fn test_named_load_8() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "load_8",
+            "load",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_load_16() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "load_16",
+            "load",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_load_32() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "load_32",
+            "load",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_load_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "load_64",
+            "load",
+            vec![
+                (Bitwidth::I8, VerificationResult::InapplicableRule),
+                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (Bitwidth::I32, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
     })
 }
