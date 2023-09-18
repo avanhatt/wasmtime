@@ -169,7 +169,7 @@ pub enum SpecOp {
     BVUgt,
     BVUge,
     BVSlt,
-    BSSle,
+    BVSle,
     BVSgt,
     BVSge, 
 
