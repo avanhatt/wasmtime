@@ -1848,6 +1848,7 @@
 ;; Instruction creation helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Helper for creating the zero register.
+(spec (zero_reg) (provide (= result #x00000000)))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
@@ -2704,7 +2705,12 @@
 (rule (not x size) (vec_misc (VecMisc2.Not) x size))
 
 ;; Helpers for generating `orr_not` instructions.
-
+(spec (orr_not ty a b)
+  (provide 
+    (= result
+       (if (<= ty 32) 
+           (conv_to 64 (bvor (extract 31 0 a) (bvnot (extract 31 0 b))))
+           (bvor a (bvnot b))))))
 (decl orr_not (Type Reg Reg) Reg)
 (rule (orr_not ty x y) (alu_rrr (ALUOp.OrrNot) ty x y))
 

@@ -37,6 +37,8 @@
 (type PReg (primitive PReg))
 
 ;; Construct a `ValueRegs` of one register.
+(spec (value_reg arg)
+    (provide (= result arg)))
 (decl value_reg (Reg) ValueRegs)
 (extern constructor value_reg value_reg)
 
@@ -61,6 +63,8 @@
 (extern constructor output_pair output_pair)
 
 ;; Construct a single-element `InstOutput` from a single register.
+(spec (output_reg arg)
+      (provide (= result (conv_to (widthof result) arg))))
 (decl output_reg (Reg) InstOutput)
 (rule (output_reg reg) (output (value_reg reg)))
 
@@ -111,6 +115,8 @@
 ;; multiple registers for its representation (like `i128` on x64 for example).
 ;;
 ;; As a side effect, this marks the value as used.
+(spec (put_in_reg arg)
+      (provide (= result (conv_to 64 arg))))
 (decl put_in_reg (Value) Reg)
 (extern constructor put_in_reg put_in_reg)
 
@@ -238,6 +244,9 @@
 
 ;; Extract the type of the instruction's first result and pass along the
 ;; instruction as well.
+(spec (has_type ty arg)
+      (provide (= result arg))
+      (require (= ty (widthof arg))))
 (decl has_type (Type Inst) Inst)
 (extractor (has_type ty inst)
            (and (result_type ty)

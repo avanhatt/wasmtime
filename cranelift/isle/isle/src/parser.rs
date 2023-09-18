@@ -487,7 +487,7 @@ impl<'a> Parser<'a> {
             "conv_to" => Ok(SpecOp::ConvTo),
             "int2bv" => Ok(SpecOp::Int2BV),
             "bv2int" => Ok(SpecOp::BV2Int),
-            "width_of" => Ok(SpecOp::WidthOf),
+            "widthof" => Ok(SpecOp::WidthOf),
             "if" => Ok(SpecOp::If),
             "switch" => Ok(SpecOp::Switch),
             "subs"=> Ok(SpecOp::Subs),

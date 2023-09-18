@@ -26,7 +26,7 @@
     (provide (= result (zero_ext 64 x))))
 
 (spec (null) 
-    (provide (= result (conv_to (widtho_of result) #x0000000000000000))))
+    (provide (= result (conv_to (widthof result) #x0000000000000000))))
 
 (spec (bitselect c x y) 
     (provide (= result (bvor (bvand c x) (bvand (bvnot c) y)))))
@@ -106,7 +106,8 @@
     (provide (= result (bvxor x y))))
 
 (spec (bnot x) 
-    (provide (= result (bvnot x))))
+    (provide (= result (bvnot x)))
+    (require (or (= (widthof x) 8) (= (widthof x) 16) (= (widthof x) 32) (= (widthof x) 143))))
 
 (spec (band_not x y) 
     (provide (= result (bvand x (bvnot y)))))

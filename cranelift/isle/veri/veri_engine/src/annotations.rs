@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use cranelift_codegen::gimli::write::DebugLineStrOffsets;
 use cranelift_isle::ast;
 
 use cranelift_isle::ast::Defs;
@@ -33,8 +34,11 @@ impl AnnotationEnv {
 }
 
 pub fn string_from_ident(typeenv: &TypeEnv, id: &ast::Ident) -> String {
-    let sym = typeenv.sym_map[&id.0];
-    typeenv.syms[sym.index()].clone()
+    if let Some(sym) = typeenv.sym_map.get(&id.0) {
+        typeenv.syms[sym.index()].clone()
+    } else {
+        panic!("unknown attemped keyword: {}", &id.0);
+    }
 }
 
 pub fn spec_to_annotation_bound_var(i: &Ident, typeenv: &TypeEnv) -> BoundVar {
@@ -81,7 +85,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, typeenv: &TypeEn
         );
         return b(
             Box::new(spec_to_expr(&args[0], typeenv)),
-            Box::new(spec_to_expr(&args[0], typeenv)),
+            Box::new(spec_to_expr(&args[1], typeenv)),
             0,
         );
     }
@@ -104,7 +108,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, typeenv: &TypeEn
         expr_args
             .iter()
             .rev()
-            .fold(last, |acc, a| b(Box::new(acc), Box::new(a.clone()), 0))
+            .fold(last, |acc, a| b(Box::new(a.clone()), Box::new(acc), 0))
     }
 
     match s {
@@ -160,6 +164,12 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, typeenv: &TypeEn
             pos,
             typeenv,
         ),
+        SpecOp::ConvTo =>  binop(
+            |x, y, i| Expr::BVConvToVarWidth(x, y, i),
+            args,
+            pos,
+            typeenv,
+        ),
 
         // AVH TODO
         SpecOp::Concat => todo!(),
@@ -176,11 +186,18 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, typeenv: &TypeEn
         SpecOp::Popcnt => todo!(),
         SpecOp::Clz => todo!(),
         SpecOp::Cls => todo!(),
-        SpecOp::ConvTo => todo!(),
         SpecOp::Int2BV => todo!(),
         SpecOp::BV2Int => todo!(),
-        SpecOp::WidthOf => todo!(),
-        SpecOp::If => todo!(),
+        SpecOp::WidthOf => unop(|x, i| Expr::WidthOf(x, i), args, pos, typeenv),
+        SpecOp::If => {
+            assert_eq!(
+                args.len(),
+                3,
+                "Unexpected number of args for extract operator {:?}",
+                pos
+            );
+            Expr::Conditional(Box::new(spec_to_expr(&args[0], typeenv)), Box::new(spec_to_expr(&args[1], typeenv)), Box::new(spec_to_expr(&args[2], typeenv)), 0)
+        }
         SpecOp::Switch => todo!(),
     }
 }
@@ -213,7 +230,13 @@ fn spec_to_expr(s: &SpecExpr, typeenv: &TypeEnv) -> Expr {
         ),
         SpecExpr::Var { var, pos } => Expr::Var(string_from_ident(typeenv, var), 0),
         SpecExpr::Op { op, args, pos } => spec_op_to_expr(op, args, pos, typeenv),
-        SpecExpr::Pair { l, r } => todo!(),
+        SpecExpr::Pair { l, r } => {
+            let left = spec_to_expr(l, typeenv);
+            dbg!(left);
+            let right = spec_to_expr(r, typeenv);
+            todo!()
+        },
+        // SpecExpr::Pair { l, r } => todo!(),
         SpecExpr::Enum { name } => todo!(),
     }
 }

@@ -80,7 +80,7 @@ mod tests {
     fn check_encoding_with_solver(mut ctx: SolverCtx, call: SExpr, output: &str, width: usize) {
         // Extract the width of bits that we care about.
         let output_care_bits = ctx.smt.extract((width - 1).try_into().unwrap(), 0, call);
-        dbg!(ctx.smt.display(output_care_bits).to_string());
+        ctx.smt.display(output_care_bits).to_string();
 
         // Bookkeeping: declare declarations, assert assumptions
         for (name, ty) in &ctx.additional_decls {
