@@ -288,7 +288,11 @@ fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
         }
         SpecExpr::Enum { name } => {
             let n = string_from_ident(&env, name);
-            env.enums.get(&n).unwrap().clone()
+            if let Some(e) = env.enums.get(&n) {
+                e.clone()
+            } else {
+                panic!("Can't find model for enum {}", n);
+            }
         }
     }
 }
