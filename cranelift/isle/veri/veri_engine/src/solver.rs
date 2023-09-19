@@ -43,7 +43,6 @@ pub struct SolverCtx {
 impl SolverCtx {
     pub fn new_fresh_bits(&mut self, width: usize) -> SExpr {
         let name = format!("fresh{}", self.fresh_bits_idx);
-        dbg!(&name);
         self.fresh_bits_idx += 1;
         self.additional_decls
             .push((name.clone(), self.smt.bit_vec_sort(self.smt.numeral(width))));
@@ -1964,7 +1963,7 @@ pub fn run_solver_with_static_widths(
     }
 
     let assumption_conjunction = ctx.smt.and_many(assumptions);
-    let full_condition = if assertions.len() > 1 {
+    let full_condition = if assertions.len() > 0 {
         let assertion_conjunction = ctx.smt.and_many(assertions.clone());
         ctx.smt.and(condition, assertion_conjunction)
     } else {

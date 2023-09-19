@@ -2510,7 +2510,12 @@
 (rule (madd ty x y z) (alu_rrrr (ALUOp3.MAdd) ty x y z))
 
 ;; Helpers for generating `msub` instructions.
-
+(spec (msub ty a b c)
+  (provide 
+    (= result
+       (if (<= ty 32) 
+           (conv_to 64 (bvsub (extract 31 0 c) (bvmul (extract 31 0 a) (extract 31 0 b))))
+           (bvsub c (bvmul a b))))))
 (decl msub (Type Reg Reg Reg) Reg)
 (rule (msub ty x y z) (alu_rrrr (ALUOp3.MSub) ty x y z))
 
@@ -2704,6 +2709,12 @@
 (rule (lsl_imm ty x imm) (alu_rr_imm_shift (ALUOp.Lsl) ty x imm))
 
 ;; Helper for generating `udiv` instructions.
+(spec (a64_udiv ty a b) 
+  (provide 
+    (= result
+       (if (<= ty 32) 
+           (conv_to 64 (bvudiv (extract 31 0 a) (extract 31 0 b)))
+           (bvudiv a b)))))
 (decl a64_udiv (Type Reg Reg) Reg)
 (rule (a64_udiv ty x y) (alu_rrr (ALUOp.UDiv) ty x y))
 
@@ -3007,6 +3018,8 @@
 (rule (put_in_reg_sext64 val @ (value_type $I64)) val)
 
 ;; Place a `Value` into a register, zero extending it to 64-bits
+(spec (put_in_reg_zext64 x)
+      (provide (= result (zero_ext 64 x))))
 (decl put_in_reg_zext64 (Value) Reg)
 (rule 1 (put_in_reg_zext64 val @ (value_type (fits_in_32 ty)))
       (extend val $false (ty_bits ty) 64))
@@ -3750,16 +3763,16 @@
       (provide 
          (= result
         (switch (extract 7 0 a)
-          (0x00 (if (= (extract 10 10 a) 0b1) 0x01 0x00))
-          (0x01 (if (= (extract 10 10 a) 0b0) 0x01 0x00))
-          (0x02 (if (bvand (= (extract 10 10 a) 0b0) (= (extract 11 11 a) (extract 8 8 a))) 0x01 0x00))
-          (0x03 (if (= (extract 11 11 a) (extract 8 8 a)) 0x01 0x00))
-          (0x04 (if (bvnot (= (extract 11 11 a) (extract 8 8 a))) 0x01 0x00))
-          (0x05 (if (bvor (= (extract 10 10 a) 0b1) (bvnot (= (extract 11 11 a) (extract 8 8 a)))) 0x01 0x00))
-          (0x06 (if (bvand (= (extract 9 9 a) 0b1) (= (extract 10 10 a) 0b0)) 0x01 0x00))
-          (0x07 (if (= (extract 9 9 a) 0b1) 0x01 0x00))
-          (0x08 (if (= (extract 9 9 a) 0b0) 0x01 0x00))
-          (0x09 (if (bvor (= (extract 9 9 a) 0b0) (= (extract 10 10 a) 0b1)) 0x01 0x00)))))
+          (#x00 (if (= (extract 10 10 a) 0b1) #x01 #x00))
+          (#x01 (if (= (extract 10 10 a) 0b0) #x01 #x00))
+          (#x02 (if (bvand (= (extract 10 10 a) 0b0) (= (extract 11 11 a) (extract 8 8 a))) #x01 #x00))
+          (#x03 (if (= (extract 11 11 a) (extract 8 8 a)) #x01 #x00))
+          (#x04 (if (bvnot (= (extract 11 11 a) (extract 8 8 a))) #x01 #x00))
+          (#x05 (if (bvor (= (extract 10 10 a) 0b1) (bvnot (= (extract 11 11 a) (extract 8 8 a)))) #x01 #x00))
+          (#x06 (if (bvand (= (extract 9 9 a) 0b1) (= (extract 10 10 a) 0b0)) #x01 #x00))
+          (#x07 (if (= (extract 9 9 a) 0b1) #x01 #x00))
+          (#x08 (if (= (extract 9 9 a) 0b0) #x01 #x00))
+          (#x09 (if (bvor (= (extract 9 9 a) 0b0) (= (extract 10 10 a) 0b1)) #x01 #x00)))))
       (require 
             (or 
                   (= c (IntCC.Equal))

@@ -398,14 +398,14 @@ impl<'a> Parser<'a> {
 
     fn parse_spec_expr(&mut self) -> Result<SpecExpr> {
         let pos = self.pos();
-        if self.is_int() {
+        if self.is_spec_bit_vector() {
+            let (val, width) = self.parse_spec_bit_vector()?;
+            Ok(SpecExpr::ConstBitVec { val, width, pos })
+        } else if self.is_int() {
             Ok(SpecExpr::ConstInt {
                 val: self.expect_int()?,
                 pos,
             })
-        } else if self.is_spec_bit_vector() {
-            let (val, width) = self.parse_spec_bit_vector()?;
-            Ok(SpecExpr::ConstBitVec { val, width, pos })
         } else if self.is_spec_bool() {
             let val = self.parse_spec_bool()?;
             Ok(SpecExpr::ConstBool { val, pos })
@@ -415,7 +415,7 @@ impl<'a> Parser<'a> {
         } else if self.is_lparen() {
             // TODO AVH: 
             self.expect_lparen()?;
-            if self.is_sym() {
+            if self.is_sym() && !self.is_spec_bit_vector() {
                 let sym = self.expect_symbol()?;
                 if let Ok(op) = self.parse_spec_op(sym.as_str()) {
                     let mut args: Vec<SpecExpr> = vec![];

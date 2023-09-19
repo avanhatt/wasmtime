@@ -287,7 +287,6 @@ fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
         }
         SpecExpr::Enum { name } => {
             let n = string_from_ident(&env, name);
-            dbg!(&n);
             env.enums.get(&n).unwrap().clone()
         }
     }
@@ -312,7 +311,6 @@ pub fn parse_annotations(defs: &Defs, typeenv: &TypeEnv) -> AnnotationEnv {
                             let name =  string_from_ident(&env, name); 
                             let v =  string_from_ident(&env, v); 
                             let enum_name = format!("{}.{}", name, v);
-                            dbg!(&enum_name);
                             let val = spec_to_expr(e, &env);
                             env.enums.insert(enum_name, val);
                         }
