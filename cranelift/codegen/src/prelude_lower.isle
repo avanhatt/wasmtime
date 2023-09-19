@@ -1004,6 +1004,10 @@
 (extern constructor gen_return gen_return)
 
 ;; Helper for extracting an immediate that's not 0 and not -1 from an imm64.
+ (spec (safe_divisor_from_imm64 t x)
+       (provide (= (sign_ext 64 x) result))
+       (require (not (= #x0000000000000000 result))
+                (not (= #x1111111111111111 result))))
 (decl pure partial safe_divisor_from_imm64 (Type Imm64) u64)
 (extern constructor safe_divisor_from_imm64 safe_divisor_from_imm64)
 
