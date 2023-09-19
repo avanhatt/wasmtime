@@ -22,8 +22,8 @@
 (spec (umax x y) 
     (provide (= result (if (bvuge x y) x y))))
 
-(spec (iconst x) 
-    (provide (= result (zero_ext 64 x))))
+(spec (iconst arg) 
+    (provide (= arg (zero_ext 64 result))))
 
 (spec (null) 
     (provide (= result (conv_to (widthof result) #x0000000000000000))))

@@ -50,6 +50,7 @@
 (type ValueSlice (primitive ValueSlice))
 
 ;; Extract the type of a `Value`.
+(spec (value_type arg) (provide (= arg (widthof result))))
 (decl value_type (Type) Value)
 (extern extractor infallible value_type value_type)
 
@@ -102,6 +103,7 @@
 (extern constructor u32_as_u64 u32_as_u64)
 (convert u32 u64 u32_as_u64)
 
+(spec (i64_as_u64 arg) (provide (= arg result)))
 (decl pure i64_as_u64 (i64) u64)
 (extern constructor i64_as_u64 i64_as_u64)
 
@@ -131,6 +133,7 @@
 (decl pure u32_add (u32 u32) u32)
 (extern constructor u32_add u32_add)
 
+(spec (u32_sub a b) (provide (= result (bvsub a b))))
 (decl pure u32_sub (u32 u32) u32)
 (extern constructor u32_sub u32_sub)
 
@@ -208,6 +211,8 @@
 (decl u64_nonzero (u64) u64)
 (extractor (u64_nonzero x) (and (u64_is_zero $false) x))
 
+;; x & 1 == 1
+(spec (u64_is_odd arg) (provide (= result (= #b1 (extract 0 0 arg)))))
 (decl pure u64_is_odd (u64) bool)
 (extern constructor u64_is_odd u64_is_odd)
 
@@ -256,6 +261,7 @@
 (extern constructor ty_smax ty_smax)
 
 ;; Get the bit width of a given type.
+(spec (ty_bits x) (provide (= result (int2bv 8 x))))
 (decl pure ty_bits (Type) u8)
 (extern constructor ty_bits ty_bits)
 
@@ -402,8 +408,7 @@
 (extern extractor ty_int_ref_16_to_64 ty_int_ref_16_to_64)
 
 ;; An extractor that only matches integers.
-(spec (ty_int a)
-      (provide (= result a)))
+(spec (ty_int a) (provide (= result a)))
 (decl ty_int (Type) Type)
 (extern extractor ty_int ty_int)
 
@@ -474,6 +479,7 @@
 (extern extractor infallible u64_from_bool u64_from_bool)
 
 ;; Extract a `u64` from an `Imm64`.
+(spec (u64_from_imm64 arg) (provide (= arg result)))
 (decl u64_from_imm64 (u64) Imm64)
 (extern extractor infallible u64_from_imm64 u64_from_imm64)
 

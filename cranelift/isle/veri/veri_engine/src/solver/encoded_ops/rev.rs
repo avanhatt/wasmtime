@@ -357,8 +357,7 @@ pub fn rev32(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {
         ),
     ));
 
-    let padding = solver.new_fresh_bits(solver.bitwidth - 32);
-    solver.smt.concat(padding, rev32ret)
+    rev32ret
 }
 
 pub fn rev16(solver: &mut SolverCtx, x: SExpr, id: u32) -> SExpr {

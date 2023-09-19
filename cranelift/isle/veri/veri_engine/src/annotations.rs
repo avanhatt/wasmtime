@@ -42,15 +42,10 @@ impl AnnotationEnv {
 }
 
 pub fn string_from_ident(env: &ParsingEnv, id: &ast::Ident) -> String {
-    if let Some(sym) = env.typeenv.sym_map.get(&id.0) {
-        env.typeenv.syms[sym.index()].clone()
-    } else {
-        panic!("unknown attemped keyword: {}", &id.0);
-    }
+    format!("{}", &id.0)
 }
 
 pub fn spec_to_annotation_bound_var(i: &Ident, env: &ParsingEnv) -> BoundVar {
-    // AVH TODO: handle case where bound var name differs spec to decl
     BoundVar {
         name: string_from_ident(env, i),
         ty: None,
@@ -148,7 +143,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
         SpecOp::BVMul => binop(|x, y, i| Expr::BVMul(x, y, i), args, pos, env),
         SpecOp::BVUdiv => binop(|x, y, i| Expr::BVUDiv(x, y, i), args, pos, env),
         SpecOp::BVUrem => binop(|x, y, i| Expr::BVUrem(x, y, i), args, pos, env),
-        SpecOp::BVSdiv => binop(|x, y, i| Expr::BVXor(x, y, i), args, pos, env),
+        SpecOp::BVSdiv => binop(|x, y, i| Expr::BVSDiv(x, y, i), args, pos, env),
         SpecOp::BVSrem => binop(|x, y, i| Expr::BVSrem(x, y, i), args, pos, env),
         SpecOp::BVShl => binop(|x, y, i| Expr::BVShl(x, y, i), args, pos, env),
         SpecOp::BVLshr => binop(|x, y, i| Expr::BVShr(x, y, i), args, pos, env),
@@ -345,7 +340,7 @@ pub fn parse_annotations(defs: &Defs, typeenv: &TypeEnv) -> AnnotationEnv {
         match def {
             &ast::Def::Spec(ref spec) => {
                 let termname = string_from_ident(&env, &spec.term);
-                // dbg!(&termname);
+                dbg!(&termname);
                 let sig = TermSignature {
                     args: spec
                         .args

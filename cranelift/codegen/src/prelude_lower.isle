@@ -255,6 +255,7 @@
                 inst))
 
 ;; Match the instruction that defines the given value, if any.
+(spec (def_inst arg) (provide (= result arg)))
 (decl def_inst (Inst) Value)
 (extern extractor def_inst def_inst)
 

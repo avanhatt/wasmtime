@@ -284,7 +284,12 @@ pub fn test_aarch64_with_config(config: Config, tr: TestResult) -> () {
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
-    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    let mut inputs = vec![
+        build_clif_lower_isle(),
+        prelude_isle,
+        prelude_lower_isle,
+        clif_isle,
+    ];
     inputs.push(
         cur_dir
             .join("../../../codegen/src/isa/aarch64")

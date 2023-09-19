@@ -2405,30 +2405,30 @@
         dst))
       
 ;; Helper for emitting `MInst.MovFromVec` instructions.
-;; (spec (mov_from_vec x i s)
-;;   (provide 
-;;     (= result 
-;;        (switch s
-;;          (8 
-;;            (switch i
-;;              (#x00 (zero_ext 64 (extract 7 0 x)))
-;;              (#x01 (zero_ext 64 (extract 15 8 x)))
-;;              (#x02 (zero_ext 64 (extract 23 16 x)))
-;;              (#x03 (zero_ext 64 (extract 31 24 x)))
-;;              (#x04 (zero_ext 64 (extract 39 32 x)))
-;;              (#x05 (zero_ext 64 (extract 47 40 x)))
-;;              (#x06 (zero_ext 64 (extract 55 48 x)))
-;;              (#x07 (zero_ext 64 (extract 63 56 x)))))
-;;          (16
-;;            (switch i
-;;              (#x00 (zero_ext 64 (extract 15 0 x)))
-;;              (#x01 (zero_ext 64 (extract 31 16 x)))
-;;              (#x03 (zero_ext 64 (extract 47 32 x)))
-;;              (#x04 (zero_ext 64 (extract 63 48 x)))))
-;;          (32 
-;;            (switch i
-;;              (#x00 (zero_ext 64 (extract 31 0 x)))
-;;              (#x01 (zero_ext 64 (extract 63 32 x)))))))))
+(spec (mov_from_vec x i s)
+  (provide 
+    (= result 
+       (switch s
+         (8 
+           (switch i
+             (#x00 (zero_ext 64 (extract 7 0 x)))
+             (#x01 (zero_ext 64 (extract 15 8 x)))
+             (#x02 (zero_ext 64 (extract 23 16 x)))
+             (#x03 (zero_ext 64 (extract 31 24 x)))
+             (#x04 (zero_ext 64 (extract 39 32 x)))
+             (#x05 (zero_ext 64 (extract 47 40 x)))
+             (#x06 (zero_ext 64 (extract 55 48 x)))
+             (#x07 (zero_ext 64 (extract 63 56 x)))))
+         (16
+           (switch i
+             (#x00 (zero_ext 64 (extract 15 0 x)))
+             (#x01 (zero_ext 64 (extract 31 16 x)))
+             (#x03 (zero_ext 64 (extract 47 32 x)))
+             (#x04 (zero_ext 64 (extract 63 48 x)))))
+         (32 
+           (switch i
+             (#x00 (zero_ext 64 (extract 31 0 x)))
+             (#x01 (zero_ext 64 (extract 63 32 x)))))))))
 (decl mov_from_vec (Reg u8 ScalarSize) Reg)
 (rule (mov_from_vec rn idx size)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -2449,6 +2449,11 @@
         dst))
 
 ;; Helper for emitting `MInst.Extend` instructions.
+(spec (extend a b c d)
+  (provide 
+    (if b
+        (= result (sign_ext (bv2int d) (conv_to (bv2int c) a)))
+        (= result (zero_ext (bv2int d) (conv_to (bv2int c) a))))))
 (decl extend (Reg bool u8 u8) Reg)
 (rule (extend rn signed from_bits to_bits)
       (let ((dst WritableReg (temp_writable_reg $I64))
@@ -3045,33 +3050,23 @@
 (spec (orr ty a b)
   (provide 
     (= result
-       (if (<= (ty) (32i8: Int))
-         (conv_to (regwidth) (| (extract 31 0 (a)) (extract 31 0 (b))))
-         (| (a) (b))
-       )
-    ))
-  (require
-    (|| (= (ty) (8i8: Int))
-    (|| (= (ty) (16i8: Int))
-    (|| (= (ty) (32i8: Int))
-    (= (ty) (64i8: Int)))))))
+       (if (<= ty 32)
+         (conv_to 64 (bvor (extract 31 0 a) (extract 31 0 b)))
+         (bvor a b))))
+  (require (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl orr (Type Reg Reg) Reg)
 (rule (orr ty x y) (alu_rrr (ALUOp.Orr) ty x y))
 
-;;@ (spec (sig (args ty, x, y) (ret))
-;;@   (provide 
-;;@     (= (ret) 
-;;@        (switch (ty) 
-;;@          ((32i8: Int) (conv_to (regwidth) (| (extract 31 0 (x)) (extract 31 0 (y)))))
-;;@          ((64i8: Int) (| (x) (zero_ext (regwidth) (y))))
-;;@        )
-;;@   ))
-;;@   (require  
-;;@     (|| (<= (bv2int (y)) (4094i0:Int))
-;;@         (&& (<= (bv2int (y)) (16773119i0:Int))
-;;@             (= (extract 2 0 (y)) (0i3:bv))
-;;@   ))
-;;@ ))
+(spec (orr_imm ty x y)
+  (provide 
+    (= result 
+       (switch ty
+         (32 (conv_to 64 (bvor (extract 31 0 x) (extract 31 0 y))))
+         (64 (bvor x (zero_ext 64 y))))))
+  (require  
+    (or (<= (bv2int y) 4094)
+        (and (<= (bv2int y) 16773119)
+            (= (extract 2 0 y) #b000)))))
 (decl orr_imm (Type Reg ImmLogic) Reg)
 (rule (orr_imm ty x y) (alu_rr_imm_logic (ALUOp.Orr) ty x y))
 
@@ -3087,13 +3082,21 @@
     (= result
        (if (<= ty 32)
          (conv_to 64 (bvand (extract 31 0 a) (extract 31 0 b)))
-         (bvand a b)
-       )
-  ))
+         (bvand a b))))
   (require (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl and_reg (Type Reg Reg) Reg)
 (rule (and_reg ty x y) (alu_rrr (ALUOp.And) ty x y))
 
+(spec (and_imm ty x y)
+  (provide 
+    (= result
+       (switch ty 
+         (32 (conv_to 64 (bvand (extract 31 0 x) (extract 31 0 y))))
+         (64 (bvand x (zero_ext 64 y))))))
+    (require  
+      (or (<= (bv2int y) 4094)
+          (and (<= (bv2int y) 16773119)
+              (= (extract 2 0 y) #b000)))))
 (decl and_imm (Type Reg ImmLogic) Reg)
 (rule (and_imm ty x y) (alu_rr_imm_logic (ALUOp.And) ty x y))
 
@@ -3233,7 +3236,7 @@
 ;;          (#x01 result)
 ;;          (#x02 result))))
 ;;   (require 
-;;     (or (= s #x00) (or (= s #x01) (= s #x02)))))
+;;     (or (= s #x00) (= s #x01) (= s #x02))))
 (decl vec_cnt (Reg VectorSize) Reg)
 (rule (vec_cnt x size) (vec_misc (VecMisc2.Cnt) x size))
 
@@ -3347,6 +3350,10 @@
 ;; Immediate value helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Type of extension performed by an immediate helper
+(model ImmExtend
+  (enum
+    (Sign #b0)
+    (Zero #b1)))
 (type ImmExtend
   (enum
     (Sign)
@@ -3362,16 +3369,15 @@
 ;; Note that, unlike the convention in the AArch64 backend, this helper leaves
 ;; all bits in the destination register in a defined state, i.e. smaller types
 ;; such as `I8` are either sign- or zero-extended.
-;; (spec (imm ty e x) 
-;;   (provide 
-;;     (= result 
-;;        (switch ty
-;;          (8 (if (= e #b1) (zero_ext 64 (extract 7 0 x)) (sign_ext 64 (extract 7 0 x))))
-;;          (16 (if (= e #b1) (zero_ext 64 (extract 15 0 x)) (sign_ext 64 (extract 15 0 x))))
-;;          (32 (if (= e #b1) (zero_ext 64 (extract 32 0 x)) (sign_ext 64 (extract 32 0 x))))
-;;          (64 x))))
-;;   (require
-;;     (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
+(spec (imm ty ext x) 
+  (provide 
+    (= result 
+       (switch ty
+         (8 (if (= ext #b1) (zero_ext 64 (extract 7 0 x)) (sign_ext 64 (extract 7 0 x))))
+         (16 (if (= ext #b1) (zero_ext 64 (extract 15 0 x)) (sign_ext 64 (extract 15 0 x))))
+         (32 (if (= ext #b1) (zero_ext 64 (extract 32 0 x)) (sign_ext 64 (extract 32 0 x))))
+         (64 x))))
+  (require (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl imm (Type ImmExtend u64) Reg)
 
 ;; Move wide immediate instructions; to simplify, we only match when we

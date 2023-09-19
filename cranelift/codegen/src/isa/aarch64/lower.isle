@@ -1395,9 +1395,7 @@
           ((ALUOp.Lsl) (conv_to 64
             (bvshl (conv_to t a) 
                  (conv_to t (zero_ext 64
-                   (bvand (conv_to (widthof b) (bvsub (int2bv 64 (widthof b)) #x0000000000000001)) b))))))
-           ))
-   )
+                   (bvand (conv_to (widthof b) (bvsub (int2bv 64 (widthof b)) #x0000000000000001)) b)))))))))
    (require
      (or (= op (ALUOp.Lsr)) (= op (ALUOp.Asr)) (= op (ALUOp.Lsl)))
      (= t (widthof b))
@@ -1413,9 +1411,7 @@
         (16 (= (extract 31 0 a) (sign_ext 32 (extract 15 0 a))))
         (32 true)
         (64 true)))
-      ((ALUOp.Lsl) true)
-     )
- ))
+      ((ALUOp.Lsl) true))))
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
 ;; 8/16-bit shift base case.
@@ -1682,17 +1678,12 @@
      (= result 
         (switch t
           (8 (conv_to 64 (rotr (extract 7 0 x) (extract 7 0 y))))
-          (16 (conv_to 64 (rotr (extract 15 0 x) (extract 15 0 y))))
-         )))
+          (16 (conv_to 64 (rotr (extract 15 0 x) (extract 15 0 y)))))))
    (require
-     (or (= t 8) 
-         (= t 16))
+     (or (= t 8) (= t 16))
      (switch t
-       (8 (= (extract 31 8 x) 0x000000))
-       (16 (= (extract 31 16 x) 0x0000))
-     )
-   )
- )
+       (8 (= (extract 31 8 x) #x000000))
+       (16 (= (extract 31 16 x) #x0000)))))
 (decl small_rotr (Type Reg Reg) Reg)
 (rule small_rotr (small_rotr ty val amt)
       (let ((masked_amt Reg (and_imm $I32 amt (rotr_mask ty)))
@@ -1717,7 +1708,7 @@
 ;;    lsl val_lshift, val, <bitwidth - amt>
 ;;    orr rd, val_lshift, val_rshift
 
- (spec (small_rotr_imm t x y)
+(spec (small_rotr_imm t x y)
    (provide 
      (= result 
         (switch t
@@ -1727,20 +1718,17 @@
      (or (= t 8) (= t 16))
      (switch t
        (8 (= (extract 31 8 x) #x000000))
-       (16 (= (extract 31 16 x) #x0000))
-     )
-     (bvule y (int2bv 6 t))
-   )
- )
+       (16 (= (extract 31 16 x) #x0000)))
+     (bvult y (int2bv 6 t))))
 (decl small_rotr_imm (Type Reg ImmShift) Reg)
 (rule small_rotr_imm (small_rotr_imm ty val amt)
       (let ((val_rshift Reg (lsr_imm $I32 val amt))
             (val_lshift Reg (lsl_imm $I32 val (rotr_opposite_amount ty amt))))
         (orr $I32 val_lshift val_rshift)))
 
- (spec (rotr_opposite_amount ty x)
+(spec (rotr_opposite_amount ty x)
    (provide 
-    (= (bvsub (int2bv 6 ty) (bvand x (bvsub (int2bv 6 ty) #x000001))) result)))
+    (= (bvsub (int2bv 6 ty) (bvand x (bvsub (int2bv 6 ty) #b000001))) result)))
 (decl rotr_opposite_amount (Type ImmShift) ImmShift)
 (extern constructor rotr_opposite_amount rotr_opposite_amount)
 
