@@ -2,12 +2,12 @@ use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
+use crate::annotations::AnnotationEnv;
 use crate::termname::pattern_contains_termname;
 use cranelift_isle as isle;
 use isle::ast::{Decl, Defs};
 use isle::sema::{Pattern, TermEnv, TypeEnv, VarId};
 use itertools::izip;
-use crate::annotations::AnnotationEnv;
 use veri_ir::{annotation_ir, ConcreteTest, Expr, TermSignature, Type, TypeContext};
 
 use crate::{Config, FLAGS_WIDTH, REG_WIDTH};
@@ -127,7 +127,7 @@ pub fn type_rules_with_term_and_types(
         if let Some(names) = &config.names {
             if rule.name.is_none() {
                 continue;
-            } 
+            }
             let name = &typeenv.syms[rule.name.unwrap().index()];
             if !names.contains(name) {
                 continue;

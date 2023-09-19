@@ -1,7 +1,6 @@
 (set-option :print-success true)
 (set-option :produce-models true)
-(declare-const input (_ BitVec 64))
-(declare-const zret0_0 (_ BitVec 64))
+(declare-const input (_ BitVec 64))((declare-const zret0_0 (_ BitVec 64))
 (declare-const zret1_0 (_ BitVec 64))
 (declare-const zy32_0 (_ BitVec 64))
 (declare-const zx32_0 (_ BitVec 64))

@@ -43,6 +43,7 @@ pub struct SolverCtx {
 impl SolverCtx {
     pub fn new_fresh_bits(&mut self, width: usize) -> SExpr {
         let name = format!("fresh{}", self.fresh_bits_idx);
+        dbg!(&name);
         self.fresh_bits_idx += 1;
         self.additional_decls
             .push((name.clone(), self.smt.bit_vec_sort(self.smt.numeral(width))));
@@ -1565,7 +1566,11 @@ impl SolverCtx {
         println!("\n{} =>\n{}\n", lhs_value.unwrap(), rhs_value.unwrap(),);
     }
 
-    fn declare_variables(&mut self, rule_sem: &RuleSemantics, config: &Config) -> Vec<SExpr> {
+    fn declare_variables(
+        &mut self,
+        rule_sem: &RuleSemantics,
+        config: &Config,
+    ) -> (Vec<SExpr>, Vec<SExpr>) {
         let mut assumptions: Vec<SExpr> = vec![];
         println!("Declaring quantified variables");
         for v in &rule_sem.quantified_vars {
@@ -1606,10 +1611,16 @@ impl SolverCtx {
         for a in &self.additional_assumptions {
             assumptions.push(a.clone());
         }
+        // Look at RHS assertions, which are checked, not trusted
+        let assertions: Vec<SExpr> = rule_sem
+            .rhs_assertions
+            .iter()
+            .map(|a| self.vir_expr_to_sexp(a.clone()))
+            .collect();
 
         println!("Declaring additional variables");
         for (name, ty) in &self.additional_decls {
-            // println!("\t{} : {}", name, self.smt.display(*ty));
+            println!("\t{} : {}", name, self.smt.display(*ty));
             self.smt.declare_const(name, *ty).unwrap();
         }
 
@@ -1626,7 +1637,7 @@ impl SolverCtx {
             );
             assumptions.push(custom_assumptions);
         }
-        assumptions
+        (assumptions, assertions)
     }
 }
 
@@ -1704,7 +1715,6 @@ pub fn run_solver(
         }
     }
 
-    let assumptions: Vec<SExpr>;
     if unresolved_widths.len() == 0 {
         println!("All widths resolved after basic type inference");
         return run_solver_with_static_widths(
@@ -1715,7 +1725,7 @@ pub fn run_solver(
     println!("Some unresolved widths after basic type inference");
     println!("Finding widths from the solver");
     ctx.onlywidths = true;
-    assumptions = ctx.declare_variables(&rule_sem, config);
+    let (assumptions, _) = ctx.declare_variables(&rule_sem, config);
     ctx.smt.push().unwrap();
     println!("Adding assumptions to determine widths");
     for (i, a) in assumptions.iter().enumerate() {
@@ -1875,7 +1885,7 @@ pub fn run_solver_with_static_widths(
         additional_assertions: vec![],
         fresh_bits_idx: 0,
     };
-    let assumptions = ctx.declare_variables(&rule_sem, config);
+    let (assumptions, mut assertions) = ctx.declare_variables(&rule_sem, config);
 
     let lhs = ctx.vir_expr_to_sexp(rule_sem.lhs.clone());
     let rhs = ctx.vir_expr_to_sexp(rule_sem.rhs.clone());
@@ -1948,13 +1958,6 @@ pub fn run_solver_with_static_widths(
         );
         side_equality
     };
-
-    // Look at RHS assertions, which are checked, not trusted
-    let mut assertions: Vec<SExpr> = rule_sem
-        .rhs_assertions
-        .iter()
-        .map(|a| ctx.vir_expr_to_sexp(a.clone()))
-        .collect();
 
     for a in &ctx.additional_assertions {
         assertions.push(*a);

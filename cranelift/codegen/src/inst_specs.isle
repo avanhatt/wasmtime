@@ -1,14 +1,14 @@
 (model IntCC (enum 
-    (Equal)
-    (NotEqual)
-    (SignedGreaterThan)
-    (SignedGreaterThanOrEqual)
-    (SignedLessThan)
-    (SignedLessThanOrEqual)
-    (UnsignedGreaterThan)
-    (UnsignedGreaterThanOrEqual)
-    (UnsignedLessThan)
-    (UnsignedLessThanOrEqual)))
+    (Equal 0x00)
+    (NotEqual 0x01)
+    (SignedGreaterThan 0x02)
+    (SignedGreaterThanOrEqual 0x03)
+    (SignedLessThan 0x04)
+    (SignedLessThanOrEqual 0x05)
+    (UnsignedGreaterThan 0x06)
+    (UnsignedGreaterThanOrEqual 0x07)
+    (UnsignedLessThan 0x08)
+    (UnsignedLessThanOrEqual 0x09)))
 
 (spec (smin x y) 
     (provide (= result (if (bvsle x y) x y))))
@@ -107,7 +107,7 @@
 
 (spec (bnot x) 
     (provide (= result (bvnot x)))
-    (require (or (= (widthof x) 8) (= (widthof x) 16) (= (widthof x) 32) (= (widthof x) 143))))
+    (require (or (= (widthof x) 8) (= (widthof x) 16) (= (widthof x) 32) (= (widthof x) 64))))
 
 (spec (band_not x y) 
     (provide (= result (bvand x (bvnot y)))))
@@ -127,24 +127,24 @@
         (= result 
            (bvshl x 
                   (bvand (conv_to (widthof y) (bvsub (int2bv 64 y) 
-                                                     #x0000000000000001)))
-                         y))))
+                                                     #x0000000000000001))
+                         y)))))
 
 (spec (ushr x y) 
     (provide 
         (= result 
            (bvlshr x 
                   (bvand (conv_to (widthof y) (bvsub (int2bv 64 y) 
-                                                     #x0000000000000001)))
-                         y))))
+                                                     #x0000000000000001))
+                         y)))))
 
 (spec (sshr x y) 
     (provide 
         (= result 
            (bvashr x 
                   (bvand (conv_to (widthof y) (bvsub (int2bv 64 y) 
-                                                     #x0000000000000001)))
-                         y))))
+                                                     #x0000000000000001))
+                         y)))))
 
 (spec (clz x) 
     (provide (= result (clz x))))

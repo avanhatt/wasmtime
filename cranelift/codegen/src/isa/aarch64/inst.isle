@@ -1052,6 +1052,17 @@
 (type CodeOffset (primitive CodeOffset))
 (type VecMachLabel extern (enum))
 
+(model ExtendOp (enum
+    (UXTB)
+    (UXTH)
+    (UXTW)
+    (UXTX)
+    (SXTB)
+    (SXTH)
+    (SXTW)
+    (SXTX)
+))
+
 (type ExtendOp extern
   (enum
     (UXTB)
@@ -1799,8 +1810,8 @@
 ;; Helper to go directly from a `Value`, when it's an `iconst`, to an `Imm12`.
 (spec (imm12_from_value arg)
       (provide 
-            (= result (conv_to (width_of result) (zero_ext 64 arg)))
-            (= arg (conv_to (width_of arg) (zero_ext 64 result))))
+            (= result (conv_to (widthof result) (zero_ext 64 arg)))
+            (= arg (conv_to (widthof arg) (zero_ext 64 result))))
       (require 
             (or (bvult (zero_ext 64 result) #x0000000000000fff)
                 (and (bvult (zero_ext 64 result) #x0000000000fff000)
@@ -1848,7 +1859,7 @@
 ;; Instruction creation helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Helper for creating the zero register.
-(spec (zero_reg) (provide (= result #x00000000)))
+(spec (zero_reg) (provide (= result #x0000000000000000)))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
@@ -3737,7 +3748,18 @@
 
 (spec (flags_and_cc_to_bool a)
       (provide 
-            (= result (concat (extract 67 64 pflags) c)))
+         (= result
+        (switch (extract 7 0 a)
+          (0x00 (if (= (extract 10 10 a) 0b1) 0x01 0x00))
+          (0x01 (if (= (extract 10 10 a) 0b0) 0x01 0x00))
+          (0x02 (if (bvand (= (extract 10 10 a) 0b0) (= (extract 11 11 a) (extract 8 8 a))) 0x01 0x00))
+          (0x03 (if (= (extract 11 11 a) (extract 8 8 a)) 0x01 0x00))
+          (0x04 (if (bvnot (= (extract 11 11 a) (extract 8 8 a))) 0x01 0x00))
+          (0x05 (if (bvor (= (extract 10 10 a) 0b1) (bvnot (= (extract 11 11 a) (extract 8 8 a)))) 0x01 0x00))
+          (0x06 (if (bvand (= (extract 9 9 a) 0b1) (= (extract 10 10 a) 0b0)) 0x01 0x00))
+          (0x07 (if (= (extract 9 9 a) 0b1) 0x01 0x00))
+          (0x08 (if (= (extract 9 9 a) 0b0) 0x01 0x00))
+          (0x09 (if (bvor (= (extract 9 9 a) 0b0) (= (extract 10 10 a) 0b1)) 0x01 0x00)))))
       (require 
             (or 
                   (= c (IntCC.Equal))

@@ -1393,7 +1393,7 @@
       (do_shift (ALUOp.Lsr) ty (put_in_reg_zext32 x) y))
 
 ;; Shift for i64.
-(rule (lower (has_type $I64 (ushr x y)))
+(rule ushr_64 (lower (has_type $I64 (ushr x y)))
       (do_shift (ALUOp.Lsr) $I64 (put_in_reg_zext64 x) y))
 
 ;; Shift for i128.
