@@ -126,7 +126,7 @@
     (provide 
         (= result 
            (bvshl x 
-                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 y) 
+                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y)) 
                                                      #x0000000000000001))
                          y)))))
 
@@ -134,7 +134,7 @@
     (provide 
         (= result 
            (bvlshr x 
-                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 y) 
+                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y)) 
                                                      #x0000000000000001))
                          y)))))
 
@@ -142,7 +142,7 @@
     (provide 
         (= result 
            (bvashr x 
-                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 y) 
+                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y)) 
                                                      #x0000000000000001))
                          y)))))
 

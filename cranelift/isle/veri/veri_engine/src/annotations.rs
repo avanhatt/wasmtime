@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use clap::builder::BoolValueParser;
 use cranelift_codegen::gimli::write::DebugLineStrOffsets;
 use cranelift_isle::ast;
 
@@ -312,7 +313,21 @@ pub fn parse_annotations(defs: &Defs, typeenv: &TypeEnv) -> AnnotationEnv {
                             let v =  string_from_ident(&env, v); 
                             let enum_name = format!("{}.{}", name, v);
                             let val = spec_to_expr(e, &env);
-                            env.enums.insert(enum_name, val);
+                            env.enums.insert(enum_name.clone(), val.clone());
+                            let result = BoundVar {
+                                name: RESULT.to_string(),
+                                ty: None,
+                            };
+                            let sig = TermSignature {
+                                args: vec![],
+                                ret: result,
+                            };
+                            let annotation = TermAnnotation {
+                                sig,
+                                assumptions: vec![Box::new(Expr::Eq(Box::new(Expr::Var(RESULT.to_string(), 0)), Box::new(val), 0))],
+                                assertions: vec![],
+                            };
+                            annotation_map.insert(enum_name, annotation);
                         }
                     },
                 }

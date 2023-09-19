@@ -1265,10 +1265,10 @@
 (rule (vector_lane_size (VectorSize.Size64x2)) (ScalarSize.Size64))
 
 (model Cond
-      (enum (Lo)
-            (Hi)
-            (Lt)
-            (Gt)))
+      (enum (Lo #x03)
+            (Hi #x08)
+            (Lt #x0b)
+            (Gt #x0c)))
 
 (type Cond extern
   (enum
@@ -1786,6 +1786,9 @@
 (decl pure partial lshr_from_u64 (Type u64) ShiftOpAndAmt)
 (extern constructor lshr_from_u64 lshr_from_u64)
 
+(spec (lshl_from_imm64 ty a)
+    (provide (= result (zero_ext 10 (extract 7 0 a))))
+    (require (= (extract 63 8 a) #b000000000000000000000000000000000000000000000000000000)))
 (decl pure partial lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 
@@ -3001,6 +3004,12 @@
 (rule (put_in_reg_sext32 val @ (value_type $I64)) val)
 
 ;; Place a `Value` into a register, zero extending it to 32-bits
+(spec (put_in_reg_zext32 arg)
+  (provide 
+    (= result
+       (if (<= (widthof arg) 32) 
+           (conv_to 64 (zero_ext 32 arg))
+           (conv_to 64 arg)))))
 (decl put_in_reg_zext32 (Value) Reg)
 (rule -1 (put_in_reg_zext32 val @ (value_type (fits_in_32 ty)))
       (extend val $false (ty_bits ty) 32))
@@ -3075,6 +3084,14 @@
 ;; Helper for generating either an `AluRRR`, `AluRRRShift`, or `AluRRImmLogic`
 ;; instruction depending on the input. Note that this requires that the `ALUOp`
 ;; specified is commutative.
+(spec (alu_rs_imm_logic_commutative op t a b)
+    (provide 
+      (= result
+         (conv_to 64
+           (switch op
+             ((ALUOp.Orr) (bvor a b))
+             ((ALUOp.And) (bvand a b))
+             ((ALUOp.Eor) (bvxor a b)))))))
 (decl alu_rs_imm_logic_commutative (ALUOp Type Value Value) Reg)
 
 ;; Base case of operating on registers.

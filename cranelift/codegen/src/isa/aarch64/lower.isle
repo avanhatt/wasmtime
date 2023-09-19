@@ -1064,25 +1064,25 @@
 
 ;; cmp     $x, $y
 ;; csel    .., $x, $y, $cc
-;;  (spec (cmp_and_choose ty cc signed x y)
-;;    (provide  
-;;      (= result 
-;;         (switch cc
-;;           (#x03 (if (bvule x y) x y))
-;;           (#x08 (if (bvute x y) x y))
-;;           (#x0b (if (bvsle x y) x y))
-;;           (#x0c (if (bvste x y) x y)))))
-;;    (require
-;;      (or (= ty 8)
-;;          (= ty 16)
-;;          (= ty 32)
-;;          (= ty 64))
-;;      (or (= cc #x03)
-;;          (= cc #x08)
-;;          (= cc #x0b)
-;;          (= cc #x0c)) 
-;;      (if signed (or (= cc #x0b) (= cc #x0c)) 
-;;                 (or (= cc #x03) (= cc #x08)))))
+ (spec (cmp_and_choose ty cc signed x y)
+   (provide  
+     (= result 
+        (switch cc
+          (#x03 (if (bvule x y) x y))
+          (#x08 (if (bvuge x y) x y))
+          (#x0b (if (bvsle x y) x y))
+          (#x0c (if (bvsge x y) x y)))))
+   (require
+     (or (= ty 8)
+         (= ty 16)
+         (= ty 32)
+         (= ty 64))
+     (or (= cc #x03)
+         (= cc #x08)
+         (= cc #x0b)
+         (= cc #x0c)) 
+     (if signed (or (= cc #x0b) (= cc #x0c)) 
+                (or (= cc #x03) (= cc #x08)))))
 (decl cmp_and_choose (Type Cond bool Value Value) ValueRegs)
 ;; TODO: name once we can support: cmp_and_choose_32_64
 (rule (cmp_and_choose (fits_in_64 ty) cc _ x y)
@@ -1384,36 +1384,36 @@
    (provide 
      (= result 
         (switch op 
-          (#x10 (conv_to 64
+          ((ALUOp.Lsr) (conv_to 64
             (bvlshr (conv_to t a) 
                  (conv_to t (zero_ext 64
                    (bvand (conv_to (widthof b) (bvsub (int2bv 64 (widthof b)) #x0000000000000001)) b))))))
-          (#x11 (conv_to 64
+          ((ALUOp.Asr) (conv_to 64
             (bvashr (conv_to t a) 
                   (conv_to t (zero_ext 64
                     (bvand (conv_to (widthof b) (bvsub (int2bv 64 (widthof b)) #x0000000000000001)) b))))))
-          (#x12 (conv_to 64
+          ((ALUOp.Lsl) (conv_to 64
             (bvshl (conv_to t a) 
                  (conv_to t (zero_ext 64
                    (bvand (conv_to (widthof b) (bvsub (int2bv 64 (widthof b)) #x0000000000000001)) b))))))
            ))
    )
    (require
-     (or (= op #x10) (= op #x11) (= op #x12))
+     (or (= op (ALUOp.Lsr)) (= op (ALUOp.Asr)) (= op (ALUOp.Lsl)))
      (= t (widthof b))
      (or (= t 8) (= t 16) (= t 32) (= t 64))
      (switch op 
-       (#x10 (switch t 
+       ((ALUOp.Lsr) (switch t 
          (8 (= (extract 31 0 a) (zero_ext 32 (extract 7 0 a))))
          (16 (= (extract 31 0 a) (zero_ext 32 (extract 15 0 a))))
          (32 true)
          (64 true)))
-      (#x11 (switch t 
+      ((ALUOp.Asr) (switch t 
         (8 (= (extract 31 0 a) (sign_ext 32 (extract 7 0 a))))
         (16 (= (extract 31 0 a) (sign_ext 32 (extract 15 0 a))))
         (32 true)
         (64 true)))
-      (#x12 true)
+      ((ALUOp.Lsl) true)
      )
  ))
 (decl do_shift (ALUOp Type Reg Value) Reg)

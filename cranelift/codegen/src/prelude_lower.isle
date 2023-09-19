@@ -55,6 +55,8 @@
 (extern constructor output_none output_none)
 
 ;; Construct a single-element `InstOutput`.
+(spec (output arg)
+      (provide (= arg (conv_to (widthof arg) result))))
 (decl output (ValueRegs) InstOutput)
 (extern constructor output output)
 

@@ -1653,16 +1653,16 @@ fn test_named_rotr_64_imm() {
 }
 
 #[test]
-fn test_named_band_fits_in_32() {
+fn test_named_band_fits_in_64() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
-            "band_fits_in_32",
+            "band_fits_in_64",
             "band",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
@@ -1691,47 +1691,15 @@ fn test_broken_band_fits_in_32() {
 }
 
 #[test]
-fn test_named_band_64() {
+fn test_named_bor_fits_in_64() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
-            "band_64",
-            "band",
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_named_bor_fits_in_32() {
-    run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "bor_fits_in_32",
+            "bor_fits_in_64",
             "bor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_named_bor_64() {
-    run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "bor_64",
-            "bor",
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
@@ -1761,63 +1729,32 @@ fn test_broken_bor_fits_in_32() {
 }
 
 #[test]
-fn test_named_bxor_fits_in_32() {
+fn test_named_bxor_fits_in_64() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
-            "bxor_fits_in_32",
+            "bxor_fits_in_64",
             "bxor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_named_bxor_64() {
-    run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "bxor_64",
-            "bxor",
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
 }
 
+
 #[test]
-fn test_named_band_not_fits_in_32() {
+fn test_named_band_not_fits_in_64() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
-            "band_not_fits_in_32",
+            "band_not_fits_in_64",
             "band_not",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
                 (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
-            ],
-        )
-    })
-}
-
-#[test]
-fn test_named_band_not_64() {
-    run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "band_not_64",
-            "band_not",
-            vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
