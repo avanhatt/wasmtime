@@ -4234,6 +4234,17 @@
 (decl flags_and_cc (ProducesFlags IntCC) FlagsAndCC)
 (rule (flags_and_cc flags cc) (FlagsAndCC.FlagsAndCC flags cc))
 
+;; (model IntCC (enum 
+;;     (Equal #x00)
+;;     (NotEqual #x01)
+;;     (SignedGreaterThan #x02)
+;;     (SignedGreaterThanOrEqual #x03)
+;;     (SignedLessThan #x04)
+;;     (SignedLessThanOrEqual #x05)
+;;     (UnsignedGreaterThan #x06)
+;;     (UnsignedGreaterThanOrEqual #x07)
+;;     (UnsignedLessThan #x08)
+;;     (UnsignedLessThanOrEqual #x09)))
 (spec (flags_and_cc_to_bool a)
       (provide 
          (= result
@@ -4318,14 +4329,14 @@
                (switch c
                  ((IntCC.Equal) (if (= x y) #x01 #x00))
                  ((IntCC.NotEqual) (if (not (= x y)) #x01 #x00))
-                 ((IntCC.UnsignedGreaterThanOrEqual) (if (bvsgt x y) #x01 #x00))
-                 ((IntCC.UnsignedGreaterThan) (if (bvsge x y) #x01 #x00))
-                 ((IntCC.UnsignedLessThanOrEqual) (if (bvslt x y) #x01 #x00))
-                 ((IntCC.UnsignedLessThan) (if (bvsle x y) #x01 #x00))
-                 ((IntCC.SignedGreaterThanOrEqual) (if (bvugt x y) #x01 #x00))
-                 ((IntCC.SignedGreaterThan) (if (bvuge x y) #x01 #x00))
-                 ((IntCC.SignedLessThanOrEqual) (if (bvult x y) #x01 #x00))
-                 ((IntCC.SignedLessThan) (if (bvule x y) #x01 #x00)))))
+                 ((IntCC.SignedGreaterThan) (if (bvsgt x y) #x01 #x00))
+                 ((IntCC.SignedGreaterThanOrEqual) (if (bvsge x y) #x01 #x00))
+                 ((IntCC.SignedLessThan) (if (bvslt x y) #x01 #x00))
+                 ((IntCC.SignedLessThanOrEqual) (if (bvsle x y) #x01 #x00))
+                 ((IntCC.UnsignedGreaterThan) (if (bvugt x y) #x01 #x00))
+                 ((IntCC.UnsignedGreaterThanOrEqual) (if (bvuge x y) #x01 #x00))
+                 ((IntCC.UnsignedLessThan) (if (bvult x y) #x01 #x00))
+                 ((IntCC.UnsignedLessThanOrEqual) (if (bvule x y) #x01 #x00)))))
       (require
             (or 
                 (= c (IntCC.Equal))
