@@ -346,7 +346,7 @@
 (extractor (sge ty x y) (icmp ty (IntCC.SignedGreaterThanOrEqual) x y))
 
 ;; An extractor that only matches types that can fit in 16 bits.
-(spec (fits_in_32 arg)
+(spec (fits_in_16 arg)
       (provide (= result arg)) 
       (require (<= arg 16)))
 (decl fits_in_16 (Type) Type)

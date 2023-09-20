@@ -1417,7 +1417,7 @@ fn add_isle_constraints(
         ),
         (
             "ShiftOpAndAmt".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(10),
+            annotation_ir::Type::BitVectorWithWidth(16),
         ),
     ]);
 

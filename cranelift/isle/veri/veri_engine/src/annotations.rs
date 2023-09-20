@@ -354,7 +354,7 @@ pub fn parse_annotations(defs: &Defs, typeenv: &TypeEnv) -> AnnotationEnv {
         match def {
             &ast::Def::Spec(ref spec) => {
                 let termname = string_from_ident(&env, &spec.term);
-                dbg!(&termname);
+                // dbg!(&termname);
                 let sig = TermSignature {
                     args: spec
                         .args

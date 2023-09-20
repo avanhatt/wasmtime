@@ -1731,8 +1731,8 @@
 (extern constructor imm_logic_from_imm64 imm_logic_from_imm64)
 
 (spec (imm_shift_from_imm64 ty x)
-      (provide (= result (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x000000000000001)))))
-      (require (bvult (bvand x (bvsub (int2bv 64 ty)  #x000000000000001)) #x000000000000040)))
+      (provide (= result (extract 5 0 (bvand x (bvsub (int2bv 64 ty) #x0000000000000001)))))
+      (require (bvult (bvand x (bvsub (int2bv 64 ty)  #x0000000000000001)) #x0000000000000040)))
 (decl pure partial imm_shift_from_imm64 (Type Imm64) ImmShift)
 (extern constructor imm_shift_from_imm64 imm_shift_from_imm64)
 
@@ -1800,7 +1800,7 @@
 (extern constructor lshr_from_u64 lshr_from_u64)
 
 (spec (lshl_from_imm64 ty a)
-    (provide (= result (zero_ext 10 (extract 7 0 a))))
+    (provide (= result (concat #x0e (extract 7 0 a))))
     (require (= (extract 63 8 a) #b00000000000000000000000000000000000000000000000000000000)))
 (decl pure partial lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
@@ -2636,12 +2636,12 @@
   (provide 
     (= result (if (<= ty 32)
       (conv_to 64 (bvadd (extract 31 0 a) 
-      (switch (extract 9 8 shift)
+      (switch (extract 15 8 shift)
         ((ALUOp.Lsl) (bvshl (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Lsr) (bvlshr (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Asr) (bvashr (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift))))))))
       (bvadd a 
-      (switch (extract 9 8 shift)
+      (switch (extract 15 8 shift)
         ((ALUOp.Lsl) (bvshl b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Lsr) (bvlshr b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Asr) (bvashr b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))))))))
@@ -2700,11 +2700,11 @@
 (spec (sub_shift ty a b shift) 
   (provide 
     (= result (if (<= ty 32)
-      (conv_to 64 (bvsub (extract 31 0 a) (switch (extract 9 8 shift)
+      (conv_to 64 (bvsub (extract 31 0 a) (switch (extract 15 8 shift)
         ((ALUOp.Lsl) (bvshl (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Lsr) (bvlshr (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Asr) (bvashr (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift))))))))
-      (bvsub a (switch (extract 9 8 shift)
+      (bvsub a (switch (extract 15 8 shift)
         ((ALUOp.Lsl) (bvshl b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Lsr) (bvlshr b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
         ((ALUOp.Asr) (bvashr b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))))))))
