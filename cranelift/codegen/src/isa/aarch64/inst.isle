@@ -1290,6 +1290,19 @@
     (Nv)
 ))
 
+;;0i8 VectorSize.Size8x8
+;;1i8 VectorSize.Size16x4
+;;2i8 VectorSize.Size32x2
+(model VectorSize 
+  (enum
+    (Size8x8 #x00)
+    (Size8x16 #x01)
+    (Size16x4 #x02)
+    (Size16x8 #x03)
+    (Size32x2 #x04)
+    (Size32x4 #x05)
+    (Size64x2 #x06)))
+
 (type VectorSize extern
   (enum
     (Size8x8)
@@ -2377,6 +2390,8 @@
         dst))
 
 ;; Helper for emitting `MInst.MovToFpu` instructions.
+(spec (mov_to_fpu x s)
+  (provide (= result (zero_ext 64 (conv_to s x)))))
 (decl mov_to_fpu (Reg ScalarSize) Reg)
 (rule (mov_to_fpu x size)
       (let ((dst WritableReg (temp_writable_reg $I8X16))
@@ -2837,28 +2852,28 @@
       (SideEffectNoResult.Inst (MInst.Brk)))
 
 ;; Helper for generating `addp` instructions.
-;; (spec (addp x y s) 
-;;   (provide 
-;;     (= result 
-;;        (switch s
-;;          (#x00 (concat
-;;          (bvadd (extract 55 48 x) (extract 63 56 x))
-;;          (bvadd (extract 39 32 x) (extract 47 40 x))
-;;          (bvadd (extract 23 16 x) (extract 31 24 x))
-;;          (bvadd (extract 7   0 x) (extract 15  8 x))
-;;          (bvadd (extract 55 48 y) (extract 63 56 y))
-;;          (bvadd (extract 39 32 y) (extract 47 40 y))
-;;          (bvadd (extract 23 16 y) (extract 31 24 y))
-;;          (bvadd (extract 7   0 y) (extract 15  8 y))))
-;;          (#x01 (concat
-;;          (bvadd (extract 47 32 x) (extract 63 48 x))
-;;          (bvadd (extract 15  0 x) (extract 31 16 x))
-;;          (bvadd (extract 47 32 y) (extract 63 48 y))
-;;          (bvadd (extract 15  0 y) (extract 31 16 y))))
-;;          (#x02 (concat
-;;          (bvadd (extract 31  0 x) (extract 63 32 x))
-;;          (bvadd (extract 31  0 y) (extract 63 32 y)))))))
-;;   (require (or (= s #x00) (= s #x01) (= s #x02))))
+(spec (addp x y s) 
+  (provide 
+    (= result 
+       (switch s
+         (#x00 (concat
+         (bvadd (extract 55 48 x) (extract 63 56 x))
+         (bvadd (extract 39 32 x) (extract 47 40 x))
+         (bvadd (extract 23 16 x) (extract 31 24 x))
+         (bvadd (extract 7   0 x) (extract 15  8 x))
+         (bvadd (extract 55 48 y) (extract 63 56 y))
+         (bvadd (extract 39 32 y) (extract 47 40 y))
+         (bvadd (extract 23 16 y) (extract 31 24 y))
+         (bvadd (extract 7   0 y) (extract 15  8 y))))
+         (#x01 (concat
+         (bvadd (extract 47 32 x) (extract 63 48 x))
+         (bvadd (extract 15  0 x) (extract 31 16 x))
+         (bvadd (extract 47 32 y) (extract 63 48 y))
+         (bvadd (extract 15  0 y) (extract 31 16 y))))
+         (#x02 (concat
+         (bvadd (extract 31  0 x) (extract 63 32 x))
+         (bvadd (extract 31  0 y) (extract 63 32 y)))))))
+  (require (or (= s #x00) (= s #x01) (= s #x02))))
 (decl addp (Reg Reg VectorSize) Reg)
 (rule (addp x y size) (vec_rrr (VecALUOp.Addp) x y size))
 
@@ -2872,44 +2887,44 @@
 
 ;; Helper for generating instruction sequences to calculate a scalar absolute
 ;; value.
-;; (spec (abs s x)
-;;   (provide  
-;;     (= result 
-;;        (if (= s 32) 
-;;            (conv_to 64 
-;;                     (if (bvsge (extract 31 0 x) #x00000000) 
-;;                         (extract 31 0 x) 
-;;                         (bvsub (extract 31 0 x))))
-;;            (if (bvsge x #x0000000000000000) x (bvsub x)))))
-;;   (require (or (= s 32) (= s 64))))
+(spec (abs s x)
+  (provide  
+    (= result 
+       (if (= s 32) 
+           (conv_to 64 
+                    (if (bvsge (extract 31 0 x) #x00000000) 
+                        (extract 31 0 x) 
+                        (bvneg (extract 31 0 x))))
+           (if (bvsge x #x0000000000000000) x (bvneg x)))))
+  (require (or (= s 32) (= s 64))))
 (decl abs (OperandSize Reg) Reg)
 (rule (abs size x)
       (value_regs_get (with_flags (cmp_imm size x (u8_into_imm12 0))
                                   (csneg (Cond.Gt) x x)) 0))
 
 ;; Helper for generating `addv` instructions.
-;; (spec (addv x s)
-;;   (provide 
-;;     (= result 
-;;        (switch s
-;;          (#x00 (zero_ext 64
-;;          (bvadd (extract 7   0 x)
-;;          (bvadd (extract 15  8 x)
-;;          (bvadd (extract 23 16 x)
-;;          (bvadd (extract 31 24 x)
-;;          (bvadd (extract 39 32 x)
-;;          (bvadd (extract 47 40 x)
-;;          (bvadd (extract 55 48 x)
-;;          (extract 63 56 x))))))))))
-;;          (#x01 (zero_ext 64
-;;          (bvadd (extract 15 0 x)
-;;          (bvadd (extract 31 16 x)
-;;          (bvadd (extract 47 32 x)
-;;          (extract 63 48 x))))))
-;;          (#x02 (zero_ext 64
-;;          (bvadd (extract 31 0 x)
-;;          (extract 63 32 x)))))))
-;;   (require (or (= s #x00) (or (= s #x01) (= s #x02)))))
+(spec (addv x s)
+  (provide 
+    (= result 
+       (switch s
+         (#x00 (zero_ext 64
+         (bvadd (extract 7   0 x)
+         (bvadd (extract 15  8 x)
+         (bvadd (extract 23 16 x)
+         (bvadd (extract 31 24 x)
+         (bvadd (extract 39 32 x)
+         (bvadd (extract 47 40 x)
+         (bvadd (extract 55 48 x)
+         (extract 63 56 x))))))))))
+         (#x01 (zero_ext 64
+         (bvadd (extract 15 0 x)
+         (bvadd (extract 31 16 x)
+         (bvadd (extract 47 32 x)
+         (extract 63 48 x))))))
+         (#x02 (zero_ext 64
+         (bvadd (extract 31 0 x)
+         (extract 63 32 x)))))))
+  (require (or (= s #x00) (or (= s #x01) (= s #x02)))))
 (decl addv (Reg VectorSize) Reg)
 (rule (addv x size) (vec_lanes (VecLanesOp.Addv) x size))
 
@@ -3219,24 +3234,24 @@
 ;;1i8 VectorSize.Size16x4
 ;;2i8 VectorSize.Size32x2
 ;; Helpers for generating `cnt` instructions.
-;; (spec (vec_cnt x s) 
-;;   (provide 
-;;     (= result 
-;;        (switch s
-;;          (#x00 
-;;            (concat 
-;;              (popcnt (extract 63 56 x))
-;;              (popcnt (extract 55 48 x))
-;;              (popcnt (extract 47 40 x))
-;;              (popcnt (extract 39 32 x))
-;;              (popcnt (extract 31 24 x))
-;;              (popcnt (extract 23 16 x))
-;;              (popcnt (extract 15  8 x))
-;;              (popcnt (extract 7   0 x))))
-;;          (#x01 result)
-;;          (#x02 result))))
-;;   (require 
-;;     (or (= s #x00) (= s #x01) (= s #x02))))
+(spec (vec_cnt x s) 
+  (provide 
+    (= result 
+       (switch s
+         ((VectorSize.Size8x8) 
+           (concat 
+             (popcnt (extract 63 56 x))
+             (popcnt (extract 55 48 x))
+             (popcnt (extract 47 40 x))
+             (popcnt (extract 39 32 x))
+             (popcnt (extract 31 24 x))
+             (popcnt (extract 23 16 x))
+             (popcnt (extract 15  8 x))
+             (popcnt (extract 7   0 x))))
+         ((VectorSize.Size16x4) result)
+         ((VectorSize.Size32x2) result))))
+  (require 
+    (or (= s (VectorSize.Size8x8)) (= s (VectorSize.Size16x4)) (= s (VectorSize.Size32x2)))))
 (decl vec_cnt (Reg VectorSize) Reg)
 (rule (vec_cnt x size) (vec_misc (VecMisc2.Cnt) x size))
 
