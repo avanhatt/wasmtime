@@ -42,6 +42,9 @@ def plot_runtime_cdf(runtimes, n):
 
 if __name__ == "__main__":
 
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
+
     with open("named_tests.txt") as file:
         named_tests = [line.rstrip() for line in file]
 
