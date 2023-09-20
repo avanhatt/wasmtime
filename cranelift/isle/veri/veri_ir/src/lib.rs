@@ -19,7 +19,7 @@ pub struct TypeContext {
 // Used for providing concrete inputs to test rule semantics
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConcreteInput {
-    // SMTLIB-formatted bitvector literal
+    // SMT-LIB-formatted bitvector literal
     pub literal: String,
     pub ty: Type,
 }
@@ -88,7 +88,7 @@ pub struct BoundVar {
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Copy)]
 pub enum Type {
     /// The expression is a bitvector, currently modeled in the
-    /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
+    /// logic QF_BV https://SMT-LIB.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
     /// (type Value (primitive Value))
     BitVector(Option<usize>),

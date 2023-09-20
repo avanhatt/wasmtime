@@ -87,7 +87,7 @@ pub enum Type {
     Poly(u32),
 
     /// The expression is a bitvector, currently modeled in the
-    /// logic QF_BV https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
+    /// logic QF_BV https://SMT-LIB.cs.uiowa.edu/version1/logics/QF_BV.smt
     /// This corresponds to Cranelift's Isle type:
     /// (type Value (primitive Value))
     BitVector,
@@ -181,7 +181,7 @@ pub enum Expr {
 
     // Bitvector operations
     //      Note: these follow the naming conventions of the SMT theory of bitvectors:
-    //      https://smtlib.cs.uiowa.edu/version1/logics/QF_BV.smt
+    //      https://SMT-LIB.cs.uiowa.edu/version1/logics/QF_BV.smt
     // Unary operators
     BVNeg(Box<Expr>, u32),
     BVNot(Box<Expr>, u32),

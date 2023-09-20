@@ -227,7 +227,7 @@ impl SolverCtx {
         }
     }
 
-    // SMTLIB only supports extends (zero or sign) by concrete amounts, but we
+    // SMT-LIB only supports extends (zero or sign) by concrete amounts, but we
     // need symbolic ones. This method essentially does if-conversion over possible
     // concrete forms, outputting nested ITE blocks. We consider both the starting
     // width and the destination width to be potentially symbolic.
@@ -367,7 +367,7 @@ impl SolverCtx {
         }
     }
 
-    // SMTLIB only supports rotates by concrete amounts, but we
+    // SMT-LIB only supports rotates by concrete amounts, but we
     // need symbolic ones. This method essentially does if-conversion over possible
     // concrete forms, outputting nested ITE blocks. We consider both the starting
     // width and the rotate amount to be potentially symbolic.
@@ -1331,7 +1331,7 @@ impl SolverCtx {
         if val_str.starts_with(sexpr_hex_prefix) {
             let without_prefix = val_str.trim_start_matches("#x");
             let as_unsigned = u128::from_str_radix(without_prefix, 16).unwrap();
-            // SMTLIB: bvhexX where X is a hexadecimal numeral of length m defines the bitvector
+            // SMT-LIB: bvhexX where X is a hexadecimal numeral of length m defines the bitvector
             // constant with value X and size 4*m.
             match without_prefix.len() {
                 2 => format!("{}|{:#010b}", self.smt.display(value), as_unsigned),

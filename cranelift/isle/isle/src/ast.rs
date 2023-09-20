@@ -90,7 +90,7 @@ pub struct Decl {
     pub pos: Pos,
 }
 
-/// An expression used to specify term semantics, similar to SMTLIB syntax.
+/// An expression used to specify term semantics, similar to SMT-LIB syntax.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum SpecExpr {
     /// An operator that matches a constant integer value.
@@ -116,20 +116,22 @@ pub enum SpecExpr {
     },
     /// An application of a type variant or term.
     Op {
-        op: SpecOp, // <=
+        op: SpecOp, 
         args: Vec<SpecExpr>,
         pos: Pos,
     },
+    /// Pairs, currently used for switch statements.
     Pair {
         l: Box<SpecExpr>,
         r: Box<SpecExpr>,
     },
+    /// Enums variant values (enums defined by model)
     Enum {
         name: Ident,
     }
 }
 
-/// An operation used to specify term semantics, similar to SMTLIB syntax.
+/// An operation used to specify term semantics, similar to SMT-LIB syntax.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum SpecOp {
     // Boolean operations
@@ -144,13 +146,13 @@ pub enum SpecOp {
     Gt,
     Gte,
 
-    // Bitwise bitvector operations (directly SMTLIB)
+    // Bitwise bitvector operations (directly SMT-LIB)
     BVNot,
     BVAnd,
     BVOr,
     BVXor,
 
-    // Bitvector arithmetic operations  (directly SMTLIB)
+    // Bitvector arithmetic operations  (directly SMT-LIB)
     BVNeg,
     BVAdd,
     BVSub,
@@ -163,7 +165,7 @@ pub enum SpecOp {
     BVLshr,
     BVAshr,
 
-    // Bitvector comparison operations  (directly SMTLIB)
+    // Bitvector comparison operations  (directly SMT-LIB)
     BVUle,
     BVUlt,
     BVUgt,
@@ -202,32 +204,43 @@ pub enum SpecOp {
 /// A specification of the semantics of a term.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Spec {
+    /// The term name (must match a (decl ...))
     pub term: Ident,
+    /// Argument names
     pub args: Vec<Ident>,
+    /// Provide statements, which give the semantics of the produces value
     pub provides: Vec<SpecExpr>,
+    /// Require statements, which express preconditions on the term
     pub requires: Vec<SpecExpr>,
 }
 
 
-/// A model of an SMTLIB type.
+/// A model of an SMT-LIB type.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ModelType {
+    /// SMT-LIB Int
     Int, 
+    /// SMT-LIB Int
     Bool,
+    /// SMT-LIB bitvector, but with a potentially-polymorphic width
     BitVec(Option<usize>)
 }
 
-/// A model of a construct into SMTLIB.
+/// A construct's value in SMT-LIB
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ModelValue {
+    /// Correspond to ISLE types
     TypeValue(ModelType),
+    /// Correspond to ISLE enums, identifier is the enum variant name
     EnumValues(Vec<(Ident, SpecExpr)>),
 }
 
-/// A model of a construct into SMTLIB.
+/// A model of a construct into SMT-LIB (currently, types or enums)
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Model {
+    /// The name of the type or enum
     pub name: Ident,
+    /// The value of the type or enum (potentially multiple values)
     pub val: ModelValue,
 }
 
