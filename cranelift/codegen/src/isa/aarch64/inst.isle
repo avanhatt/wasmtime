@@ -3571,8 +3571,8 @@
       (= result 
          (conv_to 64
            (switch op 
-             (#x03 (bvor a (bvnot b)))
-             (#x06 (bvand a (bvnot b))))))))
+             ((ALUOp.OrrNot) (bvor a (bvnot b)))
+             ((ALUOp.AndNot) (bvand a (bvnot b))))))))
 (decl alu_rs_imm_logic (ALUOp Type Value Value) Reg)
 (rule -1 (alu_rs_imm_logic op ty x y)
       (alu_rrr op ty x y))

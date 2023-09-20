@@ -1746,11 +1746,11 @@ fn test_named_bxor_fits_in_64() {
 
 
 #[test]
-fn test_named_band_not_fits_in_64() {
+fn test_named_band_not_right() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
-            "band_not_fits_in_64",
-            "band_not",
+            "band_not_right",
+            "band",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
@@ -1760,6 +1760,23 @@ fn test_named_band_not_fits_in_64() {
         )
     })
 }
+
+#[test]
+fn test_named_band_not_left() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "band_not_left",
+            "band",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
 
 #[test]
 fn test_named_bnot() {
