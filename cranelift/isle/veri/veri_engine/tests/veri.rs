@@ -66,9 +66,9 @@ fn test_named_iadd_imm12_neg_left() {
             "iadd_imm12_neg_left",
             "iadd",
             vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
@@ -76,31 +76,15 @@ fn test_named_iadd_imm12_neg_left() {
 }
 
 #[test]
-fn test_named_iadd_imm12_neg_right_not_distinct() {
+fn test_named_iadd_imm12_neg_right() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
             "iadd_imm12_neg_right",
             "iadd",
             vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
-                (Bitwidth::I64, VerificationResult::Success),
-            ],
-        )
-    });
-}
-
-#[test]
-fn test_named_iadd_imm12_neg_left_not_distinct() {
-    run_and_retry(|| {
-        test_aarch64_rule_with_lhs_termname_simple(
-            "iadd_imm12_neg_left",
-            "iadd",
-            vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
@@ -110,6 +94,7 @@ fn test_named_iadd_imm12_neg_left_not_distinct() {
 // Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_updated_imm12_from_negated_value() {
+    // imm12_from_negated_value_fixed
     run_and_retry(|| {
         test_from_file_with_lhs_termname_simple(
             "./examples/iadd/updated_imm12_from_negated_value.isle",
@@ -522,20 +507,36 @@ fn test_named_isub_imm12_concrete() {
 }
 
 #[test]
-fn test_named_isub_imm12_neg_not_distinct() {
+fn test_named_isub_imm12_neg() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
             "isub_imm12_neg",
             "isub",
             vec![
-                (Bitwidth::I8, VerificationResult::NoDistinctModels),
-                (Bitwidth::I16, VerificationResult::NoDistinctModels),
-                (Bitwidth::I32, VerificationResult::NoDistinctModels),
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         );
     })
 }
+
+// #[test]
+// fn test_named_isub_imm12_neg_not_distinct() {
+//     run_and_retry(|| {
+//         test_aarch64_rule_with_lhs_termname_simple(
+//             "isub_imm12_neg",
+//             "isub",
+//             vec![
+//                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
+//                 (Bitwidth::I16, VerificationResult::NoDistinctModels),
+//                 (Bitwidth::I32, VerificationResult::NoDistinctModels),
+//                 (Bitwidth::I64, VerificationResult::Success),
+//             ],
+//         );
+//     })
+// }
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
@@ -1767,6 +1768,70 @@ fn test_named_band_not_left() {
         test_aarch64_rule_with_lhs_termname_simple(
             "band_not_left",
             "band",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_bor_not_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "bor_not_right",
+            "bor",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_bor_not_left() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "bor_not_left",
+            "bor",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_bxor_not_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "bxor_not_right",
+            "bxor",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+fn test_named_bxor_not_left() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "bxor_not_left",
+            "bxor",
             vec![
                 (Bitwidth::I8, VerificationResult::Success),
                 (Bitwidth::I16, VerificationResult::Success),
