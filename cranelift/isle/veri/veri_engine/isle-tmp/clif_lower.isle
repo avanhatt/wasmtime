@@ -62,7 +62,18 @@
 )
 
 ;;;; Enumerated Immediate: IntCC ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(model IntCC (enum 
+    (Equal #x00)
+    (NotEqual #x01)
+    (SignedGreaterThan #x02)
+    (SignedGreaterThanOrEqual #x03)
+    (SignedLessThan #x04)
+    (SignedLessThanOrEqual #x05)
+    (UnsignedGreaterThan #x06)
+    (UnsignedGreaterThanOrEqual #x07)
+    (UnsignedLessThan #x08)
+    (UnsignedLessThanOrEqual #x09)))
+    
 (type IntCC extern
     (enum
         Equal

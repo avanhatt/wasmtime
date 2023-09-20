@@ -2115,7 +2115,7 @@ fn test_named_do_shift_fits_in_16_concrete() {
                 termname: "do_shift".to_string(),
                 args: vec![
                     ConcreteInput {
-                        literal: "#b00010010".to_string(),
+                        literal: "#x0e".to_string(),
                         ty: veri_ir::Type::BitVector(Some(8)),
                     },
                     ConcreteInput {

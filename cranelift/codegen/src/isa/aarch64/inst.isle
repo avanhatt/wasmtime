@@ -4238,28 +4238,28 @@
       (provide 
          (= result
         (switch (extract 7 0 a)
-          (#x00 (if (= (extract 10 10 a) 0b1) #x01 #x00))
-          (#x01 (if (= (extract 10 10 a) 0b0) #x01 #x00))
-          (#x02 (if (bvand (= (extract 10 10 a) 0b0) (= (extract 11 11 a) (extract 8 8 a))) #x01 #x00))
-          (#x03 (if (= (extract 11 11 a) (extract 8 8 a)) #x01 #x00))
-          (#x04 (if (bvnot (= (extract 11 11 a) (extract 8 8 a))) #x01 #x00))
-          (#x05 (if (bvor (= (extract 10 10 a) 0b1) (bvnot (= (extract 11 11 a) (extract 8 8 a)))) #x01 #x00))
-          (#x06 (if (bvand (= (extract 9 9 a) 0b1) (= (extract 10 10 a) 0b0)) #x01 #x00))
-          (#x07 (if (= (extract 9 9 a) 0b1) #x01 #x00))
-          (#x08 (if (= (extract 9 9 a) 0b0) #x01 #x00))
-          (#x09 (if (bvor (= (extract 9 9 a) 0b0) (= (extract 10 10 a) 0b1)) #x01 #x00)))))
+          ((IntCC.Equal) (if (= (extract 10 10 a) #b1) #x01 #x00))
+          ((IntCC.NotEqual) (if (= (extract 10 10 a) #b0) #x01 #x00))
+          ((IntCC.SignedGreaterThan) (if (and (= (extract 10 10 a) #b0) (= (extract 11 11 a) (extract 8 8 a))) #x01 #x00))
+          ((IntCC.SignedGreaterThanOrEqual) (if (= (extract 11 11 a) (extract 8 8 a)) #x01 #x00))
+          ((IntCC.SignedLessThan) (if (not (= (extract 11 11 a) (extract 8 8 a))) #x01 #x00))
+          ((IntCC.SignedLessThanOrEqual) (if (or (= (extract 10 10 a) #b1) (not (= (extract 11 11 a) (extract 8 8 a)))) #x01 #x00))
+          ((IntCC.UnsignedGreaterThan) (if (and (= (extract 9 9 a) #b1) (= (extract 10 10 a) #b0)) #x01 #x00))
+          ((IntCC.UnsignedGreaterThanOrEqual) (if (= (extract 9 9 a) #b1) #x01 #x00))
+          ((IntCC.UnsignedLessThan) (if (= (extract 9 9 a) #b0) #x01 #x00))
+          ((IntCC.UnsignedLessThanOrEqual) (if (or (= (extract 9 9 a) #b0) (= (extract 10 10 a) #b1)) #x01 #x00)))))
       (require 
             (or 
-                  (= c (IntCC.Equal))
-                  (= c (IntCC.NotEqual))
-                  (= c (IntCC.UnsignedGreaterThanOrEqual))
-                  (= c (IntCC.UnsignedGreaterThan))
-                  (= c (IntCC.UnsignedLessThanOrEqual))
-                  (= c (IntCC.UnsignedLessThan))
-                  (= c (IntCC.SignedGreaterThanOrEqual))
-                  (= c (IntCC.SignedGreaterThan))
-                  (= c (IntCC.SignedLessThanOrEqual))
-                  (= c (IntCC.SignedLessThan)))))
+                  (= (extract 7 0 a) (IntCC.Equal))
+                  (= (extract 7 0 a) (IntCC.NotEqual))
+                  (= (extract 7 0 a) (IntCC.UnsignedGreaterThanOrEqual))
+                  (= (extract 7 0 a) (IntCC.UnsignedGreaterThan))
+                  (= (extract 7 0 a) (IntCC.UnsignedLessThanOrEqual))
+                  (= (extract 7 0 a) (IntCC.UnsignedLessThan))
+                  (= (extract 7 0 a) (IntCC.SignedGreaterThanOrEqual))
+                  (= (extract 7 0 a) (IntCC.SignedGreaterThan))
+                  (= (extract 7 0 a) (IntCC.SignedLessThanOrEqual))
+                  (= (extract 7 0 a) (IntCC.SignedLessThan)))))
 ;; Materialize a `FlagsAndCC` into a boolean `ValueRegs`.
 (decl flags_and_cc_to_bool (FlagsAndCC) ValueRegs)
 (rule (flags_and_cc_to_bool (FlagsAndCC.FlagsAndCC flags cc))
@@ -4291,9 +4291,7 @@
                         (if (<= in_ty 32)
                             (subs 32 (zero_ext 64 x) (zero_ext 64 y))
                             (subs 64 (zero_ext 64 x) (zero_ext 64 y)))))
-                  ;; AVH TODO: this could be handled better, with a type-systemy thing
-                  ;; Note that SMTLIB typeclass support might have perf implications
-                  (int2bv 4 c))))
+                  c)))
       (require
             (or 
                 (= c (IntCC.Equal))
@@ -4386,8 +4384,10 @@
       (provide
             (= result 
                (switch ty 
-                       (8 (if b (ExtendOp.SXTB) (ExtendOp.UXTB)))
-                       (16 (if b (ExtendOp.SXTH) (ExtendOp.UXTH))))))
+                       (8 (switch b ((ArgumentExtension.Sext) (ExtendOp.SXTB)) 
+                                    ((ArgumentExtension.Uext) (ExtendOp.UXTB))))
+                       (16 (switch b ((ArgumentExtension.Sext) (ExtendOp.SXTH)) 
+                                     ((ArgumentExtension.Uext) (ExtendOp.UXTH)))))))
       (require (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl lower_extend_op (Type ArgumentExtension) ExtendOp)
 (rule (lower_extend_op $I8 (ArgumentExtension.Sext)) (ExtendOp.SXTB))
@@ -4396,25 +4396,25 @@
 (rule (lower_extend_op $I16 (ArgumentExtension.Uext)) (ExtendOp.UXTH))
 
 ;; Integers <= 64-bits.
-(rule -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
+(rule lower_icmp_into_reg_8_16_32_64 -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
       (if (ty_int_ref_scalar_64 in_ty))
       (let ((cc Cond (cond_code cond)))
         (flags_and_cc_to_bool (lower_icmp cond rn rm in_ty))))
 
-(rule 1 (lower_icmp cond rn rm (fits_in_16 ty))
+(rule lower_icmp_8_16_signed 1 (lower_icmp cond rn rm (fits_in_16 ty))
       (if (signed_cond_code cond))
       (let ((rn Reg (put_in_reg_sext32 rn)))
       (flags_and_cc (cmp_extend (operand_size ty) rn rm (lower_extend_op ty (ArgumentExtension.Sext))) cond)))
-(rule -1 (lower_icmp cond rn (imm12_from_value rm) (fits_in_16 ty))
+(rule lower_icmp_8_16_unsigned_imm -1 (lower_icmp cond rn (imm12_from_value rm) (fits_in_16 ty))
       (let ((rn Reg (put_in_reg_zext32 rn)))
       (flags_and_cc (cmp_imm (operand_size ty) rn rm) cond)))
-(rule -2 (lower_icmp cond rn rm (fits_in_16 ty))
+(rule lower_icmp_8_16_unsigned -2 (lower_icmp cond rn rm (fits_in_16 ty))
       (let ((rn Reg (put_in_reg_zext32 rn)))
       (flags_and_cc (cmp_extend (operand_size ty) rn rm (lower_extend_op ty (ArgumentExtension.Uext))) cond)))
-(rule -3 (lower_icmp cond rn (u64_from_iconst c) ty)
+(rule lower_icmp_32_64_const -3 (lower_icmp cond rn (u64_from_iconst c) ty)
       (if (ty_int_ref_scalar_64 ty))
       (lower_icmp_const cond rn c ty))
-(rule -4 (lower_icmp cond rn rm ty)
+(rule lower_icmp_32_64 -4 (lower_icmp cond rn rm ty)
       (if (ty_int_ref_scalar_64 ty))
       (flags_and_cc (cmp (operand_size ty) rn rm) cond))
 
@@ -4432,7 +4432,7 @@
                                     (if (<= in_ty 32)
                                           (subs 32 (zero_ext 64 x) y)
                                           (subs 64 (zero_ext 64 x) y))))
-                       (int2bv 3 c))))
+                       c)))
        (require 
             (or 
                 (= c (IntCC.Equal))
@@ -4453,21 +4453,22 @@
 ;;         A >= B + 1
 ;;     ==> A - 1 >= B
 ;;     ==> A > B
-(rule (lower_icmp_const (IntCC.UnsignedGreaterThanOrEqual) a b ty)
+(rule lower_icmp_const_32_64_ugte (lower_icmp_const (IntCC.UnsignedGreaterThanOrEqual) a b ty)
       (if (ty_int_ref_scalar_64 ty))
       (if-let $true (u64_is_odd b))
       (if-let (imm12_from_u64 imm) (u64_sub b 1))
   (flags_and_cc (cmp_imm (operand_size ty) a imm) (IntCC.UnsignedGreaterThan)))
-(rule (lower_icmp_const (IntCC.SignedGreaterThanOrEqual) a b ty)
+  
+(rule lower_icmp_const_32_64_sgte (lower_icmp_const (IntCC.SignedGreaterThanOrEqual) a b ty)
       (if (ty_int_ref_scalar_64 ty))
       (if-let $true (u64_is_odd b))
       (if-let (imm12_from_u64 imm) (u64_sub b 1))
   (flags_and_cc (cmp_imm (operand_size ty) a imm) (IntCC.SignedGreaterThan)))
 
-(rule -1 (lower_icmp_const cond rn (imm12_from_u64 c) ty)
+(rule lower_icmp_const_32_64_imm -1 (lower_icmp_const cond rn (imm12_from_u64 c) ty)
       (if (ty_int_ref_scalar_64 ty))
   (flags_and_cc (cmp_imm (operand_size ty) rn c) cond))
-(rule -2 (lower_icmp_const cond rn c ty)
+(rule lower_icmp_const_32_64 -2 (lower_icmp_const cond rn c ty)
       (if (ty_int_ref_scalar_64 ty))
   (flags_and_cc (cmp (operand_size ty) rn (imm ty (ImmExtend.Zero) c)) cond))
 
