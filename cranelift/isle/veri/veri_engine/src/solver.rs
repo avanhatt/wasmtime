@@ -239,6 +239,7 @@ impl SolverCtx {
         source_width: SExpr,
         op: &str,
     ) -> SExpr {
+        dbg!("extend_symbolic");
         if self.onlywidths {
             return source;
         }

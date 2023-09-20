@@ -1083,7 +1083,7 @@ fn test_named_cls_32_64() {
 }
 
 #[test]
-fn test_named_cls8() {
+fn test_named_cls_8() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
             "cls_8",

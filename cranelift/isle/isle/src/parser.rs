@@ -525,8 +525,8 @@ impl<'a> Parser<'a> {
         let pos = self.pos();
         let s = self.expect_symbol()?;
         match s.as_str() {
-            "true" => Ok(0),
-            "false" => Ok(1),
+            "true" => Ok(1),
+            "false" => Ok(0),
             x => Err(self.error(pos, format!("Not a valid spec boolean: {x}"))),
         }
     }

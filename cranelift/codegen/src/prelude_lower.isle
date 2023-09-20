@@ -68,7 +68,7 @@
 (spec (output_reg arg)
       (provide (= result (conv_to (widthof result) arg))))
 (decl output_reg (Reg) InstOutput)
-(rule (output_reg reg) (output (value_reg reg)))
+(rule output_reg (output_reg reg) (output (value_reg reg)))
 
 ;; Construct a single-element `InstOutput` from a value.
 (decl output_value (Value) InstOutput)
@@ -125,6 +125,7 @@
 ;; Put the given value into one or more registers.
 ;;
 ;; As a side effect, this marks the value as used.
+(spec (put_in_regs arg) (provide (= (conv_to 64 arg) result)))
 (decl put_in_regs (Value) ValueRegs)
 (extern constructor put_in_regs put_in_regs)
 
@@ -134,6 +135,8 @@
 (extern constructor ensure_in_vreg ensure_in_vreg)
 
 ;; Get the `n`th register inside a `ValueRegs`.
+(spec (value_regs_get arg i) 
+    (provide (= arg result) (= (widthof i) 1)))
 (decl value_regs_get (ValueRegs usize) Reg)
 (extern constructor value_regs_get value_regs_get)
 

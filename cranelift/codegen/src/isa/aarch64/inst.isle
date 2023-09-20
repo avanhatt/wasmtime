@@ -960,21 +960,21 @@
                        (step Imm12))))
 
 (model ALUOp (enum 
-      (Add) ;; 0
-      (Sub)
-      (Orr)
-      (OrrNot)
-      (And)
-      (AndNot)
-      (Eor)
-      (EorNot)
-      (SubS)
-      (SDiv)
-      (UDiv)
-      (RotR)
-      (Lsr)
-      (Asr)
-      (Lsl)))
+      (Add #x00) ;; 0
+      (Sub #x01)
+      (Orr #x02)
+      (OrrNot #x03)
+      (And #x04)
+      (AndNot #x05)
+      (Eor #x06)
+      (EorNot #x07)
+      (SubS #x08)
+      (SDiv #x09)
+      (UDiv #x0a)
+      (RotR #x0b)
+      (Lsr #x0c)
+      (Asr #x0d)
+      (Lsl #x0e)))
 
 ;; An ALU operation. This can be paired with several instruction formats
 ;; below (see `Inst`) in any combination.
@@ -1208,14 +1208,14 @@
             Size64))
 
 ;; Helper for calculating the `OperandSize` corresponding to a type
-(spec (operand_size args ty)
+(spec (operand_size ty)
       (provide 
             (= result (if (<= ty 32) 32 64)))
       (require
             (or (= ty 8) (= ty 16) (= ty 32) (= ty 64))))
 (decl operand_size (Type) OperandSize)
-(rule 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
-(rule (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
+(rule operand_size_32 1 (operand_size (fits_in_32 _ty)) (OperandSize.Size32))
+(rule operand_size_64 (operand_size (fits_in_64 _ty)) (OperandSize.Size64))
 
 (model ScalarSize
       (enum (Size8 8)
@@ -1801,7 +1801,7 @@
 
 (spec (lshl_from_imm64 ty a)
     (provide (= result (zero_ext 10 (extract 7 0 a))))
-    (require (= (extract 63 8 a) #b000000000000000000000000000000000000000000000000000000)))
+    (require (= (extract 63 8 a) #b00000000000000000000000000000000000000000000000000000000)))
 (decl pure partial lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 
@@ -1855,9 +1855,9 @@
       ((ExtendOp.UXTB) (= (extract 63 0 x) (zero_ext 64 (extract 7 0 (zero_ext 64 result)))))
       ((ExtendOp.UXTH) (= (extract 63 0 x) (zero_ext 64 (extract 15 0 (zero_ext 64 result)))))
       ((ExtendOp.UXTW) (= (extract 63 0 x) (zero_ext 64 (extract 31 0 (zero_ext 64 result)))))
-      ((ExtendOp.UXTX) (= (extract 63 0 x) (sign_ext 64 (extract 7 0 (zero_ext 64 result)))))
-      ((ExtendOp.SXTB) (= (extract 63 0 x) (sign_ext 64 (extract 15 0 (zero_ext 64 result)))))
-      ((ExtendOp.SXTH) (= (extract 63 0 x) (sign_ext 64 (extract 31 0 (zero_ext 64 result)))))))
+      ((ExtendOp.SXTB) (= (extract 63 0 x) (sign_ext 64 (extract 7 0 (zero_ext 64 result)))))
+      ((ExtendOp.SXTH) (= (extract 63 0 x) (sign_ext 64 (extract 15 0 (zero_ext 64 result)))))
+      ((ExtendOp.SXTW) (= (extract 63 0 x) (sign_ext 64 (extract 31 0 (zero_ext 64 result)))))))
   (require
     (bvult (extract 66 64 x) #b110)
     (not (= (extract 66 64 x) #b011))

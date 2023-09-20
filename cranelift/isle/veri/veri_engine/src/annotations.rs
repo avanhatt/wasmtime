@@ -11,6 +11,7 @@ use cranelift_isle::ast::SpecExpr;
 use cranelift_isle::ast::SpecOp;
 use cranelift_isle::lexer::Pos;
 use cranelift_isle::sema::TypeEnv;
+use veri_ir::annotation_ir::Width;
 use veri_ir::annotation_ir::{BoundVar, Const, Expr, TermAnnotation, TermSignature, Type};
 
 static RESULT: &str = "result";
@@ -52,10 +53,10 @@ pub fn spec_to_annotation_bound_var(i: &Ident, env: &ParsingEnv) -> BoundVar {
     }
 }
 
-fn spec_to_usize(s: &SpecExpr) -> usize {
+fn spec_to_usize(s: &SpecExpr) -> Option<usize> {
     match s {
-        SpecExpr::ConstInt { val, pos } => *val as usize,
-        _ => unreachable!(),
+        SpecExpr::ConstInt { val, pos } => Some(*val as usize),
+        _ => None,
     }
 }
 
@@ -158,9 +159,22 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
         SpecOp::BVSge => binop(|x, y, i| Expr::BVSgte(x, y, i), args, pos, env),
         SpecOp::Rotr => binop(|x, y, i| Expr::BVRotr(x, y, i), args, pos, env),
         SpecOp::Rotl => binop(|x, y, i| Expr::BVRotl(x, y, i), args, pos, env),
-        // AVH TODO
-        SpecOp::ZeroExt => binop(|x, y, i| Expr::BVZeroExtToVarWidth(x, y, i), args, pos, env),
-        SpecOp::SignExt => binop(|x, y, i| Expr::BVSignExtToVarWidth(x, y, i), args, pos, env),
+        SpecOp::ZeroExt =>{
+            match (spec_to_usize(&args[0])) {
+                Some(i) => {
+                    Expr::BVZeroExtTo(Box::new(Width::Const(i)), Box::new(spec_to_expr(&args[1], env)), 0)
+                }
+                None => binop(|x, y, i| Expr::BVZeroExtToVarWidth(x, y, i), args, pos, env)
+            }
+        }
+        SpecOp::SignExt =>{
+            match (spec_to_usize(&args[0])) {
+                Some(i) => {
+                    Expr::BVSignExtTo(Box::new(Width::Const(i)), Box::new(spec_to_expr(&args[1], env)), 0)
+                }
+                None => binop(|x, y, i| Expr::BVSignExtToVarWidth(x, y, i), args, pos, env)
+            }
+        }
         SpecOp::ConvTo => binop(|x, y, i| Expr::BVConvToVarWidth(x, y, i), args, pos, env),
 
         // AVH TODO
@@ -176,8 +190,8 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
                 pos
             );
             Expr::BVExtract(
-                spec_to_usize(&args[0]),
-                spec_to_usize(&args[1]),
+                spec_to_usize(&args[0]).unwrap(),
+                spec_to_usize(&args[1]).unwrap(),
                 Box::new(spec_to_expr(&args[2], env)),
                 0,
             )
@@ -190,7 +204,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
                 pos
             );
             Expr::BVIntToBv(
-                spec_to_usize(&args[0]),
+                spec_to_usize(&args[0]).unwrap(),
                 Box::new(spec_to_expr(&args[1], env)),
                 0,
             )
