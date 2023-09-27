@@ -70,7 +70,7 @@
 ;;@ (spec (sig (args arg) (ret))
 ;;@     (provide (|| (< (zero_ext (64i8:Int) (ret)) (4095i64:bv))
 ;;@                     (&& (< (zero_ext (64i8:Int) (ret)) (16773120i64:bv))
-;;@                         (= (extract 2 0 (zero_ext (64i8:Int) (ret))) (0i3:bv))
+;;@                         (= (extract 2 0 (zero_ext (64i8:Int) (ret))) #b000)
 ;;@                 )),
 ;;@                 (= (ret) (conv_to (widthof (ret)) (zero_ext (64i8:Int) (arg)))),
 ;;@                 (= (arg) (conv_to (widthof (arg)) (zero_ext (64i8:Int) (ret)))),
@@ -158,13 +158,12 @@
 (rule (lower_extend_op $I8 $false) (ExtendOp.UXTB))
 (rule (lower_extend_op $I16 $false) (ExtendOp.UXTH))
 
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (
-;;@          if (<= (32i0:Int) (widthof (arg))) 
-;;@             (= (ret) (conv_to (64i8:Int) (arg)))             
-;;@             (= (ret) (conv_to (64i8:Int) (sign_ext (32) (arg))))
-;;@          )
-;;@ ))
+(spec (put_in_reg_sext32 arg) 
+  (provide 
+    (= result 
+       (if (<= (widthof arg) 32) 
+           (conv_to 64 (sign_ext 32 arg))
+           (conv_to 64 arg)))))
 (decl put_in_reg_sext32 (Value) Reg)
 (extern constructor put_in_reg_sext32 put_in_reg_sext32)
 

@@ -1,16 +1,11 @@
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+(spec (lower arg) (provide (= result arg)))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
-(type MInst
-  (enum
-))
+(type MInst (enum))
 
 ;; Constructor to test whether two values are same.
-;;@ (spec (sig (args x, y) (ret))
-;;@     (provide (= (x) (ret)),
-;;@                 (= (x) (y))))
+(spec (same_value x y) (provide (= result x ) (= x y)))
 (decl pure same_value (Value Value) Value)
 (extern constructor same_value same_value)
 
@@ -18,7 +13,11 @@
       (if-let z (same_value x y))
       (add ty z z))
 
-;;@ (spec (sig (args ty, a, b) (r))
-;;@     (provide (= (+ (a) (b)) (r))))
+(spec (add ty a b)
+  (provide 
+    (= result 
+       (if (<= ty 32) 
+           (conv_to 64 (bvadd (extract 31 0 a) (extract 31 0 b)))
+           (bvadd a b)))))
 (decl add (Type Reg Reg) Reg)
 (extern constructor add add)

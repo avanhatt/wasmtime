@@ -1845,7 +1845,7 @@
                         (= (extract 2 0 (bvneg (sign_ext 64 arg))) #b000)))
                 (= result (extract 23 0 (bvneg (sign_ext 64 arg))))))
 (decl pure partial imm12_from_negated_value (Value) Imm12)
-(rule imm12_from_negated_value_fixed
+(rule imm12_from_negated_value
   (imm12_from_negated_value (has_type ty (iconst n)))
   (if-let (imm12_from_u64 imm) (i64_as_u64 (i64_neg (i64_sextend_imm64 ty n))))
   imm)
@@ -1853,7 +1853,6 @@
 ;; Helper type to represent a value and an extend operation fused together.
 (type ExtendedValue extern (enum))
 ;; Only including the i8 to i32 opcodes, based on the impl of extended_value_from_value
-;; AVH TODO check values
 (spec (extended_value_from_value x)
   (provide
     (switch (extract 66 64 x)
@@ -2658,7 +2657,11 @@
 
 ;; Helpers for generating `sub` instructions.
 (spec (sub ty a b)
-    (provide (= (bvsub a b) result)))
+  (provide 
+    (= result 
+       (if (<= ty 32) 
+           (conv_to 64 (bvsub (extract 31 0 a) (extract 31 0 b)))
+           (bvsub a b)))))
 (decl sub (Type Reg Reg) Reg)
 (rule (sub ty x y) (alu_rrr (ALUOp.Sub) ty x y))
 

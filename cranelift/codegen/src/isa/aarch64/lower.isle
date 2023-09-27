@@ -1693,8 +1693,7 @@
             (val_lshift Reg (lsl $I32 val neg_amt)))
         (orr $I32 val_lshift val_rshift)))
 
- (spec (rotr_mask x)
-   (provide (= (bvsub (int2bv 64 x) #x0000000000000001) result)))
+(spec (rotr_mask x) (provide (= (bvsub (int2bv 64 x) #x0000000000000001) result)))
 (decl rotr_mask (Type) ImmLogic)
 (extern constructor rotr_mask rotr_mask)
 

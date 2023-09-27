@@ -430,6 +430,8 @@ impl<'a> Parser<'a> {
                     self.expect_rparen()?;
                     return Ok(SpecExpr::Enum { name: ident })
                 };
+                // AVH TODO: see if we can simplify this to not backtrack, maybe 
+                // kill pairs 
                 let r = Box::new(self.parse_spec_expr()?);
                 self.expect_rparen()?;
                 Ok(SpecExpr::Pair { l: Box::new(SpecExpr::Var { var: ident, pos }), r })

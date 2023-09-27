@@ -1,5 +1,5 @@
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+(spec (lower arg)
+    (provide (= result arg)))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -12,12 +12,12 @@
     (MSub)
 ))
 
-;;@ (spec (sig (args ty, a, b, c) (r))
-;;@   (provide 
-;;@     (= (r) 
-;;@        (if (<= (ty) (32i8: Int)) 
-;;@            (conv_to (regwidth) (- (extract 31 0 (c)) (* (extract 31 0 (a)) (extract 31 0 (b)))))
-;;@            (- (c) (* (a) (b)))))))
+(spec (msub ty a b c)
+  (provide 
+    (= result
+       (if (<= ty 32) 
+           (conv_to 64 (bvsub (extract 31 0 c) (bvmul (extract 31 0 a) (extract 31 0 b))))
+           (bvsub c (bvmul a b))))))
 (decl msub (Type Reg Reg Reg) Reg)
 (rule (msub ty x y z) (alu_rrrr (ALUOp3.MSub) ty x y z))
 

@@ -1,6 +1,6 @@
 
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+(spec (lower arg)
+    (provide (= result arg)))
 (decl lower (Inst) InstOutput)
 
 ;; Instruction formats.
@@ -8,26 +8,22 @@
   (enum
 ))
 
-;;@ (spec (sig (args ty, a, b) (r))
-;;@     (provide (= (- (a) (b)) (r))))
+(spec (sub ty a b) 
+    (provide (= (bvsub a b) result)))
 (decl sub (Type Reg Reg) Reg)
 (extern constructor sub sub)
 
-;;@ (spec (sig (args) (r))
-;;@     (provide (= (zero_ext (regwidth) (0i1:bv)) (r))))
+(spec (zero_reg)
+    (provide (= (zero_ext 64 #x0000000000000000) result)))
 (decl zero_reg () Reg)
 (extern constructor zero_reg zero_reg)
 
-;;@ (spec (sig (args ty, x, y) (ret))
-;;@     (provide (= (ret) 
-;;@                    (if (= (ty) (32i0:Int))
-;;@                        (zero_ext (regwidth) (rotr (extract 31 0 (x)) (extract 31 0 (y))))
-;;@                        (rotr (x) (y))
-;;@                    )
-;;@                 ),
-;;@                 (|| (= (ty) (32i0:Int)) (= (ty) (64i0:Int)))
-;;@     )
-;;@ )
+(spec (a64_rotr ty x y) 
+    (provide (= result 
+                   (if (= ty 32)
+                       (zero_ext 64 (rotr (extract 31 0 x) (extract 31 0 y)))
+                       (rotr x y))))
+    (require (or (= ty 32) (= ty 64))))
 (decl a64_rotr (Type Reg Reg) Reg)
 (extern constructor a64_rotr a64_rotr)
 
