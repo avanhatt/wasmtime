@@ -1035,6 +1035,7 @@
 ))
 
 (type UImm5 (primitive UImm5))
+(model Imm12 (type (bv 12)))
 (type Imm12 (primitive Imm12))
 (type ImmLogic (primitive ImmLogic))
 (type ImmShift (primitive ImmShift))
