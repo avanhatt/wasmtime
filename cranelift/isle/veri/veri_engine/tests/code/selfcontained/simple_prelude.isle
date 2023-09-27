@@ -40,7 +40,7 @@
         ;;@ (spec (sig (args arg) (ret))
         ;;@     (provide (|| (< (- (zero_ext (regwidth) (ret))) (4095i64:bv))
         ;;@                     (&& (< (- (zero_ext (regwidth) (ret))) (16773120i64:bv))
-        ;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) (0i3:bv))
+        ;;@                         (= (extract 2 0 (- (zero_ext (regwidth) (ret)))) #b000)
         ;;@                 )),
         ;;@                 (= (ret) (conv_to (widthof (ret)) (- (zero_ext (regwidth) (arg)))))
         ;;@ ))

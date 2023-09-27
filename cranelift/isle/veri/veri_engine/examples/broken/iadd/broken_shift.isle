@@ -1,5 +1,5 @@
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+(spec (lower arg)
+    (provide (= result arg)))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -23,26 +23,46 @@
     (Add)
 ))
 
+(model ALUOp (enum 
+      (Add #x00) ;; 0
+      (Sub #x01)
+      (Orr #x02)
+      (OrrNot #x03)
+      (And #x04)
+      (AndNot #x05)
+      (Eor #x06)
+      (EorNot #x07)
+      (SubS #x08)
+      (SDiv #x09)
+      (UDiv #x0a)
+      (RotR #x0b)
+      (Lsr #x0c)
+      (Asr #x0d)
+      (Lsl #x0e)))
+
 (decl alu_rrr_shift (ALUOp Type Reg Reg ShiftOpAndAmt) Reg)
 (extern constructor alu_rrr_shift alu_rrr_shift)
 
 ;; BROKEN: swapped shl shr
-;;@ (spec (sig (args ty, a, b, shift) (ret))
-;;@   (provide 
-;;@     (switch (extract 9 8 (shift))
-;;@             ((0i2:bv) (= (ret) (+ (a) (shr (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))
-;;@             ((1i2:bv) (= (ret) (+ (a) (shl (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))
-;;@             ((2i2:bv) (= (ret) (+ (a) (ashr (b) (zero_ext (widthof (b)) (extract 7 0 (shift)))))))),
-;;@                 (|| (= (extract 9 8 (shift)) (0i2:bv)) 
-;;@                     (|| (= (extract 9 8 (shift)) (1i2:bv)) 
-;;@                         (= (extract 9 8 (shift)) (2i2:bv))))
-;;@ ))
+(spec (add_shift ty a b shift)
+  (provide 
+    (= result (if (<= ty 32)
+      (conv_to 64 (bvadd (extract 31 0 a) 
+      (switch (extract 15 8 shift)
+        ((ALUOp.Lsr) (bvshl (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
+        ((ALUOp.Lsl) (bvlshr (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
+        ((ALUOp.Lsl) (bvashr (extract 31 0 b) (zero_ext 32 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift))))))))
+      (bvadd a 
+      (switch (extract 15 8 shift)
+        ((ALUOp.Lsr) (bvshl b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
+        ((ALUOp.Lsl) (bvlshr b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))
+        ((ALUOp.Lsl) (bvashr b (zero_ext 64 (bvand (bvsub (int2bv 8 ty) #x01) (extract 7 0 shift)))))))))))
 (decl add_shift (Type Reg Reg ShiftOpAndAmt) Reg)
 (rule (add_shift ty x y z) (alu_rrr_shift (ALUOp.Add) ty x y z))
 
-;;@ (spec (sig (args ty, a) (ret))
-;;@     (provide (= (extract 63 8 (a)) (0i56:bv)),
-;;@                 (= (ret) (zero_ext (10) (extract 7 0 (a))))))
+(spec (lshl_from_imm64 ty a)
+    (provide (= result (concat #x0e (extract 7 0 a))))
+    (require (= (extract 63 8 a) #b00000000000000000000000000000000000000000000000000000000)))
 (decl pure lshl_from_imm64 (Type Imm64) ShiftOpAndAmt)
 (extern constructor lshl_from_imm64 lshl_from_imm64)
 

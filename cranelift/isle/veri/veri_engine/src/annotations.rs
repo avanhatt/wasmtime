@@ -157,7 +157,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
         SpecOp::Rotr => binop(|x, y, i| Expr::BVRotr(x, y, i), args, pos, env),
         SpecOp::Rotl => binop(|x, y, i| Expr::BVRotl(x, y, i), args, pos, env),
         SpecOp::ZeroExt =>{
-            match (spec_to_usize(&args[0])) {
+            match spec_to_usize(&args[0]) {
                 Some(i) => {
                     Expr::BVZeroExtTo(Box::new(Width::Const(i)), Box::new(spec_to_expr(&args[1], env)), 0)
                 }
@@ -165,7 +165,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
             }
         }
         SpecOp::SignExt =>{
-            match (spec_to_usize(&args[0])) {
+            match spec_to_usize(&args[0]) {
                 Some(i) => {
                     Expr::BVSignExtTo(Box::new(Width::Const(i)), Box::new(spec_to_expr(&args[1], env)), 0)
                 }

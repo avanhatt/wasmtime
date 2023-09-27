@@ -22,15 +22,12 @@
  ;; Conceptually the same as `imm12_from_value`, but tries negating the constant
  ;; value (first sign-extending to handle narrow widths).
 
- ;; Note that 4095 = 0xfff and 16773120 = 0xfff000
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (|| (< (- (sign_ext (regwidth) (arg))) (4095i64:bv))
-;;@                     (&& (< (- (sign_ext (regwidth) (arg))) (16773120i64:bv))
-;;@                         (= (extract 2 0 (- (sign_ext (regwidth) (arg)))) (0i3:bv))
-;;@                 )),
-;;@                 (= (ret) (extract 23 0 (- (sign_ext (regwidth) (arg)))))
-;;@ ))
- (decl pure imm12_from_negated_value (Value) Imm12)
+(spec (imm12_from_negated_value arg)
+    (provide (or (bvult (bvneg (sign_ext 64 arg)) #x0000000000000fff)
+                    (and (bvult (bvneg (sign_ext 64 arg)) #x0000000000fff000)
+                        (= (extract 2 0 (bvneg (sign_ext 64 arg))) #b000)))
+                (= result (extract 23 0 (bvneg (sign_ext 64 arg))))))
+(decl pure partial imm12_from_negated_value (Value) Imm12)
  (rule
    (imm12_from_negated_value (has_type ty (iconst n)))
    (if-let (imm12_from_u64 imm) (i64_as_u64 (i64_neg (i64_sextend_imm64 ty n))))

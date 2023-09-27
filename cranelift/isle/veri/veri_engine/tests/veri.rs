@@ -93,13 +93,17 @@ fn test_named_iadd_imm12_neg_right() {
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
-fn test_updated_imm12_from_negated_value() {
-    // imm12_from_negated_value_fixed
+fn test_named_imm12_from_negated_value() {
     run_and_retry(|| {
-        test_from_file_with_lhs_termname_simple(
-            "./examples/iadd/updated_imm12_from_negated_value.isle",
-            "imm12_from_negated_value".to_string(),
-            all_success_result(),
+        test_aarch64_rule_with_lhs_termname_simple(
+            "imm12_from_negated_value",
+            "imm12_from_negated_value",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
         )
     });
 }
@@ -314,7 +318,7 @@ fn test_broken_iadd_imm12() {
             "./examples/broken/iadd/broken_imm12.isle",
             "iadd".to_string(),
             vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (Bitwidth::I8, VerificationResult::Success),
                 (
                     Bitwidth::I16,
                     VerificationResult::Failure(Counterexample {}),
@@ -522,21 +526,20 @@ fn test_named_isub_imm12_neg() {
     })
 }
 
-// #[test]
-// fn test_named_isub_imm12_neg_not_distinct() {
-//     run_and_retry(|| {
-//         test_aarch64_rule_with_lhs_termname_simple(
-//             "isub_imm12_neg",
-//             "isub",
-//             vec![
-//                 (Bitwidth::I8, VerificationResult::NoDistinctModels),
-//                 (Bitwidth::I16, VerificationResult::NoDistinctModels),
-//                 (Bitwidth::I32, VerificationResult::NoDistinctModels),
-//                 (Bitwidth::I64, VerificationResult::Success),
-//             ],
-//         );
-//     })
-// }
+// The older version, which did not have distinct models for i8, i16, or i32.
+#[test]
+fn test_isub_imm12_neg_not_distinct() {
+    test_from_file_with_lhs_termname_simple(
+        "./examples/broken/isub/broken_imm12neg_not_distinct.isle",
+        "isub".to_string(),
+        vec![
+            (Bitwidth::I8, VerificationResult::NoDistinctModels),
+            (Bitwidth::I16, VerificationResult::NoDistinctModels),
+            (Bitwidth::I32, VerificationResult::NoDistinctModels),
+            (Bitwidth::I64, VerificationResult::Success),
+        ],
+    );
+}
 
 // Need a file test because this is a change on top of our latest rebase
 #[test]
@@ -668,7 +671,7 @@ fn test_broken_isub_imm12() {
         "./examples/broken/isub/broken_imm12.isle",
         "isub".to_string(),
         vec![
-            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (Bitwidth::I8, VerificationResult::Success),
             (
                 Bitwidth::I16,
                 VerificationResult::Failure(Counterexample {}),
@@ -1224,8 +1227,13 @@ fn test_broken_ctz_32_64() {
             "./examples/broken/ctz/broken_ctz.isle",
             "clz".to_string(),
             vec![
-                (Bitwidth::I8, VerificationResult::InapplicableRule),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
+                (
+                    Bitwidth::I8,
+                    VerificationResult::Failure(Counterexample {}),
+                ),                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
                 (
                     Bitwidth::I32,
                     VerificationResult::Failure(Counterexample {}),

@@ -15,7 +15,6 @@
     (Add)
 ))
 
-;; Note that 4094 = 0xffe and 16773119 = 0xffefff
 (spec (add_imm ty a b)
   (provide 
     (= result 
@@ -31,13 +30,14 @@
 (decl alu_rr_imm12 (ALUOp Type Reg Imm12) Reg)
 (extern constructor alu_rr_imm12 alu_rr_imm12)
 
-;; Broken: no require
-(spec (imm12_from_value arg)
-      (provide 
-            (= result (conv_to (widthof result) (zero_ext 64 arg)))
-            (= arg (conv_to (widthof arg) (zero_ext 64 result)))))
-(decl imm12_from_value (Imm12) Value)
-(extern extractor imm12_from_value imm12_from_value)
+(spec (imm12_from_negated_value arg)
+    (provide (or (bvult (bvneg (zero_ext 64 result)) #x0000000000000fff)
+                    (and (bvult (bvneg (zero_ext 64 result)) #x0000000000fff000)
+                        (= (extract 2 0 (bvneg (zero_ext 64 result))) #b000)))
+                (= result (conv_to (widthof result) (bvneg (zero_ext 64 arg))))))
+(decl imm12_from_negated_value (Imm12) Value)
+(extern extractor imm12_from_negated_value imm12_from_negated_value)
 
-(rule (lower (has_type (fits_in_64 ty) (iadd x (imm12_from_value y))))
+;; BROKEN: for ty < 64, this only matches on zero
+(rule 2 (lower (has_type (fits_in_64 ty) (isub x (imm12_from_negated_value y))))
       (add_imm ty x y))

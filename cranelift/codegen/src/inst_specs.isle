@@ -46,7 +46,7 @@
                 ((IntCC.UnsignedLessThan) (if (bvult x y) #x01 #x00))
                 ((IntCC.UnsignedLessThanOrEqual) (if (bvule x y) #x01 #x00)))))
     (require
-        ;; AVH TODO: if we understand enums we can generate this
+        ;; AVH TODO: if we understand enums semantically, we can generate this
         (or 
             (= c (IntCC.Equal))
             (= c (IntCC.NotEqual))

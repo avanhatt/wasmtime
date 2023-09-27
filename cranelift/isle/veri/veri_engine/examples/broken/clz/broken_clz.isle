@@ -1,5 +1,5 @@
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+(spec (lower arg)
+    (provide (= result arg)))
 (decl lower (Inst) InstOutput)
 
 (type MInst
@@ -16,8 +16,11 @@
 (decl bit_rr (BitOp Type Reg) Reg)
 (extern constructor bit_rr bit_rr)
 
-;;@ (spec (sig (args ty, a) (ret))
-;;@     (provide (= (ret) (clz (a)))))
+;; Broken: no distinction on ty
+(spec (a64_clz ty a)
+  (provide 
+    (= result (clz a)))
+  (require (or (= ty 32) (= ty 64))))
 (decl a64_clz (Type Reg) Reg)
 (rule (a64_clz ty x) (bit_rr (BitOp.Clz) ty x))
 

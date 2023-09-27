@@ -1,5 +1,5 @@
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (arg) (ret))))
+(spec (lower arg)
+    (provide (= result arg)))
 (decl lower (Inst) InstOutput)
 
 (type MInst (enum))
@@ -13,30 +13,27 @@
 (extern constructor alu_rrr alu_rrr)
 
 ;; Helper for generating `udiv` instructions.
-;;@ (spec (sig (args ty, a, b) (r))
-;;@   (provide 
-;;@     (= (r) 
-;;@        (if (<= (ty) (32i8: Int)) 
-;;@            (conv_to (regwidth) (/ (extract 31 0 (a)) (extract 31 0 (b))))
-;;@            (/ (a) (b))))))
+(spec (a64_udiv ty a b) 
+  (provide 
+    (= result
+       (if (<= ty 32) 
+           (conv_to 64 (bvudiv (extract 31 0 a) (extract 31 0 b)))
+           (bvudiv a b)))))
 (decl a64_udiv (Type Reg Reg) Reg)
 (extern constructor a64_udiv a64_udiv)
 
-;;@ (spec (sig (args ty, x) (ret))
-;;@       (provide (= (ret) (sign_ext (regwidth) (conv_to (ty) (x))))  
-;;@ ))
+(spec (imm ty x) (provide (= result (sign_ext 64 (conv_to ty x)))))
 (decl imm (Type u64) Reg)
 (extern constructor imm imm)
 
-;;@ (spec (sig (args x) (ret))
-;;@       (provide (= (zero_ext (64) (x)) (ret))))
+(spec (put_in_reg_zext64 x) (provide (= result (zero_ext 64 x))))
 (decl put_in_reg_zext64 (Value) Reg)
 (extern constructor put_in_reg_zext64 put_in_reg_zext64)
 
 ;; Helper for placing a `Value` into a `Reg` and validating that it's nonzero.
-;;@ (spec (sig (args x) (ret))
-;;@       (provide (= (sign_ext (64) (x)) (ret)),
-;;@                (! (= (0i64:bv) (ret)))))
+(spec (put_nonzero_in_reg_zext64 x)
+      (provide (= result (zero_ext 64 x)))
+      (require (not (= result #x0000000000000000))))
 (decl put_nonzero_in_reg_zext64 (Value) Reg)
 (extern constructor put_nonzero_in_reg_zext64 put_nonzero_in_reg_zext64)
 

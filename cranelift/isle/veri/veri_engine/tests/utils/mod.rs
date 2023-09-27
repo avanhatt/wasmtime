@@ -260,7 +260,12 @@ pub fn test_from_file_with_config(file: &str, config: Config, tr: TestResult) ->
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
-    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    let mut inputs = vec![
+        build_clif_lower_isle(),
+        prelude_isle,
+        prelude_lower_isle,
+        clif_isle,
+    ];
     inputs.push(PathBuf::from(file));
     test_rules_with_term(inputs, tr, config);
 }
@@ -390,7 +395,12 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     let prelude_lower_isle = cur_dir
         .join("../../../codegen/src")
         .join("prelude_lower.isle");
-    let mut inputs = vec![prelude_isle, prelude_lower_isle, clif_isle];
+    let mut inputs = vec![
+        build_clif_lower_isle(),
+        prelude_isle,
+        prelude_lower_isle,
+        clif_isle,
+    ];
     inputs.push(PathBuf::from(file));
 
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
