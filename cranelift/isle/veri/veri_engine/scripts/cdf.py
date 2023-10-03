@@ -2,7 +2,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
-import datetime
+from datetime import datetime
 
 """Use `time` to record each test individually. Note this counts Rust test overhead."""
 def measure_verification_runtime(tests):
@@ -43,16 +43,22 @@ def plot_verification_runtime_cdf(runtimes, n):
     plt.grid()
     plt.xlim(0, 25)
     plt.ylim(0, 1)
-    plt.savefig("cdf.pdf")
+
+    # Timestamp
+    now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z")
+
+    print("Generating results with timestamp", now)
+
+    # Save the resulting PDF
+    pdf = "script-results/cdf-%s.pdf" % now
+    print("Saving PDF to", pdf)
+    plt.savefig(pdf)
 
     # Save these results to a file 
-    filename = "cdf-results-" + datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    filename = "script-results/cdf-results-%s.txt" % now
+    print("Saving raw results to", filename)
     with open(filename, 'w') as file:
-        file.writelines('\n'.join(runtimes))
-
-    print("Result runtimes, sorted ascending:")
-    for t in runtimes:
-        print("\t%2d" % t)
+        file.writelines('\n'.join(["{:.6f}".format(t) for t in runtimes]))
 
 """Script to generate a CDF from verification times for specific lists of expected
 successful and timeout tests"""

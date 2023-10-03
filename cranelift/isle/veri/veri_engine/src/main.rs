@@ -46,10 +46,10 @@ fn main() {
     let args = Args::parse();
     let mut inputs = vec![];
 
-    // Build the relevant ISLE prelude using the meta crate
-    inputs.push(build_clif_lower_isle());
-
     if !args.noprelude {
+        // Build the relevant ISLE prelude using the meta crate
+        inputs.push(build_clif_lower_isle());
+
         // TODO: clean up path logic
         inputs.push(cur_dir.join("../../../codegen/src").join("inst_specs.isle"));
         inputs.push(cur_dir.join("../../../codegen/src").join("prelude.isle"));
