@@ -68,20 +68,20 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
             poss[rule_id] = pos
 
     # Print the most frequently triggered rules, for fun.
-    print(f'Top {TOP_K} rules:')
+    print(f'Top {TOP_K} most commonly used rules:')
     for rule_id, count in counts.most_common(TOP_K):
         print(count, rule_id, names[rule_id], poss[rule_id])
 
     # How many uses (times a rule was triggered) were of named rules?
     named_uses = sum(c for (i, c) in counts.items() if names.get(i))
     total_uses = sum(counts.values())
-    print(f'Named uses: {named_uses}/{total_uses} = '
+    print(f'\nNamed uses: {named_uses}/{total_uses} = '
           f'{named_uses/total_uses:.1%}')
 
     # How many covered rules (used at least once) were named?
     named_covered = sum(1 for (i, c) in counts.items() if names.get(i))
     total_covered = len(counts)
-    print(f'Named covered: {named_covered}/{total_covered} = '
+    print(f'\nNamed covered: {named_covered}/{total_covered} = '
           f'{named_covered/total_covered:.1%}')
 
 
