@@ -94,7 +94,7 @@ pub fn verify_rules_for_term(
         }
         let rule_sem = &ctx.typesols[&rule.id];
         println!(
-            "Verifying rule with term {} and types {:?}",
+            "Verifying rule with term {} and types\n{:?}",
             config.term, types
         );
         let result = run_solver(rule_sem, rule, termenv, typeenv, concrete, config, &types);

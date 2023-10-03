@@ -239,7 +239,6 @@ impl SolverCtx {
         source_width: SExpr,
         op: &str,
     ) -> SExpr {
-        dbg!("extend_symbolic");
         if self.onlywidths {
             return source;
         }
@@ -1290,7 +1289,7 @@ impl SolverCtx {
                 }
                 match self.smt.check() {
                     Ok(Response::Sat) => {
-                        println!("Assertion list is feasible for two distinct inputs!");
+                        println!("Assertion list is feasible for two distinct inputs");
                         VerificationResult::Success
                     }
                     Ok(Response::Unsat) => {
@@ -1510,7 +1509,7 @@ impl SolverCtx {
         lhs_sexpr: SExpr,
         rhs_sexpr: SExpr,
     ) {
-        println!("Quantified variables:");
+        // println!("Quantified variables:");
         let mut vars = vec![];
         let mut lhs_value = None;
         let mut rhs_value = None;
@@ -1537,10 +1536,10 @@ impl SolverCtx {
         }
         vars.sort_by_key(|x| x.0.clone());
         vars.dedup();
-        for (v, x) in &vars {
-            println!("{}", v);
-            println!("{}\n", x);
-        }
+        // for (v, x) in &vars {
+        //     println!("{}", v);
+        //     println!("{}\n", x);
+        // }
 
         println!("Counterexample summary");
         let lhs = self.display_isle_pattern(
@@ -1617,7 +1616,7 @@ impl SolverCtx {
 
         // println!("Declaring additional variables");
         for (name, ty) in &self.additional_decls {
-            println!("\t{} : {}", name, self.smt.display(*ty));
+            // println!("\t{} : {}", name, self.smt.display(*ty));
             self.smt.declare_const(name, *ty).unwrap();
         }
 
@@ -1628,10 +1627,10 @@ impl SolverCtx {
                 .map(|s| self.smt.atom(s))
                 .collect();
             let custom_assumptions = a(&self.smt, term_args);
-            println!(
-                "Custom assumptions:\n\t{}\n",
-                self.smt.display(custom_assumptions)
-            );
+            // println!(
+            //     "Custom assumptions:\n\t{}\n",
+            //     self.smt.display(custom_assumptions)
+            // );
             assumptions.push(custom_assumptions);
         }
         (assumptions, assertions)

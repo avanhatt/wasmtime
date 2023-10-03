@@ -3174,3 +3174,36 @@ fn test_broken_imm_udiv_cve() {
         }
     })
 }
+
+
+#[test]
+fn test_broken_imm_udiv_cve_32() {
+    // Since there are no bitvectors in the signature, need a custom assumption
+    // hook to pass through the value of the type argument
+    run_and_retry(|| {
+        static EXPECTED: [(Bitwidth, VerificationResult); 1] = [
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ];
+        for (ty, result) in &EXPECTED {
+            let config = Config {
+                dyn_width: false,
+                term: "imm".to_string(),
+                distinct_check: true,
+                custom_verification_condition: None,
+                custom_assumptions: Some(Box::new(|smt, args| {
+                    let ty_arg = *args.first().unwrap();
+                    smt.eq(ty_arg, smt.numeral(*ty as usize))
+                })),
+                names: None,
+            };
+            test_from_file_with_config_simple(
+                "./examples/broken/udiv/udiv_cve_underlying.isle",
+                config,
+                vec![(ty.clone(), result.clone())],
+            );
+        }
+    })
+}

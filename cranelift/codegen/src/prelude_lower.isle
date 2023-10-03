@@ -65,13 +65,8 @@
 (extern constructor output_pair output_pair)
 
 ;; Construct a single-element `InstOutput` from a single register.
-<<<<<<< HEAD
 (spec (output_reg arg)
       (provide (= result (conv_to (widthof result) arg))))
-=======
-;;@ (spec (sig (args arg) (ret))
-;;@     (provide (= (ret) (conv_to (widthof (ret)) (arg)))))
->>>>>>> abbf15747 (move udiv repro to `verify-main` (#72))
 (decl output_reg (Reg) InstOutput)
 (rule output_reg (output_reg reg) (output (value_reg reg)))
 

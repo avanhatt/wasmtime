@@ -3,7 +3,6 @@
 use clap::{ArgAction, Parser};
 use std::env;
 use std::path::PathBuf;
-use std::process;
 use veri_engine_lib::verify::verify_rules;
 use veri_engine_lib::{build_clif_lower_isle, Config};
 
