@@ -1,3 +1,5 @@
+;; We need to redefine some primitive ISLE types for this case study, since the source code
+;; has changed to remove this bug on the current commit.
 (type Reg (primitive Reg))
 (type Value (primitive Value))
 (type Type (primitive Type))
@@ -15,10 +17,12 @@
 
 (type ExtendKind (enum Sign Zero))
 
+;; An Crocus specification; potentially-narrow IR values are zero-extended to 64 bits
 (spec (iconst arg) (provide (= arg (zero_ext 64 result))))
 (decl iconst (Imm64) Inst)
 (extern extractor iconst iconst)
 
+;; An Crocus specification modeling the following logic:
 ;; fn uimm8(&mut self, x: Imm64) -> Option<u8> {
 ;;     let x64: i64 = x.into();
 ;;     let x8: u8 = x64.try_into().ok()?;
@@ -59,27 +63,33 @@
 (extern constructor gpr_new gpr_new)
 (convert Reg Gpr gpr_new)
 
-;; To make this case study specific to Wasm, contrain to 32 or 64
+;; To make this case study specific to Wasm, contrain the widths of
+;; the argument and returned value to 32 or 64
 (spec (uextend arg) 
   (provide (= result (zero_ext (widthof result) arg)))
   (require 
-    (or (= (widthof result) 32) (= (widthof result) 64))
+    (or (= (widthof arg) 32) (= (widthof arg) 64))
     (or (= (widthof result) 32) (= (widthof result) 64))
     (<= (widthof arg) (widthof result))))
 (decl uextend (Value) Inst)
 (extern extractor uextend uextend)
 
+;; Crocus specification to model the Wasm shift semantics:
 ;; fn shift_mask(&mut self, ty: Type) -> ImmLogic {
 ;;     let mask = (ty.lane_bits() - 1) as u64;
 ;;     ImmLogic::maybe_from_u64(mask, I32).unwrap()
 ;; }
+;; NOTE: restricted to Wasm types for this case study
 (spec (ishl x y) 
-    (provide 
-        (= result 
-           (bvshl x 
-                  (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y)) 
-                                                     #x0000000000000001))
-                         y)))))
+  (provide 
+    (= result 
+        (bvshl x 
+              (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y)) 
+                                                  #x0000000000000001))
+                      y))))
+  (require 
+    (or (= (widthof x) 32) (= (widthof x) 64))
+    (or (= (widthof y) 32) (= (widthof y) 64))))
 (decl ishl (Value Value) Inst)
 (extern extractor ishl ishl)
 
@@ -105,6 +115,7 @@
   (require
        (= (widthof simm) 32)
        (= (widthof base) 64)
+       (= (widthof base) 64)
        (= flags flags)))
 
 ;; An `Amode` represents a possible addressing mode that can be used
@@ -124,7 +135,7 @@
             )
 )
 
-(spec (amode_add  x y) (provide (= result (bvadd x (zero_ext 64 y)))))
+(spec (amode_add x y) (provide (= result (bvadd x (zero_ext 64 y)))))
 (decl amode_add (Amode Value) Amode)
 (extern extractor amode_add amode_add)
 
@@ -152,6 +163,7 @@
 (decl extend_to_gpr (Value Type ExtendKind) Gpr)
 (extern constructor extend_to_gpr extend_to_gpr)
 
+;; The problematic rule itself
 (rule 2 (amode_add (Amode.ImmReg off (valid_reg base) flags) 
                    (uextend (ishl index (iconst (uimm8 shift)))))
       (if (u32_lteq (u8_as_u32 shift) 3))

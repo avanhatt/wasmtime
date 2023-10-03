@@ -3139,6 +3139,45 @@ fn test_named_output_reg() {
 
 #[test]
 fn test_broken_imm_udiv_cve() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname_simple(
+            "./examples/broken/udiv/udiv_cve.isle",
+            "udiv".to_string(),
+            vec![
+                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                (
+                    Bitwidth::I16,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+
+#[test]
+fn test_broken_imm_udiv_cve_32() {
+    run_and_retry(|| {
+        test_from_file_with_lhs_termname_simple(
+            "./examples/broken/udiv/udiv_cve.isle",
+            "udiv".to_string(),
+            vec![
+                (
+                    Bitwidth::I32,
+                    VerificationResult::Failure(Counterexample {}),
+                ),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_broken_imm_udiv_cve_underlying() {
     // Since there are no bitvectors in the signature, need a custom assumption
     // hook to pass through the value of the type argument
     run_and_retry(|| {
@@ -3177,7 +3216,7 @@ fn test_broken_imm_udiv_cve() {
 
 
 #[test]
-fn test_broken_imm_udiv_cve_32() {
+fn test_broken_imm_udiv_cve_underlying_32() {
     // Since there are no bitvectors in the signature, need a custom assumption
     // hook to pass through the value of the type argument
     run_and_retry(|| {

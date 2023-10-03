@@ -8,8 +8,8 @@
 (extern extractor integral_ty integral_ty)
 
 ;; Try changing this "sign_ext" to "zero_ext": the test fails either way
-(spec (imm ty x) (provide (= result (zero_ext 64 (conv_to ty x)))))
-;; (spec (imm ty x) (provide (= result (sign_ext 64 (conv_to ty x)))))
+;; (spec (imm ty x) (provide (= result (zero_ext 64 (conv_to ty x)))))
+(spec (imm ty x) (provide (= result (sign_ext 64 (conv_to ty x)))))
 (decl imm (Type u64) Reg)
 
 (spec (load_constant64_full x) (provide (= result x)))
