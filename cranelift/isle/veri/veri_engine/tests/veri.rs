@@ -267,6 +267,22 @@ fn test_named_iadd_imul_right() {
 }
 
 #[test]
+#[ignore]
+fn test_named_slow_iadd_imul_right() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "iadd_imul_right",
+            "iadd",
+            vec![
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
 fn test_named_iadd_imul_left() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
@@ -284,6 +300,22 @@ fn test_named_iadd_imul_left() {
 }
 
 #[test]
+#[ignore]
+fn test_named_slow_iadd_imul_left() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "iadd_imul_left",
+            "iadd",
+            vec![
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
 fn test_named_isub_imul() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
@@ -295,6 +327,23 @@ fn test_named_isub_imul() {
                 // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
                 // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+#[ignore]
+fn test_named_slow_isub_imul() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "isub_imul",
+            "isub",
+            vec![
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     });
@@ -541,6 +590,18 @@ fn test_isub_imm12_neg_not_distinct() {
     );
 }
 
+#[test]
+fn test_isub_imm12_neg_not_distinct_16_32() {
+    test_from_file_with_lhs_termname_simple(
+        "./examples/broken/isub/broken_imm12neg_not_distinct.isle",
+        "isub".to_string(),
+        vec![
+            (Bitwidth::I16, VerificationResult::NoDistinctModels),
+            (Bitwidth::I32, VerificationResult::NoDistinctModels),
+        ],
+    );
+}
+
 // Need a file test because this is a change on top of our latest rebase
 #[test]
 fn test_isub_imm12neg_new() {
@@ -738,6 +799,24 @@ fn test_named_imul_base_case() {
     });
 }
 
+#[test]
+#[ignore]
+fn test_named_slow_imul_base_case() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "imul_base_case",
+            "imul",
+            // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+            vec![
+                // (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
 // TODO traps https://github.com/avanhatt/wasmtime/issues/31
 #[test]
 fn test_named_udiv() {
@@ -751,6 +830,24 @@ fn test_named_udiv() {
                 // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
                 // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+#[ignore]
+fn test_named_slow_udiv() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "udiv",
+            "udiv",
+            // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+            vec![
+                // (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
@@ -796,6 +893,23 @@ fn test_named_sdiv_base_case() {
 }
 
 #[test]
+#[ignore]
+fn test_named_slow_sdiv_base_case() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "sdiv_base_case",
+            "sdiv",
+            vec![
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
 fn test_named_sdiv_safe_divisor() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
@@ -807,6 +921,23 @@ fn test_named_sdiv_safe_divisor() {
                 // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
                 // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+#[ignore]
+fn test_named_slow_sdiv_safe_divisor() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "sdiv_safe_divisor",
+            "sdiv",
+            vec![
+                // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
@@ -877,6 +1008,22 @@ fn test_named_srem() {
 }
 
 #[test]
+#[ignore]
+fn test_named_slow_srem() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "srem",
+            "srem",
+            vec![
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
 fn test_named_urem() {
     run_and_retry(|| {
         test_aarch64_rule_with_lhs_termname_simple(
@@ -888,6 +1035,22 @@ fn test_named_urem() {
                 // (Bitwidth::I16, VerificationResult::Success),
                 // (Bitwidth::I32, VerificationResult::Success),
                 // (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    })
+}
+
+#[test]
+#[ignore]
+fn test_named_slow_urem() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "urem",
+            "urem",
+            vec![
+                (Bitwidth::I16, VerificationResult::Success),
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
             ],
         )
     })
@@ -1145,9 +1308,6 @@ fn test_broken_cls_8() {
             "cls".to_string(),
             vec![
                 (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (Bitwidth::I16, VerificationResult::InapplicableRule),
-                (Bitwidth::I32, VerificationResult::InapplicableRule),
-                (Bitwidth::I64, VerificationResult::InapplicableRule),
             ],
         )
     });
@@ -2899,6 +3059,20 @@ fn test_named_popcnt_64() {
     })
 }
 
+// Currently too slow
+// https://github.com/avanhatt/wasmtime/issues/36
+#[test]
+#[ignore]
+fn test_named_slow_popcnt_64() {
+    run_and_retry(|| {
+        test_aarch64_rule_with_lhs_termname_simple(
+            "popcnt_64",
+            "popcnt",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    })
+}
+
 #[test]
 fn test_named_operand_size_32() {
     // Since there are no bitvectors in the signature, need a custom assumption
@@ -2969,5 +3143,76 @@ fn test_named_output_reg() {
                 (Bitwidth::I64, VerificationResult::Success),
             ],
         )
+    })
+}
+
+#[test]
+fn test_broken_imm_udiv_cve_underlying() {
+    // Since there are no bitvectors in the signature, need a custom assumption
+    // hook to pass through the value of the type argument
+    run_and_retry(|| {
+        static EXPECTED: [(Bitwidth, VerificationResult); 4] = [
+            (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+            (
+                Bitwidth::I16,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+            (Bitwidth::I64, VerificationResult::Success),
+        ];
+        for (ty, result) in &EXPECTED {
+            let config = Config {
+                dyn_width: false,
+                term: "imm".to_string(),
+                distinct_check: true,
+                custom_verification_condition: None,
+                custom_assumptions: Some(Box::new(|smt, args| {
+                    let ty_arg = *args.first().unwrap();
+                    smt.eq(ty_arg, smt.numeral(*ty as usize))
+                })),
+                names: None,
+            };
+            test_from_file_with_config_simple(
+                "./examples/broken/udiv/udiv_cve_underlying.isle",
+                config,
+                vec![(ty.clone(), result.clone())],
+            );
+        }
+    })
+}
+
+
+#[test]
+fn test_broken_imm_udiv_cve_underlying_32() {
+    // Since there are no bitvectors in the signature, need a custom assumption
+    // hook to pass through the value of the type argument
+    run_and_retry(|| {
+        static EXPECTED: [(Bitwidth, VerificationResult); 1] = [
+            (
+                Bitwidth::I32,
+                VerificationResult::Failure(Counterexample {}),
+            ),
+        ];
+        for (ty, result) in &EXPECTED {
+            let config = Config {
+                dyn_width: false,
+                term: "imm".to_string(),
+                distinct_check: true,
+                custom_verification_condition: None,
+                custom_assumptions: Some(Box::new(|smt, args| {
+                    let ty_arg = *args.first().unwrap();
+                    smt.eq(ty_arg, smt.numeral(*ty as usize))
+                })),
+                names: None,
+            };
+            test_from_file_with_config_simple(
+                "./examples/broken/udiv/udiv_cve_underlying.isle",
+                config,
+                vec![(ty.clone(), result.clone())],
+            );
+        }
     })
 }

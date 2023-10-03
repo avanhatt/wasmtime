@@ -239,7 +239,6 @@ impl SolverCtx {
         source_width: SExpr,
         op: &str,
     ) -> SExpr {
-        dbg!("extend_symbolic");
         if self.onlywidths {
             return source;
         }
@@ -1249,7 +1248,7 @@ impl SolverCtx {
                 .unwrap();
 
             // Uncomment to debug specific asserts
-            println!("assum{}: {}", i, self.smt.display(*a));
+            // println!("assum{}: {}", i, self.smt.display(*a));
 
             //     self.smt.push().unwrap();
             //     match self.smt.check() {
@@ -1276,9 +1275,6 @@ impl SolverCtx {
                 // Check that there is a model with distinct bitvector inputs
                 let mut not_all_same = vec![];
                 let atoms: Vec<SExpr> = term_input_bs.iter().map(|n| self.smt.atom(n)).collect();
-                for atom in &atoms {
-                    println!("{}", self.smt.display(*atom));
-                }
                 let solution = self.smt.get_value(atoms).unwrap();
                 assert_eq!(term_input_bs.len(), solution.len());
                 for (variable, value) in solution {
@@ -1293,7 +1289,7 @@ impl SolverCtx {
                 }
                 match self.smt.check() {
                     Ok(Response::Sat) => {
-                        println!("Assertion list is feasible for two distinct inputs!");
+                        println!("Assertion list is feasible for two distinct inputs");
                         VerificationResult::Success
                     }
                     Ok(Response::Unsat) => {
@@ -1513,7 +1509,7 @@ impl SolverCtx {
         lhs_sexpr: SExpr,
         rhs_sexpr: SExpr,
     ) {
-        println!("Quantified variables:");
+        // println!("Quantified variables:");
         let mut vars = vec![];
         let mut lhs_value = None;
         let mut rhs_value = None;
@@ -1540,10 +1536,10 @@ impl SolverCtx {
         }
         vars.sort_by_key(|x| x.0.clone());
         vars.dedup();
-        for (v, x) in &vars {
-            println!("{}", v);
-            println!("{}\n", x);
-        }
+        // for (v, x) in &vars {
+        //     println!("{}", v);
+        //     println!("{}\n", x);
+        // }
 
         println!("Counterexample summary");
         let lhs = self.display_isle_pattern(
@@ -1572,12 +1568,12 @@ impl SolverCtx {
         config: &Config,
     ) -> (Vec<SExpr>, Vec<SExpr>) {
         let mut assumptions: Vec<SExpr> = vec![];
-        println!("Declaring quantified variables");
+        // println!("Declaring quantified variables");
         for v in &rule_sem.quantified_vars {
             let name = &v.name;
             let ty = self.tyctx.tymap[&v.tyvar].clone();
             let var_ty = self.vir_to_smt_ty(&ty);
-            println!("\t{} : {}", name, self.smt.display(var_ty));
+            // println!("\t{} : {}", name, self.smt.display(var_ty));
             if let Type::BitVector(w) = ty {
                 if self.dynwidths {
                     let wide = self.widen_to_register_width(
@@ -1595,19 +1591,19 @@ impl SolverCtx {
             }
             self.smt.declare_const(name, var_ty).unwrap();
         }
-
-        println!("Adding explicit assumptions");
         for a in &rule_sem.assumptions {
             let p = self.vir_expr_to_sexp(a.clone());
             assumptions.push(p)
         }
         if self.dynwidths {
-            println!("Adding width assumptions");
+            // println!("Adding width assumptions");
             for a in &self.width_assumptions {
                 assumptions.push(a.clone());
             }
         }
-        println!("Adding additional assumptions");
+        if self.additional_assumptions.len() > 0 {
+            // println!("Adding additional assumptions");
+        }
         for a in &self.additional_assumptions {
             assumptions.push(a.clone());
         }
@@ -1618,9 +1614,9 @@ impl SolverCtx {
             .map(|a| self.vir_expr_to_sexp(a.clone()))
             .collect();
 
-        println!("Declaring additional variables");
+        // println!("Declaring additional variables");
         for (name, ty) in &self.additional_decls {
-            println!("\t{} : {}", name, self.smt.display(*ty));
+            // println!("\t{} : {}", name, self.smt.display(*ty));
             self.smt.declare_const(name, *ty).unwrap();
         }
 
@@ -1631,10 +1627,10 @@ impl SolverCtx {
                 .map(|s| self.smt.atom(s))
                 .collect();
             let custom_assumptions = a(&self.smt, term_args);
-            println!(
-                "Custom assumptions:\n\t{}\n",
-                self.smt.display(custom_assumptions)
-            );
+            // println!(
+            //     "Custom assumptions:\n\t{}\n",
+            //     self.smt.display(custom_assumptions)
+            // );
             assumptions.push(custom_assumptions);
         }
         (assumptions, assertions)
@@ -1686,7 +1682,7 @@ pub fn run_solver(
 
     // Check whether the non-solver type inference was able to resolve all bitvector widths,
     // and add assumptions for known widths
-    for (e, t) in &ctx.tyctx.tyvars {
+    for (_e, t) in &ctx.tyctx.tyvars {
         let ty = &ctx.tyctx.tymap[&t];
         match ty {
             Type::BitVector(w) => {
@@ -1702,7 +1698,7 @@ pub fn run_solver(
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
-                        println!("Unresolved width: {:?} ({})", &e, *t);
+                        // println!("Unresolved width: {:?} ({})", &e, *t);
                         // Assume the width is greater than 0
                         ctx.width_assumptions
                             .push(ctx.smt.gt(ctx.smt.atom(&width_name), ctx.smt.numeral(0)));
@@ -1729,7 +1725,7 @@ pub fn run_solver(
     ctx.smt.push().unwrap();
     println!("Adding assumptions to determine widths");
     for (i, a) in assumptions.iter().enumerate() {
-        println!("dyn{}: {}", i, ctx.smt.display(*a));
+        // println!("dyn{}: {}", i, ctx.smt.display(*a));
         ctx.smt
             .assert(ctx.smt.named(format!("dyn{i}"), *a))
             .unwrap();
@@ -1789,7 +1785,7 @@ fn resolve_dynamic_widths(
                         }
 
                         if unresolved_widths.contains(&width_name) {
-                            println!("\tResolved width: {}, {}", width_name, width_int);
+                            // println!("\tResolved width: {}, {}", width_name, width_int);
                             width_resolutions.insert(width_name, width_int);
                             cur_tyctx
                                 .tymap
@@ -2031,7 +2027,7 @@ pub fn test_concrete_with_static_widths(
     // Test code only: test against concrete input/output
     // Check that our expected output is valid
     for (i, a) in assumptions.iter().enumerate() {
-        println!("conc{}: {}", i, ctx.smt.display(*a));
+        // println!("conc{}: {}", i, ctx.smt.display(*a));
         ctx.smt
             .assert(ctx.smt.named(format!("conc{i}"), *a))
             .unwrap();

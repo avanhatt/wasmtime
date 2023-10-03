@@ -39,7 +39,7 @@ impl AnnotationEnv {
     }
 }
 
-pub fn string_from_ident(env: &ParsingEnv, id: &ast::Ident) -> String {
+pub fn string_from_ident(_env: &ParsingEnv, id: &ast::Ident) -> String {
     format!("{}", &id.0)
 }
 
@@ -52,7 +52,7 @@ pub fn spec_to_annotation_bound_var(i: &Ident, env: &ParsingEnv) -> BoundVar {
 
 fn spec_to_usize(s: &SpecExpr) -> Option<usize> {
     match s {
-        SpecExpr::ConstInt { val, pos } => Some(*val as usize),
+        SpecExpr::ConstInt { val,  pos : _ } => Some(*val as usize),
         _ => None,
     }
 }
@@ -75,7 +75,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
     fn binop<F: Fn(Box<Expr>, Box<Expr>, u32) -> Expr>(
         b: F,
         args: &Vec<SpecExpr>,
-        pos: &Pos,
+        _pos: &Pos,
         env: &ParsingEnv,
     ) -> Expr {
         assert_eq!(
@@ -260,7 +260,7 @@ fn spec_op_to_expr(s: &SpecOp, args: &Vec<SpecExpr>, pos: &Pos, env: &ParsingEnv
 
 fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
     match s {
-        SpecExpr::ConstInt { val, pos } => Expr::Const(
+        SpecExpr::ConstInt { val,  pos : _ } => Expr::Const(
             Const {
                 ty: Type::Int,
                 value: *val,
@@ -268,7 +268,7 @@ fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
             },
             0,
         ),
-        SpecExpr::ConstBitVec { val, width, pos } => Expr::Const(
+        SpecExpr::ConstBitVec { val, width, pos : _ } => Expr::Const(
             Const {
                 ty: Type::BitVectorWithWidth(*width as usize),
                 value: *val,
@@ -276,7 +276,7 @@ fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
             },
             0,
         ),
-        SpecExpr::ConstBool { val, pos } => Expr::Const(
+        SpecExpr::ConstBool { val,  pos : _ } => Expr::Const(
             Const {
                 ty: Type::Bool,
                 value: *val as i128,
@@ -284,7 +284,7 @@ fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
             },
             0,
         ),
-        SpecExpr::Var { var, pos } => Expr::Var(string_from_ident(env, var), 0),
+        SpecExpr::Var { var, pos : _} => Expr::Var(string_from_ident(env, var), 0),
         SpecExpr::Op { op, args, pos } => spec_op_to_expr(op, args, pos, env),
         SpecExpr::Pair { l, r } => {
             unreachable!(
