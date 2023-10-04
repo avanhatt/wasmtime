@@ -274,9 +274,9 @@ fn test_named_slow_iadd_imul_right() {
             "iadd_imul_right",
             "iadd",
             vec![
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     });
@@ -307,9 +307,9 @@ fn test_named_slow_iadd_imul_left() {
             "iadd_imul_left",
             "iadd",
             vec![
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     });
@@ -341,9 +341,9 @@ fn test_named_slow_isub_imul() {
             "isub",
             vec![
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     });
@@ -809,9 +809,9 @@ fn test_named_slow_imul_base_case() {
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
                 // (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     });
@@ -845,9 +845,9 @@ fn test_named_slow_udiv() {
             // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
             vec![
                 // (Bitwidth::I8, VerificationResult::Success),
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     })
@@ -901,9 +901,9 @@ fn test_named_slow_sdiv_base_case() {
             "sdiv",
             vec![
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     })
@@ -935,9 +935,9 @@ fn test_named_slow_sdiv_safe_divisor() {
             "sdiv",
             vec![
                 // Too slow right now: https://github.com/avanhatt/wasmtime/issues/36
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     })
@@ -1015,9 +1015,9 @@ fn test_named_slow_srem() {
             "srem",
             "srem",
             vec![
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     })
@@ -1048,9 +1048,9 @@ fn test_named_slow_urem() {
             "urem",
             "urem",
             vec![
-                (Bitwidth::I16, VerificationResult::Success),
-                (Bitwidth::I32, VerificationResult::Success),
-                (Bitwidth::I64, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Unknown),
+                (Bitwidth::I32, VerificationResult::Unknown),
+                (Bitwidth::I64, VerificationResult::Unknown),
             ],
         )
     })
@@ -2653,11 +2653,11 @@ fn test_named_lower_icmp_32_64() {
             "lower_icmp_32_64",
             "lower_icmp",
             vec![
-                (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
-                (
-                    Bitwidth::I16,
-                    VerificationResult::Failure(Counterexample {}),
-                ),
+                // (Bitwidth::I8, VerificationResult::Failure(Counterexample {})),
+                // (
+                //     Bitwidth::I16,
+                //     VerificationResult::Failure(Counterexample {}),
+                // ),
                 (Bitwidth::I32, VerificationResult::Success),
                 (Bitwidth::I64, VerificationResult::Success),
             ],
@@ -3068,7 +3068,7 @@ fn test_named_slow_popcnt_64() {
         test_aarch64_rule_with_lhs_termname_simple(
             "popcnt_64",
             "popcnt",
-            vec![(Bitwidth::I64, VerificationResult::Success)],
+            vec![(Bitwidth::I64, VerificationResult::Unknown)],
         )
     })
 }

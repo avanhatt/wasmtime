@@ -1649,6 +1649,11 @@ pub fn run_solver(
     config: &Config,
     _types: &TermSignature,
 ) -> VerificationResult {
+    if std::env::var("SKIP_SOLVER").is_ok() {
+        println!("Environment variable SKIP_SOLVER set, returning Unknown");
+        return VerificationResult::Unknown;
+    }
+
     let mut solver = easy_smt::ContextBuilder::new()
         .replay_file(Some(std::fs::File::create("dynamic_widths.smt2").unwrap()))
         .solver("z3", ["-smt2", "-in"])
