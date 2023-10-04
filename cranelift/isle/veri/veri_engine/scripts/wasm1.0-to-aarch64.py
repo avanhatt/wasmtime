@@ -219,5 +219,4 @@ if __name__ == "__main__":
     with open("wasm-1.0-to-aarch64-tests/expected_timeout_tests.txt") as file:
         timeout_tests = [line.rstrip() for line in file]
     
-    # verify_rules(expected_success_tests, timeout_tests)
-    count_rule_results("script-results/wasm-1.0-to-aarch64-log-2023-10-03T19:47:28.txt", expected_success_tests, timeout_tests)
+    verify_rules(expected_success_tests, timeout_tests)
