@@ -343,7 +343,13 @@
 
 ;;;; `cranelift_codegen::ir::MemFlags ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Provide model for the MemFlags type (declared in generated clif_lower.isle).
+(model MemFlags (type (bv 8)))
+
 ;; `MemFlags::trusted`
+;; TODO(mbm): ISLE types for FlagBit (hard-coding #x03 is fragile)
+(spec (mem_flags_trusted)
+      (provide (= result #x03)))
 (decl pure mem_flags_trusted () MemFlags)
 (extern constructor mem_flags_trusted mem_flags_trusted)
 
@@ -403,14 +409,14 @@
 
 ;; An extractor that only matches types that can fit in 16 bits.
 (spec (fits_in_16 arg)
-      (provide (= result arg)) 
+      (provide (= result arg))
       (require (<= arg 16)))
 (decl fits_in_16 (Type) Type)
 (extern extractor fits_in_16 fits_in_16)
 
 ;; An extractor that only matches types that can fit in 32 bits.
 (spec (fits_in_32 arg)
-      (provide (= result arg)) 
+      (provide (= result arg))
       (require (<= arg 32)))
 (decl fits_in_32 (Type) Type)
 (extern extractor fits_in_32 fits_in_32)
@@ -421,7 +427,7 @@
 
 ;; An extractor that only matches types that can fit in 64 bits.
 (spec (fits_in_64 arg)
-      (provide (= result arg)) 
+      (provide (= result arg))
       (require (<= arg 64)))
 (decl fits_in_64 (Type) Type)
 (extern extractor fits_in_64 fits_in_64)
@@ -437,13 +443,16 @@
 ;; A pure constructor/extractor that only matches scalar integers, and
 ;; references that can fit in 64 bits.
 (spec (ty_int_ref_scalar_64 arg)
-    (provide (= result arg)) 
+    (provide (= result arg))
     (require (<= arg 64)))
 (decl pure partial ty_int_ref_scalar_64 (Type) Type)
 (extern constructor ty_int_ref_scalar_64 ty_int_ref_scalar_64)
 (extern extractor ty_int_ref_scalar_64 ty_int_ref_scalar_64_extract)
 
 ;; An extractor that matches 32- and 64-bit types only.
+(spec (ty_32_or_64 arg)
+      (provide (= result arg))
+      (require (or (= arg 32) (= arg 64))))
 (decl ty_32_or_64 (Type) Type)
 (extern extractor ty_32_or_64 ty_32_or_64)
 
@@ -612,7 +621,7 @@
 (extern constructor intcc_unsigned intcc_unsigned)
 
 ;; Pure constructor that only matches signed integer cond codes.
-(spec (signed_cond_code c) 
+(spec (signed_cond_code c)
     (provide (= result c))
     (require (and (bvuge c #x02) (bvule c #x05))))
 (decl pure partial signed_cond_code (IntCC) IntCC)
