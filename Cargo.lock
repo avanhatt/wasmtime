@@ -1659,15 +1659,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "isletool"
-version = "0.0.0"
-dependencies = [
- "clap",
- "cranelift-isle",
- "env_logger 0.10.0",
-]
-
-[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
