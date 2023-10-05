@@ -1142,6 +1142,7 @@
 (extern constructor amode_offset amode_offset)
 
 ;; Return a zero offset as an `Offset32`.
+(spec (zero_offset) (provide (= result #x00000000)))
 (decl zero_offset () Offset32)
 (extern constructor zero_offset zero_offset)
 
@@ -4088,7 +4089,7 @@
             (inst MInst (MInst.Neg size src dst)))
         (ProducesFlags.ProducesFlagsReturnsResultWithConsumer inst dst)))
 
-;; AVH TODO: is SyntheticAmode just the address? 
+;; AVH TODO: is SyntheticAmode just the address?
 ;; Gpr: can we start this as just a new type, modeled as a 64 bit bitvecotr?
 (decl x64_lea (Type SyntheticAmode) Gpr)
 (rule (x64_lea ty addr)
