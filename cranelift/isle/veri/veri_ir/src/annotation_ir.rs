@@ -179,6 +179,8 @@ pub enum Expr {
     BVUlt(Box<Expr>, Box<Expr>, u32),
     BVUlte(Box<Expr>, Box<Expr>, u32),
 
+    BVSaddOvfl(Box<Expr>, Box<Expr>, u32),
+
     // Bitvector operations
     //      Note: these follow the naming conventions of the SMT theory of bitvectors:
     //      https://SMT-LIB.cs.uiowa.edu/version1/logics/QF_BV.smt
@@ -192,7 +194,6 @@ pub enum Expr {
     Rev(Box<Expr>, u32),
     A64Rev(Box<Expr>, Box<Expr>, u32),
     BVPopcnt(Box<Expr>, u32),
-
 
     // Binary operators
     BVMul(Box<Expr>, Box<Expr>, u32),
@@ -226,7 +227,7 @@ pub enum Expr {
     // Extract specified bits
     BVExtract(usize, usize, Box<Expr>, u32),
 
-    // Concat two bitvectors 
+    // Concat two bitvectors
     BVConcat(Vec<Expr>, u32),
 
     // Convert integer to bitvector
@@ -289,6 +290,7 @@ impl Expr {
             | Expr::BVUgte(_, _, t)
             | Expr::BVUlt(_, _, t)
             | Expr::BVUlte(_, _, t)
+            | Expr::BVSaddOvfl(_, _, t)
             | Expr::BVMul(_, _, t)
             | Expr::BVUDiv(_, _, t)
             | Expr::BVSDiv(_, _, t)
@@ -318,7 +320,7 @@ impl Expr {
             | Expr::BVSubs(_, _, _, t)
             | Expr::BVPopcnt(_, t)
             | Expr::Conditional(_, _, _, t)
-            | Expr::Switch(_, _, t)  => *t,
+            | Expr::Switch(_, _, t) => *t,
         }
     }
 }

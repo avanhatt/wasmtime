@@ -160,6 +160,8 @@ pub enum BinaryOp {
     BVUlt,
     BVUlte,
 
+    BVSaddOvfl,
+
     BVMul,
     BVUDiv,
     BVSDiv,

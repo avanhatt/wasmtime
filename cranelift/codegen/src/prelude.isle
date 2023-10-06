@@ -79,6 +79,7 @@
 (extern constructor u8_lt u8_lt)
 
 ;; Get a signed 32-bit immediate in an u32 from an Imm64, if possible.
+(spec (simm32 x) (provide (= result (sign_ext 64 x))))
 (decl simm32 (i32) Imm64)
 (extern extractor simm32 simm32)
 
@@ -154,6 +155,13 @@
 
 ;; Pure/fallible constructor that tries to add two `u32`s, interpreted
 ;; as signed values, and fails to match on overflow.
+;;
+;; Note: checked_add() in Rust returns Option<i32>
+;; QUESTION(mbm): how to handle failed match in the spec? is that covered by requires?
+;; BUG: this isn't fallible at all
+(spec (s32_add_fallible x y)
+      (provide (= result (bvadd x y)))
+      (require (not (bvsaddo x y))))
 (decl pure partial s32_add_fallible (i32 i32) i32)
 (extern constructor s32_add_fallible s32_add_fallible)
 
@@ -607,10 +615,12 @@
 (extern extractor ty_dyn128_int ty_dyn128_int)
 
 ;; Convert an `Offset32` to a primitive number.
+(spec (offset32_to_i32 offset) (provide (= result offset)))
 (decl pure offset32_to_i32 (Offset32) i32)
 (extern constructor offset32_to_i32 offset32_to_i32)
 
 ;; Convert a number to an `Offset32`
+(spec (i32_to_offset32 x) (provide (= result x)))
 (decl pure i32_to_offset32 (i32) Offset32)
 (extern constructor i32_to_offset32 i32_to_offset32)
 

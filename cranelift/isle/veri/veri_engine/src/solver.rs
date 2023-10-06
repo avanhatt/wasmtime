@@ -788,6 +788,7 @@ impl SolverCtx {
                     BinaryOp::BVUgte => "bvuge",
                     BinaryOp::BVUlt => "bvult",
                     BinaryOp::BVUlte => "bvule",
+                    BinaryOp::BVSaddOvfl => "bvsaddo",
                     BinaryOp::BVMul => "bvmul",
                     BinaryOp::BVUDiv => "bvudiv",
                     BinaryOp::BVSDiv => "bvsdiv",
