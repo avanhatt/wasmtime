@@ -1104,7 +1104,10 @@
 ;;
 ;; TODO: semantics of offset (sign extend or zero extend)?
 (spec (to_amode_add flags x y offset)
-      (provide (= result (bvadd (bvadd x y) (sign_ext 64 offset)))))
+      (provide (= result (bvadd (bvadd x y) (sign_ext 64 offset))))
+      (require
+            (= (widthof x) 64)
+            (= (widthof y) 64)))
 (decl to_amode_add (MemFlags Value Value Offset32) Amode)
 
 (rule 0 (to_amode_add flags x y offset)
@@ -1644,6 +1647,7 @@
 (extern constructor put_in_xmm_mem_imm put_in_xmm_mem_imm)
 
 ;; Construct an `InstOutput` out of a single GPR register.
+(spec (output_gpr x) (provide (= result x)))
 (decl output_gpr (Gpr) InstOutput)
 (rule (output_gpr x)
       (output_reg (gpr_to_reg x)))
@@ -4102,6 +4106,9 @@
 
 ;; AVH TODO: is SyntheticAmode just the address?
 ;; Gpr: can we start this as just a new type, modeled as a 64 bit bitvecotr?
+(spec (x64_lea ty amode)
+      (provide (= result amode))
+      (require (or (= ty 32) (= ty 64))))
 (decl x64_lea (Type SyntheticAmode) Gpr)
 (rule (x64_lea ty addr)
       (let ((dst WritableGpr (temp_writable_gpr))
