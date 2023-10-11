@@ -3240,10 +3240,80 @@ fn test_named_x64_to_amode_add_base_case() {
 }
 
 #[test]
-fn test_named_x64_to_amode_add_const_y() {
+fn test_named_x64_to_amode_add_const_rhs() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
-            "to_amode_add_const_y",
+            "to_amode_add_const_rhs",
+            "to_amode_add",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_to_amode_add_const_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "to_amode_add_const_lhs",
+            "to_amode_add",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_to_amode_add_const_fold_iadd_lhs_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "to_amode_add_const_fold_iadd_lhs_rhs",
+            "to_amode_add",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_to_amode_add_const_fold_iadd_lhs_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "to_amode_add_const_fold_iadd_lhs_lhs",
+            "to_amode_add",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_to_amode_add_const_fold_iadd_rhs_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "to_amode_add_const_fold_iadd_rhs_rhs",
+            "to_amode_add",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_to_amode_add_const_fold_iadd_rhs_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "to_amode_add_const_fold_iadd_rhs_lhs",
             "to_amode_add",
             vec![
                 //(Bitwidth::I32, VerificationResult::Success),
