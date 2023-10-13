@@ -1044,6 +1044,28 @@
 ;; TODO: represent flags in Amode
 (model Amode (type (bv 64)))
 
+;; TODO: represent flags in Amode
+(spec (Amode.ImmReg simm base flags)
+      (provide (= result (bvadd base (sign_ext 64 simm))))
+      (require
+        (= (widthof simm) 32)
+        (= (widthof base) 64)
+        (= (widthof flags) 8)))
+
+;; TODO: represent flags in Amode
+(spec (Amode.ImmRegRegShift simm base index shift flags)
+  (provide
+    (= result
+      (bvadd
+        (bvadd base (sign_ext 64 simm))
+        (bvshl index (zero_ext 64 shift)))))
+  (require
+       (= (widthof simm) 32)
+       (= (widthof base) 64)
+       (= (widthof index) 64)
+       (= (widthof shift) 8)
+       (= (widthof flags) 8)))
+
 ;; A helper to both check that the `Imm64` and `Offset32` values sum to less
 ;; than 32-bits AND return this summed `u32` value. Also, the `Imm64` will be
 ;; zero-extended from `Type` up to 64 bits. This is useful for `to_amode`.
@@ -1139,23 +1161,26 @@
       (require
             (= (widthof x) 64)))
 (decl amode_imm_reg (MemFlags Value Offset32) Amode)
-(rule 0 (amode_imm_reg flags base offset)
+(rule amode_imm_reg_base 0 (amode_imm_reg flags base offset)
         (Amode.ImmReg offset base flags))
-(rule 1 (amode_imm_reg flags (iadd x y) offset)
+(rule amode_imm_reg_iadd 1 (amode_imm_reg flags (iadd x y) offset)
         (amode_imm_reg_reg_shift flags x y offset))
 
 (spec (amode_imm_reg_reg_shift flags x y offset)
       (provide (= result (bvadd (bvadd x y) (sign_ext 64 offset))))
       (require
+            (= (widthof flags) 8)
             (= (widthof x) 64)
-            (= (widthof y) 64)))
+            (= (widthof y) 64)
+            (= (widthof offset) 32)))
 (decl amode_imm_reg_reg_shift (MemFlags Value Value Offset32) Amode)
-(rule 0 (amode_imm_reg_reg_shift flags x y offset)
+;; TODO: why does this fail to verify? the 0 constant is deduced to have width 1 when 8 is required
+(rule amode_imm_reg_reg_shift_no_shift 0 (amode_imm_reg_reg_shift flags x y offset)
         (Amode.ImmRegRegShift offset x y 0 flags)) ;; 0 == y<<0 == "no shift"
-(rule 1 (amode_imm_reg_reg_shift flags x (ishl y (iconst (uimm8 shift))) offset)
+(rule amode_imm_reg_reg_shift_shl_rhs 1 (amode_imm_reg_reg_shift flags x (ishl y (iconst (uimm8 shift))) offset)
         (if (u32_lteq (u8_as_u32 shift) 3))
         (Amode.ImmRegRegShift offset x y shift flags))
-(rule 2 (amode_imm_reg_reg_shift flags (ishl y (iconst (uimm8 shift))) x offset)
+(rule amode_imm_reg_reg_shift_shl_lhs 2 (amode_imm_reg_reg_shift flags (ishl y (iconst (uimm8 shift))) x offset)
         (if (u32_lteq (u8_as_u32 shift) 3))
         (Amode.ImmRegRegShift offset x y shift flags))
 
@@ -1618,6 +1643,7 @@
 ;; Put a value into a GPR.
 ;;
 ;; Asserts that the value goes into a GPR.
+(spec (put_in_gpr arg) (provide (= result (conv_to 64 arg))))
 (decl put_in_gpr (Value) Gpr)
 (rule (put_in_gpr val)
       (gpr_new (put_in_reg val)))

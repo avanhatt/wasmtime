@@ -1704,7 +1704,7 @@ pub fn run_solver(
                         ctx.width_assumptions.push(eq);
                     }
                     None => {
-                        // println!("Unresolved width: {:?} ({})", &e, *t);
+                        println!("Unresolved width: {:?} ({})", &_e, *t);
                         // Assume the width is greater than 0
                         ctx.width_assumptions
                             .push(ctx.smt.gt(ctx.smt.atom(&width_name), ctx.smt.numeral(0)));
@@ -1731,7 +1731,7 @@ pub fn run_solver(
     ctx.smt.push().unwrap();
     println!("Adding assumptions to determine widths");
     for (i, a) in assumptions.iter().enumerate() {
-        // println!("dyn{}: {}", i, ctx.smt.display(*a));
+        //println!("dyn{}: {}", i, ctx.smt.display(*a));
         ctx.smt
             .assert(ctx.smt.named(format!("dyn{i}"), *a))
             .unwrap();

@@ -65,6 +65,11 @@
 
 ;; Pure/fallible constructor that tests if one u32 is less than or
 ;; equal to another.
+(spec (u32_lteq  a b)
+    (provide (<= a b)
+             (= (widthof result) 1))
+    (require (= (widthof a) 32)
+             (= (widthof b) 32)))
 (decl pure partial u32_lteq (u32 u32) Unit)
 (extern constructor u32_lteq u32_lteq)
 
@@ -84,6 +89,10 @@
 (extern extractor simm32 simm32)
 
 ;; Get an unsigned 8-bit immediate in a u8 from an Imm64, if possible.
+(spec (uimm8 arg)
+    (provide (= result (zero_ext 64 arg)))
+    (require (bvslt result #x0000000000000100)
+             (= (widthof arg) 8)))
 (decl uimm8 (u8) Imm64)
 (extern extractor uimm8 uimm8)
 
@@ -92,6 +101,11 @@
 (decl pure u8_as_i8 (u8) i8)
 (extern constructor u8_as_i8 u8_as_i8)
 
+(spec (u8_as_u32 arg)
+    (provide (= result (zero_ext 32 arg)))
+    (require
+      (= (widthof arg) 8)
+      (= (widthof result) 32)))
 (decl pure u8_as_u32 (u8) u32)
 (extern constructor u8_as_u32 u8_as_u32)
 (convert u8 u32 u8_as_u32)

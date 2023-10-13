@@ -3322,3 +3322,73 @@ fn test_named_x64_to_amode_add_const_fold_iadd_rhs_lhs() {
         )
     });
 }
+
+#[test]
+fn test_named_x64_amode_imm_reg_base() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "amode_imm_reg_base",
+            "amode_imm_reg",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_amode_imm_reg_iadd() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "amode_imm_reg_iadd",
+            "amode_imm_reg",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_amode_imm_reg_reg_shift_no_shift() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "amode_imm_reg_reg_shift_no_shift",
+            "amode_imm_reg_reg_shift",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_amode_imm_reg_reg_shift_shl_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "amode_imm_reg_reg_shift_shl_rhs",
+            "amode_imm_reg_reg_shift",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_amode_imm_reg_reg_shift_shl_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "amode_imm_reg_reg_shift_shl_lhs",
+            "amode_imm_reg_reg_shift",
+            vec![
+                //(Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
