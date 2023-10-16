@@ -113,7 +113,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&defs, &typeenv);
+    let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
     let instantiations = match tr {
         TestResult::Simple(s) => {
@@ -149,7 +149,6 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
     for (type_instantiation, expected_result) in instantiations {
         println!("Expected result: {:?}", expected_result);
         let type_sols = type_rules_with_term_and_types(
-            defs.clone(),
             &termenv,
             &typeenv,
             &annotation_env,
@@ -390,7 +389,7 @@ pub fn test_concrete_aarch64_rule_with_lhs_termname(
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&defs, &typeenv);
+    let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
     let config = Config {
         dyn_width: dynwidth,
@@ -411,7 +410,6 @@ pub fn test_concrete_aarch64_rule_with_lhs_termname(
     };
 
     let type_sols = type_rules_with_term_and_types(
-        defs.clone(),
         &termenv,
         &typeenv,
         &annotation_env,
@@ -451,7 +449,7 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     let lexer = cranelift_isle::lexer::Lexer::from_files(&inputs).unwrap();
     let defs = cranelift_isle::parser::parse(lexer).expect("should parse");
     let (typeenv, termenv) = create_envs(&defs).unwrap();
-    let annotation_env = parse_annotations(&defs, &typeenv);
+    let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
     let config = Config {
         dyn_width: dynwidth,
@@ -472,7 +470,6 @@ pub fn test_concrete_input_from_file_with_lhs_termname(
     };
 
     let type_sols = type_rules_with_term_and_types(
-        defs.clone(),
         &termenv,
         &typeenv,
         &annotation_env,
