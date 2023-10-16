@@ -12,6 +12,10 @@ keywords = ["compile", "compiler", "jit"]
 build = "build.rs"
 edition.workspace = true
 
+[[bin]]
+name = "lower"
+path = "src/bin/lower.rs"
+
 [dependencies]
 anyhow = { workspace = true, optional = true }
 bumpalo = "3"
