@@ -7,6 +7,7 @@ use meta::isa::Isa;
 use std::path::PathBuf;
 
 pub mod annotations;
+pub mod inspect;
 pub mod interp;
 pub mod solver;
 pub mod termname;

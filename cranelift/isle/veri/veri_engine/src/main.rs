@@ -3,6 +3,7 @@
 use clap::{ArgAction, Parser};
 use std::env;
 use std::path::PathBuf;
+use veri_engine_lib::inspect::inspect_rules;
 use veri_engine_lib::verify::verify_rules;
 use veri_engine_lib::{build_clif_lower_isle, Config};
 
@@ -36,6 +37,10 @@ struct Args {
     /// Allow dynamic widths for the solver query
     #[clap(short, long, action=ArgAction::SetTrue)]
     dynwidths: bool,
+
+    /// Inspection mode.
+    #[clap(long, action=ArgAction::SetTrue)]
+    inspect: bool,
 }
 
 fn main() {
@@ -100,5 +105,9 @@ fn main() {
         custom_assumptions: None,
     };
 
-    verify_rules(inputs, &config)
+    if args.inspect {
+        inspect_rules(inputs);
+    } else {
+        verify_rules(inputs, &config)
+    }
 }
