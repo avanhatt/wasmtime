@@ -18,7 +18,7 @@ use cranelift_control::ControlPlane;
 use target_lexicon::{Aarch64Architecture, Architecture, OperatingSystem, Triple};
 
 // New backend:
-mod abi;
+pub mod abi;
 pub mod inst;
 mod lower;
 pub mod settings;

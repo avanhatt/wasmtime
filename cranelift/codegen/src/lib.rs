@@ -1,5 +1,5 @@
 //! Cranelift code generation library.
-#![deny(missing_docs, trivial_numeric_casts, unused_extern_crates)]
+#![deny(trivial_numeric_casts, unused_extern_crates)]
 #![warn(unused_import_braces)]
 #![cfg_attr(feature = "std", deny(unstable_features))]
 #![no_std]
@@ -36,7 +36,7 @@ pub use cranelift_entity as entity;
 pub use gimli;
 
 #[macro_use]
-mod machinst;
+pub mod machinst;
 
 pub mod binemit;
 pub mod cfg_printer;

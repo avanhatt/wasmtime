@@ -22,7 +22,7 @@ use std::sync::OnceLock;
 // these ABIs are very similar.
 
 /// Support for the AArch64 ABI from the callee side (within a function body).
-pub(crate) type AArch64Callee = Callee<AArch64MachineDeps>;
+pub type AArch64Callee = Callee<AArch64MachineDeps>;
 
 /// Support for the AArch64 ABI from the caller side (at a callsite).
 pub(crate) type AArch64CallSite = CallSite<AArch64MachineDeps>;
