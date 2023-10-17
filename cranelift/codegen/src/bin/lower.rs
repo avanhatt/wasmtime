@@ -1,11 +1,14 @@
 use cranelift_codegen::{
     dominator_tree::DominatorTree,
     flowgraph::ControlFlowGraph,
-    ir::Function,
+    ir::{types::I64, Function},
     isa::aarch64::{
-        abi, inst::emit::EmitInfo, inst::Inst, settings as aarch64_settings, AArch64Backend,
+        abi,
+        inst::emit::EmitInfo,
+        lower::isle::generated_code::{constructor_a64_udiv, MInst},
+        settings as aarch64_settings, AArch64Backend,
     },
-    machinst::{BlockLoweringOrder, Lower, SigSet},
+    machinst::{isle::IsleContext, BlockLoweringOrder, Lower, SigSet, VRegAllocator},
     settings as shared_settings,
 };
 use cranelift_control::ControlPlane;
@@ -32,5 +35,17 @@ fn main() {
     let mut ctrl_plane = ControlPlane::default();
     let block_order = BlockLoweringOrder::new(&f, &domtree, &mut ctrl_plane);
 
-    let lower = Lower::<Inst>::new(&f, abi, emit_info, block_order, sigs);
+    let mut lower = Lower::<MInst>::new(&f, abi, emit_info, block_order, sigs).unwrap();
+
+    // Construct an ISLE Context.
+    let mut ctx = IsleContext {
+        lower_ctx: &mut lower,
+        backend: &backend,
+    };
+
+    // Lower an instruction.
+    let mut vreg_alloc = VRegAllocator::<MInst>::new();
+    let v1 = vreg_alloc.alloc(I64).unwrap().only_reg().unwrap();
+    let v2 = vreg_alloc.alloc(I64).unwrap().only_reg().unwrap();
+    constructor_a64_udiv(&mut ctx, I64, v1, v2);
 }

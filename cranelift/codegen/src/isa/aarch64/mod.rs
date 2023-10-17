@@ -20,7 +20,7 @@ use target_lexicon::{Aarch64Architecture, Architecture, OperatingSystem, Triple}
 // New backend:
 pub mod abi;
 pub mod inst;
-mod lower;
+pub mod lower;
 pub mod settings;
 
 use self::inst::EmitInfo;

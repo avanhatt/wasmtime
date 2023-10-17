@@ -882,7 +882,7 @@ macro_rules! isle_prelude_method_helpers {
 
 /// This structure is used to implement the ISLE-generated `Context` trait and
 /// internally has a temporary reference to a machinst `LowerCtx`.
-pub(crate) struct IsleContext<'a, 'b, I, B>
+pub struct IsleContext<'a, 'b, I, B>
 where
     I: VCodeInst,
     B: LowerBackend,
