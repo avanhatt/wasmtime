@@ -77,6 +77,19 @@ fn term_name(term_id: &TermId, typeenv: &TypeEnv, termenv: &TermEnv) -> String {
     typeenv.syms[term.name.index()].clone()
 }
 
+fn node_name(s: &String) -> String {
+    s.replace(".", "_")
+}
+
+fn print_graph_cluster(terms: &HashSet<TermId>, typeenv: &TypeEnv, termenv: &TermEnv) {
+    print!("{{");
+    for term in terms {
+        let name = term_name(&term, &typeenv, &termenv);
+        print!(" {}", node_name(&name));
+    }
+    print!(" }}");
+}
+
 pub fn inspect_rules(inputs: Vec<PathBuf>) {
     let lexer = isle::lexer::Lexer::from_files(&inputs).unwrap();
 
@@ -90,27 +103,24 @@ pub fn inspect_rules(inputs: Vec<PathBuf>) {
     // // Parse annotations.
     // let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
-    // Dump rules.
+    // Dump rules graph.
+    println!("digraph isle {{");
+    println!("\trankdir=\"LR\"");
+    println!("\tnode [fontsize=10, shape=box, height=0.25]");
     for rule in &termenv.rules {
         // Just focus on named rules for now.
         if rule.name.is_none() {
             continue;
         }
 
-        println!("rule: {}", rule_name(&rule, &typeenv));
-
         let lhs_terms = rule_terms(&rule, &termenv);
-        for lhs_term in lhs_terms {
-            println!("\tlhs term: {}", term_name(&lhs_term, &typeenv, &termenv))
-        }
-
         let rhs_terms = expr_terms(&rule.rhs);
-        for rhs_term in rhs_terms {
-            println!("\trhs term: {}", term_name(&rhs_term, &typeenv, &termenv))
-        }
 
-        // // Rule term.
-        // let lhs_term = &termenv.terms[rule.root_term.index()];
-        // let lhs_name = typeenv.syms[lhs_term.name.index()].clone();
+        print!("\t// {}\n\t", rule_name(&rule, &typeenv));
+        print_graph_cluster(&lhs_terms, &typeenv, &termenv);
+        print!(" -> ");
+        print_graph_cluster(&rhs_terms, &typeenv, &termenv);
+        print!("\n");
     }
+    println!("}}");
 }
