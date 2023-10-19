@@ -1,3 +1,4 @@
+use crate::annotations::parse_annotations;
 use cranelift_isle as isle;
 use isle::compile::create_envs;
 use isle::sema::{Expr, Pattern, Rule, TermEnv, TermId, TypeEnv};
@@ -34,8 +35,17 @@ fn rule_root_pattern(rule: &Rule, termenv: &TermEnv) -> Pattern {
 }
 
 fn rule_terms(rule: &Rule, termenv: &TermEnv) -> HashSet<TermId> {
+    // Root pattern.
     let root_pattern = rule_root_pattern(rule, termenv);
-    pattern_terms(&root_pattern)
+    let mut terms = pattern_terms(&root_pattern);
+
+    // If-let.
+    for iflet in &rule.iflets {
+        terms.extend(pattern_terms(&iflet.lhs));
+        terms.extend(expr_terms(&iflet.rhs));
+    }
+
+    terms
 }
 
 fn expr_terms(expr: &Expr) -> HashSet<TermId> {
@@ -100,18 +110,30 @@ pub fn inspect_rules(inputs: Vec<PathBuf>) {
     // names to types
     let (typeenv, termenv) = create_envs(&defs).unwrap();
 
-    // // Parse annotations.
-    // let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
+    // Parse annotations.
+    let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
     // Dump rules graph.
     println!("digraph isle {{");
     println!("\trankdir=\"LR\"");
-    println!("\tnode [fontsize=10, shape=box, height=0.25]");
+    println!("\tnode [fontsize=12 fontname=\"monospace\" shape=box]");
+    println!("\tedge [color=\"#586e75\"]");
+
+    // Annotated nodes.
+    for term in annotation_env.annotation_map.keys() {
+        let name = term_name(term, &typeenv, &termenv);
+        println!(
+            "\t{} [style=filled, fillcolor=\"#2aa198\"]",
+            node_name(&name)
+        );
+    }
+
+    // Rule edges.
     for rule in &termenv.rules {
         // Just focus on named rules for now.
-        if rule.name.is_none() {
-            continue;
-        }
+        // if rule.name.is_none() {
+        //     continue;
+        // }
 
         let lhs_terms = rule_terms(&rule, &termenv);
         let rhs_terms = expr_terms(&rule.rhs);
@@ -122,5 +144,6 @@ pub fn inspect_rules(inputs: Vec<PathBuf>) {
         print_graph_cluster(&rhs_terms, &typeenv, &termenv);
         print!("\n");
     }
+
     println!("}}");
 }
