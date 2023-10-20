@@ -1,11 +1,41 @@
+;; Types
+
 (type u8 (primitive u8))
-(type u64 (primitive u64))
 
-(spec (add x y) (provide (= result (bvadd x y))))
-(decl add (u64 u64) u64)
+;; High-level Instructions
 
-(spec (shl x s) (provide (= result (bvshl x (zero_ext 64 s)))))
-(decl shl (u64 u8) u64)
-(extern constructor shl shl)
+(type Value (primitive Value))
 
-(rule add_shl 0 (add x x) (shl x 1))
+(type Inst
+    (enum   (Add (x Value) (y Value))))
+
+(spec (Inst.Add x y) (provide (= result (bvadd x y))))
+
+;; Machine Instructions
+
+(type Reg (primitive Reg))
+
+(type MachInst
+    (enum   (Add (x Reg) (y Reg))
+            (Shl (x Reg) (s u8))))
+
+(spec (MachInst.Add x y)
+      (provide (= result (bvadd x y))))
+(spec (MachInst.Shl x s)
+      (provide (= result (bvshl x (zero_ext 64 s)))))
+
+;; Lowering
+
+(spec (lower arg)
+      (provide (= result arg)))
+(decl lower (Inst) MachInst)
+
+(spec (put_in_reg arg)
+      (provide (= result (conv_to 64 arg))))
+(decl put_in_reg (Value) Reg)
+(extern constructor put_in_reg put_in_reg)
+
+(rule add_base_case 0 (lower (Inst.Add x y))
+    (MachInst.Add (put_in_reg x) (put_in_reg y)))
+(rule add_shl 1 (lower (Inst.Add x x))
+    (MachInst.Shl (put_in_reg x) 1))
