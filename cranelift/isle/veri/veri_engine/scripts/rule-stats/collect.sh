@@ -3,15 +3,12 @@
 set -exuo pipefail
 
 tests_directory="$1"
-working_directory=$(mktemp -d)
+trace_directory="$2"
 
 # Build.
 cargo build --bin wasmtime --features 'wasmtime-cranelift/trace-log'
 
 # Run.
-trace_directory="${working_directory}/trace"
-mkdir -p "${trace_directory}"
-
 for test in "${tests_directory}"/*.wast ; do
     test_name=$(basename "${test}")
     log_prefix="${trace_directory}/${test_name}."
