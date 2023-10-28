@@ -17,9 +17,9 @@ for test in "${tests_directory}"/*.wast ; do
     log_prefix="${trace_directory}/${test_name}."
     RUST_LOG='isle_rule_trace=trace' \
         ./target/debug/wasmtime wast \
-        -C compiler=cranelift \
-        -C cache=no \
-        -D log-to-files=y \
-        -D log-prefix="${log_prefix}" \
+        --codegen compiler=cranelift \
+        --codegen cache=no \
+        --debug log-to-files=y \
+        --debug log-prefix="${log_prefix}" \
         "${test}"
 done
