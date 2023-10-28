@@ -20,6 +20,9 @@ sed -i.bak '/trunc_sat_/d' tests/spec_testsuite/conversions.wast
 
 ts=`date +'%Y-%m-%d-%s'`
 
+# Ensure fresh build.
+cargo build
+
 for fn in $tests ; do
     ./target/debug/wasmtime wast --disable-cache \
         --disable-parallel-compilation $fn

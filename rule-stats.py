@@ -26,18 +26,17 @@ def is_fp(inst):
 def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
     counts = Counter()
     names = {}
-    poss = {}
 
     # Ingest the trace.
     exclude = False
     for row in csv.reader(sys.stdin):
-        rule_id, name, pos, inst = row
+        name, pos, inst = row
 
         # Log messages either have an opcode/types string (indicating a
         # new instruction is being lowered) or have all the other fields
         # (indicating a rule was triggered).
         if inst:
-            assert not (rule_id or name or pos)
+            assert not (name or pos)
             opcode, _ = inst.split(None, 1)
 
             # Should we exclude this instruction?
@@ -56,21 +55,17 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
         if exclude:
             continue
 
-        rule_id = int(rule_id)
+        counts[pos] += 1
 
-        counts[rule_id] += 1
-
-        if rule_id in names:
-            assert names[rule_id] == name
-            assert poss[rule_id] == pos
+        if pos in names:
+            assert names[pos] == name
         else:
-            names[rule_id] = name
-            poss[rule_id] = pos
+            names[pos] = name
 
     # Print the most frequently triggered rules, for fun.
     print(f'Top {TOP_K} most commonly used rules:')
-    for rule_id, count in counts.most_common(TOP_K):
-        print(count, rule_id, names[rule_id], poss[rule_id])
+    for pos, count in counts.most_common(TOP_K):
+        print(count, names[pos], pos)
 
     # How many uses (times a rule was triggered) were of named rules?
     named_uses = sum(c for (i, c) in counts.items() if names.get(i))

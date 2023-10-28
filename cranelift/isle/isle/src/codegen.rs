@@ -519,7 +519,11 @@ impl<'a> Codegen<'a> {
                     ctx.end_block(scope)?;
                 }
 
-                &ControlFlow::Return { pos, result , ref name} => {
+                &ControlFlow::Return {
+                    pos,
+                    result,
+                    ref name,
+                } => {
                     writeln!(
                         ctx.out,
                         "{}// Rule at {}.",
@@ -529,7 +533,7 @@ impl<'a> Codegen<'a> {
                     // ALDS: Log the rule firing.
                     writeln!(
                         ctx.out,
-                        "{}println!(\"{},{}\");",
+                        "{}println!(\"{},{},\");",
                         &ctx.indent,
                         name.clone().unwrap_or("".to_string()),
                         pos.pretty_print_line(&self.typeenv.filenames)
