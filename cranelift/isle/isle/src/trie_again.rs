@@ -176,6 +176,8 @@ pub struct Rule {
     /// If other rules apply along with this one, the one with the highest numeric priority is
     /// evaluated. If multiple applicable rules have the same priority, that's an overlap error.
     pub prio: i64,
+    /// Rule name. Used for tracing.
+    pub name: Option<String>,
     /// If this rule applies, these side effects should be evaluated before returning.
     pub impure: Vec<BindingId>,
     /// If this rule applies, the top-level term should evaluate to this expression.

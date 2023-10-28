@@ -107,6 +107,8 @@ pub enum ControlFlow {
         /// What is the result expression which should be returned if this
         /// rule matched?
         result: BindingId,
+        /// Name of the rule that matched.
+        name: Option<String>,
     },
 }
 
@@ -482,6 +484,7 @@ impl<'a> Decomposition<'a> {
                 pos,
                 result,
                 ref impure,
+                ref name,
                 ..
             } = &self.rules.rules[idx];
 
@@ -492,7 +495,11 @@ impl<'a> Decomposition<'a> {
             }
             self.use_expr(result);
 
-            let check = ControlFlow::Return { pos, result };
+            let check = ControlFlow::Return {
+                pos,
+                result,
+                name: name.clone(),
+            };
             let bind_order = std::mem::take(&mut self.bind_order);
             self.block.steps.push(EvalStep { bind_order, check });
         }

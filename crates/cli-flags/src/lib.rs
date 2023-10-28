@@ -5,13 +5,13 @@
 
 use anyhow::Result;
 use clap::Parser;
-use std::time::Duration;
+use std::{default, time::Duration};
 use wasmtime::Config;
 
 pub mod opt;
 
-fn init_file_per_thread_logger(prefix: &'static str) {
-    file_per_thread_logger::initialize(prefix);
+fn init_file_per_thread_logger(prefix: &String) {
+    file_per_thread_logger::initialize(prefix.as_str());
 
     // Extending behavior of default spawner:
     // https://docs.rs/rayon/1.1.0/rayon/struct.ThreadPoolBuilder.html#method.spawn_handler
@@ -26,8 +26,9 @@ fn init_file_per_thread_logger(prefix: &'static str) {
             if let Some(stack_size) = thread.stack_size() {
                 b = b.stack_size(stack_size);
             }
+            let prefix = prefix.clone();
             b.spawn(move || {
-                file_per_thread_logger::initialize(prefix);
+                file_per_thread_logger::initialize(prefix.as_str());
                 thread.run()
             })?;
             Ok(())
@@ -108,6 +109,8 @@ wasmtime_option_group! {
         pub logging: Option<bool>,
         /// Configure whether logs are emitted to files
         pub log_to_files: Option<bool>,
+        /// Log file prefix
+        pub log_prefix: Option<String>,
         /// Enable coredump generation to this file after a WebAssembly trap.
         pub coredump: Option<String>,
     }
@@ -325,7 +328,8 @@ impl CommonOptions {
             return;
         }
         if self.debug.log_to_files == Some(true) {
-            let prefix = "wasmtime.dbg.";
+            let default_prefix = "wasmtime.dbg.".to_string();
+            let prefix = self.debug.log_prefix.as_ref().unwrap_or(&default_prefix);
             init_file_per_thread_logger(prefix);
         } else {
             pretty_env_logger::init();

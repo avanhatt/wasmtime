@@ -135,6 +135,7 @@ impl<'a> Codegen<'a> {
         }
 
         writeln!(code, "\nuse super::*;  // Pulls in all external types.").unwrap();
+        writeln!(code, "\nuse crate::trace;").unwrap();
         writeln!(code, "use std::marker::PhantomData;").unwrap();
     }
 
@@ -519,13 +520,26 @@ impl<'a> Codegen<'a> {
                     ctx.end_block(scope)?;
                 }
 
-                &ControlFlow::Return { pos, result } => {
+                &ControlFlow::Return {
+                    pos,
+                    result,
+                    ref name,
+                } => {
                     writeln!(
                         ctx.out,
                         "{}// Rule at {}.",
                         &ctx.indent,
                         pos.pretty_print_line(&self.typeenv.filenames)
                     )?;
+                    // Log the rule firing.
+                    writeln!(
+                        ctx.out,
+                        "{}trace!(target: \"isle_rule_trace\", \"rule: {},{}\");",
+                        &ctx.indent,
+                        name.clone().unwrap_or("".to_string()),
+                        pos.pretty_print_line(&self.typeenv.filenames)
+                    )
+                    .unwrap();
                     write!(ctx.out, "{}", &ctx.indent)?;
                     match ret_kind {
                         ReturnKind::Plain => write!(ctx.out, "return ")?,
