@@ -19,6 +19,7 @@ for test in "${tests_directory}"/*.wast ; do
         ./target/debug/wasmtime wast \
         --codegen compiler=cranelift \
         --codegen cache=no \
+        --codegen parallel-compilation=no \
         --debug log-to-files=y \
         --debug log-prefix="${log_prefix}" \
         "${test}"
