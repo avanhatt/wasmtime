@@ -22,7 +22,7 @@ use std::cmp::Reverse;
 
 use crate::lexer::Pos;
 use crate::trie_again::{Binding, BindingId, Constraint, Rule, RuleSet};
-use crate::DisjointSets;
+use crate::{sema, DisjointSets};
 
 /// Decomposes the rule-set into a tree of [Block]s.
 pub fn serialize(rules: &RuleSet) -> Block {
@@ -108,7 +108,7 @@ pub enum ControlFlow {
         /// rule matched?
         result: BindingId,
         /// Name of the rule that matched.
-        name: Option<String>,
+        name: Option<sema::Sym>,
     },
 }
 
@@ -484,7 +484,7 @@ impl<'a> Decomposition<'a> {
                 pos,
                 result,
                 ref impure,
-                ref name,
+                name,
                 ..
             } = &self.rules.rules[idx];
 
@@ -498,7 +498,7 @@ impl<'a> Decomposition<'a> {
             let check = ControlFlow::Return {
                 pos,
                 result,
-                name: name.clone(),
+                name: name,
             };
             let bind_order = std::mem::take(&mut self.bind_order);
             self.block.steps.push(EvalStep { bind_order, check });

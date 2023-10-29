@@ -536,7 +536,7 @@ impl<'a> Codegen<'a> {
                         ctx.out,
                         "{}trace!(target: \"isle_rule_trace\", \"rule: {},{}\");",
                         &ctx.indent,
-                        name.clone().unwrap_or("".to_string()),
+                        name.map_or("".to_string(), |sym| self.typeenv.syms[sym.index()].clone()),
                         pos.pretty_print_line(&self.typeenv.filenames)
                     )
                     .unwrap();

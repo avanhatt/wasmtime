@@ -32,7 +32,6 @@ class EventInstruction(namedtuple("TraceInstruction", ["opcode", "output_types",
 class EventRule(namedtuple("TraceRule", ["name", "pos"])):
     pass
 
-
 # Trace parsing.
 
 def parse_trace(lines):
@@ -97,13 +96,8 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
         else:
             assert False, "unknown trace event"
 
-    # Print the most frequently triggered rules, for fun.
-    print(f'Top {TOP_K} most commonly used rules:')
-    for rule_id, count in counts.most_common(TOP_K):
-        print(count, rule_id, names[rule_id])
-
     # How many uses (times a rule was triggered) were of named rules?
-    named_uses = sum(c for (i, c) in counts.items() if names.get(i))
+    named_uses = sum(n for (pos, n) in counts.items() if names.get(pos))
     total_uses = sum(counts.values())
     print(f'\nNamed uses: {named_uses}/{total_uses} = '
           f'{named_uses/total_uses:.1%}')
@@ -113,6 +107,12 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
     total_covered = len(counts)
     print(f'\nNamed covered: {named_covered}/{total_covered} = '
           f'{named_covered/total_covered:.1%}')
+
+    # Print the most frequently triggered rules, for fun.
+    print(f'Top {TOP_K} most commonly used rules:')
+    for pos, count in counts.most_common(TOP_K):
+        print(count, pos, names[pos])
+
 
 
 if __name__ == "__main__":
