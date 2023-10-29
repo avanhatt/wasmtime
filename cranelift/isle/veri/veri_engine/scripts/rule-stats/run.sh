@@ -17,9 +17,12 @@ mkdir -p "${traces_directory}"
 
 "${script_directory}/collect.sh" "${tests_directory}" "${traces_directory}"
 
+trace_file="${working_directory}/trace.txt"
+cat "${traces_directory}/"* > "${trace_file}"
+
 # Report.
 report_file="${working_directory}/report.txt"
-cat "${traces_directory}/"* | "${script_directory}/report.py" > "${report_file}"
+"${script_directory}/report.py" "$@" < "${trace_file}" > "${report_file}"
 
 # Wrap.
 cat "${report_file}"

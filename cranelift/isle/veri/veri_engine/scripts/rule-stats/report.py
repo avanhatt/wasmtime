@@ -5,30 +5,35 @@ from collections import Counter, namedtuple
 
 TOP_K = 32
 
-# Instruction classification.
+# Trace events.
+class EventInstruction(namedtuple("TraceInstruction", ["opcode", "output_types", "input_types", "features"])):
+    def is_ctrl(self):
+        return self.has_any_feature("terminator", "branch", "call")
 
-MEM_OPS = ('load', 'store', 'uload8', 'sload8', 'istore8', 'uload16',
-           'sload16', 'istore16', 'uload32', 'sload32', 'istore32', 'uload8x8',
-           'sload8x8', 'uload16x4', 'sload16x4', 'uload32x2', 'sload32x2',
-           'stack_load', 'stack_store', 'stack_addr', 'dynamic_stack_load',
-           'dynamic_stack_store', 'dynamic_stack_addr', 'get_frame_pointer',
-           'get_stack_pointer', 'table_addr', 'atomic_rmw', 'atomic_cas',
-           'atomic_load', 'atomic_store', 'fence')
-CTRL_OPS = ('jump', 'brz', 'brnz', 'br_table', 'debugtrap', 'trap', 'trapz',
-            'resumable_trap', 'trapnz', 'resumable_trapnz', 'return', 'call',
-            'call_indirect', 'func_addr')
+    def is_mem(self):
+        return self.has_any_feature("load", "store")
+
+    def is_fp(self):
+        return self.has_any_type("f32", "f64")
+
+    def has_type(self, ty):
+        return ty in self.output_types or ty in self.input_types
+
+    def has_any_type(self, *tys):
+        return any(self.has_type(ty) for ty in tys)
+
+    def has_feature(self, feature):
+        return (feature in self.features)
+
+    def has_any_feature(self, *features):
+        return any(self.has_feature(feature) for feature in features)
 
 
-# def is_fp(inst):
-#     """Given a traced IL instruction string, check if it has anything to
-#     do with floating point values.
-#     """
-#     return ('f32' in inst) or ('f64' in inst)
+class EventRule(namedtuple("TraceRule", ["name", "pos"])):
+    pass
+
 
 # Trace parsing.
-
-EventInstruction = namedtuple("TraceInstruction", ["opcode"])
-EventRule = namedtuple("TraceRule", ["name", "pos"])
 
 def parse_trace(lines):
     trace = []
@@ -42,8 +47,13 @@ def parse_trace(lines):
         fields = parts[3].split(",")
         # TRACE - inst: trap
         if typ == "inst":
-            assert len(fields) == 1
-            trace.append(EventInstruction(opcode=fields[0]))
+            assert len(fields) == 4
+            trace.append(EventInstruction(
+                opcode=fields[0],
+                output_types=fields[1].split(":"),
+                input_types=fields[2].split(":"),
+                features=fields[3].split(":"),
+            ))
         # TRACE - rule: ,src/isa/x64/inst.isle line 4101
         elif typ == "rule":
             assert len(fields) == 2
@@ -56,6 +66,8 @@ def parse_trace(lines):
     return trace
 
 
+# Report generation.
+
 def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
     counts = Counter()
     names = {}
@@ -67,12 +79,12 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
         if isinstance(event, EventInstruction):
             # Should we exclude this instruction?
             exclude = False
-            #if exclude_fp:
-            #    exclude |= is_fp(inst)
+            if exclude_fp:
+                exclude |= event.is_fp()
             if exclude_mem:
-                exclude |= event.opcode in MEM_OPS
+                exclude |= event.is_mem()
             if exclude_ctrl:
-                exclude |= event.opcode in CTRL_OPS
+                exclude |= event.is_ctrl()
             continue
 
         # Rule event: ISLE rule fired in lowering.
