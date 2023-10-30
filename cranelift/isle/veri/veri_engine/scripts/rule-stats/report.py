@@ -3,9 +3,10 @@
 import sys
 from collections import Counter, namedtuple
 
-TOP_K = 32
+TOP_K = 256
 
 # Trace events.
+
 class EventInstruction(namedtuple("TraceInstruction", ["opcode", "output_types", "input_types", "features"])):
     def is_ctrl(self):
         return self.has_any_feature("terminator", "branch", "call")
@@ -29,10 +30,27 @@ class EventInstruction(namedtuple("TraceInstruction", ["opcode", "output_types",
         return any(self.has_feature(feature) for feature in features)
 
 
+class Position(namedtuple("Position", ["file", "line"])):
+    def __str__(self):
+        return f"{self.file}:{self.line}"
+
+    def link(self):
+        repo = "avanhatt/wasmtime"
+        branch = "verify-main"
+        return f"https://github.com/{repo}/blob/{branch}/cranelift/codegen/{self.file}#L{self.line}"
+
+
 class EventRule(namedtuple("TraceRule", ["name", "pos"])):
     pass
 
 # Trace parsing.
+
+def parse_position(loc):
+    # src/isa/x64/inst.isle line 4101
+    parts = loc.strip().split(" line ")
+    assert len(parts) == 2
+    return Position(file=parts[0], line=int(parts[1]))
+
 
 def parse_trace(lines):
     trace = []
@@ -58,7 +76,7 @@ def parse_trace(lines):
             assert len(fields) == 2
             trace.append(EventRule(
                 name=fields[0],
-                pos=fields[1],
+                pos=parse_position(fields[1]),
             ))
         else:
             assert False, f"unknown trace type: {typ}"
@@ -111,7 +129,7 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
     # Print the most frequently triggered rules, for fun.
     print(f'Top {TOP_K} most commonly used rules:')
     for pos, count in counts.most_common(TOP_K):
-        print(count, pos, names[pos])
+        print(count, names[pos], pos, pos.link())
 
 
 
