@@ -1,9 +1,39 @@
 #!/usr/bin/env python3
 
 import sys
+import re
+import subprocess
+import argparse
+import urllib.parse
 from collections import Counter, namedtuple
 
 TOP_K = 256
+
+# Positions
+
+class Repository(namedtuple("Repository", ["user", "name", "ref"])):
+    @classmethod
+    def current(cls, ref="main"):
+        # Deduce repository from git remote origin.
+        remote_url = subprocess.check_output(["git", "remote", "get-url", "origin"])
+        m = re.fullmatch(r"git@github\.com:(\w+)/(\w+)\.git", remote_url.decode().strip())
+        user = m.group(1)
+        name = m.group(2)
+        return cls(user=user, name=name, ref=ref)
+
+    @property
+    def id(self):
+        return f"{self.user}/{self.name}"
+
+
+class Position(namedtuple("Position", ["file", "line"])):
+    def __str__(self):
+        return f"{self.file}:{self.line}"
+
+    def link(self, repo):
+        ref = urllib.parse.quote(repo.ref, safe="")
+        return f"https://github.com/{repo.id}/blob/{ref}/cranelift/codegen/{self.file}#L{self.line}"
+
 
 # Trace events.
 
@@ -30,14 +60,6 @@ class EventInstruction(namedtuple("TraceInstruction", ["opcode", "output_types",
         return any(self.has_feature(feature) for feature in features)
 
 
-class Position(namedtuple("Position", ["file", "line"])):
-    def __str__(self):
-        return f"{self.file}:{self.line}"
-
-    def link(self):
-        repo = "avanhatt/wasmtime"
-        branch = "verify-main"
-        return f"https://github.com/{repo}/blob/{branch}/cranelift/codegen/{self.file}#L{self.line}"
 
 
 class EventRule(namedtuple("TraceRule", ["name", "pos"])):
@@ -85,9 +107,19 @@ def parse_trace(lines):
 
 # Report generation.
 
-def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
+def main(args):
+    # Options.
+    parser = argparse.ArgumentParser(prog='report', description='ISLE rule trace report')
+    parser.add_argument("--fp", action=argparse.BooleanOptionalAction, help="include floating point instructions")
+    parser.add_argument("--mem", action=argparse.BooleanOptionalAction, help="include memory instructions")
+    parser.add_argument("--ctrl", action=argparse.BooleanOptionalAction, help="include control flow instructions")
+    parser.add_argument("--ref", default="verify-main", help="repository reference")
+
+    opts = parser.parse_args(args)
+
     counts = Counter()
     names = {}
+    repo = Repository.current(ref=opts.ref)
 
     # Ingest the trace.
     exclude = False
@@ -96,11 +128,11 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
         if isinstance(event, EventInstruction):
             # Should we exclude this instruction?
             exclude = False
-            if exclude_fp:
+            if not opts.fp:
                 exclude |= event.is_fp()
-            if exclude_mem:
+            if not opts.mem:
                 exclude |= event.is_mem()
-            if exclude_ctrl:
+            if not opts.ctrl:
                 exclude |= event.is_ctrl()
             continue
 
@@ -129,13 +161,9 @@ def rule_stats(exclude_fp=False, exclude_mem=False, exclude_ctrl=False):
     # Print the most frequently triggered rules, for fun.
     print(f'Top {TOP_K} most commonly used rules:')
     for pos, count in counts.most_common(TOP_K):
-        print(count, names[pos], pos, pos.link())
+        print(count, names[pos], pos, pos.link(repo))
 
 
 
 if __name__ == "__main__":
-    rule_stats(
-        '--no-fp' in sys.argv[1:],
-        '--no-mem' in sys.argv[1:],
-        '--no-ctrl' in sys.argv[1:],
-    )
+    main(sys.argv[1:])
