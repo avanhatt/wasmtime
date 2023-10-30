@@ -185,12 +185,42 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
+    // (decl to_amode_add (MemFlags Value Value Offset32) Amode)
+    widths.insert(
+        "to_amode_add",
+        vec![TermSignature {
+            args: vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(64)),
+                Type::BitVector(Some(64)),
+                Type::BitVector(Some(32)),
+            ],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
+
     // (decl amode_imm_reg (MemFlags Value Offset32) Amode)
     widths.insert(
         "amode_imm_reg",
         vec![TermSignature {
             args: vec![
                 Type::BitVector(Some(8)),
+                Type::BitVector(Some(64)),
+                Type::BitVector(Some(32)),
+            ],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
+
+    // (decl amode_imm_reg_reg_shift (MemFlags Value Value Offset32) Amode)
+    widths.insert(
+        "amode_imm_reg_reg_shift",
+        vec![TermSignature {
+            args: vec![
+                Type::BitVector(Some(8)),
+                Type::BitVector(Some(64)),
                 Type::BitVector(Some(64)),
                 Type::BitVector(Some(32)),
             ],
