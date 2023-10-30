@@ -1013,7 +1013,6 @@
 (decl synthetic_amode_to_reg_mem (SyntheticAmode) RegMem)
 (extern constructor synthetic_amode_to_reg_mem synthetic_amode_to_reg_mem)
 
-;; TODO(mbm): what is the right spec for amode_to_synthetic_amode?
 (spec (amode_to_synthetic_amode amode) (provide (= result amode)))
 (decl amode_to_synthetic_amode (Amode) SyntheticAmode)
 (extern constructor amode_to_synthetic_amode amode_to_synthetic_amode)
