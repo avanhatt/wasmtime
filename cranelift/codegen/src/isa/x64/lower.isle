@@ -2432,16 +2432,16 @@
 ;; Rules for `uextend` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; I{8,16,32,64} -> I128.
-(rule lower_uextend_i128 (lower (has_type $I128 (uextend src)))
+(rule (lower (has_type $I128 (uextend src)))
       (value_regs (extend_to_gpr src $I64 (ExtendKind.Zero)) (imm $I64 0)))
 
 ;; I{8,16,32} -> I64.
-(rule (lower (has_type $I64 (uextend src)))
+(rule lower_uextend_i64 (lower (has_type $I64 (uextend src)))
       (extend_to_gpr src $I64 (ExtendKind.Zero)))
 
 ;; I{8,16} -> I32
 ;; I8 -> I16
-(rule -1 (lower (has_type (fits_in_32 _) (uextend src)))
+(rule lower_uextend_fits_in_32 -1 (lower (has_type (fits_in_32 _) (uextend src)))
          (extend_to_gpr src $I32 (ExtendKind.Zero)))
 
 ;; Rules for `sextend` ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
