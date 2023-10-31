@@ -51,6 +51,8 @@
 (extern constructor writable_value_reg writable_value_reg)
 
 ;; Construct a `ValueRegs` of two registers.
+(spec (value_regs x y)
+      (provide (= )))
 (decl value_regs (Reg Reg) ValueRegs)
 (extern constructor value_regs value_regs)
 

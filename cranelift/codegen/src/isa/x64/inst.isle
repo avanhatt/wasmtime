@@ -1523,6 +1523,7 @@
 (extern constructor writable_gpr_to_gpr writable_gpr_to_gpr)
 
 ;; Convert an `Gpr` to a `Reg`.
+(spec (gpr_to_reg arg) (provide (= result arg)))
 (decl gpr_to_reg (Gpr) Reg)
 (extern constructor gpr_to_reg gpr_to_reg)
 
@@ -2201,6 +2202,10 @@
 
 (type ExtendKind (enum Sign Zero))
 
+;; TODO(mbm): can we use our own enum here?
+(spec (ExtendKind.Zero) (provide (= result #x0)))
+(spec (ExtendKind.Sign) (provide (= result #x1)))
+
 (type ExtMode extern (enum BL BQ WL WQ LQ))
 
 ;; `ExtMode::new`
@@ -2208,6 +2213,12 @@
 (extern constructor ext_mode ext_mode)
 
 ;; Put the given value into a register, but extended as the given type.
+(spec (extend_to_gpr v ty ext)
+    (provide
+      (= result
+        (if (= ext #x0)
+            (zero_ext ty v)
+            (sign_ext ty v)))))
 (decl extend_to_gpr (Value Type ExtendKind) Gpr)
 
 ;; If the value is already of the requested type, no extending is necessary.
@@ -2697,6 +2708,7 @@
 ;; 2 - rules that match on an explicit type
 ;; 1 - rules that match on types that fit in 64 bits
 ;; 0 - rules that match on vectors
+(spec (imm ty x) (provide (= result (sign_ext 64 (conv_to ty x)))))
 (decl imm (Type u64) Reg)
 
 ;; Integer immediates.
