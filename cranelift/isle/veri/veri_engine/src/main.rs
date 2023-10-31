@@ -29,6 +29,10 @@ struct Args {
     #[clap(short, long, action=ArgAction::SetTrue)]
     aarch64: bool,
 
+    /// Include the x64 files
+    #[clap(short, long, action=ArgAction::SetTrue)]
+    x64: bool,
+
     /// Don't check for distinct possible models
     #[clap(long, action=ArgAction::SetTrue)]
     nodistinct: bool,
@@ -71,14 +75,22 @@ fn main() {
                 .join("../../../codegen/src/isa/aarch64")
                 .join("lower.isle"),
         );
-        if args.input.is_some() {
-            panic!("Cannot specify both input file and aarch64 mode.")
-        }
+    } else if args.x64 {
+        inputs.push(
+            cur_dir
+                .join("../../../codegen/src/isa/x64")
+                .join("inst.isle"),
+        );
+        inputs.push(
+            cur_dir
+                .join("../../../codegen/src/isa/x64")
+                .join("lower.isle"),
+        );
     } else {
         if let Some(i) = args.input {
             inputs.push(PathBuf::from(i));
         } else {
-            panic!("Missing input file in non-aarch64 mode");
+            panic!("Missing input file in non mode");
         }
     }
 
