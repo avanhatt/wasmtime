@@ -176,7 +176,7 @@ pub enum SpecOp {
     BVSge,
 
     // Bitvector overflow checks (SMT-LIB pending standardization)
-    BVSaddOvfl,
+    BVSaddo,
 
     // Desugared bitvector arithmetic operations
     Rotr,

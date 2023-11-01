@@ -475,7 +475,7 @@ impl<'a> Parser<'a> {
             "bvshl" => Ok(SpecOp::BVShl),
             "bvlshr" => Ok(SpecOp::BVLshr),
             "bvashr" => Ok(SpecOp::BVAshr),
-            "bvsaddo" => Ok(SpecOp::BVSaddOvfl),
+            "bvsaddo" => Ok(SpecOp::BVSaddo),
             "bvule" => Ok(SpecOp::BVUle),
             "bvult" => Ok(SpecOp::BVUlt),
             "bvugt" => Ok(SpecOp::BVUgt),

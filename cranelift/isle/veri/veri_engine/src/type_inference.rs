@@ -639,7 +639,7 @@ fn add_annotation_constraints(
             )
         }
 
-        annotation_ir::Expr::BVSaddOvfl(x, y, _) => {
+        annotation_ir::Expr::BVSaddo(x, y, _) => {
             let (e1, t1) = add_annotation_constraints(*x, tree, annotation_info);
             let (e2, t2) = add_annotation_constraints(*y, tree, annotation_info);
             let t = tree.next_type_var;
@@ -650,7 +650,7 @@ fn add_annotation_constraints(
 
             tree.next_type_var += 1;
             (
-                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSaddOvfl, Box::new(e1), Box::new(e2)),
+                veri_ir::Expr::Binary(veri_ir::BinaryOp::BVSaddo, Box::new(e1), Box::new(e2)),
                 t,
             )
         }
