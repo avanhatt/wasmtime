@@ -4,8 +4,8 @@ use utils::{
     run_and_retry, test_aarch64_rule_with_lhs_termname_simple, test_aarch64_with_config_simple,
     test_concrete_aarch64_rule_with_lhs_termname, test_concrete_input_from_file_with_lhs_termname,
     test_from_file_with_config_simple, test_from_file_with_lhs_termname,
-    test_from_file_with_lhs_termname_simple, test_x64_rule_with_lhs_termname_simple, Bitwidth,
-    TestResult,
+    test_from_file_with_lhs_termname_simple, test_x64_rule_with_lhs_termname,
+    test_x64_rule_with_lhs_termname_simple, Bitwidth, TestResult,
 };
 use veri_engine_lib::widths::isle_inst_types;
 use veri_engine_lib::Config;
@@ -3357,10 +3357,24 @@ fn test_named_x64_amode_imm_reg_reg_shift_shl_lhs() {
 #[test]
 fn test_named_x64_lower_uextend_i64() {
     run_and_retry(|| {
-        test_x64_rule_with_lhs_termname_simple(
+        test_x64_rule_with_lhs_termname(
             "lower_uextend_i64",
             "uextend",
-            vec![(Bitwidth::I64, VerificationResult::Success)],
+            TestResult::Returns(vec![(Bitwidth::I64, VerificationResult::Success)]),
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_uextend_fits_in_32() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname(
+            "lower_uextend_fits_in_32",
+            "uextend",
+            TestResult::Returns(vec![
+                (Bitwidth::I32, VerificationResult::Success),
+                (Bitwidth::I64, VerificationResult::InapplicableRule),
+            ]),
         )
     });
 }

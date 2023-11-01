@@ -21,8 +21,15 @@ pub enum Bitwidth {
     I64 = 64,
 }
 
+impl Bitwidth {
+    fn typ(self: Bitwidth) -> veri_ir::Type {
+        veri_ir::Type::BitVector(Some(self as usize))
+    }
+}
+
 pub enum TestResult {
     Simple(Vec<(Bitwidth, VerificationResult)>),
+    Returns(Vec<(Bitwidth, VerificationResult)>),
     MultiType(Vec<(TermSignature, VerificationResult)>),
 }
 type TestResultBuilder = dyn Fn(Bitwidth) -> (Bitwidth, VerificationResult);
@@ -119,12 +126,6 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
         TestResult::Simple(s) => {
             let mut res = vec![];
             for (width, result) in s {
-                let ty = match width {
-                    Bitwidth::I8 => veri_ir::Type::BitVector(Some(8)),
-                    Bitwidth::I16 => veri_ir::Type::BitVector(Some(16)),
-                    Bitwidth::I32 => veri_ir::Type::BitVector(Some(32)),
-                    Bitwidth::I64 => veri_ir::Type::BitVector(Some(64)),
-                };
                 let types = isle_inst_types()
                     .get(config.term.as_str())
                     .expect(format!("Missing term width for {}", config.term).as_str())
@@ -132,8 +133,27 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
                 // Find the type instantiations with this as the canonical type
                 let all_instantiations: Vec<&TermSignature> = types
                     .iter()
-                    .filter(|sig| sig.canonical_type.unwrap() == ty)
+                    .filter(|sig| sig.canonical_type.unwrap() == width.typ())
                     .collect();
+                if all_instantiations.len() < 1 {
+                    panic!("Missing type instantiation for width {:?}", width);
+                }
+                for i in all_instantiations {
+                    res.push((i.clone(), result.clone()));
+                }
+            }
+            res
+        }
+        TestResult::Returns(s) => {
+            let mut res = vec![];
+            for (width, result) in s {
+                let types = isle_inst_types()
+                    .get(config.term.as_str())
+                    .expect(format!("Missing term width for {}", config.term).as_str())
+                    .clone();
+                // Find the type instantiations with this as the return type.
+                let all_instantiations: Vec<&TermSignature> =
+                    types.iter().filter(|sig| sig.ret == width.typ()).collect();
                 if all_instantiations.len() < 1 {
                     panic!("Missing type instantiation for width {:?}", width);
                 }
