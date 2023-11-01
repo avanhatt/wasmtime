@@ -3353,3 +3353,14 @@ fn test_named_x64_amode_imm_reg_reg_shift_shl_lhs() {
         )
     });
 }
+
+#[test]
+fn test_named_x64_lower_uextend_i64() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_uextend_i64",
+            "uextend",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
