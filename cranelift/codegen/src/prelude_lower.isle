@@ -52,11 +52,11 @@
 
 ;; Construct a `ValueRegs` of two registers.
 ;; TODO(mbm): is this the right spec for value_regs?
-(spec (value_regs x y)
-    (provide (= result (concat (conv_to 64 y) (conv_to 64 x))))
-    (require
-      (<= (widthof x) 64)
-      (<= (widthof y) 64)))
+; (spec (value_regs x y)
+;     (provide (= result (concat (conv_to 64 y) (conv_to 64 x))))
+;     (require
+;       (<= (widthof x) 64)
+;       (<= (widthof y) 64)))
 (decl value_regs (Reg Reg) ValueRegs)
 (extern constructor value_regs value_regs)
 
