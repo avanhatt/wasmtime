@@ -3378,3 +3378,25 @@ fn test_named_x64_lower_uextend_fits_in_32() {
         )
     });
 }
+
+#[test]
+fn test_named_x64_lower_band_base_case() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_base_case",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_lower_band_lhs_simm32() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_lhs_simm32",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}

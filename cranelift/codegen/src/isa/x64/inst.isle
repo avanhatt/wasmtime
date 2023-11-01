@@ -1657,6 +1657,7 @@
 ;; Put a value into a `GprMemImm`.
 ;;
 ;; Asserts that the value goes into a GPR.
+(spec (put_in_gpr_mem_imm arg) (provide (= result (conv_to 64 arg))))
 (decl put_in_gpr_mem_imm (Value) GprMemImm)
 (rule (put_in_gpr_mem_imm val)
       (gpr_mem_imm_new (put_in_reg_mem_imm val)))
@@ -1821,6 +1822,11 @@
 (extern constructor shift_amount_masked shift_amount_masked)
 
 ;; Extract a constant `GprMemImm.Imm` from a value operand.
+(spec (simm32_from_value x)
+    (provide (= result (sign_ext 64 x)))
+    (require
+      (= (widthof x) 64)
+      (= (extract 63 32 x) #x00000000)))
 (decl simm32_from_value (GprMemImm) Value)
 (extern extractor simm32_from_value simm32_from_value)
 
@@ -2655,6 +2661,11 @@
                   dst)))
 
 ;; Helper for emitting `and` instructions.
+(spec (x64_and ty x y)
+      (provide (= result (bvand x y)))
+      (require
+            (= (widthof x) 64)
+            (= (widthof y) 64)))
 (decl x64_and (Type Gpr GprMemImm) Gpr)
 (rule (x64_and ty src1 src2)
       (alu_rmi_r ty
