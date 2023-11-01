@@ -84,7 +84,9 @@
 (extern constructor u8_lt u8_lt)
 
 ;; Get a signed 32-bit immediate in an u32 from an Imm64, if possible.
-(spec (simm32 x) (provide (= result (sign_ext 64 x))))
+(spec (simm32 x)
+    (provide (= result (sign_ext 64 x)))
+    (require (= (widthof x) 32)))
 (decl simm32 (i32) Imm64)
 (extern extractor simm32 simm32)
 
