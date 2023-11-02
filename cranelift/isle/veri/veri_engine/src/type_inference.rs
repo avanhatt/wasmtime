@@ -1385,14 +1385,9 @@ fn add_isle_constraints(
 
     // Temporary: hard-coded overrides.
     let clif_to_ir_type_overrides = HashMap::from([
-        ("Type".to_owned(), annotation_ir::Type::Int),
         (
             "Imm12".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(24),
-        ),
-        (
-            "Imm64".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(64),
         ),
         (
             "ImmShift".to_owned(),
@@ -1402,11 +1397,6 @@ fn add_isle_constraints(
             "ImmLogic".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(64),
         ),
-        (
-            "u64".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(64),
-        ),
-        ("u8".to_owned(), annotation_ir::Type::BitVectorWithWidth(8)),
         ("usize".to_owned(), annotation_ir::Type::BitVector),
         ("bool".to_owned(), annotation_ir::Type::Bool),
         (
