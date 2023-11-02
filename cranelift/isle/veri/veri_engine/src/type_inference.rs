@@ -1389,22 +1389,8 @@ fn add_isle_constraints(
             "Imm12".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(24),
         ),
-        (
-            "ImmShift".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(6),
-        ),
-        (
-            "ImmLogic".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(64),
-        ),
         ("usize".to_owned(), annotation_ir::Type::BitVector),
-        ("bool".to_owned(), annotation_ir::Type::Bool),
-        (
-            "MoveWideConst".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(16),
-        ),
         ("OperandSize".to_owned(), annotation_ir::Type::Int),
-        ("Reg".to_owned(), annotation_ir::Type::BitVector),
         (
             "IntCC".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(8),
