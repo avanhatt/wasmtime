@@ -1406,9 +1406,6 @@ fn add_isle_constraints(
             "ImmExtend".to_owned(),
             annotation_ir::Type::BitVectorWithWidth(1),
         ),
-        // -----------------
-        ("ValueRegs".to_owned(), annotation_ir::Type::BitVector),
-        ("InstOutput".to_owned(), annotation_ir::Type::BitVector),
     ]);
 
     // Apply overrides.

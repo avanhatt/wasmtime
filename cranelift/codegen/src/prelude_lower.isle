@@ -10,10 +10,12 @@
 ;; ISLE representation of `Vec<u8>`
 (type VecMask extern (enum))
 
+(model ValueRegs (type (bv)))
 (type ValueRegs (primitive ValueRegs))
 (type WritableValueRegs (primitive WritableValueRegs))
 
 ;; Instruction lowering result: a vector of `ValueRegs`.
+(model InstOutput (type (bv)))
 (type InstOutput (primitive InstOutput))
 ;; (Mutable) builder to incrementally construct an `InstOutput`.
 (type InstOutputBuilder extern (enum))
