@@ -1383,27 +1383,6 @@ fn add_isle_constraints(
         clif_to_ir_types.insert(type_name, ir_type.clone());
     }
 
-    // Temporary: hard-coded overrides.
-    let clif_to_ir_type_overrides = HashMap::from([
-        // TODO(mbm): model is an enum but integer here
-        ("OperandSize".to_owned(), annotation_ir::Type::Int),
-        // TODO(mbm): model is an enum but integer here
-        (
-            "IntCC".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(8),
-        ),
-        // TODO(mbm): model is bv64 but bv here
-        ("Amode".to_owned(), annotation_ir::Type::BitVector),
-        // TODO(mbm): model is enum but bv1 here
-        (
-            "ImmExtend".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(1),
-        ),
-    ]);
-
-    // Apply overrides.
-    clif_to_ir_types.extend(clif_to_ir_type_overrides);
-
     let mut annotation_vars = vec![];
     for a in annotation.args {
         annotation_vars.push(a.name);
