@@ -1385,11 +1385,6 @@ fn add_isle_constraints(
 
     // Temporary: hard-coded overrides.
     let clif_to_ir_type_overrides = HashMap::from([
-        // TODO(mbm): model is bv12 but bv24 here
-        (
-            "Imm12".to_owned(),
-            annotation_ir::Type::BitVectorWithWidth(24),
-        ),
         // TODO(mbm): model is bv64 but unspecified size here
         ("usize".to_owned(), annotation_ir::Type::BitVector),
         // TODO(mbm): model is an enum but integer here
