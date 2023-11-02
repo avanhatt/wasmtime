@@ -6,9 +6,7 @@
   (enum
 ))
 
-;; We will represent this with a msb shift bit
-;; and a 12 bit value
-;; TODO(mbm): what was intended here? the hard-coded model was 24 bits
+;; Imm12 modeled as the range of intermediates it can represent.
 (model Imm12 (type (bv 24)))
 (type Imm12 (primitive Imm12))
 
