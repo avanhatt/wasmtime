@@ -43,6 +43,7 @@
 ;; `cranelift-entity`-based identifiers.
 (model Type (type Int))
 (type Type (primitive Type))
+(model Value (type (bv)))
 (type Value (primitive Value))
 (type ValueList (primitive ValueList))
 (type BlockCall (primitive BlockCall))

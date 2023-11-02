@@ -1054,6 +1054,7 @@
 (type ImmLogic (primitive ImmLogic))
 (model ImmShift (type (bv 6)))
 (type ImmShift (primitive ImmShift))
+(model ShiftOpAndAmt (type (bv 16)))
 (type ShiftOpAndAmt (primitive ShiftOpAndAmt))
 (model MoveWideConst (type (bv 16)))
 (type MoveWideConst (primitive MoveWideConst))
@@ -1884,6 +1885,7 @@
   imm)
 
 ;; Helper type to represent a value and an extend operation fused together.
+(model ExtendedValue (type (bv 67)))
 (type ExtendedValue extern (enum))
 ;; Only including the i8 to i32 opcodes, based on the impl of extended_value_from_value
 (spec (extended_value_from_value x)
