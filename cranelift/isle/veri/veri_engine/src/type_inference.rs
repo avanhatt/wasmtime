@@ -1371,10 +1371,20 @@ fn add_isle_constraints(
     term: &isle::sema::Term,
     tree: &mut RuleParseTree,
     typeenv: &TypeEnv,
+    annotation_env: &AnnotationEnv,
     annotation_info: &mut AnnotationTypeInfo,
     annotation: annotation_ir::TermSignature,
 ) {
-    let clif_to_ir_types = HashMap::from([
+    let mut clif_to_ir_types = HashMap::new();
+
+    // Populate from models.
+    for (type_id, ir_type) in &annotation_env.model_map {
+        let type_name = typeenv.types[type_id.index()].name(typeenv).to_string();
+        clif_to_ir_types.insert(type_name, ir_type.clone());
+    }
+
+    // Temporary: hard-coded overrides.
+    let clif_to_ir_type_overrides = HashMap::from([
         ("Type".to_owned(), annotation_ir::Type::Int),
         (
             "Imm12".to_owned(),
@@ -1427,6 +1437,9 @@ fn add_isle_constraints(
             annotation_ir::Type::BitVectorWithWidth(16),
         ),
     ]);
+
+    // Apply overrides.
+    clif_to_ir_types.extend(clif_to_ir_type_overrides);
 
     let mut annotation_vars = vec![];
     for a in annotation.args {
@@ -1613,6 +1626,7 @@ fn add_rule_constraints(
                     term,
                     tree,
                     typeenv,
+                    annotation_env,
                     &mut annotation_info,
                     annotation.sig.clone(),
                 );
@@ -1625,6 +1639,7 @@ fn add_rule_constraints(
                     term,
                     tree,
                     typeenv,
+                    annotation_env,
                     &mut annotation_info,
                     annotation.sig.clone(),
                 );
