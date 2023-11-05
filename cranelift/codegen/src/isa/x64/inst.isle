@@ -2557,6 +2557,11 @@
 ;; only gets defined the once.
 
 ;; Helper for emitting `add` instructions.
+(spec (x64_add ty x y)
+      (provide (= result
+            (if (<= ty 32)
+                  (conv_to 64 (bvadd (extract 31 0 x) (extract 31 0 y)))
+                  (bvadd x y)))))
 (decl x64_add (Type Gpr GprMemImm) Gpr)
 (rule (x64_add ty src1 src2)
       (alu_rmi_r ty

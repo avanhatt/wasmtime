@@ -3211,16 +3211,34 @@ fn test_broken_imm_udiv_cve_underlying_32() {
 
 // x64
 
+// iadd
+
 #[test]
-fn test_named_x64_iadd_base_case_32_or_64_lea() {
+fn test_named_x64_lower_iadd_base_case_fits_in_16() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
-            "iadd_base_case_32_or_64_lea",
+            "lower_iadd_base_case_fits_in_16",
+            "iadd",
+            vec![
+                (Bitwidth::I8, VerificationResult::Success),
+                (Bitwidth::I16, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_iadd_base_case_32_or_64_lea() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_iadd_base_case_32_or_64_lea",
             "iadd",
             vec![(Bitwidth::I64, VerificationResult::Success)],
         )
     });
 }
+
+// amode
 
 #[test]
 fn test_named_x64_to_amode_add_base_case() {
@@ -3354,6 +3372,8 @@ fn test_named_x64_amode_imm_reg_reg_shift_shl_lhs() {
     });
 }
 
+// uextend
+
 #[test]
 fn test_named_x64_lower_uextend_i64() {
     run_and_retry(|| {
@@ -3378,6 +3398,8 @@ fn test_named_x64_lower_uextend_fits_in_32() {
         )
     });
 }
+
+// band
 
 #[test]
 fn test_named_x64_lower_band_base_case() {
