@@ -350,7 +350,7 @@
 ;; Specialization of `blsr` for BMI1
 
 (spec (val_minus_one x)
-      (provide (= result (bvadd x (zero_ext (widthof x) #x1)))))
+      (provide (= result (bvadd x (zero_ext (widthof x) #b1)))))
 (decl pure partial val_minus_one (Value) Value)
 (rule val_minus_one_isub 0 (val_minus_one (isub x (u64_from_iconst 1))) x)
 (rule val_minus_one_iadd_rhs 0 (val_minus_one (iadd x (i64_from_iconst -1))) x)

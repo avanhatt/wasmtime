@@ -3457,6 +3457,17 @@ fn test_named_x64_val_minus_one_iadd_rhs() {
 }
 
 #[test]
+fn test_named_x64_val_minus_one_iadd_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "val_minus_one_iadd_lhs",
+            "val_minus_one",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
 fn test_named_x64_lower_band_blsr_rhs() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(

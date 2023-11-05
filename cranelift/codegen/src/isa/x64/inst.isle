@@ -4259,7 +4259,7 @@
 (spec (x64_blsr ty x)
       (provide (= result
             (bvand
-                  (bvsub x (conv_to (widthof x) #x1))
+                  (bvsub x (zero_ext (widthof x) #b1))
                   x
             )
       ))
