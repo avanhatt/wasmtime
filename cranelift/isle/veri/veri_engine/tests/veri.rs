@@ -3391,10 +3391,43 @@ fn test_named_x64_lower_band_base_case() {
 }
 
 #[test]
+fn test_named_x64_lower_band_lhs_sinkable_load() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_lhs_sinkable_load",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
 fn test_named_lower_band_lhs_simm32() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
             "lower_band_lhs_simm32",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_band_x64_andn_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_x64_andn_rhs",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_band_x64_andn_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_x64_andn_lhs",
             "band",
             vec![(Bitwidth::I64, VerificationResult::Success)],
         )

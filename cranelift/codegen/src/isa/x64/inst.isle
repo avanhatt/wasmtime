@@ -1650,6 +1650,7 @@
 ;; Put a value into a `GprMem`.
 ;;
 ;; Asserts that the value goes into a GPR.
+(spec (put_in_gpr_mem arg) (provide (= result (conv_to 64 arg))))
 (decl put_in_gpr_mem (Value) GprMem)
 (rule (put_in_gpr_mem val)
       (reg_mem_to_gpr_mem (put_in_reg_mem val)))
@@ -1773,6 +1774,7 @@
 (decl pure use_lzcnt () bool)
 (extern constructor use_lzcnt use_lzcnt)
 
+(spec (use_bmi1) (provide (= result (= #x1 #x1))))
 (decl pure use_bmi1 () bool)
 (extern constructor use_bmi1 use_bmi1)
 
@@ -1844,6 +1846,9 @@
 ;; pervasively used with operations that load a minimum of 32-bits. For
 ;; instructions which load exactly the type width necessary use
 ;; `sinkable_load_exact`.
+;; TODO(mbm): audit spec for sinkable_load
+(spec (sinkable_load x)
+      (provide (= result x)))
 (decl sinkable_load (SinkableLoad) Value)
 (extern extractor sinkable_load sinkable_load)
 
@@ -1862,6 +1867,9 @@
 (decl sink_load (SinkableLoad) SyntheticAmode)
 (extern constructor sink_load sink_load)
 
+;; TODO(mbm): audit spec for sink_load_to_gpr_mem_imm
+(spec (sink_load_to_gpr_mem_imm x)
+      (provide (= result x)))
 (decl sink_load_to_gpr_mem_imm (SinkableLoad) GprMemImm)
 (rule (sink_load_to_gpr_mem_imm load)
       (gpr_mem_imm_new load))
@@ -2699,6 +2707,11 @@
                  src1
                  src2))
 
+(spec (x64_andn ty x y)
+      (provide (= result (bvand (bvnot x) y)))
+      (require
+            (= (widthof x) 64)
+            (= (widthof y) 64)))
 (decl x64_andn (Type Gpr GprMem) Gpr)
 (rule (x64_andn ty src1 src2)
       (alu_rm_r_vex ty (AluRmROpcode.Andn) src1 src2))

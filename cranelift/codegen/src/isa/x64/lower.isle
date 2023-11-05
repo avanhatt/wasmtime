@@ -274,7 +274,7 @@
 ;; The above case automatically handles when the rhs is an immediate or a
 ;; sinkable load, but additionally handle the lhs here.
 
-(rule 1 (lower (has_type ty (band (sinkable_load x) y)))
+(rule lower_band_lhs_sinkable_load 1 (lower (has_type ty (band (sinkable_load x) y)))
       (if (ty_int_ref_scalar_64 ty))
       (x64_and ty y x))
 
@@ -337,12 +337,12 @@
 (rule 9 (lower (has_type ty @ (multi_lane _bits _lane) (band (bnot y) x)))
       (sse_and_not ty y x))
 
-(rule 10 (lower (has_type ty (band x (bnot y))))
+(rule lower_band_x64_andn_rhs 10 (lower (has_type ty (band x (bnot y))))
       (if (ty_int_ref_scalar_64 ty))
       (if-let $true (use_bmi1))
       ;; the first argument is the one that gets inverted with andn
       (x64_andn ty y x))
-(rule 11 (lower (has_type ty (band (bnot y) x)))
+(rule lower_band_x64_andn_lhs 11 (lower (has_type ty (band (bnot y) x)))
       (if (ty_int_ref_scalar_64 ty))
       (if-let $true (use_bmi1))
       (x64_andn ty y x))
