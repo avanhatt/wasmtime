@@ -337,28 +337,30 @@
 (rule 9 (lower (has_type ty @ (multi_lane _bits _lane) (band (bnot y) x)))
       (sse_and_not ty y x))
 
-(rule lower_band_x64_andn_rhs 10 (lower (has_type ty (band x (bnot y))))
+(rule lower_band_andn_rhs 10 (lower (has_type ty (band x (bnot y))))
       (if (ty_int_ref_scalar_64 ty))
       (if-let $true (use_bmi1))
       ;; the first argument is the one that gets inverted with andn
       (x64_andn ty y x))
-(rule lower_band_x64_andn_lhs 11 (lower (has_type ty (band (bnot y) x)))
+(rule lower_band_andn_lhs 11 (lower (has_type ty (band (bnot y) x)))
       (if (ty_int_ref_scalar_64 ty))
       (if-let $true (use_bmi1))
       (x64_andn ty y x))
 
 ;; Specialization of `blsr` for BMI1
 
+(spec (val_minus_one x)
+      (provide (= result (bvadd x (zero_ext (widthof x) #x1)))))
 (decl pure partial val_minus_one (Value) Value)
-(rule 0 (val_minus_one (isub x (u64_from_iconst 1))) x)
-(rule 0 (val_minus_one (iadd x (i64_from_iconst -1))) x)
-(rule 1 (val_minus_one (iadd (i64_from_iconst -1) x)) x)
+(rule val_minus_one_isub 0 (val_minus_one (isub x (u64_from_iconst 1))) x)
+(rule val_minus_one_iadd_rhs 0 (val_minus_one (iadd x (i64_from_iconst -1))) x)
+(rule val_minus_one_iadd_lhs 1 (val_minus_one (iadd (i64_from_iconst -1) x)) x)
 
-(rule 12 (lower (has_type (ty_32_or_64 ty) (band x y)))
+(rule lower_band_blsr_rhs 12 (lower (has_type (ty_32_or_64 ty) (band x y)))
          (if-let $true (use_bmi1))
          (if-let x (val_minus_one y))
          (x64_blsr ty x))
-(rule 13 (lower (has_type (ty_32_or_64 ty) (band y x)))
+(rule lower_band_blsr_lhs 13 (lower (has_type (ty_32_or_64 ty) (band y x)))
          (if-let $true (use_bmi1))
          (if-let x (val_minus_one y))
          (x64_blsr ty x))

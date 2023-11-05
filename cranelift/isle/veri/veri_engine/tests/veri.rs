@@ -3413,10 +3413,10 @@ fn test_named_lower_band_lhs_simm32() {
 }
 
 #[test]
-fn test_named_x64_lower_band_x64_andn_rhs() {
+fn test_named_x64_lower_band_andn_rhs() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
-            "lower_band_x64_andn_rhs",
+            "lower_band_andn_rhs",
             "band",
             vec![(Bitwidth::I64, VerificationResult::Success)],
         )
@@ -3427,7 +3427,51 @@ fn test_named_x64_lower_band_x64_andn_rhs() {
 fn test_named_x64_lower_band_x64_andn_lhs() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
-            "lower_band_x64_andn_lhs",
+            "lower_band_andn_lhs",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_val_minus_one_isub() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "val_minus_one_isub",
+            "val_minus_one",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_val_minus_one_iadd_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "val_minus_one_iadd_rhs",
+            "val_minus_one",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_band_blsr_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_blsr_rhs",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_band_blsr_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_blsr_lhs",
             "band",
             vec![(Bitwidth::I64, VerificationResult::Success)],
         )

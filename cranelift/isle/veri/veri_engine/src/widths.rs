@@ -602,5 +602,15 @@ pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
+    // (decl pure partial val_minus_one (Value) Value)
+    widths.insert(
+        "val_minus_one",
+        vec![TermSignature {
+            args: vec![Type::BitVector(Some(64))],
+            ret: Type::BitVector(Some(64)),
+            canonical_type: Some(Type::BitVector(Some(64))),
+        }],
+    );
+
     return widths;
 }

@@ -1774,6 +1774,7 @@
 (decl pure use_lzcnt () bool)
 (extern constructor use_lzcnt use_lzcnt)
 
+;; TODO(mbm): how to specify boolean constant true in spec?
 (spec (use_bmi1) (provide (= result (= #x1 #x1))))
 (decl pure use_bmi1 () bool)
 (extern constructor use_bmi1 use_bmi1)
@@ -4255,6 +4256,16 @@
       (unary_rm_r_vex (UnaryRmRVexOpcode.Blsmsk) src (operand_size_of_type_32_64 ty)))
 
 ;; Helper for creating `blsr` instructions.
+(spec (x64_blsr ty x)
+      (provide (= result
+            (bvand
+                  (bvsub x (conv_to (widthof x) #x1))
+                  x
+            )
+      ))
+      (require
+            (= ty 64)
+            (= (widthof x) 64)))
 (decl x64_blsr (Type GprMem) Gpr)
 (rule (x64_blsr ty src)
       (unary_rm_r_vex (UnaryRmRVexOpcode.Blsr) src (operand_size_of_type_32_64 ty)))

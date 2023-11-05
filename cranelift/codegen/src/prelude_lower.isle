@@ -308,6 +308,7 @@
 
 ;; Extract a constant `i64` from a value defined by an `iconst`.
 ;; The value is sign extended to 64 bits.
+(spec (i64_from_iconst arg) (provide (= arg (sign_ext 64 result))))
 (decl i64_from_iconst (i64) Value)
 (extern extractor i64_from_iconst i64_from_iconst)
 
