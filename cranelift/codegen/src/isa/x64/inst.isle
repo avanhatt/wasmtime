@@ -4246,6 +4246,11 @@
         (with_flags_reg (produces_flags_ignore bsf) cmove)))
 
 ;; Helper for creating `blsi` instructions.
+(spec (x64_blsi ty x)
+      (provide (= result (bvand (bvneg x) x)))
+      (require
+            (= ty 64)
+            (= (widthof x) 64)))
 (decl x64_blsi (Type GprMem) Gpr)
 (rule (x64_blsi ty src)
       (unary_rm_r_vex (UnaryRmRVexOpcode.Blsi) src (operand_size_of_type_32_64 ty)))

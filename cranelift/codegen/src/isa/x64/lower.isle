@@ -367,10 +367,10 @@
 
 ;; Specialization of `blsi` for BMI1
 
-(rule 14 (lower (has_type (ty_32_or_64 ty) (band (ineg x) x)))
+(rule lower_band_blsi_lhs 14 (lower (has_type (ty_32_or_64 ty) (band (ineg x) x)))
          (if-let $true (use_bmi1))
          (x64_blsi ty x))
-(rule 15 (lower (has_type (ty_32_or_64 ty) (band x (ineg x))))
+(rule lower_band_blsi_rhs 15 (lower (has_type (ty_32_or_64 ty) (band x (ineg x))))
          (if-let $true (use_bmi1))
          (x64_blsi ty x))
 

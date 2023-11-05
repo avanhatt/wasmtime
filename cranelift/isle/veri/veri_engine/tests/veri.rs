@@ -3402,7 +3402,7 @@ fn test_named_x64_lower_band_lhs_sinkable_load() {
 }
 
 #[test]
-fn test_named_lower_band_lhs_simm32() {
+fn test_named_x64_lower_band_lhs_simm32() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
             "lower_band_lhs_simm32",
@@ -3483,6 +3483,28 @@ fn test_named_x64_lower_band_blsr_lhs() {
     run_and_retry(|| {
         test_x64_rule_with_lhs_termname_simple(
             "lower_band_blsr_lhs",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_band_blsi_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_blsi_lhs",
+            "band",
+            vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_band_blsi_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_band_blsi_rhs",
             "band",
             vec![(Bitwidth::I64, VerificationResult::Success)],
         )
