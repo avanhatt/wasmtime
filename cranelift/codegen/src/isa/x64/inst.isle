@@ -1475,10 +1475,12 @@
 
 ;;;; Newtypes for Different Register Classes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(model Gpr (type (bv)))
 (type Gpr (primitive Gpr))
 (type WritableGpr (primitive WritableGpr))
 (type OptionWritableGpr (primitive OptionWritableGpr))
 (type GprMem extern (enum))
+(model GprMemImm (type (bv)))
 (type GprMemImm extern (enum))
 (type Imm8Gpr extern (enum))
 
@@ -1683,7 +1685,7 @@
 (extern constructor put_in_xmm_mem_imm put_in_xmm_mem_imm)
 
 ;; Construct an `InstOutput` out of a single GPR register.
-(spec (output_gpr x) (provide (= result x)))
+(spec (output_gpr x) (provide (= result (conv_to (widthof result) x))))
 (decl output_gpr (Gpr) InstOutput)
 (rule (output_gpr x)
       (output_reg (gpr_to_reg x)))
