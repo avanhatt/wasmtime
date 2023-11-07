@@ -61,10 +61,10 @@
 ;; Higher-priority cases than the previous two where a load can be sunk into
 ;; the add instruction itself. Note that both operands are tested for
 ;; sink-ability since addition is commutative
-(rule -4 (lower (has_type (fits_in_64 ty)
+(rule lower_iadd_base_fits_in_64_sinkable_load_rhs -4 (lower (has_type (fits_in_64 ty)
                        (iadd x (sinkable_load y))))
       (x64_add ty x y))
-(rule -3 (lower (has_type (fits_in_64 ty)
+(rule lower_iadd_base_fits_in_64_sinkable_load_lhs -3 (lower (has_type (fits_in_64 ty)
                        (iadd (sinkable_load x) y)))
       (x64_add ty y x))
 
@@ -445,18 +445,18 @@
 ;; `{i,b}64` and smaller.
 
 ;; Xor two registers.
-(rule 0 (lower (has_type ty (bxor x y)))
+(rule lower_bxor_base_case 0 (lower (has_type ty (bxor x y)))
       (if (ty_int_ref_scalar_64 ty))
       (x64_xor ty x y))
 
 ;; Handle xor with lhs immediates/sinkable loads in addition to the automatic
 ;; handling of the rhs above.
 
-(rule 1 (lower (has_type ty (bxor (sinkable_load x) y)))
+(rule lower_bxor_lhs_sinkable_load 1 (lower (has_type ty (bxor (sinkable_load x) y)))
       (if (ty_int_ref_scalar_64 ty))
       (x64_xor ty y x))
 
-(rule 4 (lower (has_type ty (bxor (simm32_from_value x) y)))
+(rule lower_bxor_lhs_simm32 4 (lower (has_type ty (bxor (simm32_from_value x) y)))
       (if (ty_int_ref_scalar_64 ty))
       (x64_xor ty y x))
 
@@ -484,11 +484,11 @@
 
 ;; Specialization of `blsmsk` for BMI1
 
-(rule 8 (lower (has_type (ty_32_or_64 ty) (bxor x y)))
+(rule lower_bxor_blsmsk_rhs 8 (lower (has_type (ty_32_or_64 ty) (bxor x y)))
         (if-let $true (use_bmi1))
         (if-let x (val_minus_one y))
         (x64_blsmsk ty x))
-(rule 9 (lower (has_type (ty_32_or_64 ty) (bxor y x)))
+(rule lower_bxor_blsmsk_lhs 9 (lower (has_type (ty_32_or_64 ty) (bxor y x)))
         (if-let $true (use_bmi1))
         (if-let x (val_minus_one y))
         (x64_blsmsk ty x))

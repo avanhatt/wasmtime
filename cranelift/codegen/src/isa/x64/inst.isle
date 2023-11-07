@@ -1872,7 +1872,7 @@
 
 ;; TODO(mbm): audit spec for sink_load_to_gpr_mem_imm
 (spec (sink_load_to_gpr_mem_imm x)
-      (provide (= result x)))
+      (provide (= result (conv_to (widthof result) x))))
 (decl sink_load_to_gpr_mem_imm (SinkableLoad) GprMemImm)
 (rule (sink_load_to_gpr_mem_imm load)
       (gpr_mem_imm_new load))
@@ -2708,6 +2708,11 @@
                  src2))
 
 ;; Helper for emitting `xor` instructions.
+(spec (x64_xor ty x y)
+      (provide (= result (bvxor x y)))
+      (require
+            (= (widthof x) 64)
+            (= (widthof y) 64)))
 (decl x64_xor (Type Gpr GprMemImm) Gpr)
 (rule (x64_xor ty src1 src2)
       (alu_rmi_r ty
@@ -4256,6 +4261,7 @@
 (spec (x64_blsi ty x)
       (provide (= result (bvand (bvneg x) x)))
       (require
+            ;; TODO(mbm): support 32-bit
             (= ty 64)
             (= (widthof x) 64)))
 (decl x64_blsi (Type GprMem) Gpr)
@@ -4263,6 +4269,17 @@
       (unary_rm_r_vex (UnaryRmRVexOpcode.Blsi) src (operand_size_of_type_32_64 ty)))
 
 ;; Helper for creating `blsmsk` instructions.
+(spec (x64_blsmsk ty x)
+      (provide (= result
+            (bvxor
+                  (bvsub x (zero_ext (widthof x) #b1))
+                  x
+            )
+      ))
+      (require
+            ;; TODO(mbm): support 32-bit
+            (= ty 64)
+            (= (widthof x) 64)))
 (decl x64_blsmsk (Type GprMem) Gpr)
 (rule (x64_blsmsk ty src)
       (unary_rm_r_vex (UnaryRmRVexOpcode.Blsmsk) src (operand_size_of_type_32_64 ty)))
@@ -4276,6 +4293,7 @@
             )
       ))
       (require
+            ;; TODO(mbm): support 32-bit
             (= ty 64)
             (= (widthof x) 64)))
 (decl x64_blsr (Type GprMem) Gpr)

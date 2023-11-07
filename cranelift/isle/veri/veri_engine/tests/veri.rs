@@ -3238,6 +3238,28 @@ fn test_named_x64_lower_iadd_base_case_32_or_64_lea() {
     });
 }
 
+#[test]
+fn test_named_x64_lower_iadd_base_fits_in_64_sinkable_load_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_iadd_base_fits_in_64_sinkable_load_lhs",
+            "iadd",
+            all_success_result(),
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_iadd_base_fits_in_64_sinkable_load_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_iadd_base_fits_in_64_sinkable_load_rhs",
+            "iadd",
+            all_success_result(),
+        )
+    });
+}
+
 // amode
 
 #[test]
@@ -3529,6 +3551,78 @@ fn test_named_x64_lower_band_blsi_rhs() {
             "lower_band_blsi_rhs",
             "band",
             vec![(Bitwidth::I64, VerificationResult::Success)],
+        )
+    });
+}
+
+// bxor
+
+#[test]
+fn test_named_x64_lower_bxor_base_case() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_bxor_base_case",
+            "bxor",
+            vec![
+                // TODO(mbm): cover all type instantiations
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_bxor_lhs_simm32() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_bxor_lhs_simm32",
+            "bxor",
+            vec![
+                // TODO(mbm): cover all type instantiations
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_bxor_lhs_sinkable_load() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_bxor_lhs_sinkable_load",
+            "bxor",
+            vec![
+                // TODO(mbm): cover all type instantiations
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_bxor_blsmsk_rhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_bxor_blsmsk_rhs",
+            "bxor",
+            vec![
+                // TODO(mbm): cover all type instantiations
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
+        )
+    });
+}
+
+#[test]
+fn test_named_x64_lower_bxor_blsmsk_lhs() {
+    run_and_retry(|| {
+        test_x64_rule_with_lhs_termname_simple(
+            "lower_bxor_blsmsk_lhs",
+            "bxor",
+            vec![
+                // TODO(mbm): cover all type instantiations
+                (Bitwidth::I64, VerificationResult::Success),
+            ],
         )
     });
 }
