@@ -13,6 +13,7 @@ pub struct IsleCompilations {
 
 #[derive(Clone, Debug)]
 pub struct IsleCompilation {
+    pub name: String,
     pub output: std::path::PathBuf,
     pub inputs: Vec<std::path::PathBuf>,
     pub untracked_inputs: Vec<std::path::PathBuf>,
@@ -81,6 +82,7 @@ pub fn get_isle_compilations(
         items: vec![
             // The mid-end optimization rules.
             IsleCompilation {
+                name: "opt".to_string(),
                 output: out_dir.join("isle_opt.rs"),
                 inputs: vec![
                     prelude_isle.clone(),
@@ -99,6 +101,7 @@ pub fn get_isle_compilations(
             },
             // The x86-64 instruction selector.
             IsleCompilation {
+                name: "x64".to_string(),
                 output: out_dir.join("isle_x64.rs"),
                 inputs: vec![
                     prelude_isle.clone(),
@@ -110,6 +113,7 @@ pub fn get_isle_compilations(
             },
             // The aarch64 instruction selector.
             IsleCompilation {
+                name: "aarch64".to_string(),
                 output: out_dir.join("isle_aarch64.rs"),
                 inputs: vec![
                     prelude_isle.clone(),
@@ -124,6 +128,7 @@ pub fn get_isle_compilations(
             },
             // The s390x instruction selector.
             IsleCompilation {
+                name: "s390x".to_string(),
                 output: out_dir.join("isle_s390x.rs"),
                 inputs: vec![
                     prelude_isle.clone(),
@@ -135,6 +140,7 @@ pub fn get_isle_compilations(
             },
             // The risc-v instruction selector.
             IsleCompilation {
+                name: "riscv64".to_string(),
                 output: out_dir.join("isle_riscv64.rs"),
                 inputs: vec![
                     prelude_isle.clone(),
