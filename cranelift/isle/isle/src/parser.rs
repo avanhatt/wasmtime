@@ -172,6 +172,7 @@ impl<'a> Parser<'a> {
             "spec" => Def::Spec(self.parse_spec()?),
             "model" => Def::Model(self.parse_model()?),
             "signatures" => Def::Signatures(self.parse_signatures()?),
+            "instantiate" => Def::Instantiation(self.parse_instantiation()?),
             "rule" => Def::Rule(self.parse_rule()?),
             "extractor" => Def::Extractor(self.parse_etor()?),
             "extern" => Def::Extern(self.parse_extern()?),
@@ -665,6 +666,17 @@ impl<'a> Parser<'a> {
             params: vec![],
             ret,
             canonical,
+            pos,
+        })
+    }
+
+    fn parse_instantiation(&mut self) -> Result<Instantiation> {
+        let pos = self.pos();
+        let term = self.parse_ident()?;
+        let signatures = self.parse_ident()?;
+        Ok(Instantiation {
+            term,
+            signatures,
             pos,
         })
     }

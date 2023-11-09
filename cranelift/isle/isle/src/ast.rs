@@ -25,6 +25,7 @@ pub enum Def {
     Spec(Spec),
     Model(Model),
     Signatures(Signatures),
+    Instantiation(Instantiation),
     Extern(Extern),
     Converter(Converter),
 }
@@ -259,6 +260,13 @@ pub struct Signature {
 pub struct Signatures {
     pub name: Ident,
     pub signatures: Vec<Signature>,
+    pub pos: Pos,
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct Instantiation {
+    pub term: Ident,
+    pub signatures: Ident,
     pub pos: Pos,
 }
 

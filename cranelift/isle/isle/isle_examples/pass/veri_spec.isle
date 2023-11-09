@@ -13,6 +13,7 @@
 (spec (B i)
   (provide (= (bvadd i #xff) #b00000000))
   (require (= (= 1 2) false)))
+(instantiate B unary_bv_8_to_64)
 (decl B (u8) u8)
 
 (rule first 1 (A x x) x)
