@@ -171,6 +171,7 @@ impl<'a> Parser<'a> {
             "decl" => Def::Decl(self.parse_decl()?),
             "spec" => Def::Spec(self.parse_spec()?),
             "model" => Def::Model(self.parse_model()?),
+            "signatures" => Def::Signatures(self.parse_signatures()?),
             "rule" => Def::Rule(self.parse_rule()?),
             "extractor" => Def::Extractor(self.parse_etor()?),
             "extern" => Def::Extern(self.parse_extern()?),
@@ -624,6 +625,48 @@ impl<'a> Parser<'a> {
                 "Model type be a Bool, Int, or BitVector (bv ...)".to_string(),
             ))
         }
+    }
+
+    fn parse_signatures(&mut self) -> Result<Signatures> {
+        let pos = self.pos();
+        let name = self.parse_ident()?;
+        let mut signatures = vec![];
+        while !self.is_rparen() {
+            signatures.push(self.parse_signature()?);
+        }
+        Ok(Signatures {
+            name,
+            signatures,
+            pos,
+        })
+    }
+
+    fn parse_signature(&mut self) -> Result<Signature> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+
+        // Parameter types.
+        self.expect_lparen()?;
+        let mut params = vec![];
+        while !self.is_rparen() {
+            params.push(self.parse_model_type()?);
+        }
+        self.expect_rparen()?;
+
+        // Return type.
+        let ret = self.parse_model_type()?;
+
+        // Canonical type.
+        let canonical = self.parse_model_type()?;
+
+        self.expect_rparen()?;
+
+        Ok(Signature {
+            params: vec![],
+            ret,
+            canonical,
+            pos,
+        })
     }
 
     fn parse_extern(&mut self) -> Result<Extern> {

@@ -3,8 +3,15 @@
 (spec (A i j) (provide (= (if true (= i j) (= i (bvneg j))))))
 (decl A (u8 u8) u8)
 
-(spec (B i) 
-  (provide (= (bvadd i #xff) #b00000000)) 
+(signatures
+  unary_bv_8_to_64
+  (((bv 8)) (bv 8) (bv 8))
+  (((bv 16)) (bv 16) (bv 16))
+  (((bv 32)) (bv 32) (bv 32))
+)
+
+(spec (B i)
+  (provide (= (bvadd i #xff) #b00000000))
   (require (= (= 1 2) false)))
 (decl B (u8) u8)
 
