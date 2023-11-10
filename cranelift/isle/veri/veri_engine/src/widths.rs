@@ -1,8 +1,32 @@
+use crate::annotations::AnnotationEnv;
+use cranelift_isle::sema::{TermEnv, TypeEnv};
+use std::{collections::HashMap, vec};
 use veri_ir::{TermSignature, Type};
 
-use std::{collections::HashMap, vec};
+pub fn isle_inst_types(
+    termenv: &TermEnv,
+    typeenv: &TypeEnv,
+    annotation_env: &AnnotationEnv,
+) -> HashMap<String, Vec<TermSignature>> {
+    let mut inst_types = HashMap::new();
 
-pub fn isle_inst_types() -> HashMap<&'static str, Vec<TermSignature>> {
+    // Populate from ISLE.
+    for (term_id, term_sigs) in &annotation_env.instantiations_map {
+        let sym = termenv.terms[term_id.index()].name;
+        let name = typeenv.syms[sym.index()].clone();
+        inst_types.insert(name, term_sigs.clone());
+    }
+
+    // Apply overrides.
+    let overrides = isle_inst_types_overrides();
+    for (name, term_sigs) in &overrides {
+        inst_types.insert(name.to_string(), term_sigs.clone());
+    }
+
+    inst_types
+}
+
+fn isle_inst_types_overrides() -> HashMap<&'static str, Vec<TermSignature>> {
     let bv_types_8_to_64: Vec<Type> = vec![
         Type::BitVector(Some(8)),
         Type::BitVector(Some(16)),

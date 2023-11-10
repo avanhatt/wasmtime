@@ -26,7 +26,7 @@ pub fn verify_rules(inputs: Vec<PathBuf>, config: &Config) {
     let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
     // Get the types/widths for this particular term
-    let types = isle_inst_types()
+    let types = isle_inst_types(&termenv, &typeenv, &annotation_env)
         .get(&config.term as &str)
         .expect(format!("Missing term width for {}", config.term).as_str())
         .clone();
