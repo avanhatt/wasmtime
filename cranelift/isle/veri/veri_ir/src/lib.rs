@@ -106,6 +106,7 @@ pub enum Type {
     Int,
 }
 
+// TODO(mbm): rename TermSignature to distinguish from TermSignature in annotation_ir? TypeSignature?
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TermSignature {
     pub args: Vec<Type>,

@@ -7,6 +7,7 @@ use cranelift_isle::lexer::Pos;
 use cranelift_isle::sema::{TermEnv, TermId, TypeEnv, TypeId};
 use veri_ir::annotation_ir::Width;
 use veri_ir::annotation_ir::{BoundVar, Const, Expr, TermAnnotation, TermSignature, Type};
+use veri_ir::TermSignature as TermTypeSignature;
 
 static RESULT: &str = "result";
 
@@ -19,6 +20,9 @@ pub struct ParsingEnv<'a> {
 #[derive(Clone, Debug)]
 pub struct AnnotationEnv {
     pub annotation_map: HashMap<TermId, TermAnnotation>,
+
+    // Mapping from ISLE term to its signature instantiations.
+    pub instantiations_map: HashMap<TermId, Vec<TermTypeSignature>>,
 
     // Mapping from ISLE type to its model (the annotation used to represent
     // it).
@@ -294,9 +298,17 @@ fn spec_to_expr(s: &SpecExpr, env: &ParsingEnv) -> Expr {
     }
 }
 
+fn model_type_to_type(model_type: &ModelType) -> veri_ir::Type {
+    match model_type {
+        ModelType::Int => veri_ir::Type::Int,
+        ModelType::Bool => veri_ir::Type::Bool,
+        ModelType::BitVec(size) => veri_ir::Type::BitVector(*size),
+    }
+}
+
 pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> AnnotationEnv {
-    let mut model_map = HashMap::new();
     let mut annotation_map = HashMap::new();
+    let mut model_map = HashMap::new();
 
     let mut env = ParsingEnv {
         typeenv,
@@ -392,8 +404,42 @@ pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> A
             _ => {}
         }
     }
+
+    // Collect term instantiations.
+    let mut signatures_map = HashMap::new();
+    for def in &defs.defs {
+        match def {
+            &ast::Def::Signatures(ref sigs) => {
+                let mut term_type_signatures = Vec::new();
+                for sig in &sigs.signatures {
+                    let term_type_signature = TermTypeSignature {
+                        args: sig.params.iter().map(model_type_to_type).collect(),
+                        ret: model_type_to_type(&sig.ret),
+                        canonical_type: Some(model_type_to_type(&sig.canonical)),
+                    };
+                    term_type_signatures.push(term_type_signature);
+                }
+                signatures_map.insert(sigs.name.0.clone(), term_type_signatures);
+            }
+            _ => {}
+        }
+    }
+
+    let mut instantiations_map = HashMap::new();
+    for def in &defs.defs {
+        match def {
+            &ast::Def::Instantiation(ref inst) => {
+                let term_id = termenv.get_term_by_name(typeenv, &inst.term).unwrap();
+                let sigs = signatures_map[&inst.signatures.0].clone();
+                instantiations_map.insert(term_id, sigs);
+            }
+            _ => {}
+        }
+    }
+
     AnnotationEnv {
-        model_map,
         annotation_map,
+        instantiations_map,
+        model_map,
     }
 }
