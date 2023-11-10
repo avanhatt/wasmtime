@@ -76,6 +76,7 @@
                 (if (bvsge x (conv_to (widthof x) #x0000000000000000))
                     x
                     (bvneg x)))))
+(instantiate iabs bv_unary_8_to_64)
 
 (spec (imul x y)
     (provide (= result (bvmul x y))))
@@ -111,6 +112,7 @@
 (spec (bnot x)
     (provide (= result (bvnot x)))
     (require (or (= (widthof x) 8) (= (widthof x) 16) (= (widthof x) 32) (= (widthof x) 64))))
+(instantiate bnot bv_unary_8_to_64)
 
 (spec (band_not x y)
     (provide (= result (bvand x (bvnot y)))))
@@ -151,15 +153,19 @@
 
 (spec (clz x)
     (provide (= result (clz x))))
+(instantiate clz bv_unary_8_to_64)
 
 (spec (cls x)
     (provide (= result (cls x))))
+(instantiate cls bv_unary_8_to_64)
 
 (spec (ctz x)
     (provide (= result (clz (rev x)))))
+(instantiate ctz bv_unary_8_to_64)
 
 (spec (popcnt x)
     (provide (= result (popcnt x))))
+(instantiate popcnt bv_unary_8_to_64)
 
 (spec (uextend x)
     (provide (= result (zero_ext (widthof result) x))))

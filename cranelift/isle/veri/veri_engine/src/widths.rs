@@ -38,16 +38,6 @@ fn isle_inst_types_overrides() -> HashMap<&'static str, Vec<TermSignature>> {
         Type::BitVector(Some(64)),
     ];
 
-    let bv_unary_8_to_64: Vec<TermSignature> = bv_types_8_to_64
-        .iter()
-        .copied()
-        .map(|x| TermSignature {
-            args: vec![x.clone()],
-            ret: x.clone(),
-            canonical_type: Some(x),
-        })
-        .collect();
-
     let bv_binary_8_to_64: Vec<TermSignature> = bv_types_8_to_64
         .iter()
         .copied()
@@ -69,15 +59,6 @@ fn isle_inst_types_overrides() -> HashMap<&'static str, Vec<TermSignature>> {
         .collect();
 
     let mut widths = HashMap::new();
-
-    // Simple unary
-    widths.insert("ineg", bv_unary_8_to_64.clone());
-    widths.insert("iabs", bv_unary_8_to_64.clone());
-    widths.insert("bnot", bv_unary_8_to_64.clone());
-    widths.insert("cls", bv_unary_8_to_64.clone());
-    widths.insert("clz", bv_unary_8_to_64.clone());
-    widths.insert("ctz", bv_unary_8_to_64.clone());
-    widths.insert("popcnt", bv_unary_8_to_64.clone());
 
     widths.insert(
         "operand_size",
