@@ -663,7 +663,7 @@ impl<'a> Parser<'a> {
         self.expect_rparen()?;
 
         Ok(Signature {
-            params: vec![],
+            params,
             ret,
             canonical,
             pos,

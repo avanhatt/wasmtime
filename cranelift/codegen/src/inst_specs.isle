@@ -69,6 +69,7 @@
 
 (spec (ineg x)
     (provide (= result (bvneg x))))
+(instantiate ineg bv_unary_8_to_64)
 
 (spec (iabs x)
     (provide (= result

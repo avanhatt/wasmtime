@@ -20,7 +20,11 @@ pub fn isle_inst_types(
     // Apply overrides.
     let overrides = isle_inst_types_overrides();
     for (name, term_sigs) in &overrides {
-        inst_types.insert(name.to_string(), term_sigs.clone());
+        let name = name.to_string();
+        if let Some(exist) = inst_types.get(&name) {
+            assert_eq!(exist, term_sigs);
+        }
+        inst_types.insert(name, term_sigs.clone());
     }
 
     inst_types
