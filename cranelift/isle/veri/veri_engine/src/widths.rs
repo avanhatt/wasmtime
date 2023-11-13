@@ -157,26 +157,6 @@ fn isle_inst_types_overrides() -> HashMap<&'static str, Vec<TermSignature>> {
     widths.insert("sextend", extends.clone());
     widths.insert("uextend", extends.clone());
 
-    // Binary
-    widths.insert("iadd", bv_binary_8_to_64.clone());
-    widths.insert("isub", bv_binary_8_to_64.clone());
-    widths.insert("imul", bv_binary_8_to_64.clone());
-    widths.insert("band", bv_binary_8_to_64.clone());
-    widths.insert("band_not", bv_binary_8_to_64.clone());
-    widths.insert("bor", bv_binary_8_to_64.clone());
-    widths.insert("bxor", bv_binary_8_to_64.clone());
-    widths.insert("ushr", bv_binary_8_to_64.clone());
-    widths.insert("sshr", bv_binary_8_to_64.clone());
-    widths.insert("ishl", bv_binary_8_to_64.clone());
-    widths.insert("udiv", bv_binary_8_to_64.clone());
-    widths.insert("sdiv", bv_binary_8_to_64.clone());
-    widths.insert("srem", bv_binary_8_to_64.clone());
-    widths.insert("urem", bv_binary_8_to_64.clone());
-    widths.insert("smin", bv_binary_8_to_64.clone());
-    widths.insert("umin", bv_binary_8_to_64.clone());
-    widths.insert("smax", bv_binary_8_to_64.clone());
-    widths.insert("umax", bv_binary_8_to_64.clone());
-
     // x86 binary
     widths.insert(
         "amode_add",

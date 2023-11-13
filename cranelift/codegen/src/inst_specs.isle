@@ -14,15 +14,19 @@
 
 (spec (smin x y)
     (provide (= result (if (bvsle x y) x y))))
+(instantiate smin bv_binary_8_to_64)
 
 (spec (umin x y)
     (provide (= result (if (bvule x y) x y))))
+(instantiate umin bv_binary_8_to_64)
 
 (spec (smax x y)
     (provide (= result (if (bvsge x y) x y))))
+(instantiate smax bv_binary_8_to_64)
 
 (spec (umax x y)
     (provide (= result (if (bvuge x y) x y))))
+(instantiate umax bv_binary_8_to_64)
 
 (spec (iconst arg)
     (provide (= arg (zero_ext 64 result))))
@@ -63,9 +67,11 @@
 
 (spec (iadd x y)
     (provide (= result (bvadd x y))))
+(instantiate iadd bv_binary_8_to_64)
 
 (spec (isub x y)
     (provide (= result (bvsub x y))))
+(instantiate isub bv_binary_8_to_64)
 
 (spec (ineg x)
     (provide (= result (bvneg x))))
@@ -80,34 +86,42 @@
 
 (spec (imul x y)
     (provide (= result (bvmul x y))))
+(instantiate imul bv_binary_8_to_64)
 
 (spec (udiv x y)
     (provide (= result (bvudiv x y)))
     (require (not (= y (zero_ext (widthof y) #b0)))))
+(instantiate udiv bv_binary_8_to_64)
 
 (spec (sdiv x y)
     (provide (= result (bvsdiv x y)))
     (require (not (= y (zero_ext (widthof y) #b0)))))
+(instantiate sdiv bv_binary_8_to_64)
 
 (spec (urem x y)
     (provide (= result (bvurem x y)))
     (require (not (= y (zero_ext (widthof y) #b0)))))
+(instantiate urem bv_binary_8_to_64)
 
 (spec (srem x y)
     (provide (= result (bvsrem x y)))
     (require (not (= y (zero_ext (widthof y) #b0)))))
+(instantiate srem bv_binary_8_to_64)
 
 (spec (imul_imm x y)
     (provide (= result (bvmul (sign_ext 64 x) y))))
 
 (spec (band x y)
     (provide (= result (bvand x y))))
+(instantiate band bv_binary_8_to_64)
 
 (spec (bor x y)
     (provide (= result (bvor x y))))
+(instantiate bor bv_binary_8_to_64)
 
 (spec (bxor x y)
     (provide (= result (bvxor x y))))
+(instantiate bxor bv_binary_8_to_64)
 
 (spec (bnot x)
     (provide (= result (bvnot x)))
@@ -116,6 +130,7 @@
 
 (spec (band_not x y)
     (provide (= result (bvand x (bvnot y)))))
+(instantiate band_not bv_binary_8_to_64)
 
 (spec (rotl x y)
     (provide (= result (rotl x y))))
@@ -134,6 +149,7 @@
                   (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y))
                                                      #x0000000000000001))
                          y)))))
+(instantiate ishl bv_binary_8_to_64)
 
 (spec (ushr x y)
     (provide
@@ -142,6 +158,7 @@
                   (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y))
                                                      #x0000000000000001))
                          y)))))
+(instantiate ushr bv_binary_8_to_64)
 
 (spec (sshr x y)
     (provide
@@ -150,6 +167,7 @@
                   (bvand (conv_to (widthof y) (bvsub (int2bv 64 (widthof y))
                                                      #x0000000000000001))
                          y)))))
+(instantiate sshr bv_binary_8_to_64)
 
 (spec (clz x)
     (provide (= result (clz x))))
