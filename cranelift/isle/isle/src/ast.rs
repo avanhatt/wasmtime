@@ -250,7 +250,7 @@ pub struct Model {
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Signature {
-    pub params: Vec<ModelType>,
+    pub args: Vec<ModelType>,
     pub ret: ModelType,
     pub canonical: ModelType,
     pub pos: Pos,

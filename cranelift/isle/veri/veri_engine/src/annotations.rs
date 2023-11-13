@@ -413,7 +413,7 @@ pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> A
                 let mut term_type_signatures = Vec::new();
                 for sig in &sigs.signatures {
                     let term_type_signature = TermTypeSignature {
-                        args: sig.params.iter().map(model_type_to_type).collect(),
+                        args: sig.args.iter().map(model_type_to_type).collect(),
                         ret: model_type_to_type(&sig.ret),
                         canonical_type: Some(model_type_to_type(&sig.canonical)),
                     };

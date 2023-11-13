@@ -645,29 +645,44 @@ impl<'a> Parser<'a> {
     fn parse_signature(&mut self) -> Result<Signature> {
         self.expect_lparen()?;
         let pos = self.pos();
+        let args = self.parse_tagged_types("args")?;
+        let ret = self.parse_tagged_type("ret")?;
+        let canonical = self.parse_tagged_type("canon")?;
+        self.expect_rparen()?;
+        Ok(Signature {
+            args,
+            ret,
+            canonical,
+            pos,
+        })
+    }
 
-        // Parameter types.
+    fn parse_tagged_types(&mut self, tag: &str) -> Result<Vec<ModelType>> {
         self.expect_lparen()?;
+        let pos = self.pos();
+        if !self.eat_sym_str(tag)? {
+            return Err(self.error(
+                pos,
+                format!("Invalid {}: expected ({} <arg> ...)", tag, tag),
+            ));
+        };
         let mut params = vec![];
         while !self.is_rparen() {
             params.push(self.parse_model_type()?);
         }
         self.expect_rparen()?;
+        Ok(params)
+    }
 
-        // Return type.
-        let ret = self.parse_model_type()?;
-
-        // Canonical type.
-        let canonical = self.parse_model_type()?;
-
+    fn parse_tagged_type(&mut self, tag: &str) -> Result<ModelType> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        if !self.eat_sym_str(tag)? {
+            return Err(self.error(pos, format!("Invalid {}: expected ({} <arg>)", tag, tag)));
+        };
+        let ty = self.parse_model_type()?;
         self.expect_rparen()?;
-
-        Ok(Signature {
-            params,
-            ret,
-            canonical,
-            pos,
-        })
+        Ok(ty)
     }
 
     fn parse_instantiation(&mut self) -> Result<Instantiation> {
