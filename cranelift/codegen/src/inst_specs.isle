@@ -134,9 +134,11 @@
 
 (spec (rotl x y)
     (provide (= result (rotl x y))))
+(instantiate rotl bv_binary_8_to_64)
 
 (spec (rotr x y)
     (provide (= result (rotr x y))))
+(instantiate rotr bv_binary_8_to_64)
 
 ;; fn shift_mask(&mut self, ty: Type) -> ImmLogic {
 ;;     let mask = (ty.lane_bits() - 1) as u64;
