@@ -36,7 +36,7 @@
 
 (spec (bitselect c x y)
     (provide (= result (bvor (bvand c x) (bvand (bvnot c) y)))))
-(instantiate umax bv_ternary_8_to_64)
+(instantiate bitselect bv_ternary_8_to_64)
 
 (spec (icmp c x y)
     (provide
