@@ -8,7 +8,7 @@ use crate::cdsl::camel_case;
 use crate::cdsl::formats::InstructionFormat;
 use crate::cdsl::instructions::{AllInstructions, Instruction};
 use crate::cdsl::operands::Operand;
-use crate::cdsl::types::ValueType;
+use crate::cdsl::types::{LaneType, ValueType};
 use crate::cdsl::typevar::{TypeSet, TypeVar};
 
 use crate::error;
@@ -1221,6 +1221,39 @@ enum IsleTarget {
     Opt,
 }
 
+fn get_isle_model_type(ty: &ValueType) -> Option<String> {
+    match ty {
+        ValueType::Lane(lane) => match lane {
+            LaneType::Int(i) => Some(format!("(bv {})", *i as u64)),
+            LaneType::Float(_) => None,
+        },
+        _ => None,
+    }
+}
+
+fn is_type_supported_by_veri_isle(ty: &ValueType) -> bool {
+    match ty {
+        ValueType::Lane(lane) => match lane {
+            LaneType::Int(i) => *i as u64 <= 64,
+            LaneType::Float(_) => false,
+        },
+        _ => false,
+    }
+}
+
+fn is_signature_supported_by_veri_isle(sig: &Signature) -> bool {
+    sig.args
+        .iter()
+        .all(|arg| is_type_supported_by_veri_isle(arg))
+        && !sig.args.is_empty()
+        && sig
+            .rets
+            .iter()
+            .all(|ret| is_type_supported_by_veri_isle(ret))
+        && sig.rets.len() == 1
+        && is_type_supported_by_veri_isle(&sig.ctrl)
+}
+
 fn gen_common_isle(
     formats: &[Rc<InstructionFormat>],
     instructions: &AllInstructions,
@@ -1571,6 +1604,44 @@ fn gen_common_isle(
         });
         fmt.line(")");
 
+        // Generate signature instantiations if this is the lowering prelude.
+        if isle_target == IsleTarget::Lower {
+            let sigs = signatures(inst).unwrap_or(vec![]);
+            let supported: Vec<_> = sigs
+                .iter()
+                .filter(|sig| is_signature_supported_by_veri_isle(sig))
+                .collect();
+            if !supported.is_empty() {
+                fmtln!(fmt, "(signatures {}", inst.name);
+                fmt.indent(|fmt| {
+                    for sig in &supported {
+                        let mut s = String::from("(");
+                        let arg_types: Vec<_> = sig
+                            .args
+                            .iter()
+                            .map(|arg| get_isle_model_type(arg).unwrap())
+                            .collect();
+                        write!(&mut s, "(args {})", arg_types.join(" ")).unwrap();
+                        write!(
+                            &mut s,
+                            " (ret {})",
+                            get_isle_model_type(&sig.rets[0]).unwrap()
+                        )
+                        .unwrap();
+                        write!(
+                            &mut s,
+                            " (canon {}))",
+                            get_isle_model_type(&sig.ctrl).unwrap()
+                        )
+                        .unwrap();
+                        fmt.line(s);
+                    }
+                });
+                fmt.line(")");
+                fmtln!(fmt, "(instantiate {} {})", inst.name, inst.name);
+            }
+        }
+
         // Generate a constructor if this is the mid-end prelude.
         if isle_target == IsleTarget::Opt {
             fmtln!(
@@ -1792,11 +1863,11 @@ fn resolve_value_types(
         // TODO(mbm): implement derived functions
         //
         // Derived functions need to implement the same logic as
-        // OperandConstraint::resolve().  Not sure whether it's the right move
-        // to reimplement it here. Seems like yes, since this is where the
-        // CDSL-based code generation happens.  But the reimplementation should
-        // be verified with a unit test or something to cross-check the
-        // signatures here with those resolved at runtime.
+        // codegen::ir::OperandConstraint::resolve().  Not sure whether it's the
+        // right move to reimplement it here. Seems like yes, since this is
+        // where the CDSL-based code generation happens.  But the
+        // reimplementation should be verified with a unit test or something to
+        // cross-check the signatures here with those resolved at runtime.
         return match base.derived_func {
             //DerivedFunc::LaneOf => "lane_of",
             //DerivedFunc::AsTruthy => "as_truthy",
@@ -1843,7 +1914,7 @@ fn resolve_signatures(
     let argss = cartesian_product(cols);
 
     // Resolve return types.
-    let rets = Vec::new();
+    let rets = vec![ctrl_type.clone()];
 
     // Deduce signatures.
     let sigs = argss
