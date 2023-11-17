@@ -8,6 +8,7 @@ use crate::cdsl::camel_case;
 use crate::cdsl::formats::InstructionFormat;
 use crate::cdsl::instructions::{AllInstructions, Instruction};
 use crate::cdsl::operands::Operand;
+use crate::cdsl::types::ValueType;
 use crate::cdsl::typevar::{TypeSet, TypeVar};
 
 use crate::error;
@@ -1741,6 +1742,178 @@ fn gen_builder(
         }
     });
     fmt.line("}");
+}
+
+fn cartesian_product<T: Clone>(cols: Vec<Vec<T>>) -> Vec<Vec<T>> {
+    let mut combinations = vec![vec![]];
+    let mut cols = cols.as_slice();
+    while let Some((col, rest)) = cols.split_last() {
+        cols = rest;
+
+        let mut next = vec![];
+        for current in combinations.iter() {
+            // Extend the front of each argument candidate with every element in `col`.
+            for element in col {
+                let mut combination = vec![element.clone()];
+                combination.extend_from_slice(&current);
+                next.push(combination);
+            }
+        }
+
+        let _ = std::mem::replace(&mut combinations, next);
+    }
+    combinations
+}
+
+fn resolve_value_types(
+    operand: &Operand,
+    ctrl_typevar: &TypeVar,
+    ctrl_type: &ValueType,
+) -> Vec<ValueType> {
+    // Based on get_constraint() implementation.
+    // TODO(mbm): share get_constraint() logic?
+
+    assert!(operand.is_value());
+    let type_var = operand.type_var().unwrap();
+
+    if let Some(typ) = type_var.singleton_type() {
+        return vec![typ];
+    }
+
+    if let Some(free_typevar) = type_var.free_typevar() {
+        if free_typevar != *ctrl_typevar {
+            assert!(type_var.base.is_none());
+            return free_typevar.get_raw_typeset().concrete_types();
+        }
+    }
+
+    if let Some(base) = &type_var.base {
+        assert!(base.type_var == *ctrl_typevar);
+        // TODO(mbm): implement derived functions
+        //
+        // Derived functions need to implement the same logic as
+        // OperandConstraint::resolve().  Not sure whether it's the right move
+        // to reimplement it here. Seems like yes, since this is where the
+        // CDSL-based code generation happens.  But the reimplementation should
+        // be verified with a unit test or something to cross-check the
+        // signatures here with those resolved at runtime.
+        return match base.derived_func {
+            //DerivedFunc::LaneOf => "lane_of",
+            //DerivedFunc::AsTruthy => "as_truthy",
+            //DerivedFunc::HalfWidth => "half_width",
+            //DerivedFunc::DoubleWidth => "double_width",
+            //DerivedFunc::SplitLanes => "split_lanes",
+            //DerivedFunc::MergeLanes => "merge_lanes",
+            //DerivedFunc::DynamicToVector => "dynamic_to_vector",
+            //DerivedFunc::Narrower => "narrower",
+            //DerivedFunc::Wider => "wider",
+            _ => vec![],
+        };
+    }
+
+    // Otherwise, this operand must be constrained to the same as the control.
+    assert!(type_var == ctrl_typevar);
+    vec![ctrl_type.clone()]
+}
+
+#[derive(Debug)]
+struct Signature {
+    pub args: Vec<ValueType>,
+    pub rets: Vec<ValueType>,
+    pub ctrl: ValueType,
+}
+
+fn resolve_signatures(
+    inst: &Instruction,
+    ctrl_typevar: &TypeVar,
+    ctrl_type: &ValueType,
+) -> Result<Vec<Signature>, String> {
+    // Resolve arguments.
+    let mut cols = Vec::new();
+    for operand in &inst.operands_in {
+        if !operand.is_value() {
+            return Err("non-value operands not handled".to_string());
+        }
+        let operand_types = resolve_value_types(operand, ctrl_typevar, ctrl_type);
+        if operand_types.is_empty() {
+            return Err("could not derived operand types".to_string());
+        }
+        cols.push(operand_types);
+    }
+    let argss = cartesian_product(cols);
+
+    // Resolve return types.
+    let rets = Vec::new();
+
+    // Deduce signatures.
+    let sigs = argss
+        .iter()
+        .map(|args| Signature {
+            args: args.clone(),
+            rets: rets.clone(),
+            ctrl: ctrl_type.clone(),
+        })
+        .collect();
+
+    Ok(sigs)
+}
+
+fn signatures(inst: &Instruction) -> Result<Vec<Signature>, String> {
+    // Is this polymorphic?
+    let poly_info = match &inst.polymorphic_info {
+        Some(poly_info) => poly_info,
+        None => return Err("non-polymorphic instructions not handled".to_string()),
+    };
+
+    // Now we know possibilities for the controlling type.
+    let mut sigs = Vec::new();
+    let ctrl_typevar = &poly_info.ctrl_typevar;
+    let ctrl_typeset = ctrl_typevar.get_typeset();
+    for ctrl_type in ctrl_typeset.concrete_types().iter() {
+        let sigs_for_ctrl_type = resolve_signatures(inst, ctrl_typevar, ctrl_type)?;
+        sigs.extend(sigs_for_ctrl_type);
+    }
+
+    Ok(sigs)
+}
+
+fn gen_dump(instructions: &AllInstructions, fmt: &mut Formatter) {
+    for inst in instructions.iter() {
+        fmtln!(fmt, "inst = {}", inst.name);
+        fmt.indent(|fmt| {
+            fmtln!(fmt, "format = {}", inst.format);
+            for op in &inst.operands_in {
+                if !op.is_value() {
+                    fmtln!(fmt, "op = <not value>");
+                    return;
+                }
+                let type_var = op.type_var().unwrap();
+                fmtln!(fmt, "op = {:?}", type_var.get_typeset());
+            }
+
+            if let Some(ref poly_info) = inst.polymorphic_info {
+                fmtln!(
+                    fmt,
+                    "use_typevar_operand = {}",
+                    poly_info.use_typevar_operand
+                );
+                fmtln!(fmt, "ctrl_typevar = {}", poly_info.ctrl_typevar.name);
+                fmtln!(fmt, "typeset = {:?}", poly_info.ctrl_typevar.get_typeset());
+            }
+
+            let sigs = match signatures(inst) {
+                Ok(sigs) => sigs,
+                Err(msg) => {
+                    eprintln!("{}: unknown signatures: {}", inst.name, msg);
+                    return;
+                }
+            };
+
+            for sig in &sigs {
+                fmtln!(fmt, "sig = {:?}", sig);
+            }
+        });
+    }
 }
 
 pub(crate) fn generate(

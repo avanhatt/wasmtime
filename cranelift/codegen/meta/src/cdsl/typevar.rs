@@ -513,7 +513,7 @@ impl TypeSet {
         copy
     }
 
-    fn concrete_types(&self) -> Vec<ValueType> {
+    pub fn concrete_types(&self) -> Vec<ValueType> {
         let mut ret = Vec::new();
         for &num_lanes in &self.lanes {
             for &bits in &self.ints {
