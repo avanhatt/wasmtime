@@ -1448,7 +1448,7 @@ impl InstructionData {
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 #[cfg_attr(
             feature = "enable-serde",
-            derive(serde::Serialize, serde::Deserialize)
+            derive(serde_derive::Serialize, serde_derive::Deserialize)
         )]
 pub enum Opcode {
     /// `jump block_call`. (Jump)
@@ -1849,15 +1849,9 @@ pub enum Opcode {
     /// `a = fmin x, y`. (Binary)
     /// Type inferred from `x`.
     Fmin,
-    /// `a = fmin_pseudo x, y`. (Binary)
-    /// Type inferred from `x`.
-    FminPseudo,
     /// `a = fmax x, y`. (Binary)
     /// Type inferred from `x`.
     Fmax,
-    /// `a = fmax_pseudo x, y`. (Binary)
-    /// Type inferred from `x`.
-    FmaxPseudo,
     /// `a = ceil x`. (Unary)
     /// Type inferred from `x`.
     Ceil,
@@ -1936,8 +1930,6 @@ pub enum Opcode {
     FcvtFromUint,
     /// `a = fcvt_from_sint x`. (Unary)
     FcvtFromSint,
-    /// `a = fcvt_low_from_sint x`. (Unary)
-    FcvtLowFromSint,
     /// `lo, hi = isplit x`. (Unary)
     /// Type inferred from `x`.
     Isplit,
@@ -2284,9 +2276,7 @@ impl Opcode {
             Opcode::Fabs,
             Opcode::Fcopysign,
             Opcode::Fmin,
-            Opcode::FminPseudo,
             Opcode::Fmax,
-            Opcode::FmaxPseudo,
             Opcode::Ceil,
             Opcode::Floor,
             Opcode::Trunc,
@@ -2319,7 +2309,6 @@ impl Opcode {
             Opcode::X86Cvtt2dq,
             Opcode::FcvtFromUint,
             Opcode::FcvtFromSint,
-            Opcode::FcvtLowFromSint,
             Opcode::Isplit,
             Opcode::Iconcat,
             Opcode::AtomicRmw,
@@ -2333,7 +2322,7 @@ impl Opcode {
 
 }
 
-const OPCODE_FORMAT: [InstructionFormat; 189] = [
+const OPCODE_FORMAT: [InstructionFormat; 186] = [
     InstructionFormat::Jump, // jump
     InstructionFormat::Brif, // brif
     InstructionFormat::BranchTable, // br_table
@@ -2479,9 +2468,7 @@ const OPCODE_FORMAT: [InstructionFormat; 189] = [
     InstructionFormat::Unary, // fabs
     InstructionFormat::Binary, // fcopysign
     InstructionFormat::Binary, // fmin
-    InstructionFormat::Binary, // fmin_pseudo
     InstructionFormat::Binary, // fmax
-    InstructionFormat::Binary, // fmax_pseudo
     InstructionFormat::Unary, // ceil
     InstructionFormat::Unary, // floor
     InstructionFormat::Unary, // trunc
@@ -2514,7 +2501,6 @@ const OPCODE_FORMAT: [InstructionFormat; 189] = [
     InstructionFormat::Unary, // x86_cvtt2dq
     InstructionFormat::Unary, // fcvt_from_uint
     InstructionFormat::Unary, // fcvt_from_sint
-    InstructionFormat::Unary, // fcvt_low_from_sint
     InstructionFormat::Unary, // isplit
     InstructionFormat::Binary, // iconcat
     InstructionFormat::AtomicRmw, // atomic_rmw
@@ -2653,9 +2639,6 @@ fn opcode_name(opc: Opcode) -> &'static str {
         Opcode::FcvtFromUint => {
             "fcvt_from_uint"
         }
-        Opcode::FcvtLowFromSint => {
-            "fcvt_low_from_sint"
-        }
         Opcode::FcvtToSint => {
             "fcvt_to_sint"
         }
@@ -2686,14 +2669,8 @@ fn opcode_name(opc: Opcode) -> &'static str {
         Opcode::Fmax => {
             "fmax"
         }
-        Opcode::FmaxPseudo => {
-            "fmax_pseudo"
-        }
         Opcode::Fmin => {
             "fmin"
-        }
-        Opcode::FminPseudo => {
-            "fmin_pseudo"
         }
         Opcode::Fmul => {
             "fmul"
@@ -3165,7 +3142,7 @@ const OPCODE_HASH_TABLE: [Option<Opcode>; 256] = [
     None,
     Some(Opcode::GlobalValue),
     Some(Opcode::Bnot),
-    Some(Opcode::FmaxPseudo),
+    Some(Opcode::Sextend),
     Some(Opcode::Isplit),
     Some(Opcode::FcvtToUint),
     None,
@@ -3183,7 +3160,7 @@ const OPCODE_HASH_TABLE: [Option<Opcode>; 256] = [
     Some(Opcode::Fdiv),
     None,
     Some(Opcode::IsubBin),
-    Some(Opcode::Sextend),
+    None,
     Some(Opcode::UremImm),
     Some(Opcode::AtomicLoad),
     None,
@@ -3328,7 +3305,7 @@ const OPCODE_HASH_TABLE: [Option<Opcode>; 256] = [
     Some(Opcode::IaddPairwise),
     None,
     Some(Opcode::Smax),
-    Some(Opcode::FminPseudo),
+    None,
     None,
     Some(Opcode::F32const),
     Some(Opcode::UdivImm),
@@ -3345,7 +3322,7 @@ const OPCODE_HASH_TABLE: [Option<Opcode>; 256] = [
     Some(Opcode::Iadd),
     Some(Opcode::Icmp),
     None,
-    Some(Opcode::FcvtLowFromSint),
+    None,
     None,
     None,
     Some(Opcode::GetStackPointer),
@@ -3358,7 +3335,7 @@ const OPCODE_HASH_TABLE: [Option<Opcode>; 256] = [
 
 
 // Table of opcode constraints.
-const OPCODE_CONSTRAINTS: [OpcodeConstraints; 189] = [
+const OPCODE_CONSTRAINTS: [OpcodeConstraints; 186] = [
     // Jump: fixed_results=0, use_typevar_operand=false, requires_typevar_operand=false, fixed_values=0
     // Constraints=[]
     OpcodeConstraints {
@@ -3939,10 +3916,10 @@ const OPCODE_CONSTRAINTS: [OpcodeConstraints; 189] = [
     },
     // VhighBits: fixed_results=1, use_typevar_operand=false, requires_typevar_operand=false, fixed_values=1
     // Constraints=['Same', 'Free(10)']
-    // Polymorphic over TypeSet(lanes={1, 2, 4, 8, 16, 32, 64, 128, 256}, ints={8, 16, 32, 64, 128})
+    // Polymorphic over TypeSet(lanes={1}, ints={8, 16, 32, 64})
     OpcodeConstraints {
         flags: 0x21,
-        typeset_offset: 13,
+        typeset_offset: 9,
         constraint_offset: 34,
     },
     // Icmp: fixed_results=1, use_typevar_operand=true, requires_typevar_operand=true, fixed_values=2
@@ -4505,23 +4482,7 @@ const OPCODE_CONSTRAINTS: [OpcodeConstraints; 189] = [
         typeset_offset: 17,
         constraint_offset: 0,
     },
-    // FminPseudo: fixed_results=1, use_typevar_operand=true, requires_typevar_operand=false, fixed_values=2
-    // Constraints=['Same', 'Same', 'Same']
-    // Polymorphic over TypeSet(lanes={1, 2, 4, 8, 16, 32, 64, 128, 256}, floats={32, 64})
-    OpcodeConstraints {
-        flags: 0x49,
-        typeset_offset: 17,
-        constraint_offset: 0,
-    },
     // Fmax: fixed_results=1, use_typevar_operand=true, requires_typevar_operand=false, fixed_values=2
-    // Constraints=['Same', 'Same', 'Same']
-    // Polymorphic over TypeSet(lanes={1, 2, 4, 8, 16, 32, 64, 128, 256}, floats={32, 64})
-    OpcodeConstraints {
-        flags: 0x49,
-        typeset_offset: 17,
-        constraint_offset: 0,
-    },
-    // FmaxPseudo: fixed_results=1, use_typevar_operand=true, requires_typevar_operand=false, fixed_values=2
     // Constraints=['Same', 'Same', 'Same']
     // Polymorphic over TypeSet(lanes={1, 2, 4, 8, 16, 32, 64, 128, 256}, floats={32, 64})
     OpcodeConstraints {
@@ -4775,14 +4736,6 @@ const OPCODE_CONSTRAINTS: [OpcodeConstraints; 189] = [
         constraint_offset: 67,
     },
     // FcvtFromSint: fixed_results=1, use_typevar_operand=false, requires_typevar_operand=false, fixed_values=1
-    // Constraints=['Same', 'Free(3)']
-    // Polymorphic over TypeSet(lanes={1, 2, 4, 8, 16, 32, 64, 128, 256}, floats={32, 64})
-    OpcodeConstraints {
-        flags: 0x21,
-        typeset_offset: 21,
-        constraint_offset: 67,
-    },
-    // FcvtLowFromSint: fixed_results=1, use_typevar_operand=false, requires_typevar_operand=false, fixed_values=1
     // Constraints=['Same', 'Free(3)']
     // Polymorphic over TypeSet(lanes={1, 2, 4, 8, 16, 32, 64, 128, 256}, floats={32, 64})
     OpcodeConstraints {

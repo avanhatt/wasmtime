@@ -1471,15 +1471,15 @@ pub trait InstBuilder<'f>: InstBuilderBase<'f> {
     ///
     /// Inputs:
     ///
-    /// - Int (controlling type variable): A scalar or vector integer type
+    /// - NarrowInt (controlling type variable): An integer type of width up to `i64`
     /// - a: A SIMD vector type
     ///
     /// Outputs:
     ///
-    /// - x: A scalar or vector integer type
+    /// - x: An integer type of width up to `i64`
     #[allow(non_snake_case)]
-    fn vhigh_bits(self, Int: crate::ir::Type, a: ir::Value) -> Value {
-        let (inst, dfg) = self.Unary(Opcode::VhighBits, Int, a);
+    fn vhigh_bits(self, NarrowInt: crate::ir::Type, a: ir::Value) -> Value {
+        let (inst, dfg) = self.Unary(Opcode::VhighBits, NarrowInt, a);
         dfg.first_result(inst)
     }
 
@@ -3048,27 +3048,6 @@ pub trait InstBuilder<'f>: InstBuilderBase<'f> {
         dfg.first_result(inst)
     }
 
-    /// Floating point pseudo-minimum, propagating NaNs.  This behaves differently from ``fmin``.
-    /// See <https://github.com/WebAssembly/simd/pull/122> for background.
-    ///
-    /// The behaviour is defined as ``fmin_pseudo(a, b) = (b < a) ? b : a``, and the behaviour
-    /// for zero or NaN inputs follows from the behaviour of ``<`` with such inputs.
-    ///
-    /// Inputs:
-    ///
-    /// - x: A scalar or vector floating point number
-    /// - y: A scalar or vector floating point number
-    ///
-    /// Outputs:
-    ///
-    /// - a: The smaller of ``x`` and ``y``
-    #[allow(non_snake_case)]
-    fn fmin_pseudo(self, x: ir::Value, y: ir::Value) -> Value {
-        let ctrl_typevar = self.data_flow_graph().value_type(x);
-        let (inst, dfg) = self.Binary(Opcode::FminPseudo, ctrl_typevar, x, y);
-        dfg.first_result(inst)
-    }
-
     /// Floating point maximum, propagating NaNs using the WebAssembly rules.
     ///
     /// If either operand is NaN, this returns NaN with an unspecified sign. Furthermore, if
@@ -3088,27 +3067,6 @@ pub trait InstBuilder<'f>: InstBuilderBase<'f> {
     fn fmax(self, x: ir::Value, y: ir::Value) -> Value {
         let ctrl_typevar = self.data_flow_graph().value_type(x);
         let (inst, dfg) = self.Binary(Opcode::Fmax, ctrl_typevar, x, y);
-        dfg.first_result(inst)
-    }
-
-    /// Floating point pseudo-maximum, propagating NaNs.  This behaves differently from ``fmax``.
-    /// See <https://github.com/WebAssembly/simd/pull/122> for background.
-    ///
-    /// The behaviour is defined as ``fmax_pseudo(a, b) = (a < b) ? b : a``, and the behaviour
-    /// for zero or NaN inputs follows from the behaviour of ``<`` with such inputs.
-    ///
-    /// Inputs:
-    ///
-    /// - x: A scalar or vector floating point number
-    /// - y: A scalar or vector floating point number
-    ///
-    /// Outputs:
-    ///
-    /// - a: The larger of ``x`` and ``y``
-    #[allow(non_snake_case)]
-    fn fmax_pseudo(self, x: ir::Value, y: ir::Value) -> Value {
-        let ctrl_typevar = self.data_flow_graph().value_type(x);
-        let (inst, dfg) = self.Binary(Opcode::FmaxPseudo, ctrl_typevar, x, y);
         dfg.first_result(inst)
     }
 
@@ -3761,30 +3719,6 @@ pub trait InstBuilder<'f>: InstBuilderBase<'f> {
     #[allow(non_snake_case)]
     fn fcvt_from_sint(self, FloatTo: crate::ir::Type, x: ir::Value) -> Value {
         let (inst, dfg) = self.Unary(Opcode::FcvtFromSint, FloatTo, x);
-        dfg.first_result(inst)
-    }
-
-    /// Converts packed signed 32-bit integers to packed double precision floating point.
-    ///
-    /// Considering only the low half of the register, each lane in `x` is interpreted as a
-    /// signed 32-bit integer that is then converted to a double precision float. This
-    /// instruction differs from fcvt_from_sint in that it converts half the number of lanes
-    /// which are converted to occupy twice the number of bits. No rounding should be needed
-    /// for the resulting float.
-    ///
-    /// The result type will have half the number of vector lanes as the input.
-    ///
-    /// Inputs:
-    ///
-    /// - FloatTo (controlling type variable): A scalar or vector floating point number
-    /// - x: A scalar or vector integer type
-    ///
-    /// Outputs:
-    ///
-    /// - a: A scalar or vector floating point number
-    #[allow(non_snake_case)]
-    fn fcvt_low_from_sint(self, FloatTo: crate::ir::Type, x: ir::Value) -> Value {
-        let (inst, dfg) = self.Unary(Opcode::FcvtLowFromSint, FloatTo, x);
         dfg.first_result(inst)
     }
 

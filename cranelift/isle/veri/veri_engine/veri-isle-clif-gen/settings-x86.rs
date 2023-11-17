@@ -1,42 +1,42 @@
 #[derive(Clone, Hash)]
 /// Flags group `x86`.
 pub struct Flags {
-    bytes: [u8; 5],
+    bytes: [u8; 4],
 }
 impl Flags {
     /// Create flags x86 settings group.
     #[allow(unused_variables)]
     pub fn new(shared: &settings::Flags, builder: &Builder) -> Self {
         let bvec = builder.state_for("x86");
-        let mut x86 = Self { bytes: [0; 5] };
+        let mut x86 = Self { bytes: [0; 4] };
         debug_assert_eq!(bvec.len(), 2);
         x86.bytes[0..2].copy_from_slice(&bvec);
         // Precompute #16.
-        if shared.enable_simd() && x86.has_avx() && x86.has_avx2() {
+        if x86.has_avx() {
             x86.bytes[2] |= 1 << 0;
         }
         // Precompute #17.
-        if shared.enable_simd() && x86.has_avx512bitalg() {
+        if x86.has_avx() && x86.has_avx2() {
             x86.bytes[2] |= 1 << 1;
         }
         // Precompute #18.
-        if shared.enable_simd() && x86.has_avx512dq() {
+        if x86.has_avx512bitalg() {
             x86.bytes[2] |= 1 << 2;
         }
         // Precompute #19.
-        if shared.enable_simd() && x86.has_avx512f() {
+        if x86.has_avx512dq() {
             x86.bytes[2] |= 1 << 3;
         }
         // Precompute #20.
-        if shared.enable_simd() && x86.has_avx512vbmi() {
+        if x86.has_avx512f() {
             x86.bytes[2] |= 1 << 4;
         }
         // Precompute #21.
-        if shared.enable_simd() && x86.has_avx512vl() {
+        if x86.has_avx512vbmi() {
             x86.bytes[2] |= 1 << 5;
         }
         // Precompute #22.
-        if shared.enable_simd() && x86.has_avx() {
+        if x86.has_avx512vl() {
             x86.bytes[2] |= 1 << 6;
         }
         // Precompute #23.
@@ -44,23 +44,23 @@ impl Flags {
             x86.bytes[2] |= 1 << 7;
         }
         // Precompute #24.
-        if x86.has_avx() && x86.has_fma() {
+        if x86.has_bmi2() {
             x86.bytes[3] |= 1 << 0;
         }
         // Precompute #25.
-        if x86.has_lzcnt() {
+        if x86.has_avx() && x86.has_fma() {
             x86.bytes[3] |= 1 << 1;
         }
         // Precompute #26.
-        if x86.has_popcnt() && x86.has_sse42() {
+        if x86.has_lzcnt() {
             x86.bytes[3] |= 1 << 2;
         }
         // Precompute #27.
-        if x86.has_sse41() {
+        if x86.has_popcnt() && x86.has_sse42() {
             x86.bytes[3] |= 1 << 3;
         }
         // Precompute #28.
-        if shared.enable_simd() && x86.has_sse41() {
+        if x86.has_sse41() {
             x86.bytes[3] |= 1 << 4;
         }
         // Precompute #29.
@@ -68,16 +68,8 @@ impl Flags {
             x86.bytes[3] |= 1 << 5;
         }
         // Precompute #30.
-        if shared.enable_simd() && x86.has_sse41() && x86.has_sse42() {
-            x86.bytes[3] |= 1 << 6;
-        }
-        // Precompute #31.
         if x86.has_ssse3() {
-            x86.bytes[3] |= 1 << 7;
-        }
-        // Precompute #32.
-        if shared.enable_simd() && x86.has_ssse3() {
-            x86.bytes[4] |= 1 << 0;
+            x86.bytes[3] |= 1 << 6;
         }
         x86
     }
@@ -188,73 +180,65 @@ impl Flags {
     pub fn has_lzcnt(&self) -> bool {
         self.numbered_predicate(15)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx() && x86.has_avx2()`.
-    pub fn use_avx2_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx()`.
+    pub fn use_avx(&self) -> bool {
         self.numbered_predicate(16)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx512bitalg()`.
-    pub fn use_avx512bitalg_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx() && x86.has_avx2()`.
+    pub fn use_avx2(&self) -> bool {
         self.numbered_predicate(17)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx512dq()`.
-    pub fn use_avx512dq_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx512bitalg()`.
+    pub fn use_avx512bitalg(&self) -> bool {
         self.numbered_predicate(18)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx512f()`.
-    pub fn use_avx512f_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx512dq()`.
+    pub fn use_avx512dq(&self) -> bool {
         self.numbered_predicate(19)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx512vbmi()`.
-    pub fn use_avx512vbmi_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx512f()`.
+    pub fn use_avx512f(&self) -> bool {
         self.numbered_predicate(20)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx512vl()`.
-    pub fn use_avx512vl_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx512vbmi()`.
+    pub fn use_avx512vbmi(&self) -> bool {
         self.numbered_predicate(21)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_avx()`.
-    pub fn use_avx_simd(&self) -> bool {
+    /// Computed predicate `x86.has_avx512vl()`.
+    pub fn use_avx512vl(&self) -> bool {
         self.numbered_predicate(22)
     }
     /// Computed predicate `x86.has_bmi1()`.
     pub fn use_bmi1(&self) -> bool {
         self.numbered_predicate(23)
     }
+    /// Computed predicate `x86.has_bmi2()`.
+    pub fn use_bmi2(&self) -> bool {
+        self.numbered_predicate(24)
+    }
     /// Computed predicate `x86.has_avx() && x86.has_fma()`.
     pub fn use_fma(&self) -> bool {
-        self.numbered_predicate(24)
+        self.numbered_predicate(25)
     }
     /// Computed predicate `x86.has_lzcnt()`.
     pub fn use_lzcnt(&self) -> bool {
-        self.numbered_predicate(25)
+        self.numbered_predicate(26)
     }
     /// Computed predicate `x86.has_popcnt() && x86.has_sse42()`.
     pub fn use_popcnt(&self) -> bool {
-        self.numbered_predicate(26)
+        self.numbered_predicate(27)
     }
     /// Computed predicate `x86.has_sse41()`.
     pub fn use_sse41(&self) -> bool {
-        self.numbered_predicate(27)
-    }
-    /// Computed predicate `shared.enable_simd() && x86.has_sse41()`.
-    pub fn use_sse41_simd(&self) -> bool {
         self.numbered_predicate(28)
     }
     /// Computed predicate `x86.has_sse41() && x86.has_sse42()`.
     pub fn use_sse42(&self) -> bool {
         self.numbered_predicate(29)
     }
-    /// Computed predicate `shared.enable_simd() && x86.has_sse41() && x86.has_sse42()`.
-    pub fn use_sse42_simd(&self) -> bool {
-        self.numbered_predicate(30)
-    }
     /// Computed predicate `x86.has_ssse3()`.
     pub fn use_ssse3(&self) -> bool {
-        self.numbered_predicate(31)
-    }
-    /// Computed predicate `shared.enable_simd() && x86.has_ssse3()`.
-    pub fn use_ssse3_simd(&self) -> bool {
-        self.numbered_predicate(32)
+        self.numbered_predicate(30)
     }
 }
 static DESCRIPTORS: [detail::Descriptor; 82] = [
@@ -1088,7 +1072,7 @@ static TEMPLATE: detail::Template = detail::Template {
     descriptors: &DESCRIPTORS,
     enumerators: &ENUMERATORS,
     hash_table: &HASH_TABLE,
-    defaults: &[0x07, 0x00],
+    defaults: &[0x00, 0x00],
     presets: &PRESETS,
 };
 /// Create a `settings::Builder` for the x86 settings group.

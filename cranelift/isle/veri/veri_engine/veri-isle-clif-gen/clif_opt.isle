@@ -263,9 +263,7 @@
         Fabs
         Fcopysign
         Fmin
-        FminPseudo
         Fmax
-        FmaxPseudo
         Ceil
         Floor
         Trunc
@@ -298,7 +296,6 @@
         X86Cvtt2dq
         FcvtFromUint
         FcvtFromSint
-        FcvtLowFromSint
         Isplit
         Iconcat
         AtomicRmw
@@ -1391,15 +1388,6 @@
     (make_inst ty (InstructionData.Binary (Opcode.Fmin) (value_array_2_ctor x y)))
 )
 
-(decl fmin_pseudo (Type Value Value) Value)
-(extractor
-    (fmin_pseudo ty x y)
-    (inst_data ty (InstructionData.Binary (Opcode.FminPseudo) (value_array_2 x y)))
-)
-(rule (fmin_pseudo ty x y)
-    (make_inst ty (InstructionData.Binary (Opcode.FminPseudo) (value_array_2_ctor x y)))
-)
-
 (decl fmax (Type Value Value) Value)
 (extractor
     (fmax ty x y)
@@ -1407,15 +1395,6 @@
 )
 (rule (fmax ty x y)
     (make_inst ty (InstructionData.Binary (Opcode.Fmax) (value_array_2_ctor x y)))
-)
-
-(decl fmax_pseudo (Type Value Value) Value)
-(extractor
-    (fmax_pseudo ty x y)
-    (inst_data ty (InstructionData.Binary (Opcode.FmaxPseudo) (value_array_2 x y)))
-)
-(rule (fmax_pseudo ty x y)
-    (make_inst ty (InstructionData.Binary (Opcode.FmaxPseudo) (value_array_2_ctor x y)))
 )
 
 (decl ceil (Type Value) Value)
@@ -1704,15 +1683,6 @@
 )
 (rule (fcvt_from_sint ty x)
     (make_inst ty (InstructionData.Unary (Opcode.FcvtFromSint) x))
-)
-
-(decl fcvt_low_from_sint (Type Value) Value)
-(extractor
-    (fcvt_low_from_sint ty x)
-    (inst_data ty (InstructionData.Unary (Opcode.FcvtLowFromSint) x))
-)
-(rule (fcvt_low_from_sint ty x)
-    (make_inst ty (InstructionData.Unary (Opcode.FcvtLowFromSint) x))
 )
 
 (decl iconcat (Type Value Value) Value)
