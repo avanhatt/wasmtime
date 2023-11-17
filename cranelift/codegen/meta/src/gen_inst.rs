@@ -1914,6 +1914,7 @@ fn resolve_signatures(
     let argss = cartesian_product(cols);
 
     // Resolve return types.
+    // TODO(mbm): actually deduce the proper return type
     let rets = vec![ctrl_type.clone()];
 
     // Deduce signatures.
@@ -1933,6 +1934,7 @@ fn signatures(inst: &Instruction) -> Result<Vec<Signature>, String> {
     // Is this polymorphic?
     let poly_info = match &inst.polymorphic_info {
         Some(poly_info) => poly_info,
+        // TODO(mbm): handle the non-polymorphic case
         None => return Err("non-polymorphic instructions not handled".to_string()),
     };
 
@@ -1975,7 +1977,7 @@ fn gen_dump(instructions: &AllInstructions, fmt: &mut Formatter) {
             let sigs = match signatures(inst) {
                 Ok(sigs) => sigs,
                 Err(msg) => {
-                    eprintln!("{}: unknown signatures: {}", inst.name, msg);
+                    fmtln!(fmt, "error = unknown signatures: {}", msg);
                     return;
                 }
             };
