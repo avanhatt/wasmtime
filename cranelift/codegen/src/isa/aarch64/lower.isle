@@ -1670,9 +1670,9 @@
      (switch t
        (8 (= (extract 31 8 x) #x000000))
        (16 (= (extract 31 16 x) #x0000)))))
-(decl small_rotr (Type Reg Reg) Reg)
 (instantiate small_rotr
     ((args Int (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64))))
+(decl small_rotr (Type Reg Reg) Reg)
 (rule small_rotr (small_rotr ty val amt)
       (let ((masked_amt Reg (and_imm $I32 amt (rotr_mask ty)))
             (tmp_sub Reg (sub_imm $I32 masked_amt (u8_into_imm12 (ty_bits ty))))

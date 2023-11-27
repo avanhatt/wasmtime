@@ -1161,6 +1161,8 @@
       (provide (= result (bvadd x (sign_ext 64 offset))))
       (require
             (= (widthof x) 64)))
+(instantiate amode_imm_reg
+    ((args (bv 8) (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 64))))
 (decl amode_imm_reg (MemFlags Value Offset32) Amode)
 (rule amode_imm_reg_base 0 (amode_imm_reg flags base offset)
         (Amode.ImmReg offset base flags))
