@@ -1,4 +1,4 @@
-use cranelift_isle::ast;
+use cranelift_isle::ast::{self, Signature};
 use std::collections::HashMap;
 use veri_ir::annotation_ir;
 
@@ -306,6 +306,14 @@ fn model_type_to_type(model_type: &ModelType) -> veri_ir::Type {
     }
 }
 
+fn signature_to_term_type_signature(sig: &Signature) -> TermTypeSignature {
+    TermTypeSignature {
+        args: sig.args.iter().map(model_type_to_type).collect(),
+        ret: model_type_to_type(&sig.ret),
+        canonical_type: Some(model_type_to_type(&sig.canonical)),
+    }
+}
+
 pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> AnnotationEnv {
     let mut annotation_map = HashMap::new();
     let mut model_map = HashMap::new();
@@ -406,20 +414,16 @@ pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> A
     }
 
     // Collect term instantiations.
-    let mut signatures_map = HashMap::new();
+    let mut forms_map = HashMap::new();
     for def in &defs.defs {
         match def {
-            &ast::Def::Signatures(ref sigs) => {
-                let mut term_type_signatures = Vec::new();
-                for sig in &sigs.signatures {
-                    let term_type_signature = TermTypeSignature {
-                        args: sig.args.iter().map(model_type_to_type).collect(),
-                        ret: model_type_to_type(&sig.ret),
-                        canonical_type: Some(model_type_to_type(&sig.canonical)),
-                    };
-                    term_type_signatures.push(term_type_signature);
-                }
-                signatures_map.insert(sigs.name.0.clone(), term_type_signatures);
+            &ast::Def::Form(ref form) => {
+                let term_type_signatures: Vec<_> = form
+                    .signatures
+                    .iter()
+                    .map(signature_to_term_type_signature)
+                    .collect();
+                forms_map.insert(form.name.0.clone(), term_type_signatures);
             }
             _ => {}
         }
@@ -430,7 +434,14 @@ pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> A
         match def {
             &ast::Def::Instantiation(ref inst) => {
                 let term_id = termenv.get_term_by_name(typeenv, &inst.term).unwrap();
-                let sigs = signatures_map[&inst.signatures.0].clone();
+                let sigs = match &inst.form {
+                    Some(form) => forms_map[&form.0].clone(),
+                    None => inst
+                        .signatures
+                        .iter()
+                        .map(signature_to_term_type_signature)
+                        .collect(),
+                };
                 instantiations_map.insert(term_id, sigs);
             }
             _ => {}

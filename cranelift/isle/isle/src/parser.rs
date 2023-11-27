@@ -171,7 +171,7 @@ impl<'a> Parser<'a> {
             "decl" => Def::Decl(self.parse_decl()?),
             "spec" => Def::Spec(self.parse_spec()?),
             "model" => Def::Model(self.parse_model()?),
-            "signatures" => Def::Signatures(self.parse_signatures()?),
+            "form" => Def::Form(self.parse_form()?),
             "instantiate" => Def::Instantiation(self.parse_instantiation()?),
             "rule" => Def::Rule(self.parse_rule()?),
             "extractor" => Def::Extractor(self.parse_etor()?),
@@ -628,18 +628,23 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_signatures(&mut self) -> Result<Signatures> {
+    fn parse_form(&mut self) -> Result<Form> {
         let pos = self.pos();
         let name = self.parse_ident()?;
-        let mut signatures = vec![];
-        while !self.is_rparen() {
-            signatures.push(self.parse_signature()?);
-        }
-        Ok(Signatures {
+        let signatures = self.parse_signatures()?;
+        Ok(Form {
             name,
             signatures,
             pos,
         })
+    }
+
+    fn parse_signatures(&mut self) -> Result<Vec<Signature>> {
+        let mut signatures = vec![];
+        while !self.is_rparen() {
+            signatures.push(self.parse_signature()?);
+        }
+        Ok(signatures)
     }
 
     fn parse_signature(&mut self) -> Result<Signature> {
@@ -688,12 +693,26 @@ impl<'a> Parser<'a> {
     fn parse_instantiation(&mut self) -> Result<Instantiation> {
         let pos = self.pos();
         let term = self.parse_ident()?;
-        let signatures = self.parse_ident()?;
-        Ok(Instantiation {
-            term,
-            signatures,
-            pos,
-        })
+        // Instantiation either has an explicit signatures list, which would
+        // open with a left paren. Or it has an identifier referencing a
+        // predefined set of signatures.
+        if self.is_lparen() {
+            let signatures = self.parse_signatures()?;
+            Ok(Instantiation {
+                term,
+                form: None,
+                signatures,
+                pos,
+            })
+        } else {
+            let form = self.parse_ident()?;
+            Ok(Instantiation {
+                term,
+                form: Some(form),
+                signatures: vec![],
+                pos,
+            })
+        }
     }
 
     fn parse_extern(&mut self) -> Result<Extern> {
