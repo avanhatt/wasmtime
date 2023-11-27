@@ -65,6 +65,12 @@
             (= c (IntCC.SignedGreaterThan))
             (= c (IntCC.SignedLessThanOrEqual))
             (= c (IntCC.SignedLessThan)))))
+(instantiate icmp
+    ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
+    ((args (bv 8) (bv 16) (bv 16)) (ret (bv 8)) (canon (bv 16)))
+    ((args (bv 8) (bv 32) (bv 32)) (ret (bv 8)) (canon (bv 32)))
+    ((args (bv 8) (bv 64) (bv 64)) (ret (bv 8)) (canon (bv 64)))
+)
 
 (spec (iadd x y)
     (provide (= result (bvadd x y))))
@@ -188,8 +194,23 @@
     (provide (= result (popcnt x))))
 (instantiate popcnt bv_unary_8_to_64)
 
+(form extend
+    ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
+    ((args (bv 8)) (ret (bv 16)) (canon (bv 8)))
+    ((args (bv 8)) (ret (bv 32)) (canon (bv 8)))
+    ((args (bv 8)) (ret (bv 64)) (canon (bv 8)))
+    ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
+    ((args (bv 16)) (ret (bv 32)) (canon (bv 16)))
+    ((args (bv 16)) (ret (bv 64)) (canon (bv 16)))
+    ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
+    ((args (bv 32)) (ret (bv 64)) (canon (bv 32)))
+    ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
+)
+
 (spec (uextend x)
     (provide (= result (zero_ext (widthof result) x))))
+(instantiate uextend extend)
 
 (spec (sextend x)
     (provide (= result (sign_ext (widthof result) x))))
+(instantiate sextend extend)
