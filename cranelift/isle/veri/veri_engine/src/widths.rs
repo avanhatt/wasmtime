@@ -564,5 +564,36 @@ fn isle_inst_types_overrides() -> HashMap<&'static str, Vec<TermSignature>> {
         ],
     );
 
+    // ------------------------------------------
+    // dump ISLE syntax
+    println!("WIDTHS -------------------------------");
+    for (name, sigs) in &widths {
+        println!("(instantiate {name}");
+        for sig in sigs {
+            print!("    (");
+            print!("(args");
+            for arg in &sig.args {
+                print!(" {}", type_to_string(&arg));
+            }
+            print!(")");
+            print!(" (ret {})", type_to_string(&sig.ret));
+            print!(" (canon {})", type_to_string(&sig.canonical_type.unwrap()));
+            println!(")");
+        }
+        println!(")");
+    }
+    println!("WIDTHS -------------------------------");
+
+    // ------------------------------------------
+
     return widths;
+}
+
+fn type_to_string(ty: &Type) -> String {
+    match ty {
+        Type::BitVector(Some(width)) => format!("(bv {width})"),
+        Type::BitVector(None) => "(bv)".to_string(),
+        Type::Bool => "Bool".to_string(),
+        Type::Int => "Int".to_string(),
+    }
 }
