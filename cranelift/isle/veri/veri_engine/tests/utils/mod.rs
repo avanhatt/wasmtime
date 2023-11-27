@@ -116,7 +116,7 @@ fn test_rules_with_term(inputs: Vec<PathBuf>, tr: TestResult, config: Config) ->
     let (typeenv, termenv) = create_envs(&defs).unwrap();
     let annotation_env = parse_annotations(&defs, &termenv, &typeenv);
 
-    let term_signatures = isle_inst_types()
+    let term_signatures = isle_inst_types(&termenv, &typeenv, &annotation_env)
         .get(config.term.as_str())
         .expect(format!("Missing term width for {}", config.term).as_str())
         .clone();
