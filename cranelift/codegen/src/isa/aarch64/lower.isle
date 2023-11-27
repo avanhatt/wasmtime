@@ -1708,8 +1708,7 @@
        (16 (= (extract 31 16 x) #x0000)))
      (bvult y (int2bv 6 t))))
 (instantiate small_rotr_imm
-    ((args Int (bv 64) (bv 6)) (ret (bv 64)) (canon (bv 64)))
-)
+    ((args Int (bv 64) (bv 6)) (ret (bv 64)) (canon (bv 64))))
 (decl small_rotr_imm (Type Reg ImmShift) Reg)
 (rule small_rotr_imm (small_rotr_imm ty val amt)
       (let ((val_rshift Reg (lsr_imm $I32 val amt))
