@@ -1392,6 +1392,12 @@
         (32 true)
         (64 true)))
       ((ALUOp.Lsl) true))))
+(instantiate do_shift
+    ((args (bv 8) Int (bv 64) (bv 8)) (ret (bv 64)) (canon (bv 8)))
+    ((args (bv 8) Int (bv 64) (bv 16)) (ret (bv 64)) (canon (bv 16)))
+    ((args (bv 8) Int (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 32)))
+    ((args (bv 8) Int (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
+)
 (decl do_shift (ALUOp Type Reg Value) Reg)
 
 ;; 8/16-bit shift base case.
@@ -1701,6 +1707,9 @@
        (8 (= (extract 31 8 x) #x000000))
        (16 (= (extract 31 16 x) #x0000)))
      (bvult y (int2bv 6 t))))
+(instantiate small_rotr_imm
+    ((args Int (bv 64) (bv 6)) (ret (bv 64)) (canon (bv 64)))
+)
 (decl small_rotr_imm (Type Reg ImmShift) Reg)
 (rule small_rotr_imm (small_rotr_imm ty val amt)
       (let ((val_rshift Reg (lsr_imm $I32 val amt))
