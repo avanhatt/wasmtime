@@ -36,6 +36,20 @@ impl AnnotationEnv {
         }
         None
     }
+
+    pub fn get_term_signatures_by_name(
+        &self,
+        termenv: &TermEnv,
+        typeenv: &TypeEnv,
+    ) -> HashMap<String, Vec<TermTypeSignature>> {
+        let mut term_signatures_by_name = HashMap::new();
+        for (term_id, term_sigs) in &self.instantiations_map {
+            let sym = termenv.terms[term_id.index()].name;
+            let name = typeenv.syms[sym.index()].clone();
+            term_signatures_by_name.insert(name, term_sigs.clone());
+        }
+        term_signatures_by_name
+    }
 }
 
 pub fn spec_to_annotation_bound_var(i: &Ident) -> BoundVar {
