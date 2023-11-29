@@ -478,52 +478,48 @@
     (smin x y)
     (inst_data (InstructionData.Binary (Opcode.Smin) (value_array_2 x y)))
 )
-(signatures smin
+(instantiate smin
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate smin smin)
 
 (decl umin (Value Value) Inst)
 (extractor
     (umin x y)
     (inst_data (InstructionData.Binary (Opcode.Umin) (value_array_2 x y)))
 )
-(signatures umin
+(instantiate umin
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate umin umin)
 
 (decl smax (Value Value) Inst)
 (extractor
     (smax x y)
     (inst_data (InstructionData.Binary (Opcode.Smax) (value_array_2 x y)))
 )
-(signatures smax
+(instantiate smax
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate smax smax)
 
 (decl umax (Value Value) Inst)
 (extractor
     (umax x y)
     (inst_data (InstructionData.Binary (Opcode.Umax) (value_array_2 x y)))
 )
-(signatures umax
+(instantiate umax
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate umax umax)
 
 (decl avg_round (Value Value) Inst)
 (extractor
@@ -722,11 +718,10 @@
     (set_pinned_reg addr)
     (inst_data (InstructionData.Unary (Opcode.SetPinnedReg) addr))
 )
-(signatures set_pinned_reg
+(instantiate set_pinned_reg
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate set_pinned_reg set_pinned_reg)
 
 (decl get_frame_pointer () Inst)
 (extractor
@@ -799,7 +794,7 @@
     (select c x y)
     (inst_data (InstructionData.Ternary (Opcode.Select) (value_array_3 c x y)))
 )
-(signatures select
+(instantiate select
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 32) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
@@ -817,14 +812,13 @@
     ((args (bv 32) (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate select select)
 
 (decl select_spectre_guard (Value Value Value) Inst)
 (extractor
     (select_spectre_guard c x y)
     (inst_data (InstructionData.Ternary (Opcode.SelectSpectreGuard) (value_array_3 c x y)))
 )
-(signatures select_spectre_guard
+(instantiate select_spectre_guard
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 32) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
@@ -842,33 +836,30 @@
     ((args (bv 32) (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate select_spectre_guard select_spectre_guard)
 
 (decl bitselect (Value Value Value) Inst)
 (extractor
     (bitselect c x y)
     (inst_data (InstructionData.Ternary (Opcode.Bitselect) (value_array_3 c x y)))
 )
-(signatures bitselect
+(instantiate bitselect
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bitselect bitselect)
 
 (decl x86_blendv (Value Value Value) Inst)
 (extractor
     (x86_blendv c x y)
     (inst_data (InstructionData.Ternary (Opcode.X86Blendv) (value_array_3 c x y)))
 )
-(signatures x86_blendv
+(instantiate x86_blendv
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate x86_blendv x86_blendv)
 
 (decl vany_true (Value) Inst)
 (extractor
@@ -905,91 +896,84 @@
     (iadd x y)
     (inst_data (InstructionData.Binary (Opcode.Iadd) (value_array_2 x y)))
 )
-(signatures iadd
+(instantiate iadd
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate iadd iadd)
 
 (decl isub (Value Value) Inst)
 (extractor
     (isub x y)
     (inst_data (InstructionData.Binary (Opcode.Isub) (value_array_2 x y)))
 )
-(signatures isub
+(instantiate isub
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate isub isub)
 
 (decl ineg (Value) Inst)
 (extractor
     (ineg x)
     (inst_data (InstructionData.Unary (Opcode.Ineg) x))
 )
-(signatures ineg
+(instantiate ineg
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate ineg ineg)
 
 (decl iabs (Value) Inst)
 (extractor
     (iabs x)
     (inst_data (InstructionData.Unary (Opcode.Iabs) x))
 )
-(signatures iabs
+(instantiate iabs
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate iabs iabs)
 
 (decl imul (Value Value) Inst)
 (extractor
     (imul x y)
     (inst_data (InstructionData.Binary (Opcode.Imul) (value_array_2 x y)))
 )
-(signatures imul
+(instantiate imul
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate imul imul)
 
 (decl umulhi (Value Value) Inst)
 (extractor
     (umulhi x y)
     (inst_data (InstructionData.Binary (Opcode.Umulhi) (value_array_2 x y)))
 )
-(signatures umulhi
+(instantiate umulhi
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate umulhi umulhi)
 
 (decl smulhi (Value Value) Inst)
 (extractor
     (smulhi x y)
     (inst_data (InstructionData.Binary (Opcode.Smulhi) (value_array_2 x y)))
 )
-(signatures smulhi
+(instantiate smulhi
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate smulhi smulhi)
 
 (decl sqmul_round_sat (Value Value) Inst)
 (extractor
@@ -1008,52 +992,48 @@
     (udiv x y)
     (inst_data (InstructionData.Binary (Opcode.Udiv) (value_array_2 x y)))
 )
-(signatures udiv
+(instantiate udiv
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate udiv udiv)
 
 (decl sdiv (Value Value) Inst)
 (extractor
     (sdiv x y)
     (inst_data (InstructionData.Binary (Opcode.Sdiv) (value_array_2 x y)))
 )
-(signatures sdiv
+(instantiate sdiv
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate sdiv sdiv)
 
 (decl urem (Value Value) Inst)
 (extractor
     (urem x y)
     (inst_data (InstructionData.Binary (Opcode.Urem) (value_array_2 x y)))
 )
-(signatures urem
+(instantiate urem
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate urem urem)
 
 (decl srem (Value Value) Inst)
 (extractor
     (srem x y)
     (inst_data (InstructionData.Binary (Opcode.Srem) (value_array_2 x y)))
 )
-(signatures srem
+(instantiate srem
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate srem srem)
 
 (decl iadd_imm (Value Imm64) Inst)
 (extractor
@@ -1102,104 +1082,96 @@
     (iadd_cin x y c_in)
     (inst_data (InstructionData.Ternary (Opcode.IaddCin) (value_array_3 x y c_in)))
 )
-(signatures iadd_cin
+(instantiate iadd_cin
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16) (bv 8)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32) (bv 8)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64) (bv 8)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate iadd_cin iadd_cin)
 
 (decl iadd_carry (Value Value Value) Inst)
 (extractor
     (iadd_carry x y c_in)
     (inst_data (InstructionData.Ternary (Opcode.IaddCarry) (value_array_3 x y c_in)))
 )
-(signatures iadd_carry
+(instantiate iadd_carry
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16) (bv 8)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32) (bv 8)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64) (bv 8)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate iadd_carry iadd_carry)
 
 (decl uadd_overflow (Value Value) Inst)
 (extractor
     (uadd_overflow x y)
     (inst_data (InstructionData.Binary (Opcode.UaddOverflow) (value_array_2 x y)))
 )
-(signatures uadd_overflow
+(instantiate uadd_overflow
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate uadd_overflow uadd_overflow)
 
 (decl sadd_overflow (Value Value) Inst)
 (extractor
     (sadd_overflow x y)
     (inst_data (InstructionData.Binary (Opcode.SaddOverflow) (value_array_2 x y)))
 )
-(signatures sadd_overflow
+(instantiate sadd_overflow
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate sadd_overflow sadd_overflow)
 
 (decl usub_overflow (Value Value) Inst)
 (extractor
     (usub_overflow x y)
     (inst_data (InstructionData.Binary (Opcode.UsubOverflow) (value_array_2 x y)))
 )
-(signatures usub_overflow
+(instantiate usub_overflow
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate usub_overflow usub_overflow)
 
 (decl ssub_overflow (Value Value) Inst)
 (extractor
     (ssub_overflow x y)
     (inst_data (InstructionData.Binary (Opcode.SsubOverflow) (value_array_2 x y)))
 )
-(signatures ssub_overflow
+(instantiate ssub_overflow
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate ssub_overflow ssub_overflow)
 
 (decl umul_overflow (Value Value) Inst)
 (extractor
     (umul_overflow x y)
     (inst_data (InstructionData.Binary (Opcode.UmulOverflow) (value_array_2 x y)))
 )
-(signatures umul_overflow
+(instantiate umul_overflow
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate umul_overflow umul_overflow)
 
 (decl smul_overflow (Value Value) Inst)
 (extractor
     (smul_overflow x y)
     (inst_data (InstructionData.Binary (Opcode.SmulOverflow) (value_array_2 x y)))
 )
-(signatures smul_overflow
+(instantiate smul_overflow
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate smul_overflow smul_overflow)
 
 (decl uadd_overflow_trap (Value Value TrapCode) Inst)
 (extractor
@@ -1212,117 +1184,108 @@
     (isub_bin x y b_in)
     (inst_data (InstructionData.Ternary (Opcode.IsubBin) (value_array_3 x y b_in)))
 )
-(signatures isub_bin
+(instantiate isub_bin
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16) (bv 8)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32) (bv 8)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64) (bv 8)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate isub_bin isub_bin)
 
 (decl isub_borrow (Value Value Value) Inst)
 (extractor
     (isub_borrow x y b_in)
     (inst_data (InstructionData.Ternary (Opcode.IsubBorrow) (value_array_3 x y b_in)))
 )
-(signatures isub_borrow
+(instantiate isub_borrow
     ((args (bv 8) (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16) (bv 8)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32) (bv 8)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64) (bv 8)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate isub_borrow isub_borrow)
 
 (decl band (Value Value) Inst)
 (extractor
     (band x y)
     (inst_data (InstructionData.Binary (Opcode.Band) (value_array_2 x y)))
 )
-(signatures band
+(instantiate band
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate band band)
 
 (decl bor (Value Value) Inst)
 (extractor
     (bor x y)
     (inst_data (InstructionData.Binary (Opcode.Bor) (value_array_2 x y)))
 )
-(signatures bor
+(instantiate bor
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bor bor)
 
 (decl bxor (Value Value) Inst)
 (extractor
     (bxor x y)
     (inst_data (InstructionData.Binary (Opcode.Bxor) (value_array_2 x y)))
 )
-(signatures bxor
+(instantiate bxor
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bxor bxor)
 
 (decl bnot (Value) Inst)
 (extractor
     (bnot x)
     (inst_data (InstructionData.Unary (Opcode.Bnot) x))
 )
-(signatures bnot
+(instantiate bnot
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bnot bnot)
 
 (decl band_not (Value Value) Inst)
 (extractor
     (band_not x y)
     (inst_data (InstructionData.Binary (Opcode.BandNot) (value_array_2 x y)))
 )
-(signatures band_not
+(instantiate band_not
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate band_not band_not)
 
 (decl bor_not (Value Value) Inst)
 (extractor
     (bor_not x y)
     (inst_data (InstructionData.Binary (Opcode.BorNot) (value_array_2 x y)))
 )
-(signatures bor_not
+(instantiate bor_not
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bor_not bor_not)
 
 (decl bxor_not (Value Value) Inst)
 (extractor
     (bxor_not x y)
     (inst_data (InstructionData.Binary (Opcode.BxorNot) (value_array_2 x y)))
 )
-(signatures bxor_not
+(instantiate bxor_not
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bxor_not bxor_not)
 
 (decl band_imm (Value Imm64) Inst)
 (extractor
@@ -1347,7 +1310,7 @@
     (rotl x y)
     (inst_data (InstructionData.Binary (Opcode.Rotl) (value_array_2 x y)))
 )
-(signatures rotl
+(instantiate rotl
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 16)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 32)) (ret (bv 8)) (canon (bv 8)))
@@ -1365,14 +1328,13 @@
     ((args (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate rotl rotl)
 
 (decl rotr (Value Value) Inst)
 (extractor
     (rotr x y)
     (inst_data (InstructionData.Binary (Opcode.Rotr) (value_array_2 x y)))
 )
-(signatures rotr
+(instantiate rotr
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 16)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 32)) (ret (bv 8)) (canon (bv 8)))
@@ -1390,7 +1352,6 @@
     ((args (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate rotr rotr)
 
 (decl rotl_imm (Value Imm64) Inst)
 (extractor
@@ -1409,7 +1370,7 @@
     (ishl x y)
     (inst_data (InstructionData.Binary (Opcode.Ishl) (value_array_2 x y)))
 )
-(signatures ishl
+(instantiate ishl
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 16)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 32)) (ret (bv 8)) (canon (bv 8)))
@@ -1427,14 +1388,13 @@
     ((args (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate ishl ishl)
 
 (decl ushr (Value Value) Inst)
 (extractor
     (ushr x y)
     (inst_data (InstructionData.Binary (Opcode.Ushr) (value_array_2 x y)))
 )
-(signatures ushr
+(instantiate ushr
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 16)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 32)) (ret (bv 8)) (canon (bv 8)))
@@ -1452,14 +1412,13 @@
     ((args (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate ushr ushr)
 
 (decl sshr (Value Value) Inst)
 (extractor
     (sshr x y)
     (inst_data (InstructionData.Binary (Opcode.Sshr) (value_array_2 x y)))
 )
-(signatures sshr
+(instantiate sshr
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 16)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 8) (bv 32)) (ret (bv 8)) (canon (bv 8)))
@@ -1477,7 +1436,6 @@
     ((args (bv 64) (bv 32)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate sshr sshr)
 
 (decl ishl_imm (Value Imm64) Inst)
 (extractor
@@ -1502,77 +1460,71 @@
     (bitrev x)
     (inst_data (InstructionData.Unary (Opcode.Bitrev) x))
 )
-(signatures bitrev
+(instantiate bitrev
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bitrev bitrev)
 
 (decl clz (Value) Inst)
 (extractor
     (clz x)
     (inst_data (InstructionData.Unary (Opcode.Clz) x))
 )
-(signatures clz
+(instantiate clz
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate clz clz)
 
 (decl cls (Value) Inst)
 (extractor
     (cls x)
     (inst_data (InstructionData.Unary (Opcode.Cls) x))
 )
-(signatures cls
+(instantiate cls
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate cls cls)
 
 (decl ctz (Value) Inst)
 (extractor
     (ctz x)
     (inst_data (InstructionData.Unary (Opcode.Ctz) x))
 )
-(signatures ctz
+(instantiate ctz
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate ctz ctz)
 
 (decl bswap (Value) Inst)
 (extractor
     (bswap x)
     (inst_data (InstructionData.Unary (Opcode.Bswap) x))
 )
-(signatures bswap
+(instantiate bswap
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bswap bswap)
 
 (decl popcnt (Value) Inst)
 (extractor
     (popcnt x)
     (inst_data (InstructionData.Unary (Opcode.Popcnt) x))
 )
-(signatures popcnt
+(instantiate popcnt
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate popcnt popcnt)
 
 (decl fcmp (FloatCC Value Value) Inst)
 (extractor
@@ -1699,7 +1651,7 @@
     (bmask x)
     (inst_data (InstructionData.Unary (Opcode.Bmask) x))
 )
-(signatures bmask
+(instantiate bmask
     ((args (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 32)) (ret (bv 8)) (canon (bv 8)))
@@ -1717,7 +1669,6 @@
     ((args (bv 32)) (ret (bv 64)) (canon (bv 64)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate bmask bmask)
 
 (decl ireduce (Value) Inst)
 (extractor
@@ -1862,25 +1813,23 @@
     (isplit x)
     (inst_data (InstructionData.Unary (Opcode.Isplit) x))
 )
-(signatures isplit
+(instantiate isplit
     ((args (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate isplit isplit)
 
 (decl iconcat (Value Value) Inst)
 (extractor
     (iconcat lo hi)
     (inst_data (InstructionData.Binary (Opcode.Iconcat) (value_array_2 lo hi)))
 )
-(signatures iconcat
+(instantiate iconcat
     ((args (bv 8) (bv 8)) (ret (bv 8)) (canon (bv 8)))
     ((args (bv 16) (bv 16)) (ret (bv 16)) (canon (bv 16)))
     ((args (bv 32) (bv 32)) (ret (bv 32)) (canon (bv 32)))
     ((args (bv 64) (bv 64)) (ret (bv 64)) (canon (bv 64)))
 )
-(instantiate iconcat iconcat)
 
 (decl atomic_rmw (MemFlags AtomicRmwOp Value Value) Inst)
 (extractor

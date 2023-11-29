@@ -2025,5 +2025,10 @@ pub(crate) fn generate(
     gen_builder(all_inst, &formats, &mut fmt);
     fmt.update_file(inst_builder_filename, out_dir)?;
 
+    // Adhoc dump.
+    let mut fmt = Formatter::new();
+    gen_dump(all_inst, &mut fmt);
+    fmt.update_file("dump.txt", out_dir)?;
+
     Ok(())
 }
