@@ -1612,7 +1612,7 @@ fn gen_common_isle(
                 .filter(|sig| is_signature_supported_by_veri_isle(sig))
                 .collect();
             if !supported.is_empty() {
-                fmtln!(fmt, "(signatures {}", inst.name);
+                fmtln!(fmt, "(instantiate {}", inst.name);
                 fmt.indent(|fmt| {
                     for sig in &supported {
                         let mut s = String::from("(");
@@ -1638,7 +1638,6 @@ fn gen_common_isle(
                     }
                 });
                 fmt.line(")");
-                fmtln!(fmt, "(instantiate {} {})", inst.name, inst.name);
             }
         }
 
