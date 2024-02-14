@@ -1142,13 +1142,13 @@ fn add_annotation_constraints(
 
             (veri_ir::Expr::BVExtract(l, r, Box::new(e1)), t)
         }
-        annotation_ir::Expr::BVConcat(xs_) => {
+        annotation_ir::Expr::BVConcat(xs) => {
             // AVH todo: doesn't sum the various widths, has to be done in the solver
             let t = tree.next_type_var;
             tree.next_type_var += 1;
 
             let mut exprs = vec![];
-            for x in xs_ {
+            for x in xs {
                 let (xe, xt) = add_annotation_constraints(x, tree, annotation_info);
                 tree.bv_constraints
                     .insert(TypeExpr::Concrete(xt, annotation_ir::Type::BitVector));
