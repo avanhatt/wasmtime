@@ -1,0 +1,45 @@
+nodes = { SOI ~ (node ~ NEWLINE)+ ~ EOI }
+
+node = {
+      term
+    | wrapped
+    | array
+    | func_ident
+    | ident
+    | string
+}
+
+term = { ident ~ arg_list }
+
+arg_list = {
+    "(" ~ comma_delimited_nodes? ~ ")"
+}
+
+wrapped = {
+    "(" ~ node ~ ")"
+}
+
+array = {
+    "[" ~ semicolon_delimited_nodes ~ "]"
+}
+
+comma_delimited_nodes = {
+    node ~ ("," ~ node)*
+}
+
+semicolon_delimited_nodes = {
+    node ~ (";" ~ node)*
+}
+
+func_ident = { ident ~ "." ~ number }
+
+ident = @{
+    (ASCII_ALPHA | "_") ~
+    (ASCII_ALPHANUMERIC | "_")*
+}
+
+number = @{ ASCII_DIGIT+ }
+
+string = @{
+    "\"" ~ ("\\\"" | !"\"" ~ ANY)* ~ "\""
+}

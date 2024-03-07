@@ -116,6 +116,7 @@ dependencies = [
 name = "aslp"
 version = "0.1.0"
 dependencies = [
+ "clap 4.4.6",
  "pest",
  "pest_derive",
 ]
