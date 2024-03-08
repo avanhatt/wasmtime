@@ -8,11 +8,11 @@ use pest_derive::Parser;
 use tracing::debug;
 
 #[derive(Parser)]
-#[grammar = "ast.pest"]
-struct ASTParser;
+#[grammar = "raw.pest"]
+struct RawParser;
 
 pub fn parse(src: &str) -> anyhow::Result<Block> {
-    let pairs = ASTParser::parse(Rule::nodes, src)?;
+    let pairs = RawParser::parse(Rule::nodes, src)?;
     parse_block(pairs)
 }
 
