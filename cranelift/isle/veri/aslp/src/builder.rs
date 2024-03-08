@@ -5,7 +5,7 @@ pub fn build(block: &raw::Block) -> anyhow::Result<Block> {
     build_block(&block.nodes)
 }
 
-pub fn build_block(nodes: &Vec<Box<raw::Node>>) -> anyhow::Result<Block> {
+fn build_block(nodes: &Vec<Box<raw::Node>>) -> anyhow::Result<Block> {
     let stmts = build_stmts(&nodes)?;
     Ok(Block { stmts })
 }
