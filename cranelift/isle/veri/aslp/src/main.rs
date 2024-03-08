@@ -1,4 +1,4 @@
-use aslp::parser;
+use aslp::{builder::build, parser};
 use clap::Parser as ClapParser;
 use std::{fs, path::PathBuf};
 
@@ -29,9 +29,12 @@ fn main() -> anyhow::Result<()> {
         .init();
 
     let src = fs::read_to_string(args.file).unwrap();
-    let block = parser::parse(&src)?;
 
-    println!("block = {block:?}");
+    let block = parser::parse(&src)?;
+    println!("raw = {block:?}");
+
+    let block = build(&block)?;
+    println!("ast = {block:?}");
 
     Ok(())
 }
