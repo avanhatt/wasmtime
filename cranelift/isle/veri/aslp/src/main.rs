@@ -7,10 +7,31 @@ use std::{fs, path::PathBuf};
 struct Args {
     /// Input file to be formatted
     file: PathBuf,
+
+    /// Print debugging output (repeat for more detail)
+    #[arg(short = 'd', long = "debug", action = clap::ArgAction::Count)]
+    debug_level: u8,
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+
+    tracing_subscriber::fmt()
+        .with_timer(tracing_subscriber::fmt::time::uptime())
+        .with_level(true)
+        .with_target(false)
+        .with_max_level(match args.debug_level {
+            0 => tracing::Level::WARN,
+            1 => tracing::Level::INFO,
+            2 => tracing::Level::DEBUG,
+            _ => tracing::Level::TRACE,
+        })
+        .init();
+
     let src = fs::read_to_string(args.file).unwrap();
-    parser::parse(&src);
+    let block = parser::parse(&src)?;
+
+    println!("block = {block:?}");
+
+    Ok(())
 }

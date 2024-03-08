@@ -1,4 +1,4 @@
-nodes = { SOI ~ newline_terminated_nodes ~ EOI }
+nodes = _{ SOI ~ newline_terminated_nodes ~ EOI }
 
 node = {
       term
@@ -20,11 +20,11 @@ block = {
     "{" ~ NEWLINE ~ newline_terminated_nodes? ~ "}"
 }
 
-newline_terminated_nodes = {
+newline_terminated_nodes = _{
     (node ~ NEWLINE)+
 }
 
-wrapped = {
+wrapped = _{
     "(" ~ node ~ ")"
 }
 
@@ -32,11 +32,11 @@ array = {
     "[" ~ semicolon_delimited_nodes? ~ "]"
 }
 
-comma_delimited_nodes = {
+comma_delimited_nodes = _{
     node ~ ("," ~ node)*
 }
 
-semicolon_delimited_nodes = {
+semicolon_delimited_nodes = _{
     node ~ (";" ~ node)*
 }
 
