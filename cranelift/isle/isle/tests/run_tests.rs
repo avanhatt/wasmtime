@@ -10,7 +10,8 @@ use std::default::Default;
 use std::io::BufWriter;
 use std::iter::zip;
 
-fn parse(lexer: Lexer) -> Result<Defs, Errors> {
+/// Parse without positional information, to enable equality on structure alone.
+fn parse_without_pos(lexer: Lexer) -> Result<Defs, Errors> {
     let mut parser = Parser::new(lexer);
     parser.disable_pos();
     parser.parse_defs()
@@ -78,7 +79,7 @@ pub fn run_link(isle_filename: &str) {
 pub fn run_print(isle_filename: &str) {
     // Parse.
     let lexer = lexer::Lexer::from_files(&[isle_filename]).unwrap();
-    let original = parse(lexer).unwrap();
+    let original = parse_without_pos(lexer).unwrap();
 
     // Print.
     let mut buf = BufWriter::new(Vec::new());
@@ -88,7 +89,7 @@ pub fn run_print(isle_filename: &str) {
 
     // Round trip.
     let lexer = lexer::Lexer::from_str(&isle_source, "<string>").unwrap();
-    let round_trip = parse(lexer).unwrap();
+    let round_trip = parse_without_pos(lexer).unwrap();
 
     // Ensure equal.
     assert_eq!(original.defs.len(), round_trip.defs.len());
