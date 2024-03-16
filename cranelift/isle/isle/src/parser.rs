@@ -21,7 +21,7 @@ pub fn parse(lexer: Lexer) -> Result<Defs> {
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
 
-    // HACK: allow positions to be disabled to support testing
+    // HACK(mbm): allow positions to be disabled to support testing
     populate_pos: bool,
 }
 
@@ -42,7 +42,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    // HACK: allow positions to be disabled to support testing
+    // HACK(mbm): allow positions to be disabled to support testing
     pub fn disable_pos(&mut self) {
         self.populate_pos = false;
     }
