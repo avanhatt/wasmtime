@@ -1,16 +1,17 @@
 //! Printer for ISLE language.
 
-#![allow(missing_docs)]
-
 use crate::ast::*;
 use crate::error::Errors;
 use pretty::{Doc, Pretty, RcAllocator, RcDoc};
 use std::io::Write;
 
+/// Printable is a trait satisfied by AST nodes that can be printed.
 pub trait Printable {
+    /// Map the node to a pretty document.
     fn to_doc(&self) -> RcDoc<()>;
 }
 
+/// Print the given AST node with specified line width.
 pub fn print<N, W>(node: &N, width: usize, out: &mut W) -> Result<(), Errors>
 where
     N: Printable,
@@ -21,6 +22,7 @@ where
         .map_err(|e| Errors::from_io(e, "failed to print isle"))
 }
 
+/// Dump AST node to standard output.
 pub fn dump<N: Printable>(node: &N) -> Result<(), Errors> {
     let mut stdout = std::io::stdout();
     print(node, 78, &mut stdout)
