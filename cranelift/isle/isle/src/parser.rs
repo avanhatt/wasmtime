@@ -22,7 +22,7 @@ pub struct Parser<'a> {
     lexer: Lexer<'a>,
 
     // HACK(mbm): allow positions to be disabled to support testing
-    populate_pos: bool,
+    disable_pos: bool,
 }
 
 /// Used during parsing a `(rule ...)` to encapsulate some form that
@@ -38,13 +38,13 @@ impl<'a> Parser<'a> {
     pub fn new(lexer: Lexer<'a>) -> Parser<'a> {
         Parser {
             lexer,
-            populate_pos: true,
+            disable_pos: false,
         }
     }
 
     // HACK(mbm): allow positions to be disabled to support testing
     pub fn disable_pos(&mut self) {
-        self.populate_pos = false;
+        self.disable_pos = true;
     }
 
     fn error(&self, pos: Pos, msg: String) -> Errors {
@@ -89,7 +89,7 @@ impl<'a> Parser<'a> {
     }
 
     fn pos(&self) -> Pos {
-        if self.populate_pos {
+        if !self.disable_pos {
             self.lexer
                 .peek()
                 .map_or_else(|| self.lexer.pos(), |(pos, _)| *pos)
