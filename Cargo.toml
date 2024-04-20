@@ -132,6 +132,7 @@ members = [
   "cranelift",
   "cranelift/isle/fuzz",
   "cranelift/isle/islec",
+  "cranelift/isle/veri",
   "cranelift/serde",
   "crates/bench-api",
   "crates/c-api/artifact",
