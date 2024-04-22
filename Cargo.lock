@@ -735,6 +735,7 @@ dependencies = [
  "anyhow",
  "clap",
  "cranelift-codegen-meta",
+ "cranelift-isle",
  "env_logger",
 ]
 
