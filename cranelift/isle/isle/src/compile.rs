@@ -8,7 +8,8 @@ use crate::{ast, codegen, sema};
 /// Compile the given AST definitions into Rust source code.
 pub fn compile(defs: &ast::Defs, options: &codegen::CodegenOptions) -> Result<String, Errors> {
     let mut typeenv = sema::TypeEnv::from_ast(defs)?;
-    let termenv = sema::TermEnv::from_ast(&mut typeenv, defs)?;
+    let termenv =
+        sema::TermEnv::from_ast(&mut typeenv, defs, /*expand_internal_extractors*/ true)?;
     let terms = crate::overlap::check(&typeenv, &termenv)?;
     Ok(codegen::codegen(&typeenv, &termenv, &terms, options))
 }
