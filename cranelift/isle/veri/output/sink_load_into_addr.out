@@ -1,0 +1,23 @@
+inline term: sink_load_into_addr
+expansions = 1
+expansion {
+	term = sink_load_into_addr
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		13: Reg	constructor(add_imm_to_addr, [8, 12], 3)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+	]
+	result = 13
+}
