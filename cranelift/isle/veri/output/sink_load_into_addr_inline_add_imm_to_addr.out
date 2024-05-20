@@ -20,8 +20,8 @@ expansion {
 		19: Reg	constructor(add, [16, 8, 18], 2)
 	]
 	constraints = [
-		6:	variant(Opcode::Load)
 		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
 	]
 	result = 19
 }
@@ -44,9 +44,9 @@ expansion {
 		19: Reg	constructor(add_imm, [17, 8, 18], 1)
 	]
 	constraints = [
-		16:	some
 		5:	variant(InstructionData::Load)
 		6:	variant(Opcode::Load)
+		16:	some
 	]
 	result = 19
 }
@@ -65,8 +65,8 @@ expansion {
 		12: u64	constructor(i64_as_u64, [11], 0)
 	]
 	constraints = [
-		6:	variant(Opcode::Load)
 		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
 		12:	const_int(0)
 	]
 	result = 8

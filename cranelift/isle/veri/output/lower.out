@@ -18,9 +18,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::UwidenHigh)
-		3:	some
 	]
 	result = 14
 }
@@ -42,9 +42,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		5:	variant(Opcode::SwidenHigh)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::SwidenHigh)
 	]
 	result = 14
 }
@@ -61,9 +61,9 @@ expansion {
 		9: InstOutput	constructor(output, [8], 3)
 	]
 	constraints = [
-		5:	const_int(0)
 		3:	variant(InstructionData::BinaryImm8)
 		4:	variant(Opcode::ExtractVector)
+		5:	const_int(0)
 	]
 	result = 9
 }
@@ -80,8 +80,8 @@ expansion {
 		9: InstOutput	constructor(output, [8], 5)
 	]
 	constraints = [
-		4:	variant(Opcode::DynamicStackAddr)
 		3:	variant(InstructionData::DynamicStackLoad)
+		4:	variant(Opcode::DynamicStackAddr)
 	]
 	result = 9
 }
@@ -109,9 +109,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Uunarrow)
-		3:	some
 		8:	some
 	]
 	result = 20
@@ -142,10 +142,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 6)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Uunarrow)
+		8:	some
 	]
 	result = 22
 }
@@ -171,11 +171,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 4)
 	]
 	constraints = [
-		12:	some
-		5:	variant(Opcode::Uunarrow)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Uunarrow)
 		9:	some
+		12:	some
 	]
 	result = 18
 }
@@ -203,10 +203,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::Unarrow)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Unarrow)
+		8:	some
 	]
 	result = 20
 }
@@ -236,10 +236,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 6)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Unarrow)
 		8:	some
-		3:	some
 	]
 	result = 22
 }
@@ -266,10 +266,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		12:	some
-		9:	some
-		5:	variant(Opcode::Unarrow)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Unarrow)
+		9:	some
+		12:	some
 	]
 	result = 18
 }
@@ -297,9 +297,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		5:	variant(Opcode::Snarrow)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Snarrow)
 		8:	some
 	]
 	result = 20
@@ -330,10 +330,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 6)
 	]
 	constraints = [
-		8:	some
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Snarrow)
+		8:	some
 	]
 	result = 22
 }
@@ -359,11 +359,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 4)
 	]
 	constraints = [
-		12:	some
-		4:	variant(InstructionData::Binary)
-		9:	some
-		5:	variant(Opcode::Snarrow)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Snarrow)
+		9:	some
+		12:	some
 	]
 	result = 18
 }
@@ -392,8 +392,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
-		8:	some
 		5:	variant(Opcode::Fmax)
+		8:	some
 	]
 	result = 19
 }
@@ -421,9 +421,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
-		5:	variant(Opcode::Fmin)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fmin)
+		8:	some
 	]
 	result = 19
 }
@@ -450,10 +450,10 @@ expansion {
 		19: InstOutput	constructor(output, [18], 6)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
-		8:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fdiv)
+		8:	some
 	]
 	result = 19
 }
@@ -480,10 +480,10 @@ expansion {
 		19: InstOutput	constructor(output, [18], 6)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
-		8:	some
-		5:	variant(Opcode::Fmul)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fmul)
+		8:	some
 	]
 	result = 19
 }
@@ -511,9 +511,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fsub)
 		8:	some
-		4:	variant(InstructionData::Binary)
 	]
 	result = 19
 }
@@ -572,11 +572,11 @@ expansion {
 		21: InstOutput	constructor(output, [20], 6)
 	]
 	constraints = [
-		5:	variant(Opcode::Imul)
 		3:	some
-		10:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Imul)
 		8:	some
+		10:	some
 	]
 	result = 21
 }
@@ -602,9 +602,9 @@ expansion {
 		18: InstOutput	constructor(output, [17], 6)
 	]
 	constraints = [
-		5:	variant(Opcode::Isub)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Isub)
 		8:	some
 	]
 	result = 18
@@ -631,10 +631,10 @@ expansion {
 		18: InstOutput	constructor(output, [17], 6)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
-		8:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Iadd)
+		8:	some
 	]
 	result = 18
 }
@@ -652,8 +652,8 @@ expansion {
 		10: InstOutput	constructor(output_reg, [9], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::FvpromoteLow)
 		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::FvpromoteLow)
 	]
 	result = 10
 }
@@ -675,11 +675,11 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 2)
 	]
 	constraints = [
-		5:	variant(Opcode::TlsValue)
 		3:	some
-		10:	variant(TlsModel::Macho)
-		7:	some
 		4:	variant(InstructionData::UnaryGlobalValue)
+		5:	variant(Opcode::TlsValue)
+		7:	some
+		10:	variant(TlsModel::Macho)
 	]
 	result = 14
 }
@@ -701,10 +701,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 2)
 	]
 	constraints = [
-		5:	variant(Opcode::TlsValue)
-		7:	some
 		3:	some
 		4:	variant(InstructionData::UnaryGlobalValue)
+		5:	variant(Opcode::TlsValue)
+		7:	some
 		10:	variant(TlsModel::ElfGd)
 	]
 	result = 14
@@ -741,10 +741,10 @@ expansion {
 		28: InstOutput	constructor(output_pair, [17, 27], 13)
 	]
 	constraints = [
-		5:	const_prim(I64)
-		7:	variant(Opcode::SmulOverflow)
-		6:	variant(InstructionData::Binary)
 		3:	some
+		5:	const_prim(I64)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::SmulOverflow)
 	]
 	result = 28
 }
@@ -776,9 +776,9 @@ expansion {
 		24: InstOutput	constructor(output_pair, [16, 23], 10)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I32)
 		6:	variant(InstructionData::Binary)
-		3:	some
 		7:	variant(Opcode::SmulOverflow)
 	]
 	result = 24
@@ -853,10 +853,10 @@ expansion {
 		28: InstOutput	constructor(output_pair, [17, 27], 14)
 	]
 	constraints = [
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I64)
-		7:	variant(Opcode::UmulOverflow)
 		3:	some
+		5:	const_prim(I64)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::UmulOverflow)
 	]
 	result = 28
 }
@@ -888,10 +888,10 @@ expansion {
 		24: InstOutput	constructor(output_pair, [16, 23], 10)
 	]
 	constraints = [
-		7:	variant(Opcode::UmulOverflow)
 		3:	some
-		6:	variant(InstructionData::Binary)
 		5:	const_prim(I32)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::UmulOverflow)
 	]
 	result = 24
 }
@@ -926,8 +926,8 @@ expansion {
 		27: InstOutput	constructor(output_pair, [18, 26], 11)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::UmulOverflow)
 		8:	some
 	]
@@ -952,9 +952,9 @@ expansion {
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::SsubOverflow)
 	]
 	result = 15
@@ -979,10 +979,10 @@ expansion {
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::SsubOverflow)
 		8:	some
-		4:	variant(InstructionData::Binary)
-		3:	some
 	]
 	result = 16
 }
@@ -1007,8 +1007,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::SsubOverflow)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::SsubOverflow)
 		8:	some
 	]
 	result = 16
@@ -1032,10 +1032,10 @@ expansion {
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::UsubOverflow)
-		3:	some
 	]
 	result = 15
 }
@@ -1059,10 +1059,10 @@ expansion {
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::UsubOverflow)
 		8:	some
-		3:	some
 	]
 	result = 16
 }
@@ -1086,10 +1086,10 @@ expansion {
 		16: InstOutput	constructor(overflow_op_small, [9, 12, 13, 14, 15], 1)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::UsubOverflow)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::UsubOverflow)
+		8:	some
 	]
 	result = 16
 }
@@ -1112,10 +1112,10 @@ expansion {
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
-		7:	variant(Opcode::SaddOverflow)
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::SaddOverflow)
 	]
 	result = 15
 }
@@ -1139,10 +1139,10 @@ expansion {
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 	]
 	constraints = [
-		5:	variant(Opcode::SaddOverflow)
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::SaddOverflow)
+		8:	some
 	]
 	result = 16
 }
@@ -1166,10 +1166,10 @@ expansion {
 		16: InstOutput	constructor(overflow_op_small, [9, 12, 13, 14, 15], 1)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::SaddOverflow)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::SaddOverflow)
+		8:	some
 	]
 	result = 16
 }
@@ -1192,10 +1192,10 @@ expansion {
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		7:	variant(Opcode::UaddOverflow)
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
-		3:	some
+		7:	variant(Opcode::UaddOverflow)
 	]
 	result = 15
 }
@@ -1220,8 +1220,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::UaddOverflow)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::UaddOverflow)
 		8:	some
 	]
 	result = 16
@@ -1247,9 +1247,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::UaddOverflow)
 		8:	some
-		4:	variant(InstructionData::Binary)
 	]
 	result = 16
 }
@@ -1276,9 +1276,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		4:	variant(InstructionData::IntAddTrap)
+		7:	some
 		8:	variant(Opcode::UaddOverflowTrap)
 	]
 	result = 19
@@ -1311,8 +1311,8 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 10)
 	]
 	constraints = [
-		4:	variant(Opcode::VhighBits)
 		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::VhighBits)
 		6:	const_prim(I64X2)
 	]
 	result = 24
@@ -1339,9 +1339,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 7)
 	]
 	constraints = [
-		6:	const_prim(I32X4)
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VhighBits)
+		6:	const_prim(I32X4)
 	]
 	result = 18
 }
@@ -1367,9 +1367,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 7)
 	]
 	constraints = [
-		6:	const_prim(I16X8)
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VhighBits)
+		6:	const_prim(I16X8)
 	]
 	result = 18
 }
@@ -1399,8 +1399,8 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 9)
 	]
 	constraints = [
-		4:	variant(Opcode::VhighBits)
 		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::VhighBits)
 		6:	const_prim(I8X16)
 	]
 	result = 22
@@ -1417,8 +1417,8 @@ expansion {
 		8: InstOutput	constructor(output_reg, [7], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::StackAddr)
 		3:	variant(InstructionData::StackLoad)
+		4:	variant(Opcode::StackAddr)
 	]
 	result = 8
 }
@@ -1446,8 +1446,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::TernaryImm8)
-		9:	some
 		4:	variant(Opcode::Insertlane)
+		9:	some
 	]
 	result = 19
 }
@@ -1473,9 +1473,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
+		3:	variant(InstructionData::TernaryImm8)
 		4:	variant(Opcode::Insertlane)
 		9:	some
-		3:	variant(InstructionData::TernaryImm8)
 	]
 	result = 18
 }
@@ -1499,10 +1499,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		8:	variant(Opcode::Extractlane)
-		7:	some
-		4:	variant(InstructionData::BinaryImm8)
 		3:	some
+		4:	variant(InstructionData::BinaryImm8)
+		7:	some
+		8:	variant(Opcode::Extractlane)
 	]
 	result = 16
 }
@@ -1526,8 +1526,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::BinaryImm8)
 		3:	some
+		4:	variant(InstructionData::BinaryImm8)
 		7:	some
 		8:	variant(Opcode::Extractlane)
 	]
@@ -1549,11 +1549,11 @@ expansion {
 		12: InstOutput	constructor(output_value, [11], 1)
 	]
 	constraints = [
-		7:	some
-		10:	const_int(0)
-		8:	variant(Opcode::Extractlane)
-		4:	variant(InstructionData::BinaryImm8)
 		3:	some
+		4:	variant(InstructionData::BinaryImm8)
+		7:	some
+		8:	variant(Opcode::Extractlane)
+		10:	const_int(0)
 	]
 	result = 12
 }
@@ -1571,11 +1571,11 @@ expansion {
 		10: InstOutput	constructor(output_value, [8], 1)
 	]
 	constraints = [
-		5:	const_prim(I128)
-		9:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::LoadNoOffset)
 		7:	variant(Opcode::Bitcast)
+		9:	const_prim(I128)
 	]
 	result = 10
 }
@@ -1595,11 +1595,11 @@ expansion {
 		12: InstOutput	constructor(output_value, [9], 1)
 	]
 	constraints = [
-		11:	some
 		3:	some
-		8:	variant(Opcode::Bitcast)
-		7:	some
 		4:	variant(InstructionData::LoadNoOffset)
+		7:	some
+		8:	variant(Opcode::Bitcast)
+		11:	some
 	]
 	result = 12
 }
@@ -1623,13 +1623,13 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::LoadNoOffset)
 		7:	some
-		13:	const_prim(true)
 		8:	variant(Opcode::Bitcast)
-		3:	some
 		11:	some
 		12:	const_prim(false)
+		13:	const_prim(true)
 	]
 	result = 16
 }
@@ -1653,12 +1653,12 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::LoadNoOffset)
 		7:	some
 		8:	variant(Opcode::Bitcast)
-		12:	const_prim(true)
-		4:	variant(InstructionData::LoadNoOffset)
-		3:	some
 		11:	some
+		12:	const_prim(true)
 		13:	const_prim(false)
 	]
 	result = 16
@@ -1686,11 +1686,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::LoadNoOffset)
 		7:	some
 		8:	variant(Opcode::Bitcast)
-		13:	some
 		11:	some
-		4:	variant(InstructionData::LoadNoOffset)
+		13:	some
 	]
 	result = 18
 }
@@ -1713,11 +1713,11 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		8:	some
-		4:	variant(InstructionData::LoadNoOffset)
 		3:	some
-		11:	some
+		4:	variant(InstructionData::LoadNoOffset)
 		5:	variant(Opcode::Bitcast)
+		8:	some
+		11:	some
 	]
 	result = 15
 }
@@ -1737,11 +1737,11 @@ expansion {
 		12: InstOutput	constructor(output_value, [9], 1)
 	]
 	constraints = [
-		11:	some
 		3:	some
+		4:	variant(InstructionData::LoadNoOffset)
 		5:	variant(Opcode::Bitcast)
 		8:	some
-		4:	variant(InstructionData::LoadNoOffset)
+		11:	some
 	]
 	result = 12
 }
@@ -1773,8 +1773,8 @@ expansion {
 		7: InstOutput	constructor(output_reg, [6], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::GetPinnedReg)
 		3:	variant(InstructionData::NullAry)
+		4:	variant(Opcode::GetPinnedReg)
 	]
 	result = 7
 }
@@ -1800,9 +1800,9 @@ expansion {
 		18: InstOutput	constructor(side_effect, [17], 4)
 	]
 	constraints = [
-		9:	some
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
+		9:	some
 	]
 	result = 18
 }
@@ -1829,8 +1829,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
-		9:	some
 		4:	variant(Opcode::Store)
+		9:	some
 	]
 	result = 18
 }
@@ -1856,8 +1856,8 @@ expansion {
 		18: InstOutput	constructor(side_effect, [17], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Store)
 		3:	variant(InstructionData::Store)
+		4:	variant(Opcode::Store)
 		9:	some
 	]
 	result = 18
@@ -1884,9 +1884,9 @@ expansion {
 		18: InstOutput	constructor(side_effect, [17], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		9:	some
-		3:	variant(InstructionData::Store)
 	]
 	result = 18
 }
@@ -1915,9 +1915,9 @@ expansion {
 		21: InstOutput	constructor(side_effect, [20], 7)
 	]
 	constraints = [
-		8:	const_prim(I128)
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
+		8:	const_prim(I128)
 	]
 	result = 21
 }
@@ -1942,9 +1942,9 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
-		8:	const_prim(F64)
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
+		8:	const_prim(F64)
 	]
 	result = 17
 }
@@ -1969,9 +1969,9 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
-		8:	const_prim(F32)
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
+		8:	const_prim(F32)
 	]
 	result = 17
 }
@@ -1995,8 +1995,8 @@ expansion {
 		16: InstOutput	constructor(side_effect, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Istore32)
 		3:	variant(InstructionData::Store)
+		4:	variant(Opcode::Istore32)
 	]
 	result = 16
 }
@@ -2020,8 +2020,8 @@ expansion {
 		16: InstOutput	constructor(side_effect, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Istore16)
 		3:	variant(InstructionData::Store)
+		4:	variant(Opcode::Istore16)
 	]
 	result = 16
 }
@@ -2045,8 +2045,8 @@ expansion {
 		16: InstOutput	constructor(side_effect, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Istore8)
 		3:	variant(InstructionData::Store)
+		4:	variant(Opcode::Istore8)
 	]
 	result = 16
 }
@@ -2071,9 +2071,9 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(R64)
-		3:	variant(InstructionData::Store)
 	]
 	result = 17
 }
@@ -2098,9 +2098,9 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
-		8:	const_prim(I64)
-		4:	variant(Opcode::Store)
 		3:	variant(InstructionData::Store)
+		4:	variant(Opcode::Store)
+		8:	const_prim(I64)
 	]
 	result = 17
 }
@@ -2125,9 +2125,9 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I32)
-		3:	variant(InstructionData::Store)
 	]
 	result = 17
 }
@@ -2152,8 +2152,8 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Store)
 		3:	variant(InstructionData::Store)
+		4:	variant(Opcode::Store)
 		8:	const_prim(I16)
 	]
 	result = 17
@@ -2179,9 +2179,9 @@ expansion {
 		17: InstOutput	constructor(side_effect, [16], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I8)
-		3:	variant(InstructionData::Store)
 	]
 	result = 17
 }
@@ -2205,8 +2205,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Uload32x2)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Uload32x2)
 	]
 	result = 16
 }
@@ -2255,8 +2255,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Uload16x4)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Uload16x4)
 	]
 	result = 16
 }
@@ -2280,8 +2280,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Sload16x4)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Sload16x4)
 	]
 	result = 16
 }
@@ -2330,8 +2330,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Sload8x8)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Sload8x8)
 	]
 	result = 16
 }
@@ -2351,8 +2351,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Sload32)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Sload32)
 	]
 	result = 12
 }
@@ -2435,8 +2435,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Sload8)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Sload8)
 	]
 	result = 12
 }
@@ -2456,8 +2456,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Uload8)
 		3:	variant(InstructionData::Load)
+		4:	variant(Opcode::Uload8)
 	]
 	result = 12
 }
@@ -2481,10 +2481,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		8:	some
-		4:	variant(InstructionData::Load)
 		3:	some
+		4:	variant(InstructionData::Load)
 		5:	variant(Opcode::Load)
+		8:	some
 	]
 	result = 16
 }
@@ -2508,10 +2508,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		4:	variant(InstructionData::Load)
-		8:	some
 		3:	some
+		4:	variant(InstructionData::Load)
 		5:	variant(Opcode::Load)
+		8:	some
 	]
 	result = 16
 }
@@ -2535,10 +2535,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		8:	variant(Opcode::Load)
-		7:	some
 		3:	some
 		4:	variant(InstructionData::Load)
+		7:	some
+		8:	variant(Opcode::Load)
 	]
 	result = 16
 }
@@ -2562,9 +2562,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::Load)
-		4:	variant(InstructionData::Load)
 		3:	some
+		4:	variant(InstructionData::Load)
+		5:	variant(Opcode::Load)
 		8:	some
 	]
 	result = 16
@@ -2613,10 +2613,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		5:	const_prim(F64)
-		7:	variant(Opcode::Load)
-		6:	variant(InstructionData::Load)
 		3:	some
+		5:	const_prim(F64)
+		6:	variant(InstructionData::Load)
+		7:	variant(Opcode::Load)
 	]
 	result = 15
 }
@@ -2641,8 +2641,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
-		7:	variant(Opcode::Load)
 		6:	variant(InstructionData::Load)
+		7:	variant(Opcode::Load)
 	]
 	result = 15
 }
@@ -2665,9 +2665,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(R64)
 		6:	variant(InstructionData::Load)
-		3:	some
 		7:	variant(Opcode::Load)
 	]
 	result = 15
@@ -2692,9 +2692,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Load)
 		5:	const_prim(I64)
 		6:	variant(InstructionData::Load)
+		7:	variant(Opcode::Load)
 	]
 	result = 15
 }
@@ -2717,10 +2717,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		5:	const_prim(I32)
-		7:	variant(Opcode::Load)
-		6:	variant(InstructionData::Load)
 		3:	some
+		5:	const_prim(I32)
+		6:	variant(InstructionData::Load)
+		7:	variant(Opcode::Load)
 	]
 	result = 15
 }
@@ -2744,9 +2744,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Load)
-		6:	variant(InstructionData::Load)
 		5:	const_prim(I16)
+		6:	variant(InstructionData::Load)
+		7:	variant(Opcode::Load)
 	]
 	result = 15
 }
@@ -2769,10 +2769,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::Load)
-		6:	variant(InstructionData::Load)
-		5:	const_prim(I8)
 		3:	some
+		5:	const_prim(I8)
+		6:	variant(InstructionData::Load)
+		7:	variant(Opcode::Load)
 	]
 	result = 15
 }
@@ -2792,8 +2792,8 @@ expansion {
 		12: InstOutput	constructor(gen_return_call_indirect, [8, 10, 11], 1)
 	]
 	constraints = [
-		4:	variant(Opcode::ReturnCallIndirect)
 		3:	variant(InstructionData::CallIndirect)
+		4:	variant(Opcode::ReturnCallIndirect)
 		7:	some
 	]
 	result = 12
@@ -2888,8 +2888,8 @@ expansion {
 		6: InstOutput	constructor(output_reg, [5], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::GetReturnAddress)
 		3:	variant(InstructionData::NullAry)
+		4:	variant(Opcode::GetReturnAddress)
 	]
 	result = 6
 }
@@ -2903,8 +2903,8 @@ expansion {
 		6: InstOutput	constructor(output_reg, [5], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::GetStackPointer)
 		3:	variant(InstructionData::NullAry)
+		4:	variant(Opcode::GetStackPointer)
 	]
 	result = 6
 }
@@ -2918,8 +2918,8 @@ expansion {
 		6: InstOutput	constructor(output_reg, [5], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::GetFramePointer)
 		3:	variant(InstructionData::NullAry)
+		4:	variant(Opcode::GetFramePointer)
 	]
 	result = 6
 }
@@ -2940,8 +2940,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::UnaryGlobalValue)
-		6:	some
 		4:	variant(Opcode::SymbolValue)
+		6:	some
 	]
 	result = 12
 }
@@ -3038,8 +3038,8 @@ expansion {
 		6: InstOutput	constructor(side_effect, [5], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::Fence)
 		3:	variant(InstructionData::NullAry)
+		4:	variant(Opcode::Fence)
 	]
 	result = 6
 }
@@ -3066,8 +3066,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::UwidenHigh)
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::UwidenHigh)
 		8:	some
 	]
 	result = 18
@@ -3092,10 +3092,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		8:	some
+		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::UwidenHigh)
-		3:	some
+		8:	some
 	]
 	result = 16
 }
@@ -3117,8 +3117,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::UwidenLow)
 	]
 	result = 14
@@ -3145,10 +3145,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::SwidenHigh)
 		8:	some
-		4:	variant(InstructionData::Unary)
-		3:	some
 	]
 	result = 18
 }
@@ -3173,9 +3173,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
-		5:	variant(Opcode::SwidenHigh)
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::SwidenHigh)
+		8:	some
 	]
 	result = 16
 }
@@ -3197,9 +3197,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::SwidenLow)
-		3:	some
 	]
 	result = 14
 }
@@ -3227,10 +3227,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::Uunarrow)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Uunarrow)
+		8:	some
 	]
 	result = 20
 }
@@ -3260,9 +3260,9 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 6)
 	]
 	constraints = [
-		5:	variant(Opcode::Uunarrow)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Uunarrow)
 		8:	some
 	]
 	result = 22
@@ -3290,10 +3290,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Uunarrow)
 		8:	some
 		12:	some
-		5:	variant(Opcode::Uunarrow)
-		4:	variant(InstructionData::Binary)
 	]
 	result = 18
 }
@@ -3323,8 +3323,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
-		8:	some
 		5:	variant(Opcode::Unarrow)
+		8:	some
 	]
 	result = 20
 }
@@ -3355,9 +3355,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Unarrow)
+		8:	some
 	]
 	result = 22
 }
@@ -3383,11 +3383,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 4)
 	]
 	constraints = [
-		12:	some
-		5:	variant(Opcode::Unarrow)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Unarrow)
 		8:	some
+		12:	some
 	]
 	result = 18
 }
@@ -3415,9 +3415,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Snarrow)
-		3:	some
 		8:	some
 	]
 	result = 20
@@ -3448,10 +3448,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 6)
 	]
 	constraints = [
-		5:	variant(Opcode::Snarrow)
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Snarrow)
+		8:	some
 	]
 	result = 22
 }
@@ -3477,11 +3477,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
-		12:	some
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Snarrow)
 		8:	some
+		12:	some
 	]
 	result = 18
 }
@@ -3498,8 +3498,8 @@ expansion {
 		9: InstOutput	constructor(output_reg, [8], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Fvdemote)
 		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::Fvdemote)
 	]
 	result = 9
 }
@@ -3527,10 +3527,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
-		8:	variant(Opcode::AtomicCas)
 		4:	variant(InstructionData::AtomicCas)
+		7:	some
+		8:	variant(Opcode::AtomicCas)
 	]
 	result = 20
 }
@@ -3559,11 +3559,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 5)
 	]
 	constraints = [
-		9:	variant(Opcode::AtomicCas)
 		3:	some
-		8:	some
-		7:	some
 		4:	variant(InstructionData::AtomicCas)
+		7:	some
+		8:	some
+		9:	variant(Opcode::AtomicCas)
 	]
 	result = 21
 }
@@ -3591,11 +3591,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		8:	variant(Opcode::AtomicRmw)
 		3:	some
 		4:	variant(InstructionData::AtomicRmw)
-		9:	variant(AtomicRmwOp::Xchg)
 		7:	some
+		8:	variant(Opcode::AtomicRmw)
+		9:	variant(AtomicRmwOp::Xchg)
 	]
 	result = 20
 }
@@ -3623,11 +3623,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		9:	variant(AtomicRmwOp::Umax)
-		8:	variant(Opcode::AtomicRmw)
-		7:	some
 		3:	some
 		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	variant(Opcode::AtomicRmw)
+		9:	variant(AtomicRmwOp::Umax)
 	]
 	result = 20
 }
@@ -3655,10 +3655,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
-		8:	variant(Opcode::AtomicRmw)
 		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Umin)
 	]
 	result = 20
@@ -3687,9 +3687,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		4:	variant(InstructionData::AtomicRmw)
+		7:	some
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Smax)
 	]
@@ -3719,11 +3719,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		9:	variant(AtomicRmwOp::Smin)
-		8:	variant(Opcode::AtomicRmw)
-		7:	some
-		4:	variant(InstructionData::AtomicRmw)
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	variant(Opcode::AtomicRmw)
+		9:	variant(AtomicRmwOp::Smin)
 	]
 	result = 20
 }
@@ -3751,11 +3751,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		8:	variant(Opcode::AtomicRmw)
-		9:	variant(AtomicRmwOp::Xor)
-		7:	some
 		3:	some
 		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	variant(Opcode::AtomicRmw)
+		9:	variant(AtomicRmwOp::Xor)
 	]
 	result = 20
 }
@@ -3784,10 +3784,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		9:	variant(AtomicRmwOp::Or)
-		7:	some
 		4:	variant(InstructionData::AtomicRmw)
+		7:	some
 		8:	variant(Opcode::AtomicRmw)
+		9:	variant(AtomicRmwOp::Or)
 	]
 	result = 20
 }
@@ -3815,10 +3815,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		7:	some
-		4:	variant(InstructionData::AtomicRmw)
-		8:	variant(Opcode::AtomicRmw)
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Nand)
 	]
 	result = 20
@@ -3847,11 +3847,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::And)
-		3:	some
-		7:	some
-		4:	variant(InstructionData::AtomicRmw)
 	]
 	result = 20
 }
@@ -3879,11 +3879,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::AtomicRmw)
 		7:	some
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Sub)
-		3:	some
 	]
 	result = 20
 }
@@ -3911,11 +3911,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		9:	variant(AtomicRmwOp::Add)
 		3:	some
-		8:	variant(Opcode::AtomicRmw)
-		7:	some
 		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	variant(Opcode::AtomicRmw)
+		9:	variant(AtomicRmwOp::Add)
 	]
 	result = 20
 }
@@ -3945,12 +3945,12 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::AtomicRmw)
-		9:	variant(Opcode::AtomicRmw)
 		3:	some
-		10:	variant(AtomicRmwOp::And)
+		4:	variant(InstructionData::AtomicRmw)
 		7:	some
 		8:	some
+		9:	variant(Opcode::AtomicRmw)
+		10:	variant(AtomicRmwOp::And)
 	]
 	result = 22
 }
@@ -3980,12 +3980,12 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 5)
 	]
 	constraints = [
-		8:	some
-		4:	variant(InstructionData::AtomicRmw)
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	some
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Sub)
-		7:	some
 	]
 	result = 22
 }
@@ -4013,12 +4013,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		10:	variant(AtomicRmwOp::Umin)
-		8:	some
-		4:	variant(InstructionData::AtomicRmw)
 		3:	some
-		9:	variant(Opcode::AtomicRmw)
+		4:	variant(InstructionData::AtomicRmw)
 		7:	some
+		8:	some
+		9:	variant(Opcode::AtomicRmw)
+		10:	variant(AtomicRmwOp::Umin)
 	]
 	result = 20
 }
@@ -4047,10 +4047,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
 		8:	some
 		9:	variant(Opcode::AtomicRmw)
-		7:	some
-		4:	variant(InstructionData::AtomicRmw)
 		10:	variant(AtomicRmwOp::Umax)
 	]
 	result = 20
@@ -4080,11 +4080,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		9:	variant(Opcode::AtomicRmw)
 		4:	variant(InstructionData::AtomicRmw)
 		7:	some
-		10:	variant(AtomicRmwOp::Smin)
 		8:	some
+		9:	variant(Opcode::AtomicRmw)
+		10:	variant(AtomicRmwOp::Smin)
 	]
 	result = 20
 }
@@ -4112,8 +4112,8 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		4:	variant(InstructionData::AtomicRmw)
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
 		7:	some
 		8:	some
 		9:	variant(Opcode::AtomicRmw)
@@ -4145,12 +4145,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::AtomicRmw)
 		7:	some
+		8:	some
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Or)
-		8:	some
-		3:	some
 	]
 	result = 20
 }
@@ -4179,11 +4179,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	some
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Xor)
-		4:	variant(InstructionData::AtomicRmw)
-		8:	some
-		7:	some
 	]
 	result = 20
 }
@@ -4211,12 +4211,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		4:	variant(InstructionData::AtomicRmw)
-		9:	variant(Opcode::AtomicRmw)
-		8:	some
-		10:	variant(AtomicRmwOp::Add)
-		7:	some
 		3:	some
+		4:	variant(InstructionData::AtomicRmw)
+		7:	some
+		8:	some
+		9:	variant(Opcode::AtomicRmw)
+		10:	variant(AtomicRmwOp::Add)
 	]
 	result = 20
 }
@@ -4266,8 +4266,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::LoadNoOffset)
-		8:	variant(Opcode::AtomicLoad)
 		7:	some
+		8:	variant(Opcode::AtomicLoad)
 	]
 	result = 14
 }
@@ -4295,13 +4295,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		10:	some
 		3:	some
-		11:	variant(Opcode::Load)
-		7:	some
 		4:	variant(InstructionData::Unary)
-		9:	variant(InstructionData::Load)
 		5:	variant(Opcode::Splat)
+		7:	some
+		9:	variant(InstructionData::Load)
+		10:	some
+		11:	variant(Opcode::Load)
 	]
 	result = 20
 }
@@ -4331,15 +4331,15 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 3)
 	]
 	constraints = [
-		10:	variant(Opcode::Ireduce)
-		14:	variant(InstructionData::UnaryImm)
 		3:	some
-		15:	variant(Opcode::Iconst)
-		9:	variant(InstructionData::Unary)
-		5:	variant(Opcode::Splat)
-		12:	some
-		7:	some
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Splat)
+		7:	some
+		9:	variant(InstructionData::Unary)
+		10:	variant(Opcode::Ireduce)
+		12:	some
+		14:	variant(InstructionData::UnaryImm)
+		15:	variant(Opcode::Iconst)
 	]
 	result = 22
 }
@@ -4364,12 +4364,12 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Splat)
 		7:	some
 		9:	variant(InstructionData::UnaryImm)
 		10:	variant(Opcode::Iconst)
-		3:	some
-		5:	variant(Opcode::Splat)
-		4:	variant(InstructionData::Unary)
 	]
 	result = 17
 }
@@ -4394,12 +4394,12 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
-		9:	variant(InstructionData::UnaryIeee64)
-		5:	variant(Opcode::Splat)
-		10:	variant(Opcode::F64const)
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Splat)
+		7:	some
+		9:	variant(InstructionData::UnaryIeee64)
+		10:	variant(Opcode::F64const)
 	]
 	result = 17
 }
@@ -4425,12 +4425,12 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::Splat)
-		4:	variant(InstructionData::Unary)
-		9:	variant(InstructionData::UnaryIeee32)
-		7:	some
-		10:	variant(Opcode::F32const)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Splat)
+		7:	some
+		9:	variant(InstructionData::UnaryIeee32)
+		10:	variant(Opcode::F32const)
 	]
 	result = 18
 }
@@ -4453,10 +4453,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		5:	variant(Opcode::Splat)
-		4:	variant(InstructionData::Unary)
-		8:	some
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Splat)
+		8:	some
 	]
 	result = 15
 }
@@ -4478,10 +4478,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Splat)
 		8:	some
-		4:	variant(InstructionData::Unary)
-		3:	some
 	]
 	result = 14
 }
@@ -4502,11 +4502,11 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 2)
 	]
 	constraints = [
-		10:	some
 		3:	some
-		7:	some
 		4:	variant(InstructionData::UnaryConst)
 		5:	variant(Opcode::Vconst)
+		7:	some
+		10:	some
 	]
 	result = 13
 }
@@ -4527,11 +4527,11 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 2)
 	]
 	constraints = [
-		10:	some
-		8:	variant(Opcode::Vconst)
-		7:	some
-		4:	variant(InstructionData::UnaryConst)
 		3:	some
+		4:	variant(InstructionData::UnaryConst)
+		7:	some
+		8:	variant(Opcode::Vconst)
+		10:	some
 	]
 	result = 13
 }
@@ -4565,9 +4565,9 @@ expansion {
 		26: InstOutput	constructor(output, [25], 8)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Ternary)
 		5:	variant(Opcode::SelectSpectreGuard)
-		3:	some
 		9:	const_prim(I128)
 	]
 	result = 26
@@ -4598,8 +4598,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::SelectSpectreGuard)
 		4:	variant(InstructionData::Ternary)
+		5:	variant(Opcode::SelectSpectreGuard)
 		10:	some
 	]
 	result = 21
@@ -4638,13 +4638,13 @@ expansion {
 		30: InstOutput	constructor(output, [29], 8)
 	]
 	constraints = [
-		14:	variant(Opcode::Icmp)
-		9:	some
-		13:	variant(InstructionData::IntCompare)
+		3:	some
 		4:	variant(InstructionData::Ternary)
 		5:	variant(Opcode::SelectSpectreGuard)
+		9:	some
 		11:	some
-		3:	some
+		13:	variant(InstructionData::IntCompare)
+		14:	variant(Opcode::Icmp)
 	]
 	result = 30
 }
@@ -4679,9 +4679,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		9:	const_prim(I128)
-		5:	variant(Opcode::Select)
 		4:	variant(InstructionData::Ternary)
+		5:	variant(Opcode::Select)
+		9:	const_prim(I128)
 	]
 	result = 26
 }
@@ -4712,8 +4712,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Ternary)
-		10:	some
 		5:	variant(Opcode::Select)
+		10:	some
 	]
 	result = 21
 }
@@ -4744,8 +4744,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Ternary)
-		10:	some
 		5:	variant(Opcode::Select)
+		10:	some
 	]
 	result = 21
 }
@@ -4774,10 +4774,10 @@ expansion {
 		21: InstOutput	constructor(output, [20], 5)
 	]
 	constraints = [
-		9:	const_prim(I8)
-		5:	variant(Opcode::Select)
-		4:	variant(InstructionData::Ternary)
 		3:	some
+		4:	variant(InstructionData::Ternary)
+		5:	variant(Opcode::Select)
+		9:	const_prim(I8)
 	]
 	result = 21
 }
@@ -4816,13 +4816,13 @@ expansion {
 		31: InstOutput	constructor(output, [30], 7)
 	]
 	constraints = [
-		5:	variant(Opcode::Select)
-		14:	variant(Opcode::Fcmp)
-		13:	variant(InstructionData::FloatCompare)
-		4:	variant(InstructionData::Ternary)
 		3:	some
+		4:	variant(InstructionData::Ternary)
+		5:	variant(Opcode::Select)
 		9:	some
 		11:	some
+		13:	variant(InstructionData::FloatCompare)
+		14:	variant(Opcode::Fcmp)
 	]
 	result = 31
 }
@@ -4860,13 +4860,13 @@ expansion {
 		30: InstOutput	constructor(output, [29], 6)
 	]
 	constraints = [
-		14:	variant(Opcode::Icmp)
-		13:	variant(InstructionData::IntCompare)
-		11:	some
-		9:	some
-		5:	variant(Opcode::Select)
 		3:	some
 		4:	variant(InstructionData::Ternary)
+		5:	variant(Opcode::Select)
+		9:	some
+		11:	some
+		13:	variant(InstructionData::IntCompare)
+		14:	variant(Opcode::Icmp)
 	]
 	result = 30
 }
@@ -4881,8 +4881,8 @@ expansion {
 		7: InstOutput	constructor(side_effect, [6], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::ResumableTrap)
 		3:	variant(InstructionData::Trap)
+		4:	variant(Opcode::ResumableTrap)
 	]
 	result = 7
 }
@@ -4897,8 +4897,8 @@ expansion {
 		7: InstOutput	constructor(side_effect, [6], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::Trap)
 		3:	variant(InstructionData::Trap)
+		4:	variant(Opcode::Trap)
 	]
 	result = 7
 }
@@ -4950,11 +4950,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::IntCompare)
 		7:	some
 		8:	variant(Opcode::Icmp)
-		4:	variant(InstructionData::IntCompare)
-		14:	some
 		10:	some
+		14:	some
 	]
 	result = 21
 }
@@ -4983,12 +4983,12 @@ expansion {
 		21: InstOutput	constructor(output, [20], 6)
 	]
 	constraints = [
-		14:	some
-		8:	variant(Opcode::Icmp)
-		4:	variant(InstructionData::IntCompare)
-		10:	some
-		7:	some
 		3:	some
+		4:	variant(InstructionData::IntCompare)
+		7:	some
+		8:	variant(Opcode::Icmp)
+		10:	some
+		14:	some
 	]
 	result = 21
 }
@@ -5019,10 +5019,10 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::IntCompare)
-		14:	some
+		7:	some
 		8:	variant(Opcode::Icmp)
 		12:	some
-		7:	some
+		14:	some
 	]
 	result = 21
 }
@@ -5051,12 +5051,12 @@ expansion {
 		21: InstOutput	constructor(output, [20], 6)
 	]
 	constraints = [
-		4:	variant(InstructionData::IntCompare)
-		10:	some
 		3:	some
-		8:	variant(Opcode::Icmp)
-		14:	some
+		4:	variant(InstructionData::IntCompare)
 		7:	some
+		8:	variant(Opcode::Icmp)
+		10:	some
+		14:	some
 	]
 	result = 21
 }
@@ -5081,10 +5081,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::FloatCompare)
 		5:	variant(Opcode::Fcmp)
 		10:	some
-		3:	some
 	]
 	result = 17
 }
@@ -5114,9 +5114,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	some
-		5:	variant(Opcode::Fcmp)
 		4:	variant(InstructionData::FloatCompare)
+		5:	variant(Opcode::Fcmp)
+		10:	some
 	]
 	result = 21
 }
@@ -5145,12 +5145,12 @@ expansion {
 		21: InstOutput	constructor(output, [20], 5)
 	]
 	constraints = [
-		8:	variant(Opcode::Fcmp)
-		14:	some
-		7:	some
-		4:	variant(InstructionData::FloatCompare)
 		3:	some
+		4:	variant(InstructionData::FloatCompare)
+		7:	some
+		8:	variant(Opcode::Fcmp)
 		10:	some
+		14:	some
 	]
 	result = 21
 }
@@ -5179,11 +5179,11 @@ expansion {
 		21: InstOutput	constructor(output, [20], 6)
 	]
 	constraints = [
-		7:	some
-		10:	some
 		3:	some
 		4:	variant(InstructionData::FloatCompare)
+		7:	some
 		8:	variant(Opcode::Fcmp)
+		10:	some
 		14:	some
 	]
 	result = 21
@@ -5213,12 +5213,12 @@ expansion {
 		21: InstOutput	constructor(output, [20], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::FloatCompare)
-		8:	variant(Opcode::Fcmp)
-		14:	some
-		7:	some
 		3:	some
+		4:	variant(InstructionData::FloatCompare)
+		7:	some
+		8:	variant(Opcode::Fcmp)
 		12:	some
+		14:	some
 	]
 	result = 21
 }
@@ -5247,12 +5247,12 @@ expansion {
 		21: InstOutput	constructor(output, [20], 6)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::FloatCompare)
 		7:	some
-		10:	some
-		3:	some
-		14:	some
 		8:	variant(Opcode::Fcmp)
+		10:	some
+		14:	some
 	]
 	result = 21
 }
@@ -5274,8 +5274,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::Ireduce)
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Ireduce)
 		8:	some
 	]
 	result = 13
@@ -5304,9 +5304,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Ternary)
 		5:	variant(Opcode::Bitselect)
+		8:	some
 	]
 	result = 19
 }
@@ -5336,9 +5336,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::Ternary)
 		5:	variant(Opcode::Bitselect)
 		8:	some
-		4:	variant(InstructionData::Ternary)
 	]
 	result = 21
 }
@@ -5358,10 +5358,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::Popcnt)
+		3:	some
 		5:	const_prim(I8X16)
 		6:	variant(InstructionData::Unary)
-		3:	some
+		7:	variant(Opcode::Popcnt)
 	]
 	result = 12
 }
@@ -5399,9 +5399,9 @@ expansion {
 		30: InstOutput	constructor(output, [29], 11)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
-		3:	some
 		7:	variant(Opcode::Popcnt)
 	]
 	result = 30
@@ -5428,10 +5428,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 6)
 	]
 	constraints = [
-		5:	const_prim(I64)
-		7:	variant(Opcode::Popcnt)
 		3:	some
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Popcnt)
 	]
 	result = 18
 }
@@ -5457,10 +5457,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 6)
 	]
 	constraints = [
-		6:	variant(InstructionData::Unary)
 		3:	some
-		7:	variant(Opcode::Popcnt)
 		5:	const_prim(I32)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Popcnt)
 	]
 	result = 18
 }
@@ -5486,10 +5486,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 6)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I16)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
-		3:	some
 	]
 	result = 18
 }
@@ -5537,9 +5537,9 @@ expansion {
 		12: InstOutput	constructor(output, [11], 3)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Bmask)
-		3:	some
 	]
 	result = 12
 }
@@ -5567,9 +5567,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bswap)
-		5:	const_prim(I128)
 	]
 	result = 19
 }
@@ -5589,10 +5589,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::Bswap)
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bswap)
 	]
 	result = 12
 }
@@ -5612,10 +5612,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		5:	const_prim(I32)
-		7:	variant(Opcode::Bswap)
-		6:	variant(InstructionData::Unary)
 		3:	some
+		5:	const_prim(I32)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bswap)
 	]
 	result = 12
 }
@@ -5635,10 +5635,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		5:	const_prim(I16)
-		7:	variant(Opcode::Bswap)
-		6:	variant(InstructionData::Unary)
 		3:	some
+		5:	const_prim(I16)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bswap)
 	]
 	result = 12
 }
@@ -5657,9 +5657,9 @@ expansion {
 		11: InstOutput	constructor(output_reg, [10], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::Cls)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Cls)
 	]
 	result = 11
 }
@@ -5700,10 +5700,10 @@ expansion {
 		33: InstOutput	constructor(output, [32], 18)
 	]
 	constraints = [
-		7:	variant(Opcode::Cls)
 		3:	some
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Cls)
 	]
 	result = 33
 }
@@ -5727,9 +5727,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(I16)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Cls)
-		5:	const_prim(I16)
 	]
 	result = 15
 }
@@ -5752,10 +5752,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 5)
 	]
 	constraints = [
-		5:	const_prim(I8)
-		7:	variant(Opcode::Cls)
-		6:	variant(InstructionData::Unary)
 		3:	some
+		5:	const_prim(I8)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Cls)
 	]
 	result = 15
 }
@@ -5804,8 +5804,8 @@ expansion {
 		19: InstOutput	constructor(output, [18], 8)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ctz)
 	]
@@ -5831,10 +5831,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 6)
 	]
 	constraints = [
-		5:	const_prim(I16)
 		3:	some
-		7:	variant(Opcode::Ctz)
+		5:	const_prim(I16)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Ctz)
 	]
 	result = 16
 }
@@ -5858,10 +5858,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 6)
 	]
 	constraints = [
-		5:	const_prim(I8)
 		3:	some
-		7:	variant(Opcode::Ctz)
+		5:	const_prim(I8)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Ctz)
 	]
 	result = 16
 }
@@ -5881,8 +5881,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::Clz)
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Clz)
 	]
 	result = 11
 }
@@ -5901,10 +5901,10 @@ expansion {
 		11: InstOutput	constructor(output, [10], 3)
 	]
 	constraints = [
-		6:	variant(InstructionData::Unary)
-		5:	const_prim(I128)
-		7:	variant(Opcode::Clz)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Clz)
 	]
 	result = 11
 }
@@ -5929,8 +5929,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
-		7:	variant(Opcode::Clz)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Clz)
 	]
 	result = 15
 }
@@ -5954,9 +5954,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Clz)
 		5:	const_prim(I8)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Clz)
 	]
 	result = 15
 }
@@ -5975,9 +5975,9 @@ expansion {
 		11: InstOutput	constructor(output_reg, [10], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::Bitrev)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Bitrev)
 	]
 	result = 11
 }
@@ -6003,8 +6003,8 @@ expansion {
 		18: InstOutput	constructor(output, [17], 7)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bitrev)
 	]
@@ -6031,8 +6031,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
-		7:	variant(Opcode::Bitrev)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bitrev)
 	]
 	result = 15
 }
@@ -6055,10 +6055,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 5)
 	]
 	constraints = [
-		6:	variant(InstructionData::Unary)
-		7:	variant(Opcode::Bitrev)
 		3:	some
 		5:	const_prim(I8)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bitrev)
 	]
 	result = 15
 }
@@ -6097,8 +6097,8 @@ expansion {
 		31: InstOutput	constructor(output, [30], 15)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotr)
 	]
@@ -6130,14 +6130,14 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 3)
 	]
 	constraints = [
-		13:	variant(InstructionData::UnaryImm)
-		5:	const_prim(I64)
-		7:	variant(Opcode::Rotr)
-		17:	some
-		11:	some
-		6:	variant(InstructionData::Binary)
 		3:	some
+		5:	const_prim(I64)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Rotr)
+		11:	some
+		13:	variant(InstructionData::UnaryImm)
 		14:	variant(Opcode::Iconst)
+		17:	some
 	]
 	result = 22
 }
@@ -6167,14 +6167,14 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 3)
 	]
 	constraints = [
-		13:	variant(InstructionData::UnaryImm)
 		3:	some
-		11:	some
-		17:	some
-		14:	variant(Opcode::Iconst)
-		7:	variant(Opcode::Rotr)
 		5:	const_prim(I32)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Rotr)
+		11:	some
+		13:	variant(InstructionData::UnaryImm)
+		14:	variant(Opcode::Iconst)
+		17:	some
 	]
 	result = 22
 }
@@ -6205,13 +6205,13 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 3)
 	]
 	constraints = [
-		12:	variant(Opcode::Iconst)
-		15:	some
-		9:	some
-		5:	variant(Opcode::Rotr)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Rotr)
+		9:	some
 		11:	variant(InstructionData::UnaryImm)
+		12:	variant(Opcode::Iconst)
+		15:	some
 		18:	some
 	]
 	result = 23
@@ -6238,10 +6238,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		7:	variant(Opcode::Rotr)
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Rotr)
 	]
 	result = 18
 }
@@ -6267,10 +6267,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	const_prim(I32)
 		3:	some
-		7:	variant(Opcode::Rotr)
+		5:	const_prim(I32)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Rotr)
 	]
 	result = 18
 }
@@ -6298,9 +6298,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Rotr)
+		8:	some
 	]
 	result = 19
 }
@@ -6339,10 +6339,10 @@ expansion {
 		31: InstOutput	constructor(output, [30], 15)
 	]
 	constraints = [
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I128)
-		7:	variant(Opcode::Rotl)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Rotl)
 	]
 	result = 31
 }
@@ -6373,14 +6373,14 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 4)
 	]
 	constraints = [
-		17:	some
 		3:	some
-		13:	variant(InstructionData::UnaryImm)
-		14:	variant(Opcode::Iconst)
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotl)
-		5:	const_prim(I64)
 		11:	some
+		13:	variant(InstructionData::UnaryImm)
+		14:	variant(Opcode::Iconst)
+		17:	some
 	]
 	result = 23
 }
@@ -6411,14 +6411,14 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 4)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I32)
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotl)
 		11:	some
-		5:	const_prim(I32)
-		17:	some
-		6:	variant(InstructionData::Binary)
-		3:	some
 		13:	variant(InstructionData::UnaryImm)
 		14:	variant(Opcode::Iconst)
+		17:	some
 	]
 	result = 23
 }
@@ -6446,10 +6446,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		7:	variant(Opcode::Rotl)
-		6:	variant(InstructionData::Binary)
 		3:	some
 		5:	const_prim(I64)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Rotl)
 	]
 	result = 20
 }
@@ -6477,10 +6477,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		7:	variant(Opcode::Rotl)
+		3:	some
 		5:	const_prim(I32)
 		6:	variant(InstructionData::Binary)
-		3:	some
+		7:	variant(Opcode::Rotl)
 	]
 	result = 20
 }
@@ -6512,14 +6512,14 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 4)
 	]
 	constraints = [
-		12:	variant(Opcode::Iconst)
-		5:	variant(Opcode::Rotl)
-		11:	variant(InstructionData::UnaryImm)
 		3:	some
 		4:	variant(InstructionData::Binary)
-		18:	some
+		5:	variant(Opcode::Rotl)
 		9:	some
+		11:	variant(InstructionData::UnaryImm)
+		12:	variant(Opcode::Iconst)
 		15:	some
+		18:	some
 	]
 	result = 24
 }
@@ -6549,10 +6549,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 7)
 	]
 	constraints = [
-		8:	some
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Rotl)
-		3:	some
+		8:	some
 	]
 	result = 22
 }
@@ -6581,14 +6581,14 @@ expansion {
 		21: InstOutput	constructor(output_value, [20], 1)
 	]
 	constraints = [
-		9:	some
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Sshr)
-		19:	const_int(0)
-		15:	some
-		12:	variant(Opcode::Iconst)
+		9:	some
 		11:	variant(InstructionData::UnaryImm)
+		12:	variant(Opcode::Iconst)
+		15:	some
+		19:	const_int(0)
 	]
 	result = 21
 }
@@ -6620,13 +6620,13 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 4)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Sshr)
 		9:	some
+		11:	variant(InstructionData::UnaryImm)
 		12:	variant(Opcode::Iconst)
 		15:	some
-		11:	variant(InstructionData::UnaryImm)
-		4:	variant(InstructionData::Binary)
-		3:	some
 	]
 	result = 24
 }
@@ -6659,10 +6659,10 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 10)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::Sshr)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Sshr)
+		8:	some
 	]
 	result = 25
 }
@@ -6687,10 +6687,10 @@ expansion {
 		17: InstOutput	constructor(output, [16], 5)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Sshr)
-		5:	const_prim(I128)
-		3:	some
 	]
 	result = 17
 }
@@ -6714,10 +6714,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
-		7:	variant(Opcode::Sshr)
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Sshr)
 	]
 	result = 16
 }
@@ -6742,10 +6742,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::Sshr)
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Sshr)
+		8:	some
 	]
 	result = 17
 }
@@ -6774,14 +6774,14 @@ expansion {
 		21: InstOutput	constructor(output_value, [20], 1)
 	]
 	constraints = [
-		11:	variant(InstructionData::UnaryImm)
+		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Ushr)
 		9:	some
-		4:	variant(InstructionData::Binary)
-		19:	const_int(0)
-		3:	some
-		15:	some
+		11:	variant(InstructionData::UnaryImm)
 		12:	variant(Opcode::Iconst)
+		15:	some
+		19:	const_int(0)
 	]
 	result = 21
 }
@@ -6813,13 +6813,13 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 4)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Ushr)
+		9:	some
 		11:	variant(InstructionData::UnaryImm)
 		12:	variant(Opcode::Iconst)
-		4:	variant(InstructionData::Binary)
 		15:	some
-		9:	some
-		3:	some
-		5:	variant(Opcode::Ushr)
 	]
 	result = 24
 }
@@ -6852,10 +6852,10 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 10)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Ushr)
+		8:	some
 	]
 	result = 25
 }
@@ -6880,10 +6880,10 @@ expansion {
 		17: InstOutput	constructor(output, [16], 5)
 	]
 	constraints = [
-		7:	variant(Opcode::Ushr)
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Ushr)
 	]
 	result = 17
 }
@@ -6907,9 +6907,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64)
 		6:	variant(InstructionData::Binary)
-		3:	some
 		7:	variant(Opcode::Ushr)
 	]
 	result = 16
@@ -6935,10 +6935,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::Ushr)
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Ushr)
+		8:	some
 	]
 	result = 17
 }
@@ -6970,13 +6970,13 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 4)
 	]
 	constraints = [
-		12:	variant(Opcode::Iconst)
-		4:	variant(InstructionData::Binary)
 		3:	some
-		15:	some
-		9:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Ishl)
+		9:	some
 		11:	variant(InstructionData::UnaryImm)
+		12:	variant(Opcode::Iconst)
+		15:	some
 	]
 	result = 24
 }
@@ -7006,10 +7006,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 8)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Ishl)
 		8:	some
-		4:	variant(InstructionData::Binary)
-		3:	some
 	]
 	result = 22
 }
@@ -7034,9 +7034,9 @@ expansion {
 		17: InstOutput	constructor(output, [16], 5)
 	]
 	constraints = [
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Ishl)
 	]
 	result = 17
@@ -7062,9 +7062,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Ishl)
-		5:	const_prim(I64)
 	]
 	result = 16
 }
@@ -7089,10 +7089,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Ishl)
+		8:	some
 	]
 	result = 17
 }
@@ -7120,12 +7120,12 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
-		6:	variant(InstructionData::Binary)
 		3:	some
-		13:	variant(InstructionData::Unary)
 		5:	const_prim(I128)
-		11:	some
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Bxor)
+		11:	some
+		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
 	result = 20
@@ -7154,13 +7154,13 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
-		14:	variant(Opcode::Bnot)
 		7:	variant(Opcode::Bxor)
 		11:	some
-		5:	const_prim(I128)
-		3:	some
 		13:	variant(InstructionData::Unary)
+		14:	variant(Opcode::Bnot)
 	]
 	result = 20
 }
@@ -7189,13 +7189,13 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
-		8:	variant(Opcode::Bxor)
-		15:	variant(Opcode::Bnot)
 		3:	some
-		12:	some
-		14:	variant(InstructionData::Unary)
 		4:	variant(InstructionData::Binary)
 		7:	some
+		8:	variant(Opcode::Bxor)
+		12:	some
+		14:	variant(InstructionData::Unary)
+		15:	variant(Opcode::Bnot)
 	]
 	result = 21
 }
@@ -7224,13 +7224,13 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
-		15:	variant(Opcode::Bnot)
-		8:	variant(Opcode::Bxor)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Bxor)
 		12:	some
 		14:	variant(InstructionData::Unary)
-		7:	some
+		15:	variant(Opcode::Bnot)
 	]
 	result = 21
 }
@@ -7256,10 +7256,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Bxor)
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Bxor)
+		8:	some
 	]
 	result = 18
 }
@@ -7284,8 +7284,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
-		7:	variant(Opcode::Bxor)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Bxor)
 	]
 	result = 15
 }
@@ -7309,8 +7309,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 2)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		7:	some
 		8:	variant(Opcode::Bxor)
 	]
@@ -7340,13 +7340,13 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
-		7:	variant(Opcode::Bor)
-		11:	some
-		14:	variant(Opcode::Bnot)
-		13:	variant(InstructionData::Unary)
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
-		3:	some
+		7:	variant(Opcode::Bor)
+		11:	some
+		13:	variant(InstructionData::Unary)
+		14:	variant(Opcode::Bnot)
 	]
 	result = 20
 }
@@ -7374,13 +7374,13 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
-		7:	variant(Opcode::Bor)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Bor)
+		11:	some
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I128)
-		11:	some
 	]
 	result = 20
 }
@@ -7409,11 +7409,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Bor)
 		12:	some
-		7:	some
-		3:	some
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
@@ -7444,12 +7444,12 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
-		8:	variant(Opcode::Bor)
-		12:	some
+		3:	some
 		4:	variant(InstructionData::Binary)
 		7:	some
+		8:	variant(Opcode::Bor)
+		12:	some
 		14:	variant(InstructionData::Unary)
-		3:	some
 		15:	variant(Opcode::Bnot)
 	]
 	result = 21
@@ -7476,10 +7476,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Bor)
-		4:	variant(InstructionData::Binary)
-		8:	some
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Bor)
+		8:	some
 	]
 	result = 18
 }
@@ -7503,9 +7503,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Bor)
-		6:	variant(InstructionData::Binary)
 		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Bor)
 	]
 	result = 15
 }
@@ -7531,8 +7531,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Bor)
 		7:	some
+		8:	variant(Opcode::Bor)
 	]
 	result = 16
 }
@@ -7563,13 +7563,13 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
-		15:	some
-		4:	variant(InstructionData::Binary)
-		12:	variant(Opcode::Bnot)
-		11:	variant(InstructionData::Unary)
-		9:	some
-		5:	variant(Opcode::Band)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Band)
+		9:	some
+		11:	variant(InstructionData::Unary)
+		12:	variant(Opcode::Bnot)
+		15:	some
 	]
 	result = 23
 }
@@ -7600,13 +7600,13 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Band)
-		4:	variant(InstructionData::Binary)
-		15:	some
-		9:	some
-		12:	variant(Opcode::Bnot)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Band)
+		9:	some
 		11:	variant(InstructionData::Unary)
+		12:	variant(Opcode::Bnot)
+		15:	some
 	]
 	result = 23
 }
@@ -7634,13 +7634,13 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
-		14:	variant(Opcode::Bnot)
-		5:	const_prim(I128)
-		7:	variant(Opcode::Band)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Band)
 		11:	some
 		13:	variant(InstructionData::Unary)
-		6:	variant(InstructionData::Binary)
+		14:	variant(Opcode::Bnot)
 	]
 	result = 20
 }
@@ -7668,13 +7668,13 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
-		5:	const_prim(I128)
-		13:	variant(InstructionData::Unary)
 		3:	some
-		7:	variant(Opcode::Band)
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
-		14:	variant(Opcode::Bnot)
+		7:	variant(Opcode::Band)
 		11:	some
+		13:	variant(InstructionData::Unary)
+		14:	variant(Opcode::Bnot)
 	]
 	result = 20
 }
@@ -7703,13 +7703,13 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
-		14:	variant(InstructionData::Unary)
-		12:	some
-		15:	variant(Opcode::Bnot)
-		8:	variant(Opcode::Band)
+		4:	variant(InstructionData::Binary)
 		7:	some
+		8:	variant(Opcode::Band)
+		12:	some
+		14:	variant(InstructionData::Unary)
+		15:	variant(Opcode::Bnot)
 	]
 	result = 21
 }
@@ -7738,13 +7738,13 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
-		7:	some
-		8:	variant(Opcode::Band)
-		14:	variant(InstructionData::Unary)
-		12:	some
-		15:	variant(Opcode::Bnot)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Band)
+		12:	some
+		14:	variant(InstructionData::Unary)
+		15:	variant(Opcode::Bnot)
 	]
 	result = 21
 }
@@ -7770,10 +7770,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Band)
 		8:	some
-		3:	some
 	]
 	result = 18
 }
@@ -7797,9 +7797,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Band)
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Band)
 	]
 	result = 15
 }
@@ -7823,10 +7823,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 2)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Band)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		7:	some
+		8:	variant(Opcode::Band)
 	]
 	result = 16
 }
@@ -7854,13 +7854,13 @@ expansion {
 		20: InstOutput	constructor(output, [19], 2)
 	]
 	constraints = [
-		9:	some
-		7:	variant(Opcode::Bnot)
-		6:	variant(InstructionData::Unary)
-		12:	variant(Opcode::Bxor)
-		11:	variant(InstructionData::Binary)
 		3:	some
 		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bnot)
+		9:	some
+		11:	variant(InstructionData::Binary)
+		12:	variant(Opcode::Bxor)
 	]
 	result = 20
 }
@@ -7889,13 +7889,13 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 2)
 	]
 	constraints = [
-		8:	variant(Opcode::Bnot)
-		10:	some
 		3:	some
 		4:	variant(InstructionData::Unary)
-		13:	variant(Opcode::Bxor)
-		12:	variant(InstructionData::Binary)
 		7:	some
+		8:	variant(Opcode::Bnot)
+		10:	some
+		12:	variant(InstructionData::Binary)
+		13:	variant(Opcode::Bxor)
 	]
 	result = 21
 }
@@ -7917,10 +7917,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
-		8:	some
-		5:	variant(Opcode::Bnot)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Bnot)
+		8:	some
 	]
 	result = 14
 }
@@ -7948,10 +7948,10 @@ expansion {
 		20: InstOutput	constructor(output, [19], 9)
 	]
 	constraints = [
-		7:	variant(Opcode::Bnot)
-		6:	variant(InstructionData::Unary)
 		3:	some
 		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Bnot)
 	]
 	result = 20
 }
@@ -7988,17 +7988,17 @@ expansion {
 		29: InstOutput	constructor(output_reg, [28], 4)
 	]
 	constraints = [
-		23:	some
-		12:	variant(InstructionData::Binary)
-		7:	some
+		3:	some
 		4:	variant(InstructionData::Unary)
-		13:	variant(Opcode::Ishl)
+		7:	some
 		8:	variant(Opcode::Bnot)
+		10:	some
+		12:	variant(InstructionData::Binary)
+		13:	variant(Opcode::Ishl)
 		17:	some
 		19:	variant(InstructionData::UnaryImm)
 		20:	variant(Opcode::Iconst)
-		10:	some
-		3:	some
+		23:	some
 	]
 	result = 29
 }
@@ -8020,10 +8020,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
-		8:	variant(Opcode::Bnot)
-		7:	some
 		3:	some
+		4:	variant(InstructionData::Unary)
+		7:	some
+		8:	variant(Opcode::Bnot)
 	]
 	result = 14
 }
@@ -8056,14 +8056,14 @@ expansion {
 		25: InstOutput	constructor(output, [24], 6)
 	]
 	constraints = [
-		14:	const_prim(I64X2)
-		5:	const_prim(I128)
-		9:	some
-		6:	variant(InstructionData::Unary)
-		12:	variant(Opcode::Extractlane)
 		3:	some
-		11:	variant(InstructionData::BinaryImm8)
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Sextend)
+		9:	some
+		11:	variant(InstructionData::BinaryImm8)
+		12:	variant(Opcode::Extractlane)
+		14:	const_prim(I64X2)
 	]
 	result = 25
 }
@@ -8099,12 +8099,12 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		11:	variant(InstructionData::BinaryImm8)
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Sextend)
-		12:	variant(Opcode::Extractlane)
 		9:	some
+		11:	variant(InstructionData::BinaryImm8)
+		12:	variant(Opcode::Extractlane)
 		15:	some
 	]
 	result = 27
@@ -8128,10 +8128,10 @@ expansion {
 		15: InstOutput	constructor(output, [14], 5)
 	]
 	constraints = [
-		5:	const_prim(I128)
-		7:	variant(Opcode::Sextend)
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Sextend)
 	]
 	result = 15
 }
@@ -8162,13 +8162,13 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Unary)
+		7:	some
 		8:	variant(Opcode::Sextend)
 		10:	some
-		7:	some
-		13:	variant(Opcode::Extractlane)
-		4:	variant(InstructionData::Unary)
-		3:	some
 		12:	variant(InstructionData::BinaryImm8)
+		13:	variant(Opcode::Extractlane)
 	]
 	result = 23
 }
@@ -8193,10 +8193,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
-		8:	variant(Opcode::Sextend)
-		7:	some
 		3:	some
+		4:	variant(InstructionData::Unary)
+		7:	some
+		8:	variant(Opcode::Sextend)
 	]
 	result = 17
 }
@@ -8229,13 +8229,13 @@ expansion {
 		25: InstOutput	constructor(output, [24], 6)
 	]
 	constraints = [
-		7:	variant(Opcode::Uextend)
-		9:	some
-		12:	variant(Opcode::Extractlane)
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
-		3:	some
+		7:	variant(Opcode::Uextend)
+		9:	some
 		11:	variant(InstructionData::BinaryImm8)
+		12:	variant(Opcode::Extractlane)
 	]
 	result = 25
 }
@@ -8259,9 +8259,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Uextend)
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(I128)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Uextend)
 	]
 	result = 15
 }
@@ -8289,14 +8289,14 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		10:	some
-		13:	variant(Opcode::AtomicLoad)
-		12:	variant(InstructionData::LoadNoOffset)
+		3:	some
 		4:	variant(InstructionData::Unary)
 		7:	some
-		3:	some
-		14:	some
 		8:	variant(Opcode::Uextend)
+		10:	some
+		12:	variant(InstructionData::LoadNoOffset)
+		13:	variant(Opcode::AtomicLoad)
+		14:	some
 	]
 	result = 20
 }
@@ -8325,13 +8325,13 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		4:	variant(InstructionData::Unary)
+		7:	some
 		8:	variant(Opcode::Uextend)
 		10:	some
-		13:	variant(Opcode::Extractlane)
 		12:	variant(InstructionData::BinaryImm8)
+		13:	variant(Opcode::Extractlane)
 	]
 	result = 21
 }
@@ -8356,8 +8356,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
 		7:	some
 		8:	variant(Opcode::Uextend)
 	]
@@ -8389,9 +8389,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(I64X2)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Umax)
-		5:	const_prim(I64X2)
 	]
 	result = 21
 }
@@ -8417,8 +8417,8 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Umax)
 		8:	some
 	]
@@ -8478,9 +8478,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Smax)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Smax)
 		8:	some
 	]
 	result = 18
@@ -8511,9 +8511,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Umin)
 		5:	const_prim(I64X2)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Umin)
 	]
 	result = 21
 }
@@ -8539,10 +8539,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Umin)
+		8:	some
 	]
 	result = 18
 }
@@ -8571,10 +8571,10 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 7)
 	]
 	constraints = [
-		7:	variant(Opcode::Smin)
-		5:	const_prim(I64X2)
 		3:	some
+		5:	const_prim(I64X2)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Smin)
 	]
 	result = 21
 }
@@ -8600,10 +8600,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Smin)
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Smin)
+		8:	some
 	]
 	result = 18
 }
@@ -8629,9 +8629,9 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		7:	some
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Smax)
 		9:	some
 	]
@@ -8659,11 +8659,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		7:	some
-		4:	variant(InstructionData::Binary)
-		9:	some
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Umax)
+		9:	some
 	]
 	result = 18
 }
@@ -8689,11 +8689,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		7:	some
-		3:	some
-		9:	some
 		8:	variant(Opcode::Smin)
+		9:	some
 	]
 	result = 18
 }
@@ -8719,11 +8719,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		7:	some
-		9:	some
-		8:	variant(Opcode::Umin)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Umin)
+		9:	some
 	]
 	result = 18
 }
@@ -8749,10 +8749,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	variant(Opcode::Srem)
-		7:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Srem)
 	]
 	result = 18
 }
@@ -8778,9 +8778,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Urem)
 	]
 	result = 18
@@ -8816,13 +8816,13 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		18:	some
-		15:	variant(Opcode::Iconst)
-		7:	some
 		4:	variant(InstructionData::Binary)
-		14:	variant(InstructionData::UnaryImm)
-		12:	some
+		7:	some
 		8:	variant(Opcode::Sdiv)
+		12:	some
+		14:	variant(InstructionData::UnaryImm)
+		15:	variant(Opcode::Iconst)
+		18:	some
 	]
 	result = 26
 }
@@ -8849,10 +8849,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		8:	variant(Opcode::Sdiv)
-		7:	some
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Sdiv)
 	]
 	result = 19
 }
@@ -8877,10 +8877,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		8:	variant(Opcode::Udiv)
-		7:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Udiv)
 	]
 	result = 17
 }
@@ -8912,9 +8912,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
-		5:	variant(Opcode::Umulhi)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Umulhi)
+		8:	some
 	]
 	result = 23
 }
@@ -8972,9 +8972,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Smulhi)
 		8:	some
-		4:	variant(InstructionData::Binary)
 	]
 	result = 22
 }
@@ -8998,10 +8998,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		7:	variant(Opcode::Smulhi)
+		3:	some
 		5:	const_prim(I64)
 		6:	variant(InstructionData::Binary)
-		3:	some
+		7:	variant(Opcode::Smulhi)
 	]
 	result = 16
 }
@@ -9037,18 +9037,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		11:	some
-		17:	variant(InstructionData::Unary)
-		21:	const_prim(I32X4)
-		6:	variant(InstructionData::Binary)
 		3:	some
-		23:	const_prim(I32X4)
-		18:	variant(Opcode::UwidenHigh)
-		15:	some
 		5:	const_prim(I64X2)
-		19:	variant(Opcode::UwidenHigh)
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Imul)
+		11:	some
 		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenHigh)
+		19:	variant(Opcode::UwidenHigh)
+		21:	const_prim(I32X4)
+		23:	const_prim(I32X4)
 	]
 	result = 28
 }
@@ -9084,18 +9084,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		15:	some
 		3:	some
-		18:	variant(Opcode::UwidenLow)
-		7:	variant(Opcode::Imul)
-		6:	variant(InstructionData::Binary)
-		17:	variant(InstructionData::Unary)
 		5:	const_prim(I64X2)
-		13:	variant(InstructionData::Unary)
-		23:	const_prim(I32X4)
-		19:	variant(Opcode::UwidenLow)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
 		11:	some
+		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenLow)
+		19:	variant(Opcode::UwidenLow)
 		21:	const_prim(I32X4)
+		23:	const_prim(I32X4)
 	]
 	result = 28
 }
@@ -9131,18 +9131,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		15:	some
+		3:	some
 		5:	const_prim(I64X2)
 		6:	variant(InstructionData::Binary)
-		17:	variant(InstructionData::Unary)
-		13:	variant(InstructionData::Unary)
-		21:	const_prim(I32X4)
-		23:	const_prim(I32X4)
-		18:	variant(Opcode::SwidenHigh)
-		3:	some
 		7:	variant(Opcode::Imul)
 		11:	some
+		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::SwidenHigh)
 		19:	variant(Opcode::SwidenHigh)
+		21:	const_prim(I32X4)
+		23:	const_prim(I32X4)
 	]
 	result = 28
 }
@@ -9178,18 +9178,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I64X2)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
 		11:	some
 		13:	variant(InstructionData::Unary)
-		6:	variant(InstructionData::Binary)
-		18:	variant(Opcode::SwidenLow)
-		7:	variant(Opcode::Imul)
-		21:	const_prim(I32X4)
-		5:	const_prim(I64X2)
-		17:	variant(InstructionData::Unary)
-		23:	const_prim(I32X4)
 		15:	some
-		3:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::SwidenLow)
 		19:	variant(Opcode::SwidenLow)
+		21:	const_prim(I32X4)
+		23:	const_prim(I32X4)
 	]
 	result = 28
 }
@@ -9226,17 +9226,17 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		6:	variant(InstructionData::Binary)
-		18:	variant(Opcode::UwidenHigh)
-		7:	variant(Opcode::Imul)
-		19:	variant(Opcode::UwidenHigh)
-		17:	variant(InstructionData::Unary)
-		23:	const_prim(I16X8)
 		5:	const_prim(I32X4)
-		21:	const_prim(I16X8)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
+		11:	some
 		13:	variant(InstructionData::Unary)
 		15:	some
-		11:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenHigh)
+		19:	variant(Opcode::UwidenHigh)
+		21:	const_prim(I16X8)
+		23:	const_prim(I16X8)
 	]
 	result = 28
 }
@@ -9272,18 +9272,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		18:	variant(Opcode::UwidenLow)
-		21:	const_prim(I16X8)
-		23:	const_prim(I16X8)
-		11:	some
+		3:	some
+		5:	const_prim(I32X4)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Imul)
-		15:	some
-		19:	variant(Opcode::UwidenLow)
-		17:	variant(InstructionData::Unary)
-		5:	const_prim(I32X4)
+		11:	some
 		13:	variant(InstructionData::Unary)
-		3:	some
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenLow)
+		19:	variant(Opcode::UwidenLow)
+		21:	const_prim(I16X8)
+		23:	const_prim(I16X8)
 	]
 	result = 28
 }
@@ -9319,18 +9319,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I32X4)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Imul)
-		5:	const_prim(I32X4)
+		11:	some
+		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::SwidenHigh)
 		19:	variant(Opcode::SwidenHigh)
 		21:	const_prim(I16X8)
 		23:	const_prim(I16X8)
-		18:	variant(Opcode::SwidenHigh)
-		17:	variant(InstructionData::Unary)
-		3:	some
-		11:	some
-		15:	some
-		13:	variant(InstructionData::Unary)
 	]
 	result = 28
 }
@@ -9366,18 +9366,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		13:	variant(InstructionData::Unary)
-		6:	variant(InstructionData::Binary)
-		19:	variant(Opcode::SwidenLow)
-		18:	variant(Opcode::SwidenLow)
-		17:	variant(InstructionData::Unary)
-		5:	const_prim(I32X4)
-		11:	some
-		23:	const_prim(I16X8)
-		7:	variant(Opcode::Imul)
-		15:	some
 		3:	some
+		5:	const_prim(I32X4)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
+		11:	some
+		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::SwidenLow)
+		19:	variant(Opcode::SwidenLow)
 		21:	const_prim(I16X8)
+		23:	const_prim(I16X8)
 	]
 	result = 28
 }
@@ -9413,18 +9413,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		23:	const_prim(I8X16)
-		7:	variant(Opcode::Imul)
-		5:	const_prim(I16X8)
 		3:	some
+		5:	const_prim(I16X8)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
 		11:	some
+		13:	variant(InstructionData::Unary)
 		15:	some
+		17:	variant(InstructionData::Unary)
 		18:	variant(Opcode::UwidenHigh)
-		17:	variant(InstructionData::Unary)
-		6:	variant(InstructionData::Binary)
 		19:	variant(Opcode::UwidenHigh)
-		13:	variant(InstructionData::Unary)
 		21:	const_prim(I8X16)
+		23:	const_prim(I8X16)
 	]
 	result = 28
 }
@@ -9460,18 +9460,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		19:	variant(Opcode::UwidenLow)
-		5:	const_prim(I16X8)
 		3:	some
+		5:	const_prim(I16X8)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
 		11:	some
 		13:	variant(InstructionData::Unary)
-		7:	variant(Opcode::Imul)
-		6:	variant(InstructionData::Binary)
-		23:	const_prim(I8X16)
-		18:	variant(Opcode::UwidenLow)
-		17:	variant(InstructionData::Unary)
 		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenLow)
+		19:	variant(Opcode::UwidenLow)
 		21:	const_prim(I8X16)
+		23:	const_prim(I8X16)
 	]
 	result = 28
 }
@@ -9507,18 +9507,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		17:	variant(InstructionData::Unary)
-		18:	variant(Opcode::SwidenHigh)
 		3:	some
-		23:	const_prim(I8X16)
 		5:	const_prim(I16X8)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Imul)
 		11:	some
-		21:	const_prim(I8X16)
-		15:	some
 		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::SwidenHigh)
 		19:	variant(Opcode::SwidenHigh)
+		21:	const_prim(I8X16)
+		23:	const_prim(I8X16)
 	]
 	result = 28
 }
@@ -9554,18 +9554,18 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I16X8)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
+		11:	some
+		13:	variant(InstructionData::Unary)
 		15:	some
 		17:	variant(InstructionData::Unary)
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I16X8)
-		7:	variant(Opcode::Imul)
 		18:	variant(Opcode::SwidenLow)
+		19:	variant(Opcode::SwidenLow)
 		21:	const_prim(I8X16)
 		23:	const_prim(I8X16)
-		3:	some
-		13:	variant(InstructionData::Unary)
-		11:	some
-		19:	variant(Opcode::SwidenLow)
 	]
 	result = 28
 }
@@ -9599,8 +9599,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
-		7:	variant(Opcode::Imul)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
 	]
 	result = 24
 }
@@ -9627,10 +9627,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
-		8:	some
-		5:	variant(Opcode::Imul)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Imul)
+		8:	some
 		10:	some
 	]
 	result = 19
@@ -9666,10 +9666,10 @@ expansion {
 		27: InstOutput	constructor(output, [26], 13)
 	]
 	constraints = [
-		5:	const_prim(I128)
-		7:	variant(Opcode::Imul)
-		6:	variant(InstructionData::Binary)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Imul)
 	]
 	result = 27
 }
@@ -9695,10 +9695,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		7:	some
-		4:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Imul)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Imul)
 	]
 	result = 18
 }
@@ -9721,9 +9721,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Ineg)
 		8:	some
-		4:	variant(InstructionData::Unary)
 	]
 	result = 14
 }
@@ -9743,10 +9743,10 @@ expansion {
 		12: InstOutput	constructor(output, [11], 4)
 	]
 	constraints = [
-		7:	variant(Opcode::Ineg)
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
-		3:	some
+		7:	variant(Opcode::Ineg)
 	]
 	result = 12
 }
@@ -9768,10 +9768,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		8:	variant(Opcode::Ineg)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
 		7:	some
+		8:	variant(Opcode::Ineg)
 	]
 	result = 14
 }
@@ -9827,8 +9827,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::UsubSat)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::UsubSat)
 		8:	some
 	]
 	result = 18
@@ -9855,9 +9855,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::SaddSat)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::SaddSat)
 		8:	some
 	]
 	result = 18
@@ -9884,10 +9884,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::UaddSat)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::UaddSat)
+		8:	some
 	]
 	result = 18
 }
@@ -9910,10 +9910,10 @@ expansion {
 		15: InstOutput	constructor(output, [14], 4)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Isub)
-		3:	some
 	]
 	result = 15
 }
@@ -9940,8 +9940,8 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
-		8:	some
 		5:	variant(Opcode::Isub)
+		8:	some
 	]
 	result = 17
 }
@@ -9981,17 +9981,17 @@ expansion {
 		32: InstOutput	constructor(output_reg, [31], 4)
 	]
 	constraints = [
-		12:	some
-		15:	variant(Opcode::Ishl)
-		7:	some
-		25:	some
-		19:	some
-		22:	variant(Opcode::Iconst)
-		4:	variant(InstructionData::Binary)
 		3:	some
-		14:	variant(InstructionData::Binary)
-		21:	variant(InstructionData::UnaryImm)
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Isub)
+		12:	some
+		14:	variant(InstructionData::Binary)
+		15:	variant(Opcode::Ishl)
+		19:	some
+		21:	variant(InstructionData::UnaryImm)
+		22:	variant(Opcode::Iconst)
+		25:	some
 	]
 	result = 32
 }
@@ -10017,10 +10017,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 3)
 	]
 	constraints = [
-		7:	some
-		8:	variant(Opcode::Isub)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Isub)
 		12:	some
 	]
 	result = 18
@@ -10048,10 +10048,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		12:	some
 		4:	variant(InstructionData::Binary)
 		7:	some
 		8:	variant(Opcode::Isub)
+		12:	some
 	]
 	result = 18
 }
@@ -10083,14 +10083,14 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 3)
 	]
 	constraints = [
-		8:	variant(Opcode::Isub)
-		4:	variant(InstructionData::Binary)
-		12:	some
 		3:	some
-		18:	some
+		4:	variant(InstructionData::Binary)
 		7:	some
-		15:	variant(Opcode::Iconst)
+		8:	variant(Opcode::Isub)
+		12:	some
 		14:	variant(InstructionData::UnaryImm)
+		15:	variant(Opcode::Iconst)
+		18:	some
 	]
 	result = 24
 }
@@ -10116,8 +10116,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Isub)
 	]
 	result = 17
@@ -10141,11 +10141,11 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		6:	variant(InstructionData::Unary)
+		3:	some
 		5:	const_prim(I64)
+		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtToSintSat)
 		9:	const_prim(F64)
-		3:	some
 	]
 	result = 15
 }
@@ -10171,9 +10171,9 @@ expansion {
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
-		10:	some
-		7:	const_prim(F64)
 		5:	variant(Opcode::FcvtToSintSat)
+		7:	const_prim(F64)
+		10:	some
 	]
 	result = 16
 }
@@ -10196,11 +10196,11 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::FcvtToSintSat)
-		9:	const_prim(F32)
 		3:	some
 		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::FcvtToSintSat)
+		9:	const_prim(F32)
 	]
 	result = 15
 }
@@ -10225,10 +10225,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	const_prim(F32)
-		5:	variant(Opcode::FcvtToSintSat)
-		10:	some
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::FcvtToSintSat)
+		7:	const_prim(F32)
+		10:	some
 	]
 	result = 16
 }
@@ -10256,13 +10256,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		9:	const_int(64)
-		15:	const_int(64)
-		13:	some
+		3:	some
 		4:	variant(InstructionData::Unary)
 		7:	some
-		3:	some
+		9:	const_int(64)
 		10:	variant(Opcode::FcvtToSintSat)
+		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -10290,13 +10290,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
-		13:	some
+		7:	some
 		9:	const_int(32)
 		10:	variant(Opcode::FcvtToSintSat)
-		3:	some
+		13:	some
 		15:	const_int(32)
-		7:	some
 	]
 	result = 20
 }
@@ -10319,11 +10319,11 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
-		9:	const_prim(F64)
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtToUintSat)
+		9:	const_prim(F64)
 	]
 	result = 15
 }
@@ -10347,11 +10347,11 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::FcvtToUintSat)
 		7:	const_prim(F64)
 		10:	some
-		4:	variant(InstructionData::Unary)
-		3:	some
-		5:	variant(Opcode::FcvtToUintSat)
 	]
 	result = 16
 }
@@ -10374,11 +10374,11 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
-		9:	const_prim(F32)
-		3:	some
 		7:	variant(Opcode::FcvtToUintSat)
+		9:	const_prim(F32)
 	]
 	result = 15
 }
@@ -10402,11 +10402,11 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	const_prim(F32)
-		10:	some
+		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::FcvtToUintSat)
-		3:	some
+		7:	const_prim(F32)
+		10:	some
 	]
 	result = 16
 }
@@ -10434,13 +10434,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		10:	variant(Opcode::FcvtToUintSat)
 		3:	some
-		9:	const_int(64)
-		7:	some
 		4:	variant(InstructionData::Unary)
-		15:	const_int(64)
+		7:	some
+		9:	const_int(64)
+		10:	variant(Opcode::FcvtToUintSat)
 		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -10468,13 +10468,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		15:	const_int(32)
+		3:	some
 		4:	variant(InstructionData::Unary)
 		7:	some
 		9:	const_int(32)
 		10:	variant(Opcode::FcvtToUintSat)
 		13:	some
-		3:	some
+		15:	const_int(32)
 	]
 	result = 20
 }
@@ -10495,10 +10495,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::FcvtFromSint)
+		3:	some
 		5:	const_prim(F64)
 		6:	variant(InstructionData::Unary)
-		3:	some
+		7:	variant(Opcode::FcvtFromSint)
 		9:	const_prim(I64)
 	]
 	result = 13
@@ -10520,11 +10520,11 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(F32)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtFromSint)
 		9:	const_prim(I64)
-		5:	const_prim(F32)
-		3:	some
 	]
 	result = 13
 }
@@ -10546,10 +10546,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(F64)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtFromSint)
-		5:	const_prim(F64)
-		3:	some
 		10:	some
 	]
 	result = 14
@@ -10572,11 +10572,11 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(F32)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtFromSint)
-		5:	const_prim(F32)
 		10:	some
-		3:	some
 	]
 	result = 14
 }
@@ -10604,13 +10604,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
-		9:	const_int(64)
-		15:	const_int(64)
-		13:	some
 		3:	some
+		4:	variant(InstructionData::Unary)
 		7:	some
+		9:	const_int(64)
 		10:	variant(Opcode::FcvtFromSint)
+		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -10638,13 +10638,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
-		10:	variant(Opcode::FcvtFromSint)
-		15:	const_int(32)
-		13:	some
-		7:	some
 		3:	some
+		4:	variant(InstructionData::Unary)
+		7:	some
 		9:	const_int(32)
+		10:	variant(Opcode::FcvtFromSint)
+		13:	some
+		15:	const_int(32)
 	]
 	result = 20
 }
@@ -10665,11 +10665,11 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::FcvtFromUint)
-		9:	const_prim(I64)
-		6:	variant(InstructionData::Unary)
 		3:	some
 		5:	const_prim(F64)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::FcvtFromUint)
+		9:	const_prim(I64)
 	]
 	result = 13
 }
@@ -10690,11 +10690,11 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(F32)
+		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtFromUint)
 		9:	const_prim(I64)
-		3:	some
-		6:	variant(InstructionData::Unary)
-		5:	const_prim(F32)
 	]
 	result = 13
 }
@@ -10716,11 +10716,11 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(F64)
-		10:	some
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtFromUint)
-		3:	some
+		10:	some
 	]
 	result = 14
 }
@@ -10742,11 +10742,11 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(F32)
-		10:	some
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtFromUint)
-		3:	some
+		10:	some
 	]
 	result = 14
 }
@@ -10774,13 +10774,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		13:	some
-		9:	const_int(64)
-		7:	some
-		15:	const_int(64)
-		10:	variant(Opcode::FcvtFromUint)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		7:	some
+		9:	const_int(64)
+		10:	variant(Opcode::FcvtFromUint)
+		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -10808,13 +10808,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		7:	some
-		13:	some
-		9:	const_int(32)
 		3:	some
-		15:	const_int(32)
-		10:	variant(Opcode::FcvtFromUint)
 		4:	variant(InstructionData::Unary)
+		7:	some
+		9:	const_int(32)
+		10:	variant(Opcode::FcvtFromUint)
+		13:	some
+		15:	const_int(32)
 	]
 	result = 20
 }
@@ -10838,11 +10838,11 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		9:	const_prim(F64)
 		3:	some
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(I64)
+		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::FcvtToSint)
+		9:	const_prim(F64)
 	]
 	result = 16
 }
@@ -10867,11 +10867,11 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		10:	some
-		5:	variant(Opcode::FcvtToSint)
-		4:	variant(InstructionData::Unary)
-		7:	const_prim(F64)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::FcvtToSint)
+		7:	const_prim(F64)
+		10:	some
 	]
 	result = 17
 }
@@ -10895,11 +10895,11 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::FcvtToSint)
-		5:	const_prim(I64)
-		9:	const_prim(F32)
 		3:	some
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::FcvtToSint)
+		9:	const_prim(F32)
 	]
 	result = 16
 }
@@ -10925,10 +10925,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	some
+		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::FcvtToSint)
 		7:	const_prim(F32)
-		4:	variant(InstructionData::Unary)
+		10:	some
 	]
 	result = 17
 }
@@ -10952,11 +10952,11 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::FcvtToUint)
-		9:	const_prim(F64)
-		6:	variant(InstructionData::Unary)
 		3:	some
 		5:	const_prim(I64)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::FcvtToUint)
+		9:	const_prim(F64)
 	]
 	result = 16
 }
@@ -10981,10 +10981,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::FcvtToUint)
 		7:	const_prim(F64)
-		3:	some
 		10:	some
 	]
 	result = 17
@@ -11009,11 +11009,11 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::FcvtToUint)
-		5:	const_prim(I64)
 		3:	some
-		9:	const_prim(F32)
+		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::FcvtToUint)
+		9:	const_prim(F32)
 	]
 	result = 16
 }
@@ -11038,9 +11038,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		5:	variant(Opcode::FcvtToUint)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::FcvtToUint)
 		7:	const_prim(F32)
 		10:	some
 	]
@@ -11065,8 +11065,8 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fcopysign)
 	]
 	result = 15
@@ -11092,9 +11092,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Ternary)
 		7:	some
-		3:	some
 		8:	variant(Opcode::Fma)
 	]
 	result = 17
@@ -11124,10 +11124,10 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 6)
 	]
 	constraints = [
-		8:	variant(Opcode::Fma)
+		3:	some
 		4:	variant(InstructionData::Ternary)
 		7:	some
-		3:	some
+		8:	variant(Opcode::Fma)
 	]
 	result = 21
 }
@@ -11149,8 +11149,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
-		7:	variant(Opcode::Nearest)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Nearest)
 	]
 	result = 12
 }
@@ -11170,10 +11170,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::Nearest)
-		5:	const_prim(F32)
 		3:	some
+		5:	const_prim(F32)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Nearest)
 	]
 	result = 12
 }
@@ -11195,10 +11195,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
-		8:	variant(Opcode::Nearest)
 		4:	variant(InstructionData::Unary)
+		7:	some
+		8:	variant(Opcode::Nearest)
 	]
 	result = 14
 }
@@ -11218,10 +11218,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(F64)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Trunc)
-		5:	const_prim(F64)
-		3:	some
 	]
 	result = 12
 }
@@ -11243,8 +11243,8 @@ expansion {
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
-		7:	variant(Opcode::Trunc)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Trunc)
 	]
 	result = 12
 }
@@ -11267,8 +11267,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		4:	variant(InstructionData::Unary)
+		7:	some
 		8:	variant(Opcode::Trunc)
 	]
 	result = 14
@@ -11289,10 +11289,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::Floor)
 		3:	some
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(F64)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Floor)
 	]
 	result = 12
 }
@@ -11312,10 +11312,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(F32)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Floor)
-		3:	some
 	]
 	result = 12
 }
@@ -11337,10 +11337,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
 		3:	some
-		8:	variant(Opcode::Floor)
+		4:	variant(InstructionData::Unary)
 		7:	some
+		8:	variant(Opcode::Floor)
 	]
 	result = 14
 }
@@ -11361,9 +11361,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Ceil)
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(F64)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Ceil)
 	]
 	result = 12
 }
@@ -11384,9 +11384,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	variant(Opcode::Ceil)
-		6:	variant(InstructionData::Unary)
 		5:	const_prim(F32)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Ceil)
 	]
 	result = 12
 }
@@ -11408,10 +11408,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		8:	variant(Opcode::Ceil)
 		3:	some
 		4:	variant(InstructionData::Unary)
 		7:	some
+		8:	variant(Opcode::Ceil)
 	]
 	result = 14
 }
@@ -11432,8 +11432,8 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		5:	const_prim(F32)
 		3:	some
+		5:	const_prim(F32)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Fdemote)
 	]
@@ -11456,8 +11456,8 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		5:	const_prim(F64)
 		3:	some
+		5:	const_prim(F64)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Fpromote)
 	]
@@ -11482,10 +11482,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		8:	some
 		3:	some
-		5:	variant(Opcode::Fabs)
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Fabs)
+		8:	some
 	]
 	result = 15
 }
@@ -11507,8 +11507,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
 		7:	some
 		8:	variant(Opcode::Fabs)
 	]
@@ -11533,10 +11533,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::Fneg)
 		3:	some
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Fneg)
+		8:	some
 	]
 	result = 15
 }
@@ -11558,10 +11558,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Unary)
 		7:	some
 		8:	variant(Opcode::Fneg)
-		4:	variant(InstructionData::Unary)
-		3:	some
 	]
 	result = 14
 }
@@ -11584,9 +11584,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		5:	variant(Opcode::Sqrt)
 		3:	some
 		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Sqrt)
 		8:	some
 	]
 	result = 15
@@ -11609,9 +11609,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
 		7:	some
-		3:	some
 		8:	variant(Opcode::Sqrt)
 	]
 	result = 14
@@ -11639,8 +11639,8 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fmax)
 		8:	some
 	]
@@ -11668,10 +11668,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fmax)
 		8:	some
-		3:	some
 	]
 	result = 18
 }
@@ -11699,8 +11699,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::Fmin)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fmin)
 		8:	some
 	]
 	result = 19
@@ -11727,10 +11727,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Fmin)
-		4:	variant(InstructionData::Binary)
-		8:	some
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fmin)
+		8:	some
 	]
 	result = 18
 }
@@ -11757,8 +11757,8 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fdiv)
 		8:	some
 	]
@@ -11786,10 +11786,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fdiv)
-		3:	some
+		8:	some
 	]
 	result = 18
 }
@@ -11817,8 +11817,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::Fmul)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fmul)
 		8:	some
 	]
 	result = 19
@@ -11845,10 +11845,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Fmul)
 		3:	some
-		8:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fmul)
+		8:	some
 	]
 	result = 18
 }
@@ -11876,8 +11876,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::Fsub)
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fsub)
 		8:	some
 	]
 	result = 19
@@ -11904,10 +11904,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
 		3:	some
-		8:	some
+		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fsub)
+		8:	some
 	]
 	result = 18
 }
@@ -11934,10 +11934,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fadd)
+		8:	some
 	]
 	result = 19
 }
@@ -11963,9 +11963,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::Fadd)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Fadd)
 		8:	some
 	]
 	result = 18
@@ -11992,10 +11992,10 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::SqmulRoundSat)
+		8:	some
 	]
 	result = 18
 }
@@ -12022,10 +12022,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
-		8:	some
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::AvgRound)
-		3:	some
+		8:	some
 	]
 	result = 19
 }
@@ -12059,10 +12059,10 @@ expansion {
 		26: InstOutput	constructor(output_reg, [25], 12)
 	]
 	constraints = [
-		5:	const_prim(I64X2)
-		7:	variant(Opcode::AvgRound)
-		6:	variant(InstructionData::Binary)
 		3:	some
+		5:	const_prim(I64X2)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::AvgRound)
 	]
 	result = 26
 }
@@ -12093,10 +12093,10 @@ expansion {
 		23: InstOutput	constructor(output, [22], 11)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Iabs)
-		5:	const_prim(I128)
-		3:	some
 	]
 	result = 23
 }
@@ -12117,10 +12117,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		8:	some
-		5:	variant(Opcode::Iabs)
-		4:	variant(InstructionData::Unary)
 		3:	some
+		4:	variant(InstructionData::Unary)
+		5:	variant(Opcode::Iabs)
+		8:	some
 	]
 	result = 13
 }
@@ -12140,10 +12140,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::Iabs)
 		3:	some
 		5:	const_prim(I64)
 		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::Iabs)
 	]
 	result = 12
 }
@@ -12164,10 +12164,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Unary)
 		7:	some
 		8:	variant(Opcode::Iabs)
-		3:	some
 	]
 	result = 13
 }
@@ -12191,9 +12191,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 5)
 	]
 	constraints = [
-		5:	variant(Opcode::IaddPairwise)
 		3:	some
 		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::IaddPairwise)
 	]
 	result = 16
 }
@@ -12224,16 +12224,16 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I32X4)
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::IaddPairwise)
+		11:	some
 		13:	variant(InstructionData::Unary)
 		15:	some
-		3:	some
-		11:	some
-		19:	variant(Opcode::UwidenHigh)
-		5:	const_prim(I32X4)
-		18:	variant(Opcode::UwidenLow)
-		6:	variant(InstructionData::Binary)
 		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenLow)
+		19:	variant(Opcode::UwidenHigh)
 	]
 	result = 23
 }
@@ -12264,16 +12264,16 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 3)
 	]
 	constraints = [
-		19:	variant(Opcode::UwidenHigh)
-		18:	variant(Opcode::UwidenLow)
 		3:	some
-		13:	variant(InstructionData::Unary)
+		5:	const_prim(I16X8)
+		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::IaddPairwise)
 		11:	some
-		17:	variant(InstructionData::Unary)
-		6:	variant(InstructionData::Binary)
+		13:	variant(InstructionData::Unary)
 		15:	some
-		5:	const_prim(I16X8)
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::UwidenLow)
+		19:	variant(Opcode::UwidenHigh)
 	]
 	result = 23
 }
@@ -12304,16 +12304,16 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 3)
 	]
 	constraints = [
-		19:	variant(Opcode::SwidenHigh)
-		15:	some
-		11:	some
 		3:	some
-		6:	variant(InstructionData::Binary)
-		17:	variant(InstructionData::Unary)
-		13:	variant(InstructionData::Unary)
-		18:	variant(Opcode::SwidenLow)
-		7:	variant(Opcode::IaddPairwise)
 		5:	const_prim(I32X4)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::IaddPairwise)
+		11:	some
+		13:	variant(InstructionData::Unary)
+		15:	some
+		17:	variant(InstructionData::Unary)
+		18:	variant(Opcode::SwidenLow)
+		19:	variant(Opcode::SwidenHigh)
 	]
 	result = 23
 }
@@ -12344,16 +12344,16 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I16X8)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::IaddPairwise)
+		11:	some
+		13:	variant(InstructionData::Unary)
 		15:	some
+		17:	variant(InstructionData::Unary)
 		18:	variant(Opcode::SwidenLow)
 		19:	variant(Opcode::SwidenHigh)
-		6:	variant(InstructionData::Binary)
-		11:	some
-		17:	variant(InstructionData::Unary)
-		5:	const_prim(I16X8)
-		7:	variant(Opcode::IaddPairwise)
-		13:	variant(InstructionData::Unary)
-		3:	some
 	]
 	result = 23
 }
@@ -12373,8 +12373,8 @@ expansion {
 		12: InstOutput	constructor(output, [11], 5)
 	]
 	constraints = [
-		4:	variant(Opcode::VanyTrue)
 		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::VanyTrue)
 	]
 	result = 12
 }
@@ -12405,9 +12405,9 @@ expansion {
 		23: InstOutput	constructor(output, [22], 9)
 	]
 	constraints = [
+		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VallTrue)
 		7:	some
-		3:	variant(InstructionData::Unary)
 		9:	some
 	]
 	result = 23
@@ -12443,11 +12443,11 @@ expansion {
 		27: InstOutput	constructor(output, [26], 9)
 	]
 	constraints = [
-		10:	const_int(2)
+		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VallTrue)
 		7:	some
-		3:	variant(InstructionData::Unary)
 		9:	const_int(32)
+		10:	const_int(2)
 	]
 	result = 27
 }
@@ -12475,11 +12475,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 7)
 	]
 	constraints = [
+		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::VallTrue)
+		7:	some
 		9:	const_int(64)
 		10:	const_int(2)
-		4:	variant(Opcode::VallTrue)
-		3:	variant(InstructionData::Unary)
-		7:	some
 	]
 	result = 20
 }
@@ -12498,9 +12498,9 @@ expansion {
 		11: InstOutput	constructor(output_reg, [10], 3)
 	]
 	constraints = [
-		7:	some
-		4:	variant(Opcode::ScalarToVector)
 		3:	variant(InstructionData::Unary)
+		4:	variant(Opcode::ScalarToVector)
+		7:	some
 	]
 	result = 11
 }
@@ -12518,9 +12518,9 @@ expansion {
 		10: InstOutput	constructor(output_reg, [9], 3)
 	]
 	constraints = [
-		6:	const_prim(I64)
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::ScalarToVector)
+		6:	const_prim(I64)
 	]
 	result = 10
 }
@@ -12540,10 +12540,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	variant(Opcode::ScalarToVector)
-		6:	variant(InstructionData::Unary)
-		5:	const_prim(F64X2)
 		3:	some
+		5:	const_prim(F64X2)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::ScalarToVector)
 	]
 	result = 12
 }
@@ -12563,10 +12563,10 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		6:	variant(InstructionData::Unary)
-		7:	variant(Opcode::ScalarToVector)
 		3:	some
 		5:	const_prim(F32X4)
+		6:	variant(InstructionData::Unary)
+		7:	variant(Opcode::ScalarToVector)
 	]
 	result = 12
 }
@@ -12589,10 +12589,10 @@ expansion {
 		15: InstOutput	constructor(output, [14], 4)
 	]
 	constraints = [
-		5:	const_prim(I128)
-		7:	variant(Opcode::Iconcat)
 		3:	some
+		5:	const_prim(I128)
 		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Iconcat)
 	]
 	result = 15
 }
@@ -12615,8 +12615,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
-		6:	const_prim(I128)
 		4:	variant(Opcode::Isplit)
+		6:	const_prim(I128)
 	]
 	result = 14
 }
@@ -12637,9 +12637,9 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 4)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Swizzle)
-		3:	some
 	]
 	result = 13
 }
@@ -12691,8 +12691,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
 		7:	const_int(14673614102390417578512422760905835780)
 	]
@@ -12741,10 +12741,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		6:	some
-		4:	variant(Opcode::Shuffle)
-		7:	const_int(10680758337341567148842519922299176455)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
+		6:	some
+		7:	const_int(10680758337341567148842519922299176455)
 	]
 	result = 14
 }
@@ -12766,8 +12766,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
 		7:	const_int(17342576855639742879858139805557719810)
 	]
@@ -12791,10 +12791,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
-		7:	const_int(16018520953223639909183530438118932995)
-		6:	some
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
+		6:	some
+		7:	const_int(16018520953223639909183530438118932995)
 	]
 	result = 14
 }
@@ -12816,9 +12816,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		6:	some
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
+		6:	some
 		7:	const_int(18687320815856387368178823909286805505)
 	]
 	result = 14
@@ -12845,8 +12845,8 @@ expansion {
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
-		7:	const_int(41362427188014754909301208165426529540)
 		6:	some
+		7:	const_int(41362427188014754909301208165426529540)
 	]
 	result = 16
 }
@@ -12870,10 +12870,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		6:	some
-		7:	const_int(36024664569647092737326704519438008576)
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
+		6:	some
+		7:	const_int(36024664569647092737326704519438008576)
 	]
 	result = 16
 }
@@ -12898,8 +12898,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
-		6:	some
 		4:	variant(Opcode::Shuffle)
+		6:	some
 		7:	const_int(41362142128814346332279593629287318274)
 	]
 	result = 16
@@ -12924,10 +12924,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
-		7:	const_int(38693260819630515246292341806293057792)
+		4:	variant(Opcode::Shuffle)
 		6:	some
+		7:	const_int(38693260819630515246292341806293057792)
 	]
 	result = 16
 }
@@ -12951,9 +12951,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
-		3:	variant(InstructionData::Shuffle)
 		7:	const_int(41284541550424544734358823780242100481)
 	]
 	result = 16
@@ -12978,9 +12978,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
-		3:	variant(InstructionData::Shuffle)
 		7:	const_int(39950100895832629191365197868744970240)
 	]
 	result = 16
@@ -13034,8 +13034,8 @@ expansion {
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
-		7:	const_int(30686901951279430565641561564801794304)
 		6:	some
+		7:	const_int(30686901951279430565641561564801794304)
 	]
 	result = 16
 }
@@ -13059,10 +13059,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
-		7:	const_int(41362142129435743685477327603181816072)
+		4:	variant(Opcode::Shuffle)
 		6:	some
+		7:	const_int(41362142129435743685477327603181816072)
 	]
 	result = 16
 }
@@ -13087,9 +13087,9 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
 		7:	const_int(30686616892700419341528320311204774144)
-		4:	variant(Opcode::Shuffle)
 	]
 	result = 16
 }
@@ -13113,9 +13113,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		6:	some
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
+		6:	some
 		7:	const_int(41284561912683712994304547342093195272)
 	]
 	result = 16
@@ -13140,10 +13140,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
-		7:	const_int(30609036675948388650355540050116153344)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
+		7:	const_int(30609036675948388650355540050116153344)
 	]
 	result = 16
 }
@@ -13167,10 +13167,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		7:	const_int(41362427191743139026172726477975062792)
+		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
-		3:	variant(InstructionData::Shuffle)
+		7:	const_int(41362427191743139026172726477975062792)
 	]
 	result = 16
 }
@@ -13195,8 +13195,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
-		6:	some
 		4:	variant(Opcode::Shuffle)
+		6:	some
 		7:	const_int(30686901955007814682223719185998020864)
 	]
 	result = 16
@@ -13221,9 +13221,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		6:	some
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
+		6:	some
 		7:	const_int(41362427190500344320355979912890680580)
 	]
 	result = 16
@@ -13248,10 +13248,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
+		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
 		7:	const_int(36024664572132682148381476266902159616)
-		3:	variant(InstructionData::Shuffle)
 	]
 	result = 16
 }
@@ -13276,9 +13276,9 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
-		7:	const_int(41362386467224802506860000736977486594)
 		4:	variant(Opcode::Shuffle)
 		6:	some
+		7:	const_int(41362386467224802506860000736977486594)
 	]
 	result = 16
 }
@@ -13303,9 +13303,9 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
 		7:	const_int(38693505158040971420872748913983226112)
-		4:	variant(Opcode::Shuffle)
 	]
 	result = 16
 }
@@ -13329,10 +13329,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
-		7:	const_int(41357194091136896220700492464948314881)
+		4:	variant(Opcode::Shuffle)
 		6:	some
+		7:	const_int(41357194091136896220700492464948314881)
 	]
 	result = 16
 }
@@ -13357,8 +13357,8 @@ expansion {
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
-		6:	some
 		4:	variant(Opcode::Shuffle)
+		6:	some
 		7:	const_int(40022753436544980677706866553451184640)
 	]
 	result = 16
@@ -13382,9 +13382,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		6:	some
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
+		6:	some
 	]
 	result = 15
 }
@@ -13406,9 +13406,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		6:	some
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
+		6:	some
 	]
 	result = 14
 }
@@ -13430,9 +13430,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		6:	some
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
+		6:	some
 	]
 	result = 14
 }
@@ -13454,8 +13454,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
 	result = 14
@@ -13478,8 +13478,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		4:	variant(Opcode::Shuffle)
 		3:	variant(InstructionData::Shuffle)
+		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
 	result = 14
@@ -13512,10 +13512,10 @@ expansion {
 		24: InstOutput	constructor(output, [23], 10)
 	]
 	constraints = [
-		7:	variant(Opcode::Iadd)
-		6:	variant(InstructionData::Binary)
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		6:	variant(InstructionData::Binary)
+		7:	variant(Opcode::Iadd)
 	]
 	result = 24
 }
@@ -13540,10 +13540,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		4:	variant(InstructionData::Binary)
-		8:	some
-		5:	variant(Opcode::Iadd)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		5:	variant(Opcode::Iadd)
+		8:	some
 	]
 	result = 17
 }
@@ -13578,12 +13578,12 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		15:	variant(Opcode::Imul)
-		14:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Isub)
-		12:	some
 		4:	variant(InstructionData::Binary)
 		7:	some
+		8:	variant(Opcode::Isub)
+		12:	some
+		14:	variant(InstructionData::Binary)
+		15:	variant(Opcode::Imul)
 	]
 	result = 26
 }
@@ -13617,12 +13617,12 @@ expansion {
 		26: InstOutput	constructor(output_reg, [25], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Iadd)
 		12:	some
 		14:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Iadd)
 		15:	variant(Opcode::Imul)
 	]
 	result = 26
@@ -13657,13 +13657,13 @@ expansion {
 		26: InstOutput	constructor(output_reg, [25], 5)
 	]
 	constraints = [
-		14:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Iadd)
-		4:	variant(InstructionData::Binary)
-		12:	some
-		7:	some
-		15:	variant(Opcode::Imul)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Iadd)
+		12:	some
+		14:	variant(InstructionData::Binary)
+		15:	variant(Opcode::Imul)
 	]
 	result = 26
 }
@@ -13703,17 +13703,17 @@ expansion {
 		32: InstOutput	constructor(output_reg, [31], 4)
 	]
 	constraints = [
-		25:	some
 		3:	some
-		8:	variant(Opcode::Iadd)
-		14:	variant(InstructionData::Binary)
-		19:	some
-		12:	some
-		7:	some
-		15:	variant(Opcode::Ishl)
-		21:	variant(InstructionData::UnaryImm)
 		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Iadd)
+		12:	some
+		14:	variant(InstructionData::Binary)
+		15:	variant(Opcode::Ishl)
+		19:	some
+		21:	variant(InstructionData::UnaryImm)
 		22:	variant(Opcode::Iconst)
+		25:	some
 	]
 	result = 32
 }
@@ -13753,17 +13753,17 @@ expansion {
 		32: InstOutput	constructor(output_reg, [31], 4)
 	]
 	constraints = [
-		14:	variant(InstructionData::Binary)
+		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Iadd)
 		12:	some
+		14:	variant(InstructionData::Binary)
+		15:	variant(Opcode::Ishl)
+		19:	some
+		21:	variant(InstructionData::UnaryImm)
 		22:	variant(Opcode::Iconst)
 		25:	some
-		15:	variant(Opcode::Ishl)
-		21:	variant(InstructionData::UnaryImm)
-		4:	variant(InstructionData::Binary)
-		8:	variant(Opcode::Iadd)
-		19:	some
-		3:	some
-		7:	some
 	]
 	result = 32
 }
@@ -13789,11 +13789,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 3)
 	]
 	constraints = [
+		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Iadd)
 		12:	some
-		3:	some
-		7:	some
-		4:	variant(InstructionData::Binary)
 	]
 	result = 18
 }
@@ -13819,11 +13819,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 3)
 	]
 	constraints = [
-		7:	some
-		4:	variant(InstructionData::Binary)
 		3:	some
-		12:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Iadd)
+		12:	some
 	]
 	result = 18
 }
@@ -13849,11 +13849,11 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 3)
 	]
 	constraints = [
-		7:	some
-		12:	some
 		3:	some
 		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Iadd)
+		12:	some
 	]
 	result = 18
 }
@@ -13879,9 +13879,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 3)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::Binary)
 		7:	some
-		3:	some
 		8:	variant(Opcode::Iadd)
 		12:	some
 	]
@@ -13915,14 +13915,14 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 3)
 	]
 	constraints = [
-		8:	variant(Opcode::Iadd)
-		14:	variant(InstructionData::UnaryImm)
-		7:	some
-		18:	some
-		12:	some
-		15:	variant(Opcode::Iconst)
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
+		8:	variant(Opcode::Iadd)
+		12:	some
+		14:	variant(InstructionData::UnaryImm)
+		15:	variant(Opcode::Iconst)
+		18:	some
 	]
 	result = 24
 }
@@ -13954,14 +13954,14 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 3)
 	]
 	constraints = [
-		7:	some
-		12:	some
-		15:	variant(Opcode::Iconst)
-		4:	variant(InstructionData::Binary)
-		18:	some
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Iadd)
+		12:	some
 		14:	variant(InstructionData::UnaryImm)
+		15:	variant(Opcode::Iconst)
+		18:	some
 	]
 	result = 24
 }
@@ -13986,9 +13986,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		7:	some
-		4:	variant(InstructionData::Binary)
 		3:	some
+		4:	variant(InstructionData::Binary)
+		7:	some
 		8:	variant(Opcode::Iadd)
 	]
 	result = 17
@@ -14003,8 +14003,8 @@ expansion {
 		6: InstOutput	constructor(output_reg, [5], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::Nop)
 		3:	variant(InstructionData::NullAry)
+		4:	variant(Opcode::Nop)
 	]
 	result = 6
 }
@@ -14037,8 +14037,8 @@ expansion {
 		8: InstOutput	constructor(output_reg, [7], 2)
 	]
 	constraints = [
-		4:	variant(Opcode::F32const)
 		3:	variant(InstructionData::UnaryIeee32)
+		4:	variant(Opcode::F32const)
 	]
 	result = 8
 }
@@ -14057,9 +14057,9 @@ expansion {
 		11: InstOutput	constructor(output_reg, [10], 2)
 	]
 	constraints = [
+		3:	some
 		4:	variant(InstructionData::NullAry)
 		5:	variant(Opcode::Null)
-		3:	some
 	]
 	result = 11
 }
@@ -14080,8 +14080,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	variant(Opcode::Iconst)
 		4:	variant(InstructionData::UnaryImm)
+		5:	variant(Opcode::Iconst)
 	]
 	result = 12
 }

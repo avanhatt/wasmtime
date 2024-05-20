@@ -103,9 +103,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 7)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 19
 }
@@ -134,9 +134,9 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 6)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 21
 }
@@ -161,10 +161,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		9:	some
-		6:	some
-		11:	some
 		3:	some
+		6:	some
+		9:	some
+		11:	some
 	]
 	result = 17
 }
@@ -191,8 +191,8 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 7)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 19
@@ -222,9 +222,9 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 6)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 21
 }
@@ -249,10 +249,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		11:	some
+		3:	some
 		6:	some
 		9:	some
-		3:	some
+		11:	some
 	]
 	result = 17
 }
@@ -280,8 +280,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 19
 }
@@ -310,9 +310,9 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 6)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 21
 }
@@ -338,8 +338,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		9:	some
 		6:	some
+		9:	some
 		11:	some
 	]
 	result = 17
@@ -366,9 +366,9 @@ expansion {
 		18: InstOutput	constructor(output, [17], 6)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -394,9 +394,9 @@ expansion {
 		18: InstOutput	constructor(output, [17], 6)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -423,8 +423,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -478,8 +478,8 @@ expansion {
 		18: InstOutput	constructor(output, [17], 6)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 18
@@ -506,9 +506,9 @@ expansion {
 		18: InstOutput	constructor(output, [17], 6)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -536,9 +536,9 @@ expansion {
 		20: InstOutput	constructor(output, [19], 6)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 		10:	some
 	]
 	result = 20
@@ -591,9 +591,9 @@ expansion {
 		17: InstOutput	constructor(output, [16], 6)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 17
 }
@@ -632,10 +632,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 2)
 	]
 	constraints = [
-		8:	some
 		3:	some
-		10:	some
 		6:	variant(TlsModel::Macho)
+		8:	some
+		10:	some
 	]
 	result = 14
 }
@@ -658,9 +658,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	some
 		6:	variant(TlsModel::ElfGd)
 		8:	some
+		10:	some
 	]
 	result = 14
 }
@@ -695,9 +695,9 @@ expansion {
 		27: InstOutput	constructor(output_pair, [16, 26], 13)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64)
 		7:	some
-		3:	some
 	]
 	result = 27
 }
@@ -728,9 +728,9 @@ expansion {
 		23: InstOutput	constructor(output_pair, [15, 22], 10)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I32)
 		3:	some
+		5:	const_prim(I32)
+		7:	some
 	]
 	result = 23
 }
@@ -764,9 +764,9 @@ expansion {
 		26: InstOutput	constructor(output_pair, [17, 25], 11)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 26
 }
@@ -802,8 +802,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I64)
+		7:	some
 	]
 	result = 27
 }
@@ -834,9 +834,9 @@ expansion {
 		23: InstOutput	constructor(output_pair, [15, 22], 10)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I32)
 		7:	some
-		3:	some
 	]
 	result = 23
 }
@@ -870,9 +870,9 @@ expansion {
 		26: InstOutput	constructor(output_pair, [17, 25], 11)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 26
 }
@@ -894,9 +894,9 @@ expansion {
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 14
 }
@@ -919,9 +919,9 @@ expansion {
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 15
 }
@@ -944,8 +944,8 @@ expansion {
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 15
@@ -968,8 +968,8 @@ expansion {
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 	]
 	result = 14
@@ -993,8 +993,8 @@ expansion {
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 15
@@ -1018,9 +1018,9 @@ expansion {
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 15
 }
@@ -1042,8 +1042,8 @@ expansion {
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 	]
 	result = 14
@@ -1092,9 +1092,9 @@ expansion {
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 15
 }
@@ -1116,8 +1116,8 @@ expansion {
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 	]
 	result = 14
@@ -1141,9 +1141,9 @@ expansion {
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 15
 }
@@ -1166,8 +1166,8 @@ expansion {
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 15
@@ -1194,9 +1194,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -1253,8 +1253,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 7)
 	]
 	constraints = [
-		5:	const_prim(I32X4)
 		3:	some
+		5:	const_prim(I32X4)
 	]
 	result = 17
 }
@@ -1279,8 +1279,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 7)
 	]
 	constraints = [
-		5:	const_prim(I16X8)
 		3:	some
+		5:	const_prim(I16X8)
 	]
 	result = 17
 }
@@ -1351,8 +1351,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
+		7:	some
 	]
 	result = 17
 }
@@ -1402,9 +1402,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -1430,8 +1430,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -1452,10 +1452,10 @@ expansion {
 		13: InstOutput	constructor(output_value, [12], 1)
 	]
 	constraints = [
-		8:	some
-		11:	const_int(0)
 		3:	some
 		6:	some
+		8:	some
+		11:	const_int(0)
 	]
 	result = 13
 }
@@ -1474,10 +1474,10 @@ expansion {
 		11: InstOutput	constructor(output_value, [9], 1)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		7:	some
 		10:	const_prim(I128)
-		3:	some
 	]
 	result = 11
 }
@@ -1498,9 +1498,9 @@ expansion {
 		13: InstOutput	constructor(output_value, [10], 1)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 		12:	some
 	]
 	result = 13
@@ -1526,12 +1526,12 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		14:	const_prim(true)
 		3:	some
+		6:	some
+		8:	some
 		12:	some
 		13:	const_prim(false)
-		8:	some
-		6:	some
+		14:	const_prim(true)
 	]
 	result = 17
 }
@@ -1556,12 +1556,12 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		8:	some
 		3:	some
-		14:	const_prim(false)
-		13:	const_prim(true)
 		6:	some
+		8:	some
 		12:	some
+		13:	const_prim(true)
+		14:	const_prim(false)
 	]
 	result = 17
 }
@@ -1588,11 +1588,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
-		14:	some
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 		12:	some
+		14:	some
 	]
 	result = 19
 }
@@ -1616,9 +1616,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 		12:	some
 	]
 	result = 16
@@ -1640,8 +1640,8 @@ expansion {
 		13: InstOutput	constructor(output_value, [10], 1)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 		12:	some
 	]
@@ -1696,8 +1696,8 @@ expansion {
 		16: InstOutput	constructor(side_effect, [15], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
+		7:	some
 	]
 	result = 16
 }
@@ -1721,8 +1721,8 @@ expansion {
 		16: InstOutput	constructor(side_effect, [15], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
+		7:	some
 	]
 	result = 16
 }
@@ -1771,8 +1771,8 @@ expansion {
 		16: InstOutput	constructor(side_effect, [15], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
+		7:	some
 	]
 	result = 16
 }
@@ -1847,8 +1847,8 @@ expansion {
 		15: InstOutput	constructor(side_effect, [14], 4)
 	]
 	constraints = [
-		6:	const_prim(F32)
 		3:	some
+		6:	const_prim(F32)
 	]
 	result = 15
 }
@@ -1937,8 +1937,8 @@ expansion {
 		15: InstOutput	constructor(side_effect, [14], 4)
 	]
 	constraints = [
-		6:	const_prim(R64)
 		3:	some
+		6:	const_prim(R64)
 	]
 	result = 15
 }
@@ -1961,8 +1961,8 @@ expansion {
 		15: InstOutput	constructor(side_effect, [14], 4)
 	]
 	constraints = [
-		6:	const_prim(I64)
 		3:	some
+		6:	const_prim(I64)
 	]
 	result = 15
 }
@@ -2009,8 +2009,8 @@ expansion {
 		15: InstOutput	constructor(side_effect, [14], 4)
 	]
 	constraints = [
-		6:	const_prim(I16)
 		3:	some
+		6:	const_prim(I16)
 	]
 	result = 15
 }
@@ -2323,9 +2323,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -2404,9 +2404,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 17
 }
@@ -2429,9 +2429,9 @@ expansion {
 		15: InstOutput	constructor(output, [14], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		7:	some
-		3:	some
 	]
 	result = 15
 }
@@ -2455,9 +2455,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(F64)
+		7:	some
 	]
 	result = 16
 }
@@ -2481,9 +2481,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(F32)
+		7:	some
 	]
 	result = 16
 }
@@ -2507,8 +2507,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		5:	const_prim(R64)
 		3:	some
+		5:	const_prim(R64)
 		7:	some
 	]
 	result = 16
@@ -2533,9 +2533,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I64)
+		7:	some
 	]
 	result = 16
 }
@@ -2559,9 +2559,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I32)
+		7:	some
 	]
 	result = 16
 }
@@ -2586,8 +2586,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I16)
+		7:	some
 	]
 	result = 16
 }
@@ -2612,8 +2612,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I8)
+		7:	some
 	]
 	result = 16
 }
@@ -2869,9 +2869,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -2895,9 +2895,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 16
 }
@@ -2919,8 +2919,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 14
 }
@@ -2946,9 +2946,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -2973,8 +2973,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -3024,9 +3024,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 7)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 19
 }
@@ -3056,8 +3056,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 21
 }
@@ -3082,9 +3082,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 		11:	some
 	]
 	result = 17
@@ -3112,9 +3112,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 7)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 19
 }
@@ -3143,8 +3143,8 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 6)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 21
@@ -3170,10 +3170,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		11:	some
 		3:	some
-		8:	some
 		6:	some
+		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -3200,9 +3200,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 7)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 19
 }
@@ -3258,10 +3258,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 4)
 	]
 	constraints = [
-		6:	some
-		11:	some
-		8:	some
 		3:	some
+		6:	some
+		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -3304,9 +3304,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 19
 }
@@ -3334,10 +3334,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 5)
 	]
 	constraints = [
-		6:	some
-		9:	some
-		7:	some
 		3:	some
+		6:	some
+		7:	some
+		9:	some
 	]
 	result = 20
 }
@@ -3364,10 +3364,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
-		10:	variant(AtomicRmwOp::Xchg)
-		6:	some
 		3:	some
+		6:	some
 		8:	some
+		10:	variant(AtomicRmwOp::Xchg)
 	]
 	result = 19
 }
@@ -3394,10 +3394,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
-		6:	some
-		10:	variant(AtomicRmwOp::Umax)
 		3:	some
+		6:	some
 		8:	some
+		10:	variant(AtomicRmwOp::Umax)
 	]
 	result = 19
 }
@@ -3425,9 +3425,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	variant(AtomicRmwOp::Umin)
-		8:	some
 		6:	some
+		8:	some
+		10:	variant(AtomicRmwOp::Umin)
 	]
 	result = 19
 }
@@ -3454,10 +3454,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
-		8:	some
 		3:	some
-		10:	variant(AtomicRmwOp::Smax)
 		6:	some
+		8:	some
+		10:	variant(AtomicRmwOp::Smax)
 	]
 	result = 19
 }
@@ -3484,10 +3484,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
-		8:	some
-		6:	some
-		10:	variant(AtomicRmwOp::Smin)
 		3:	some
+		6:	some
+		8:	some
+		10:	variant(AtomicRmwOp::Smin)
 	]
 	result = 19
 }
@@ -3514,10 +3514,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
 		10:	variant(AtomicRmwOp::Xor)
-		3:	some
 	]
 	result = 19
 }
@@ -3544,9 +3544,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 		10:	variant(AtomicRmwOp::Or)
 	]
 	result = 19
@@ -3574,10 +3574,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 4)
 	]
 	constraints = [
-		6:	some
-		10:	variant(AtomicRmwOp::Nand)
-		8:	some
 		3:	some
+		6:	some
+		8:	some
+		10:	variant(AtomicRmwOp::Nand)
 	]
 	result = 19
 }
@@ -3605,9 +3605,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	variant(AtomicRmwOp::And)
-		8:	some
 		6:	some
+		8:	some
+		10:	variant(AtomicRmwOp::And)
 	]
 	result = 19
 }
@@ -3635,9 +3635,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		6:	some
 		8:	some
 		10:	variant(AtomicRmwOp::Sub)
-		6:	some
 	]
 	result = 19
 }
@@ -3665,9 +3665,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		6:	some
 		8:	some
 		10:	variant(AtomicRmwOp::Add)
-		6:	some
 	]
 	result = 19
 }
@@ -3696,11 +3696,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 5)
 	]
 	constraints = [
-		7:	some
-		11:	variant(AtomicRmwOp::And)
-		6:	some
 		3:	some
+		6:	some
+		7:	some
 		9:	some
+		11:	variant(AtomicRmwOp::And)
 	]
 	result = 21
 }
@@ -3729,11 +3729,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		7:	some
-		11:	variant(AtomicRmwOp::Sub)
 		9:	some
-		3:	some
+		11:	variant(AtomicRmwOp::Sub)
 	]
 	result = 21
 }
@@ -3761,10 +3761,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		6:	some
+		7:	some
 		9:	some
 		11:	variant(AtomicRmwOp::Umin)
-		7:	some
-		6:	some
 	]
 	result = 19
 }
@@ -3791,11 +3791,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 3)
 	]
 	constraints = [
-		9:	some
-		6:	some
-		11:	variant(AtomicRmwOp::Umax)
-		7:	some
 		3:	some
+		6:	some
+		7:	some
+		9:	some
+		11:	variant(AtomicRmwOp::Umax)
 	]
 	result = 19
 }
@@ -3822,11 +3822,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 3)
 	]
 	constraints = [
-		9:	some
-		6:	some
 		3:	some
-		11:	variant(AtomicRmwOp::Smin)
+		6:	some
 		7:	some
+		9:	some
+		11:	variant(AtomicRmwOp::Smin)
 	]
 	result = 19
 }
@@ -3853,11 +3853,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 3)
 	]
 	constraints = [
+		3:	some
+		6:	some
 		7:	some
 		9:	some
 		11:	variant(AtomicRmwOp::Smax)
-		3:	some
-		6:	some
 	]
 	result = 19
 }
@@ -3884,11 +3884,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
+		7:	some
 		9:	some
 		11:	variant(AtomicRmwOp::Or)
-		3:	some
-		7:	some
 	]
 	result = 19
 }
@@ -3915,10 +3915,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 3)
 	]
 	constraints = [
-		9:	some
 		3:	some
-		7:	some
 		6:	some
+		7:	some
+		9:	some
 		11:	variant(AtomicRmwOp::Xor)
 	]
 	result = 19
@@ -3946,10 +3946,10 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 3)
 	]
 	constraints = [
-		6:	some
-		9:	some
-		7:	some
 		3:	some
+		6:	some
+		7:	some
+		9:	some
 		11:	variant(AtomicRmwOp::Add)
 	]
 	result = 19
@@ -3972,8 +3972,8 @@ expansion {
 		14: InstOutput	constructor(side_effect, [13], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
+		7:	some
 	]
 	result = 14
 }
@@ -3996,9 +3996,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 15
 }
@@ -4026,11 +4026,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
 		10:	some
 		11:	some
-		3:	some
 	]
 	result = 20
 }
@@ -4058,12 +4058,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		8:	some
-		14:	some
-		12:	some
-		6:	some
-		10:	some
 		3:	some
+		6:	some
+		8:	some
+		10:	some
+		12:	some
+		14:	some
 	]
 	result = 20
 }
@@ -4087,10 +4087,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		10:	some
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
+		10:	some
 	]
 	result = 16
 }
@@ -4114,10 +4114,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		10:	some
 		3:	some
-		8:	some
 		6:	some
+		8:	some
+		10:	some
 	]
 	result = 16
 }
@@ -4142,10 +4142,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
 		10:	some
-		3:	some
 	]
 	result = 17
 }
@@ -4192,8 +4192,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		9:	some
 	]
 	result = 14
@@ -4215,10 +4215,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 2)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
 		10:	some
-		3:	some
 	]
 	result = 13
 }
@@ -4239,10 +4239,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 2)
 	]
 	constraints = [
+		3:	some
+		6:	some
 		8:	some
 		10:	some
-		6:	some
-		3:	some
 	]
 	result = 13
 }
@@ -4275,9 +4275,9 @@ expansion {
 		25: InstOutput	constructor(output, [24], 8)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		9:	const_prim(I128)
-		3:	some
 	]
 	result = 25
 }
@@ -4342,11 +4342,11 @@ expansion {
 		27: InstOutput	constructor(output, [26], 8)
 	]
 	constraints = [
-		13:	some
 		3:	some
 		6:	some
-		11:	some
 		9:	some
+		11:	some
+		13:	some
 	]
 	result = 27
 }
@@ -4379,9 +4379,9 @@ expansion {
 		25: InstOutput	constructor(output, [24], 8)
 	]
 	constraints = [
-		9:	const_prim(I128)
 		3:	some
 		6:	some
+		9:	const_prim(I128)
 	]
 	result = 25
 }
@@ -4409,8 +4409,8 @@ expansion {
 		20: InstOutput	constructor(output, [19], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		10:	some
 	]
 	result = 20
@@ -4439,9 +4439,9 @@ expansion {
 		20: InstOutput	constructor(output, [19], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		10:	some
-		3:	some
 	]
 	result = 20
 }
@@ -4470,8 +4470,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		9:	const_prim(I8)
 		6:	some
+		9:	const_prim(I8)
 	]
 	result = 20
 }
@@ -4507,11 +4507,11 @@ expansion {
 		28: InstOutput	constructor(output, [27], 7)
 	]
 	constraints = [
-		11:	some
 		3:	some
-		13:	some
 		6:	some
 		9:	some
+		11:	some
+		13:	some
 	]
 	result = 28
 }
@@ -4546,11 +4546,11 @@ expansion {
 		27: InstOutput	constructor(output, [26], 6)
 	]
 	constraints = [
-		11:	some
-		13:	some
-		9:	some
 		3:	some
 		6:	some
+		9:	some
+		11:	some
+		13:	some
 	]
 	result = 27
 }
@@ -4625,11 +4625,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
-		13:	some
 		11:	some
+		13:	some
 	]
 	result = 20
 }
@@ -4657,11 +4657,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 6)
 	]
 	constraints = [
-		13:	some
-		6:	some
-		11:	some
 		3:	some
+		6:	some
 		8:	some
+		11:	some
+		13:	some
 	]
 	result = 20
 }
@@ -4689,11 +4689,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 5)
 	]
 	constraints = [
-		13:	some
 		3:	some
-		11:	some
 		6:	some
 		8:	some
+		11:	some
+		13:	some
 	]
 	result = 20
 }
@@ -4721,11 +4721,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 6)
 	]
 	constraints = [
-		11:	some
-		8:	some
-		13:	some
 		3:	some
 		6:	some
+		8:	some
+		11:	some
+		13:	some
 	]
 	result = 20
 }
@@ -4750,9 +4750,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		10:	some
 		3:	some
 		6:	some
+		10:	some
 	]
 	result = 17
 }
@@ -4781,9 +4781,9 @@ expansion {
 		21: InstOutput	constructor(output, [20], 8)
 	]
 	constraints = [
-		10:	some
 		3:	some
 		6:	some
+		10:	some
 	]
 	result = 21
 }
@@ -4811,11 +4811,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 5)
 	]
 	constraints = [
-		11:	some
 		3:	some
-		8:	some
-		13:	some
 		6:	some
+		8:	some
+		11:	some
+		13:	some
 	]
 	result = 20
 }
@@ -4843,10 +4843,10 @@ expansion {
 		20: InstOutput	constructor(output, [19], 6)
 	]
 	constraints = [
-		11:	some
 		3:	some
 		6:	some
 		8:	some
+		11:	some
 		13:	some
 	]
 	result = 20
@@ -4875,11 +4875,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 5)
 	]
 	constraints = [
-		11:	some
-		13:	some
 		3:	some
 		6:	some
 		8:	some
+		11:	some
+		13:	some
 	]
 	result = 20
 }
@@ -4907,11 +4907,11 @@ expansion {
 		20: InstOutput	constructor(output, [19], 6)
 	]
 	constraints = [
+		3:	some
+		6:	some
 		8:	some
 		11:	some
 		13:	some
-		6:	some
-		3:	some
 	]
 	result = 20
 }
@@ -4990,8 +4990,8 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 8)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 20
@@ -5012,9 +5012,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I8X16)
 		3:	some
+		5:	const_prim(I8X16)
+		7:	some
 	]
 	result = 12
 }
@@ -5052,9 +5052,9 @@ expansion {
 		30: InstOutput	constructor(output, [29], 11)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 30
 }
@@ -5108,9 +5108,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 6)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I32)
+		7:	some
 	]
 	result = 18
 }
@@ -5136,9 +5136,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 6)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I16)
 		3:	some
+		5:	const_prim(I16)
+		7:	some
 	]
 	result = 18
 }
@@ -5163,8 +5163,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		5:	const_prim(I8)
 		3:	some
+		5:	const_prim(I8)
 		7:	some
 	]
 	result = 17
@@ -5213,9 +5213,9 @@ expansion {
 		19: InstOutput	constructor(output, [18], 8)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 19
 }
@@ -5257,9 +5257,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I32)
 		7:	some
-		3:	some
 	]
 	result = 12
 }
@@ -5279,8 +5279,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		5:	const_prim(I16)
 		3:	some
+		5:	const_prim(I16)
 		7:	some
 	]
 	result = 12
@@ -5342,9 +5342,9 @@ expansion {
 		33: InstOutput	constructor(output, [32], 18)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 	]
 	result = 33
 }
@@ -5368,8 +5368,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I16)
+		7:	some
 	]
 	result = 15
 }
@@ -5392,9 +5392,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I8)
+		7:	some
 	]
 	result = 15
 }
@@ -5442,9 +5442,9 @@ expansion {
 		19: InstOutput	constructor(output, [18], 8)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 	]
 	result = 19
 }
@@ -5468,9 +5468,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 6)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I16)
 		3:	some
+		5:	const_prim(I16)
+		7:	some
 	]
 	result = 16
 }
@@ -5536,8 +5536,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 11
 }
@@ -5560,8 +5560,8 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 5)
 	]
 	constraints = [
-		5:	const_prim(I16)
 		3:	some
+		5:	const_prim(I16)
 		7:	some
 	]
 	result = 15
@@ -5585,9 +5585,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 5)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I8)
 		3:	some
+		5:	const_prim(I8)
+		7:	some
 	]
 	result = 15
 }
@@ -5723,8 +5723,8 @@ expansion {
 		30: InstOutput	constructor(output, [29], 15)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 	]
 	result = 30
@@ -5754,11 +5754,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
-		15:	some
-		10:	some
 		5:	const_prim(I64)
+		7:	some
+		10:	some
 		12:	some
+		15:	some
 	]
 	result = 20
 }
@@ -5786,11 +5786,11 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		5:	const_prim(I32)
 		3:	some
-		12:	some
-		10:	some
+		5:	const_prim(I32)
 		7:	some
+		10:	some
+		12:	some
 		15:	some
 	]
 	result = 20
@@ -5820,12 +5820,12 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 3)
 	]
 	constraints = [
-		16:	some
-		8:	some
-		6:	some
-		13:	some
 		3:	some
+		6:	some
+		8:	some
 		11:	some
+		13:	some
+		16:	some
 	]
 	result = 21
 }
@@ -5850,8 +5850,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
 		7:	some
 	]
 	result = 17
@@ -5877,9 +5877,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I32)
 		3:	some
+		5:	const_prim(I32)
+		7:	some
 	]
 	result = 17
 }
@@ -5905,8 +5905,8 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 18
@@ -5945,8 +5945,8 @@ expansion {
 		30: InstOutput	constructor(output, [29], 15)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 	]
 	result = 30
@@ -5976,12 +5976,12 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 4)
 	]
 	constraints = [
-		5:	const_prim(I64)
-		15:	some
-		10:	some
-		7:	some
-		12:	some
 		3:	some
+		5:	const_prim(I64)
+		7:	some
+		10:	some
+		12:	some
+		15:	some
 	]
 	result = 21
 }
@@ -6010,12 +6010,12 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 4)
 	]
 	constraints = [
-		15:	some
-		10:	some
-		7:	some
 		3:	some
-		12:	some
 		5:	const_prim(I32)
+		7:	some
+		10:	some
+		12:	some
+		15:	some
 	]
 	result = 21
 }
@@ -6043,8 +6043,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I64)
+		7:	some
 	]
 	result = 19
 }
@@ -6071,9 +6071,9 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 7)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I32)
 		7:	some
-		3:	some
 	]
 	result = 19
 }
@@ -6104,11 +6104,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		16:	some
 		6:	some
-		13:	some
 		8:	some
 		11:	some
+		13:	some
+		16:	some
 	]
 	result = 22
 }
@@ -6166,11 +6166,11 @@ expansion {
 		19: InstOutput	constructor(output_value, [18], 1)
 	]
 	constraints = [
-		13:	some
 		3:	some
 		6:	some
 		8:	some
 		11:	some
+		13:	some
 		17:	const_int(0)
 	]
 	result = 19
@@ -6201,10 +6201,10 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 4)
 	]
 	constraints = [
-		8:	some
-		11:	some
 		3:	some
 		6:	some
+		8:	some
+		11:	some
 		13:	some
 	]
 	result = 22
@@ -6263,9 +6263,9 @@ expansion {
 		16: InstOutput	constructor(output, [15], 5)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		7:	some
-		3:	some
 	]
 	result = 16
 }
@@ -6288,9 +6288,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64)
 		7:	some
-		3:	some
 	]
 	result = 15
 }
@@ -6314,9 +6314,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 16
 }
@@ -6343,12 +6343,12 @@ expansion {
 		19: InstOutput	constructor(output_value, [18], 1)
 	]
 	constraints = [
-		17:	const_int(0)
-		6:	some
-		13:	some
-		11:	some
-		8:	some
 		3:	some
+		6:	some
+		8:	some
+		11:	some
+		13:	some
+		17:	const_int(0)
 	]
 	result = 19
 }
@@ -6378,11 +6378,11 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 4)
 	]
 	constraints = [
-		13:	some
 		3:	some
 		6:	some
-		11:	some
 		8:	some
+		11:	some
+		13:	some
 	]
 	result = 22
 }
@@ -6440,9 +6440,9 @@ expansion {
 		16: InstOutput	constructor(output, [15], 5)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 	]
 	result = 16
 }
@@ -6465,8 +6465,8 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
 		7:	some
 	]
 	result = 15
@@ -6491,9 +6491,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -6523,11 +6523,11 @@ expansion {
 		22: InstOutput	constructor(output_reg, [21], 4)
 	]
 	constraints = [
-		8:	some
-		13:	some
 		3:	some
 		6:	some
+		8:	some
 		11:	some
+		13:	some
 	]
 	result = 22
 }
@@ -6556,9 +6556,9 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 8)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 21
 }
@@ -6582,9 +6582,9 @@ expansion {
 		16: InstOutput	constructor(output, [15], 5)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 16
 }
@@ -6607,9 +6607,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I64)
+		7:	some
 	]
 	result = 15
 }
@@ -6633,9 +6633,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -6661,10 +6661,10 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		10:	some
 		3:	some
 		5:	const_prim(I128)
 		7:	some
+		10:	some
 		12:	some
 	]
 	result = 18
@@ -6692,10 +6692,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		12:	some
-		10:	some
 		5:	const_prim(I128)
 		7:	some
+		10:	some
+		12:	some
 	]
 	result = 18
 }
@@ -6723,10 +6723,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		11:	some
-		8:	some
-		13:	some
 		6:	some
+		8:	some
+		11:	some
+		13:	some
 	]
 	result = 19
 }
@@ -6753,11 +6753,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 2)
 	]
 	constraints = [
+		3:	some
+		6:	some
 		8:	some
 		11:	some
-		3:	some
 		13:	some
-		6:	some
 	]
 	result = 19
 }
@@ -6782,9 +6782,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -6806,9 +6806,9 @@ expansion {
 		14: InstOutput	constructor(output, [13], 2)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 	]
 	result = 14
 }
@@ -6859,11 +6859,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		10:	some
-		12:	some
 		3:	some
 		5:	const_prim(I128)
 		7:	some
+		10:	some
+		12:	some
 	]
 	result = 18
 }
@@ -6889,11 +6889,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I128)
 		7:	some
 		10:	some
-		5:	const_prim(I128)
 		12:	some
-		3:	some
 	]
 	result = 18
 }
@@ -6920,11 +6920,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 2)
 	]
 	constraints = [
-		11:	some
-		6:	some
-		13:	some
-		8:	some
 		3:	some
+		6:	some
+		8:	some
+		11:	some
+		13:	some
 	]
 	result = 19
 }
@@ -6951,11 +6951,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 2)
 	]
 	constraints = [
-		6:	some
-		13:	some
-		8:	some
 		3:	some
+		6:	some
+		8:	some
 		11:	some
+		13:	some
 	]
 	result = 19
 }
@@ -6980,9 +6980,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -7005,8 +7005,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 14
 }
@@ -7030,8 +7030,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 15
 }
@@ -7060,11 +7060,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
-		13:	some
 		3:	some
+		6:	some
+		8:	some
 		11:	some
+		13:	some
 	]
 	result = 21
 }
@@ -7093,11 +7093,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
-		13:	some
-		11:	some
 		3:	some
+		6:	some
+		8:	some
+		11:	some
+		13:	some
 	]
 	result = 21
 }
@@ -7123,11 +7123,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		12:	some
-		7:	some
-		5:	const_prim(I128)
-		10:	some
 		3:	some
+		5:	const_prim(I128)
+		7:	some
+		10:	some
+		12:	some
 	]
 	result = 18
 }
@@ -7153,11 +7153,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		7:	some
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 		10:	some
 		12:	some
-		5:	const_prim(I128)
 	]
 	result = 18
 }
@@ -7184,11 +7184,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 2)
 	]
 	constraints = [
-		6:	some
-		13:	some
-		8:	some
 		3:	some
+		6:	some
+		8:	some
 		11:	some
+		13:	some
 	]
 	result = 19
 }
@@ -7215,11 +7215,11 @@ expansion {
 		19: InstOutput	constructor(output_reg, [18], 2)
 	]
 	constraints = [
-		11:	some
-		8:	some
 		3:	some
-		13:	some
 		6:	some
+		8:	some
+		11:	some
+		13:	some
 	]
 	result = 19
 }
@@ -7245,8 +7245,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -7321,11 +7321,11 @@ expansion {
 		18: InstOutput	constructor(output, [17], 2)
 	]
 	constraints = [
-		11:	some
+		3:	some
+		5:	const_prim(I128)
 		7:	some
 		9:	some
-		5:	const_prim(I128)
-		3:	some
+		11:	some
 	]
 	result = 18
 }
@@ -7353,10 +7353,10 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		12:	some
-		10:	some
 		6:	some
 		8:	some
+		10:	some
+		12:	some
 	]
 	result = 19
 }
@@ -7378,9 +7378,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 14
 }
@@ -7444,14 +7444,14 @@ expansion {
 		26: InstOutput	constructor(output_reg, [25], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
-		12:	some
 		8:	some
+		10:	some
+		12:	some
+		15:	some
 		17:	some
 		20:	some
-		3:	some
-		10:	some
-		15:	some
 	]
 	result = 26
 }
@@ -7473,9 +7473,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 14
 }
@@ -7509,11 +7509,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(I128)
 		7:	some
+		9:	some
 		11:	some
 		14:	const_prim(I64X2)
-		9:	some
-		5:	const_prim(I128)
 	]
 	result = 25
 }
@@ -7549,11 +7549,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 		9:	some
-		5:	const_prim(I128)
-		15:	some
 		11:	some
+		15:	some
 	]
 	result = 27
 }
@@ -7576,8 +7576,8 @@ expansion {
 		15: InstOutput	constructor(output, [14], 5)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
 		7:	some
 	]
 	result = 15
@@ -7609,10 +7609,10 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
-		10:	some
-		8:	some
 		3:	some
 		6:	some
+		8:	some
+		10:	some
 		12:	some
 	]
 	result = 23
@@ -7638,9 +7638,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -7673,11 +7673,11 @@ expansion {
 		25: InstOutput	constructor(output, [24], 6)
 	]
 	constraints = [
-		5:	const_prim(I128)
 		3:	some
-		11:	some
+		5:	const_prim(I128)
 		7:	some
 		9:	some
+		11:	some
 	]
 	result = 25
 }
@@ -7731,11 +7731,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		13:	some
-		8:	some
 		6:	some
+		8:	some
 		10:	some
 		12:	some
+		13:	some
 	]
 	result = 20
 }
@@ -7764,11 +7764,11 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 4)
 	]
 	constraints = [
-		12:	some
-		6:	some
-		10:	some
 		3:	some
+		6:	some
 		8:	some
+		10:	some
+		12:	some
 	]
 	result = 21
 }
@@ -7793,9 +7793,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 17
 }
@@ -7823,8 +7823,8 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		5:	const_prim(I64X2)
 		3:	some
+		5:	const_prim(I64X2)
 		7:	some
 	]
 	result = 20
@@ -7850,8 +7850,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 17
@@ -7880,9 +7880,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64X2)
 		7:	some
-		3:	some
 	]
 	result = 20
 }
@@ -7937,9 +7937,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I64X2)
 		3:	some
+		5:	const_prim(I64X2)
+		7:	some
 	]
 	result = 20
 }
@@ -7964,9 +7964,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 17
 }
@@ -7994,9 +7994,9 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 7)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I64X2)
 		3:	some
+		5:	const_prim(I64X2)
+		7:	some
 	]
 	result = 20
 }
@@ -8022,8 +8022,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -8048,10 +8048,10 @@ expansion {
 		17: InstOutput	constructor(output, [16], 2)
 	]
 	constraints = [
-		9:	some
-		7:	some
 		3:	some
 		6:	some
+		7:	some
+		9:	some
 	]
 	result = 17
 }
@@ -8076,10 +8076,10 @@ expansion {
 		17: InstOutput	constructor(output, [16], 2)
 	]
 	constraints = [
-		9:	some
-		7:	some
 		3:	some
 		6:	some
+		7:	some
+		9:	some
 	]
 	result = 17
 }
@@ -8105,9 +8105,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		6:	some
 		7:	some
 		9:	some
-		6:	some
 	]
 	result = 17
 }
@@ -8160,9 +8160,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -8221,12 +8221,12 @@ expansion {
 		24: InstOutput	constructor(output_reg, [23], 4)
 	]
 	constraints = [
-		16:	some
-		11:	some
-		6:	some
 		3:	some
+		6:	some
 		8:	some
+		11:	some
 		13:	some
+		16:	some
 	]
 	result = 24
 }
@@ -8252,8 +8252,8 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 18
@@ -8278,9 +8278,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -8335,9 +8335,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(I64)
+		7:	some
 	]
 	result = 15
 }
@@ -8366,9 +8366,9 @@ expansion {
 		21: InstOutput	constructor(output_reg, [20], 7)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 21
 }
@@ -8392,8 +8392,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I64)
+		7:	some
 	]
 	result = 15
 }
@@ -8426,15 +8426,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I64X2)
+		7:	some
+		10:	some
+		12:	some
 		14:	some
 		16:	const_prim(I32X4)
 		18:	some
-		3:	some
-		5:	const_prim(I64X2)
 		20:	const_prim(I32X4)
-		10:	some
-		7:	some
-		12:	some
 	]
 	result = 25
 }
@@ -8467,14 +8467,14 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		14:	some
-		12:	some
-		10:	some
-		7:	some
-		18:	some
 		3:	some
-		16:	const_prim(I32X4)
 		5:	const_prim(I64X2)
+		7:	some
+		10:	some
+		12:	some
+		14:	some
+		16:	const_prim(I32X4)
+		18:	some
 		20:	const_prim(I32X4)
 	]
 	result = 25
@@ -8509,14 +8509,14 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
-		12:	some
-		20:	const_prim(I32X4)
-		10:	some
-		14:	some
 		5:	const_prim(I64X2)
-		18:	some
+		7:	some
+		10:	some
+		12:	some
+		14:	some
 		16:	const_prim(I32X4)
+		18:	some
+		20:	const_prim(I32X4)
 	]
 	result = 25
 }
@@ -8549,15 +8549,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		16:	some
 		3:	some
+		5:	const_prim(I64X2)
+		7:	some
+		10:	some
+		12:	some
 		14:	const_prim(I32X4)
-		10:	some
-		7:	some
+		16:	some
+		18:	some
 		20:	const_prim(I32X4)
-		18:	some
-		12:	some
-		5:	const_prim(I64X2)
 	]
 	result = 25
 }
@@ -8590,15 +8590,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		10:	some
-		16:	const_prim(I16X8)
-		5:	const_prim(I32X4)
-		14:	some
-		12:	some
-		18:	some
 		3:	some
-		20:	const_prim(I16X8)
+		5:	const_prim(I32X4)
 		7:	some
+		10:	some
+		12:	some
+		14:	some
+		16:	const_prim(I16X8)
+		18:	some
+		20:	const_prim(I16X8)
 	]
 	result = 25
 }
@@ -8631,15 +8631,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I32X4)
+		7:	some
 		10:	some
 		12:	some
-		16:	const_prim(I16X8)
 		14:	some
-		7:	some
-		3:	some
-		20:	const_prim(I16X8)
+		16:	const_prim(I16X8)
 		18:	some
-		5:	const_prim(I32X4)
+		20:	const_prim(I16X8)
 	]
 	result = 25
 }
@@ -8672,15 +8672,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		5:	const_prim(I32X4)
-		10:	some
-		20:	const_prim(I16X8)
-		18:	some
 		3:	some
-		14:	some
+		5:	const_prim(I32X4)
 		7:	some
-		16:	const_prim(I16X8)
+		10:	some
 		12:	some
+		14:	some
+		16:	const_prim(I16X8)
+		18:	some
+		20:	const_prim(I16X8)
 	]
 	result = 25
 }
@@ -8713,15 +8713,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		12:	some
+		3:	some
+		5:	const_prim(I32X4)
+		7:	some
 		10:	some
-		20:	const_prim(I16X8)
+		12:	some
 		14:	const_prim(I16X8)
-		5:	const_prim(I32X4)
-		7:	some
 		16:	some
-		3:	some
 		18:	some
+		20:	const_prim(I16X8)
 	]
 	result = 25
 }
@@ -8754,14 +8754,14 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		10:	some
-		7:	some
-		14:	some
-		18:	some
-		16:	const_prim(I8X16)
-		12:	some
 		3:	some
 		5:	const_prim(I16X8)
+		7:	some
+		10:	some
+		12:	some
+		14:	some
+		16:	const_prim(I8X16)
+		18:	some
 		20:	const_prim(I8X16)
 	]
 	result = 25
@@ -8795,15 +8795,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		14:	some
 		3:	some
-		20:	const_prim(I8X16)
-		7:	some
 		5:	const_prim(I16X8)
-		16:	const_prim(I8X16)
-		12:	some
-		18:	some
+		7:	some
 		10:	some
+		12:	some
+		14:	some
+		16:	const_prim(I8X16)
+		18:	some
+		20:	const_prim(I8X16)
 	]
 	result = 25
 }
@@ -8836,15 +8836,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		12:	some
-		5:	const_prim(I16X8)
 		3:	some
-		20:	const_prim(I8X16)
-		10:	some
-		18:	some
+		5:	const_prim(I16X8)
 		7:	some
+		10:	some
+		12:	some
 		14:	some
 		16:	const_prim(I8X16)
+		18:	some
+		20:	const_prim(I8X16)
 	]
 	result = 25
 }
@@ -8877,15 +8877,15 @@ expansion {
 		25: InstOutput	constructor(output_reg, [24], 4)
 	]
 	constraints = [
-		5:	const_prim(I16X8)
-		14:	const_prim(I8X16)
-		18:	some
-		10:	some
-		16:	some
 		3:	some
-		12:	some
-		20:	const_prim(I8X16)
+		5:	const_prim(I16X8)
 		7:	some
+		10:	some
+		12:	some
+		14:	const_prim(I8X16)
+		16:	some
+		18:	some
+		20:	const_prim(I8X16)
 	]
 	result = 25
 }
@@ -8916,9 +8916,9 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 10)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64X2)
 		7:	some
-		3:	some
 	]
 	result = 23
 }
@@ -8945,9 +8945,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	some
-		8:	some
 		6:	some
+		8:	some
+		10:	some
 	]
 	result = 18
 }
@@ -8982,8 +8982,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 26
 }
@@ -9008,9 +9008,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -9033,8 +9033,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 14
 }
@@ -9055,8 +9055,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I128)
+		7:	some
 	]
 	result = 12
 }
@@ -9078,9 +9078,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 14
 }
@@ -9105,9 +9105,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -9132,9 +9132,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 17
 }
@@ -9159,8 +9159,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 17
@@ -9186,9 +9186,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -9210,9 +9210,9 @@ expansion {
 		14: InstOutput	constructor(output, [13], 4)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		7:	some
-		3:	some
 	]
 	result = 14
 }
@@ -9274,13 +9274,13 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		18:	some
-		16:	some
-		11:	some
-		8:	some
-		13:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
+		11:	some
+		13:	some
+		16:	some
+		18:	some
 		21:	some
 	]
 	result = 28
@@ -9306,9 +9306,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 		11:	some
 	]
 	result = 17
@@ -9334,10 +9334,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
-		11:	some
+		6:	some
 		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -9362,8 +9362,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 		11:	some
 	]
@@ -9389,9 +9389,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -9414,10 +9414,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		9:	const_prim(F64)
 		3:	some
-		7:	some
 		5:	const_prim(I64)
+		7:	some
+		9:	const_prim(F64)
 	]
 	result = 15
 }
@@ -9441,10 +9441,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		10:	const_prim(F64)
 		3:	some
 		6:	some
 		8:	some
+		10:	const_prim(F64)
 	]
 	result = 16
 }
@@ -9467,10 +9467,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
-		9:	const_prim(F32)
-		7:	some
 		3:	some
+		5:	const_prim(I64)
+		7:	some
+		9:	const_prim(F32)
 	]
 	result = 15
 }
@@ -9494,9 +9494,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 		10:	const_prim(F32)
 	]
 	result = 16
@@ -9525,12 +9525,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		8:	const_int(64)
 		3:	some
-		10:	some
-		15:	const_int(64)
-		13:	some
 		6:	some
+		8:	const_int(64)
+		10:	some
+		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -9558,12 +9558,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		13:	some
-		8:	const_int(32)
-		6:	some
 		3:	some
-		15:	const_int(32)
+		6:	some
+		8:	const_int(32)
 		10:	some
+		13:	some
+		15:	const_int(32)
 	]
 	result = 20
 }
@@ -9586,9 +9586,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I64)
 		7:	some
-		3:	some
 		9:	const_prim(F64)
 	]
 	result = 15
@@ -9615,8 +9615,8 @@ expansion {
 	constraints = [
 		3:	some
 		6:	some
-		10:	const_prim(F64)
 		8:	some
+		10:	const_prim(F64)
 	]
 	result = 16
 }
@@ -9639,10 +9639,10 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
-		9:	const_prim(F32)
 		3:	some
+		5:	const_prim(I64)
 		7:	some
+		9:	const_prim(F32)
 	]
 	result = 15
 }
@@ -9666,10 +9666,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		10:	const_prim(F32)
+		3:	some
 		6:	some
 		8:	some
-		3:	some
+		10:	const_prim(F32)
 	]
 	result = 16
 }
@@ -9698,11 +9698,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		13:	some
-		10:	some
-		15:	const_int(64)
-		8:	const_int(64)
 		6:	some
+		8:	const_int(64)
+		10:	some
+		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -9730,10 +9730,10 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		10:	some
+		3:	some
 		6:	some
 		8:	const_int(32)
-		3:	some
+		10:	some
 		13:	some
 		15:	const_int(32)
 	]
@@ -9756,10 +9756,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(F64)
 		7:	some
 		9:	const_prim(I64)
-		5:	const_prim(F64)
-		3:	some
 	]
 	result = 13
 }
@@ -9780,10 +9780,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		9:	const_prim(I64)
+		3:	some
 		5:	const_prim(F32)
 		7:	some
-		3:	some
+		9:	const_prim(I64)
 	]
 	result = 13
 }
@@ -9805,10 +9805,10 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		10:	some
+		3:	some
 		5:	const_prim(F64)
 		7:	some
-		3:	some
+		10:	some
 	]
 	result = 14
 }
@@ -9830,8 +9830,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
-		5:	const_prim(F32)
 		3:	some
+		5:	const_prim(F32)
 		7:	some
 		10:	some
 	]
@@ -9862,11 +9862,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		10:	some
-		15:	const_int(64)
-		13:	some
-		8:	const_int(64)
 		6:	some
+		8:	const_int(64)
+		10:	some
+		13:	some
+		15:	const_int(64)
 	]
 	result = 20
 }
@@ -9895,11 +9895,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		15:	const_int(32)
-		13:	some
 		6:	some
 		8:	const_int(32)
 		10:	some
+		13:	some
+		15:	const_int(32)
 	]
 	result = 20
 }
@@ -9920,8 +9920,8 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		5:	const_prim(F64)
 		3:	some
+		5:	const_prim(F64)
 		7:	some
 		9:	const_prim(I64)
 	]
@@ -9944,10 +9944,10 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(F32)
-		9:	const_prim(I64)
 		3:	some
+		5:	const_prim(F32)
+		7:	some
+		9:	const_prim(I64)
 	]
 	result = 13
 }
@@ -9969,9 +9969,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 3)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(F64)
 		7:	some
-		3:	some
 		10:	some
 	]
 	result = 14
@@ -9995,9 +9995,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		5:	const_prim(F32)
 		7:	some
 		10:	some
-		5:	const_prim(F32)
 	]
 	result = 14
 }
@@ -10026,11 +10026,11 @@ expansion {
 	]
 	constraints = [
 		3:	some
+		6:	some
+		8:	const_int(64)
+		10:	some
 		13:	some
 		15:	const_int(64)
-		10:	some
-		8:	const_int(64)
-		6:	some
 	]
 	result = 20
 }
@@ -10058,12 +10058,12 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 4)
 	]
 	constraints = [
-		13:	some
-		10:	some
-		15:	const_int(32)
-		8:	const_int(32)
-		6:	some
 		3:	some
+		6:	some
+		8:	const_int(32)
+		10:	some
+		13:	some
+		15:	const_int(32)
 	]
 	result = 20
 }
@@ -10087,10 +10087,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
-		9:	const_prim(F64)
+		5:	const_prim(I64)
 		7:	some
+		9:	const_prim(F64)
 	]
 	result = 16
 }
@@ -10115,10 +10115,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		10:	const_prim(F64)
 		3:	some
 		6:	some
 		8:	some
+		10:	const_prim(F64)
 	]
 	result = 17
 }
@@ -10170,10 +10170,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		10:	const_prim(F32)
-		6:	some
 		3:	some
+		6:	some
 		8:	some
+		10:	const_prim(F32)
 	]
 	result = 17
 }
@@ -10197,10 +10197,10 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	some
-		9:	const_prim(F64)
 		3:	some
 		5:	const_prim(I64)
+		7:	some
+		9:	const_prim(F64)
 	]
 	result = 16
 }
@@ -10225,10 +10225,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		10:	const_prim(F64)
-		6:	some
 		3:	some
+		6:	some
 		8:	some
+		10:	const_prim(F64)
 	]
 	result = 17
 }
@@ -10252,9 +10252,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
+		7:	some
 		9:	const_prim(F32)
 	]
 	result = 16
@@ -10280,9 +10280,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 		10:	const_prim(F32)
 	]
 	result = 17
@@ -10305,8 +10305,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 14
 }
@@ -10330,9 +10330,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 3)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -10361,8 +10361,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 20
 }
@@ -10382,9 +10382,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	some
 		3:	some
 		5:	const_prim(F64)
+		7:	some
 	]
 	result = 12
 }
@@ -10404,8 +10404,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		5:	const_prim(F32)
 		3:	some
+		5:	const_prim(F32)
 		7:	some
 	]
 	result = 12
@@ -10451,8 +10451,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(F64)
+		7:	some
 	]
 	result = 12
 }
@@ -10472,9 +10472,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(F32)
 		3:	some
+		5:	const_prim(F32)
+		7:	some
 	]
 	result = 12
 }
@@ -10496,9 +10496,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 14
 }
@@ -10519,8 +10519,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(F64)
+		7:	some
 	]
 	result = 12
 }
@@ -10564,9 +10564,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 14
 }
@@ -10608,8 +10608,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		5:	const_prim(F32)
 		3:	some
+		5:	const_prim(F32)
 		7:	some
 	]
 	result = 12
@@ -10632,8 +10632,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 14
@@ -10679,8 +10679,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(F64)
+		7:	some
 	]
 	result = 13
 }
@@ -10703,8 +10703,8 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 15
@@ -10752,9 +10752,9 @@ expansion {
 		15: InstOutput	constructor(output_reg, [14], 4)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 15
 }
@@ -10777,8 +10777,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 14
 }
@@ -10825,8 +10825,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 14
@@ -10853,9 +10853,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 18
 }
@@ -10881,8 +10881,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -10908,8 +10908,8 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 18
@@ -10935,9 +10935,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -10963,8 +10963,8 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 18
@@ -10990,9 +10990,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -11046,8 +11046,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -11073,9 +11073,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 18
 }
@@ -11100,8 +11100,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 17
@@ -11128,9 +11128,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 18
 }
@@ -11155,9 +11155,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
-		8:	some
-		6:	some
 		3:	some
+		6:	some
+		8:	some
 	]
 	result = 17
 }
@@ -11182,9 +11182,9 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
 	]
 	result = 17
 }
@@ -11210,8 +11210,8 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 18
@@ -11246,8 +11246,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	some
 		5:	const_prim(I64X2)
+		7:	some
 	]
 	result = 25
 }
@@ -11278,9 +11278,9 @@ expansion {
 		23: InstOutput	constructor(output, [22], 11)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 	]
 	result = 23
 }
@@ -11301,8 +11301,8 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 13
@@ -11323,8 +11323,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
 		7:	some
 	]
 	result = 12
@@ -11400,13 +11400,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
+		3:	some
+		5:	const_prim(I32X4)
 		7:	some
+		10:	some
 		12:	some
 		14:	some
-		3:	some
-		10:	some
 		16:	some
-		5:	const_prim(I32X4)
 	]
 	result = 20
 }
@@ -11434,13 +11434,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		16:	some
-		10:	some
-		14:	some
-		5:	const_prim(I16X8)
-		12:	some
-		7:	some
 		3:	some
+		5:	const_prim(I16X8)
+		7:	some
+		10:	some
+		12:	some
+		14:	some
+		16:	some
 	]
 	result = 20
 }
@@ -11468,13 +11468,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		12:	some
 		3:	some
-		10:	some
-		14:	some
-		16:	some
 		5:	const_prim(I32X4)
 		7:	some
+		10:	some
+		12:	some
+		14:	some
+		16:	some
 	]
 	result = 20
 }
@@ -11502,13 +11502,13 @@ expansion {
 		20: InstOutput	constructor(output_reg, [19], 3)
 	]
 	constraints = [
-		12:	some
-		16:	some
 		3:	some
-		14:	some
-		10:	some
 		5:	const_prim(I16X8)
 		7:	some
+		10:	some
+		12:	some
+		14:	some
+		16:	some
 	]
 	result = 20
 }
@@ -11558,8 +11558,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		8:	some
 		6:	some
+		8:	some
 	]
 	result = 22
 }
@@ -11593,10 +11593,10 @@ expansion {
 		26: InstOutput	constructor(output, [25], 9)
 	]
 	constraints = [
-		6:	some
-		9:	const_int(2)
 		3:	some
+		6:	some
 		8:	const_int(32)
+		9:	const_int(2)
 	]
 	result = 26
 }
@@ -11624,9 +11624,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		9:	const_int(2)
-		8:	const_int(64)
 		6:	some
+		8:	const_int(64)
+		9:	const_int(2)
 	]
 	result = 19
 }
@@ -11662,8 +11662,8 @@ expansion {
 		9: InstOutput	constructor(output_reg, [8], 3)
 	]
 	constraints = [
-		5:	const_prim(I64)
 		3:	some
+		5:	const_prim(I64)
 	]
 	result = 9
 }
@@ -11705,9 +11705,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(F32X4)
 		3:	some
+		5:	const_prim(F32X4)
+		7:	some
 	]
 	result = 12
 }
@@ -11729,9 +11729,9 @@ expansion {
 		14: InstOutput	constructor(output, [13], 4)
 	]
 	constraints = [
-		7:	some
-		5:	const_prim(I128)
 		3:	some
+		5:	const_prim(I128)
+		7:	some
 	]
 	result = 14
 }
@@ -11774,8 +11774,8 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 13
 }
@@ -11801,9 +11801,9 @@ expansion {
 		18: InstOutput	constructor(output_reg, [17], 5)
 	]
 	constraints = [
-		9:	some
 		3:	some
 		6:	some
+		9:	some
 	]
 	result = 18
 }
@@ -11823,9 +11823,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	const_int(14673614102390417578512422760905835780)
 		3:	some
 		6:	some
+		7:	const_int(14673614102390417578512422760905835780)
 	]
 	result = 12
 }
@@ -11867,9 +11867,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	const_int(10680758337341567148842519922299176455)
 		3:	some
 		6:	some
+		7:	const_int(10680758337341567148842519922299176455)
 	]
 	result = 12
 }
@@ -11890,8 +11890,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	const_int(17342576855639742879858139805557719810)
 		6:	some
+		7:	const_int(17342576855639742879858139805557719810)
 	]
 	result = 12
 }
@@ -11911,9 +11911,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	const_int(16018520953223639909183530438118932995)
 		3:	some
 		6:	some
+		7:	const_int(16018520953223639909183530438118932995)
 	]
 	result = 12
 }
@@ -11933,9 +11933,9 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		7:	const_int(18687320815856387368178823909286805505)
 		3:	some
 		6:	some
+		7:	const_int(18687320815856387368178823909286805505)
 	]
 	result = 12
 }
@@ -11957,9 +11957,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		7:	const_int(41362427188014754909301208165426529540)
-		3:	some
 	]
 	result = 14
 }
@@ -11981,9 +11981,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		7:	const_int(36024664569647092737326704519438008576)
-		3:	some
 	]
 	result = 14
 }
@@ -12053,9 +12053,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(41284541550424544734358823780242100481)
 		3:	some
 		6:	some
+		7:	const_int(41284541550424544734358823780242100481)
 	]
 	result = 14
 }
@@ -12078,8 +12078,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	const_int(39950100895832629191365197868744970240)
 		6:	some
+		7:	const_int(39950100895832629191365197868744970240)
 	]
 	result = 14
 }
@@ -12102,8 +12102,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	const_int(41362427188014754909590568856778836232)
 		6:	some
+		7:	const_int(41362427188014754909590568856778836232)
 	]
 	result = 14
 }
@@ -12149,9 +12149,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(41362142129435743685477327603181816072)
-		6:	some
 		3:	some
+		6:	some
+		7:	const_int(41362142129435743685477327603181816072)
 	]
 	result = 14
 }
@@ -12173,9 +12173,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(30686616892700419341528320311204774144)
-		6:	some
 		3:	some
+		6:	some
+		7:	const_int(30686616892700419341528320311204774144)
 	]
 	result = 14
 }
@@ -12198,8 +12198,8 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		7:	const_int(41284561912683712994304547342093195272)
 		6:	some
+		7:	const_int(41284561912683712994304547342093195272)
 	]
 	result = 14
 }
@@ -12221,8 +12221,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		7:	const_int(30609036675948388650355540050116153344)
 	]
 	result = 14
@@ -12245,8 +12245,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		7:	const_int(41362427191743139026172726477975062792)
 	]
 	result = 14
@@ -12269,9 +12269,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(30686901955007814682223719185998020864)
 		3:	some
 		6:	some
+		7:	const_int(30686901955007814682223719185998020864)
 	]
 	result = 14
 }
@@ -12293,8 +12293,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		7:	const_int(41362427190500344320355979912890680580)
 	]
 	result = 14
@@ -12317,8 +12317,8 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		7:	const_int(36024664572132682148381476266902159616)
 	]
 	result = 14
@@ -12341,9 +12341,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(41362386467224802506860000736977486594)
-		6:	some
 		3:	some
+		6:	some
+		7:	const_int(41362386467224802506860000736977486594)
 	]
 	result = 14
 }
@@ -12365,9 +12365,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(38693505158040971420872748913983226112)
 		3:	some
 		6:	some
+		7:	const_int(38693505158040971420872748913983226112)
 	]
 	result = 14
 }
@@ -12389,9 +12389,9 @@ expansion {
 		14: InstOutput	constructor(output_reg, [13], 4)
 	]
 	constraints = [
-		7:	const_int(41357194091136896220700492464948314881)
 		3:	some
 		6:	some
+		7:	const_int(41357194091136896220700492464948314881)
 	]
 	result = 14
 }
@@ -12436,8 +12436,8 @@ expansion {
 		13: InstOutput	constructor(output_reg, [12], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 13
 }
@@ -12478,8 +12478,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 12
 }
@@ -12499,8 +12499,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 12
 }
@@ -12520,8 +12520,8 @@ expansion {
 		12: InstOutput	constructor(output_reg, [11], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 12
 }
@@ -12552,9 +12552,9 @@ expansion {
 		23: InstOutput	constructor(output, [22], 10)
 	]
 	constraints = [
+		3:	some
 		5:	const_prim(I128)
 		7:	some
-		3:	some
 	]
 	result = 23
 }
@@ -12578,9 +12578,9 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 5)
 	]
 	constraints = [
-		8:	some
 		3:	some
 		6:	some
+		8:	some
 	]
 	result = 16
 }
@@ -12611,11 +12611,11 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
+		3:	some
 		6:	some
 		8:	some
-		3:	some
-		13:	some
 		11:	some
+		13:	some
 	]
 	result = 23
 }
@@ -12646,11 +12646,11 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
+		3:	some
+		6:	some
 		8:	some
 		11:	some
-		6:	some
 		13:	some
-		3:	some
 	]
 	result = 23
 }
@@ -12681,10 +12681,10 @@ expansion {
 		23: InstOutput	constructor(output_reg, [22], 5)
 	]
 	constraints = [
-		11:	some
+		3:	some
 		6:	some
 		8:	some
-		3:	some
+		11:	some
 		13:	some
 	]
 	result = 23
@@ -12721,14 +12721,14 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		18:	some
-		11:	some
-		21:	some
-		8:	some
-		13:	some
-		16:	some
 		3:	some
 		6:	some
+		8:	some
+		11:	some
+		13:	some
+		16:	some
+		18:	some
+		21:	some
 	]
 	result = 28
 }
@@ -12764,14 +12764,14 @@ expansion {
 		28: InstOutput	constructor(output_reg, [27], 4)
 	]
 	constraints = [
-		16:	some
 		3:	some
-		18:	some
 		6:	some
 		8:	some
-		13:	some
-		21:	some
 		11:	some
+		13:	some
+		16:	some
+		18:	some
+		21:	some
 	]
 	result = 28
 }
@@ -12796,10 +12796,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		8:	some
-		11:	some
 		3:	some
 		6:	some
+		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -12824,10 +12824,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
+		3:	some
+		6:	some
 		8:	some
 		11:	some
-		6:	some
-		3:	some
 	]
 	result = 17
 }
@@ -12853,9 +12853,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		11:	some
-		8:	some
 		6:	some
+		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -12880,8 +12880,8 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 		11:	some
 	]
@@ -12909,9 +12909,9 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		11:	some
-		8:	some
 		6:	some
+		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -12936,10 +12936,10 @@ expansion {
 		17: InstOutput	constructor(output_reg, [16], 3)
 	]
 	constraints = [
-		11:	some
 		3:	some
-		8:	some
 		6:	some
+		8:	some
+		11:	some
 	]
 	result = 17
 }
@@ -12963,8 +12963,8 @@ expansion {
 		16: InstOutput	constructor(output_reg, [15], 4)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 		8:	some
 	]
 	result = 16
@@ -13027,8 +13027,8 @@ expansion {
 		11: InstOutput	constructor(output_reg, [10], 2)
 	]
 	constraints = [
-		6:	some
 		3:	some
+		6:	some
 	]
 	result = 11
 }

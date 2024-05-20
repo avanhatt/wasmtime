@@ -16,8 +16,8 @@ expansion {
 		13: Reg	constructor(add_imm_to_addr, [8, 12], 3)
 	]
 	constraints = [
-		6:	variant(Opcode::Load)
 		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
 	]
 	result = 13
 }
