@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use crate::lexer::Pos;
+use crate::{lexer::Pos, sema::TypeEnv};
 
 /// A collection of errors from attempting to compile some ISLE source files.
 #[derive(Debug)]
@@ -213,6 +213,45 @@ impl Errors {
             writeln!(f)?;
         }
         Ok(())
+    }
+}
+
+/// Builder for the `isle::Errors`.
+pub struct ErrorsBuilder(Errors);
+
+impl ErrorsBuilder {
+    /// Start building an [Errors] object.
+    pub fn new() -> Self {
+        Self(Errors {
+            errors: Vec::new(),
+            filenames: Vec::new(),
+            file_texts: Vec::new(),
+        })
+    }
+
+    /// Return the built [Errors] object.
+    pub fn build(self) -> Errors {
+        self.0
+    }
+
+    /// Set the `errors` field of the under-construction [Errors] object.
+    pub fn errors(mut self, errors: Vec<Error>) -> Self {
+        self.0.errors = errors;
+        self
+    }
+
+    /// Set the `errors` field of the under-construction [Errors] object to a single error.
+    pub fn error(self, error: Error) -> Self {
+        self.errors(vec![error])
+    }
+
+    /// Set the [Errors::filenames] and [Errors::file_texts] fields of the
+    /// under-construction [Errors] object from the corresponding entries of the
+    /// [TypeEnv].
+    pub fn file_info_from_tyenv(mut self, tyenv: &TypeEnv) -> Self {
+        self.0.filenames = tyenv.filenames.clone();
+        self.0.file_texts = tyenv.file_texts.clone();
+        self
     }
 }
 
