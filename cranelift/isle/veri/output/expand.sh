@@ -28,3 +28,8 @@ expand \
 expand \
     --term-name lower \
     > output/lower.out
+
+expand \
+    --term-name lower \
+    --no-expand-internal-extractors \
+    > output/lower_internal_extractors.out

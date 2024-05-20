@@ -46,9 +46,9 @@ expansion {
 		24: Reg	constructor(alu_rr_imm12, [23, 17, 8, 18], 1)
 	]
 	constraints = [
-		6:	variant(Opcode::Load)
 		16:	some
 		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
 	]
 	result = 24
 }
@@ -68,8 +68,8 @@ expansion {
 	]
 	constraints = [
 		5:	variant(InstructionData::Load)
-		12:	const_int(0)
 		6:	variant(Opcode::Load)
+		12:	const_int(0)
 	]
 	result = 8
 }
