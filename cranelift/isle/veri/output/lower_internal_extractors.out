@@ -12637,9 +12637,10 @@ expansion {
 		15: Inst	match_some(12)
 		16: Option(Value)	extractor(uwiden_high, 15)
 		17: Value	match_some(14)
-		18: Reg	constructor(put_in_reg, [17], 1)
-		19: Reg	constructor(uaddlp16, [18], 2)
-		20: InstOutput	constructor(output_reg, [19], 3)
+		18: Value	match_some(16)
+		19: Reg	constructor(put_in_reg, [17], 1)
+		20: Reg	constructor(uaddlp16, [19], 2)
+		21: InstOutput	constructor(output_reg, [20], 3)
 	]
 	constraints = [
 		3:	some
@@ -12650,7 +12651,10 @@ expansion {
 		14:	some
 		16:	some
 	]
-	result = 20
+	equals = [
+		18 == 17
+	]
+	result = 21
 }
 expansion {
 	term = lower
@@ -12674,9 +12678,10 @@ expansion {
 		15: Inst	match_some(12)
 		16: Option(Value)	extractor(uwiden_high, 15)
 		17: Value	match_some(14)
-		18: Reg	constructor(put_in_reg, [17], 1)
-		19: Reg	constructor(uaddlp8, [18], 2)
-		20: InstOutput	constructor(output_reg, [19], 3)
+		18: Value	match_some(16)
+		19: Reg	constructor(put_in_reg, [17], 1)
+		20: Reg	constructor(uaddlp8, [19], 2)
+		21: InstOutput	constructor(output_reg, [20], 3)
 	]
 	constraints = [
 		3:	some
@@ -12687,7 +12692,10 @@ expansion {
 		14:	some
 		16:	some
 	]
-	result = 20
+	equals = [
+		18 == 17
+	]
+	result = 21
 }
 expansion {
 	term = lower
@@ -12711,9 +12719,10 @@ expansion {
 		15: Inst	match_some(14)
 		16: Option(Value)	extractor(swiden_high, 15)
 		17: Value	match_some(12)
-		18: Reg	constructor(put_in_reg, [17], 1)
-		19: Reg	constructor(saddlp16, [18], 2)
-		20: InstOutput	constructor(output_reg, [19], 3)
+		18: Value	match_some(16)
+		19: Reg	constructor(put_in_reg, [17], 1)
+		20: Reg	constructor(saddlp16, [19], 2)
+		21: InstOutput	constructor(output_reg, [20], 3)
 	]
 	constraints = [
 		3:	some
@@ -12724,7 +12733,10 @@ expansion {
 		14:	some
 		16:	some
 	]
-	result = 20
+	equals = [
+		18 == 17
+	]
+	result = 21
 }
 expansion {
 	term = lower
@@ -12748,9 +12760,10 @@ expansion {
 		15: Inst	match_some(14)
 		16: Option(Value)	extractor(swiden_high, 15)
 		17: Value	match_some(12)
-		18: Reg	constructor(put_in_reg, [17], 1)
-		19: Reg	constructor(saddlp8, [18], 2)
-		20: InstOutput	constructor(output_reg, [19], 3)
+		18: Value	match_some(16)
+		19: Reg	constructor(put_in_reg, [17], 1)
+		20: Reg	constructor(saddlp8, [19], 2)
+		21: InstOutput	constructor(output_reg, [20], 3)
 	]
 	constraints = [
 		3:	some
@@ -12761,7 +12774,10 @@ expansion {
 		14:	some
 		16:	some
 	]
-	result = 20
+	equals = [
+		18 == 17
+	]
+	result = 21
 }
 expansion {
 	term = lower
