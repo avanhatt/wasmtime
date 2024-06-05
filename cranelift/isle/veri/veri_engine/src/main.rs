@@ -1,6 +1,7 @@
 //! Prototype verification tool for Cranelift's ISLE lowering rules.
 
 use clap::{ArgAction, Parser};
+use cranelift_codegen_meta as meta;
 use std::env;
 use std::path::PathBuf;
 use veri_engine_lib::verify::verify_rules;
@@ -59,6 +60,10 @@ fn main() {
                 .join("prelude_lower.isle"),
         );
     }
+
+    // Just confirm we can call get_isle_compilations from codegen meta here.
+    // TODO(mbm): use the right directories! use these!
+    let _isle_compilations = meta::isle::get_isle_compilations(&cur_dir, &cur_dir);
 
     if args.aarch64 {
         inputs.push(
