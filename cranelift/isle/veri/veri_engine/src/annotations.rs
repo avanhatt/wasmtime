@@ -444,6 +444,11 @@ pub fn parse_annotations(defs: &Defs, termenv: &TermEnv, typeenv: &TypeEnv) -> A
                         .map(signature_to_term_type_signature)
                         .collect(),
                 };
+                assert!(
+                    !instantiations_map.contains_key(&term_id),
+                    "duplicate instantiation for term {}",
+                    inst.term.0
+                );
                 instantiations_map.insert(term_id, sigs);
             }
             _ => {}

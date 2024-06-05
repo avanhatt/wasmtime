@@ -411,13 +411,9 @@ impl Flags {
     pub fn enable_pinned_reg(&self) -> bool {
         self.numbered_predicate(8)
     }
-    /// Enable the use of SIMD instructions.
-    pub fn enable_simd(&self) -> bool {
-        self.numbered_predicate(9)
-    }
     /// Enable the use of atomic instructions
     pub fn enable_atomics(&self) -> bool {
-        self.numbered_predicate(10)
+        self.numbered_predicate(9)
     }
     /// Enable safepoint instruction insertions.
     ///
@@ -425,7 +421,7 @@ impl Flags {
     /// instruction on top of calls and interrupt traps in order to display the
     /// live reference values at that point in the program.
     pub fn enable_safepoints(&self) -> bool {
-        self.numbered_predicate(11)
+        self.numbered_predicate(10)
     }
     /// Enable various ABI extensions defined by LLVM's behavior.
     ///
@@ -440,7 +436,7 @@ impl Flags {
     /// `i128` arguments, and will panic if they are present and this
     /// option is not set.
     pub fn enable_llvm_abi_extensions(&self) -> bool {
-        self.numbered_predicate(12)
+        self.numbered_predicate(11)
     }
     /// Generate unwind information.
     ///
@@ -449,7 +445,7 @@ impl Flags {
     /// libunwind (such as in Wasmtime), and is unconditionally needed on
     /// certain platforms (such as Windows) that must always be able to unwind.
     pub fn unwind_info(&self) -> bool {
-        self.numbered_predicate(13)
+        self.numbered_predicate(12)
     }
     /// Preserve frame pointers
     ///
@@ -459,7 +455,7 @@ impl Flags {
     /// profilers and similar tools walk frame pointers to capture stacks.
     /// Enabling this option will play nice with those tools.
     pub fn preserve_frame_pointers(&self) -> bool {
-        self.numbered_predicate(14)
+        self.numbered_predicate(13)
     }
     /// Generate CFG metadata for machine code.
     ///
@@ -471,19 +467,19 @@ impl Flags {
     /// This is useful for, e.g., machine-code analyses that verify certain
     /// properties of the generated code.
     pub fn machine_code_cfg_info(&self) -> bool {
-        self.numbered_predicate(15)
+        self.numbered_predicate(14)
     }
     /// Enable the use of stack probes for supported calling conventions.
     pub fn enable_probestack(&self) -> bool {
-        self.numbered_predicate(16)
+        self.numbered_predicate(15)
     }
     /// Enable if the stack probe adjusts the stack pointer.
     pub fn probestack_func_adjusts_sp(&self) -> bool {
-        self.numbered_predicate(17)
+        self.numbered_predicate(16)
     }
     /// Enable the use of jump tables in generated machine code.
     pub fn enable_jump_tables(&self) -> bool {
-        self.numbered_predicate(18)
+        self.numbered_predicate(17)
     }
     /// Enable Spectre mitigation on heap bounds checks.
     ///
@@ -495,7 +491,7 @@ impl Flags {
     /// recommended for secure sandboxing. The embedder should consider
     /// the security implications carefully before disabling this option.
     pub fn enable_heap_access_spectre_mitigation(&self) -> bool {
-        self.numbered_predicate(19)
+        self.numbered_predicate(18)
     }
     /// Enable Spectre mitigation on table bounds checks.
     ///
@@ -509,7 +505,7 @@ impl Flags {
     /// recommended for secure sandboxing. The embedder should consider
     /// the security implications carefully before disabling this option.
     pub fn enable_table_access_spectre_mitigation(&self) -> bool {
-        self.numbered_predicate(20)
+        self.numbered_predicate(19)
     }
     /// Enable additional checks for debugging the incremental compilation cache.
     ///
@@ -520,10 +516,10 @@ impl Flags {
     /// This option is disabled by default and requires enabling the "incremental-cache" Cargo
     /// feature in cranelift-codegen.
     pub fn enable_incremental_compilation_cache_checks(&self) -> bool {
-        self.numbered_predicate(21)
+        self.numbered_predicate(20)
     }
 }
-static DESCRIPTORS: [detail::Descriptor; 28] = [
+static DESCRIPTORS: [detail::Descriptor; 27] = [
     detail::Descriptor {
         name: "opt_level",
         description: "Optimization level for generated code.",
@@ -615,82 +611,76 @@ static DESCRIPTORS: [detail::Descriptor; 28] = [
         detail: detail::Detail::Bool { bit: 0 },
     },
     detail::Descriptor {
-        name: "enable_simd",
-        description: "Enable the use of SIMD instructions.",
-        offset: 7,
-        detail: detail::Detail::Bool { bit: 1 },
-    },
-    detail::Descriptor {
         name: "enable_atomics",
         description: "Enable the use of atomic instructions",
         offset: 7,
-        detail: detail::Detail::Bool { bit: 2 },
+        detail: detail::Detail::Bool { bit: 1 },
     },
     detail::Descriptor {
         name: "enable_safepoints",
         description: "Enable safepoint instruction insertions.",
         offset: 7,
-        detail: detail::Detail::Bool { bit: 3 },
+        detail: detail::Detail::Bool { bit: 2 },
     },
     detail::Descriptor {
         name: "enable_llvm_abi_extensions",
         description: "Enable various ABI extensions defined by LLVM's behavior.",
         offset: 7,
-        detail: detail::Detail::Bool { bit: 4 },
+        detail: detail::Detail::Bool { bit: 3 },
     },
     detail::Descriptor {
         name: "unwind_info",
         description: "Generate unwind information.",
         offset: 7,
-        detail: detail::Detail::Bool { bit: 5 },
+        detail: detail::Detail::Bool { bit: 4 },
     },
     detail::Descriptor {
         name: "preserve_frame_pointers",
         description: "Preserve frame pointers",
         offset: 7,
-        detail: detail::Detail::Bool { bit: 6 },
+        detail: detail::Detail::Bool { bit: 5 },
     },
     detail::Descriptor {
         name: "machine_code_cfg_info",
         description: "Generate CFG metadata for machine code.",
         offset: 7,
-        detail: detail::Detail::Bool { bit: 7 },
+        detail: detail::Detail::Bool { bit: 6 },
     },
     detail::Descriptor {
         name: "enable_probestack",
         description: "Enable the use of stack probes for supported calling conventions.",
-        offset: 8,
-        detail: detail::Detail::Bool { bit: 0 },
+        offset: 7,
+        detail: detail::Detail::Bool { bit: 7 },
     },
     detail::Descriptor {
         name: "probestack_func_adjusts_sp",
         description: "Enable if the stack probe adjusts the stack pointer.",
         offset: 8,
-        detail: detail::Detail::Bool { bit: 1 },
+        detail: detail::Detail::Bool { bit: 0 },
     },
     detail::Descriptor {
         name: "enable_jump_tables",
         description: "Enable the use of jump tables in generated machine code.",
         offset: 8,
-        detail: detail::Detail::Bool { bit: 2 },
+        detail: detail::Detail::Bool { bit: 1 },
     },
     detail::Descriptor {
         name: "enable_heap_access_spectre_mitigation",
         description: "Enable Spectre mitigation on heap bounds checks.",
         offset: 8,
-        detail: detail::Detail::Bool { bit: 3 },
+        detail: detail::Detail::Bool { bit: 2 },
     },
     detail::Descriptor {
         name: "enable_table_access_spectre_mitigation",
         description: "Enable Spectre mitigation on table bounds checks.",
         offset: 8,
-        detail: detail::Detail::Bool { bit: 4 },
+        detail: detail::Detail::Bool { bit: 3 },
     },
     detail::Descriptor {
         name: "enable_incremental_compilation_cache_checks",
         description: "Enable additional checks for debugging the incremental compilation cache.",
         offset: 8,
-        detail: detail::Detail::Bool { bit: 5 },
+        detail: detail::Detail::Bool { bit: 4 },
     },
 ];
 static ENUMERATORS: [&str; 16] = [
@@ -718,15 +708,15 @@ static HASH_TABLE: [u16; 64] = [
     1,
     8,
     0xffff,
+    25,
+    0xffff,
+    19,
+    22,
+    0xffff,
+    0xffff,
     26,
-    15,
-    20,
-    23,
     0xffff,
-    0xffff,
-    27,
-    0xffff,
-    17,
+    16,
     0xffff,
     14,
     0xffff,
@@ -745,25 +735,25 @@ static HASH_TABLE: [u16; 64] = [
     0xffff,
     0xffff,
     0xffff,
-    22,
+    21,
     0xffff,
     13,
-    18,
+    17,
     9,
-    16,
+    15,
     0xffff,
     6,
     0xffff,
     0xffff,
-    19,
+    18,
     3,
     0xffff,
-    25,
-    0xffff,
-    0xffff,
-    0xffff,
-    21,
     24,
+    0xffff,
+    0xffff,
+    0xffff,
+    20,
+    23,
     0xffff,
     7,
     11,
@@ -784,7 +774,7 @@ static TEMPLATE: detail::Template = detail::Template {
     descriptors: &DESCRIPTORS,
     enumerators: &ENUMERATORS,
     hash_table: &HASH_TABLE,
-    defaults: &[0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x4c, 0x24, 0x1c],
+    defaults: &[0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x4c, 0x12, 0x0e],
     presets: &PRESETS,
 };
 /// Create a `settings::Builder` for the shared settings group.
