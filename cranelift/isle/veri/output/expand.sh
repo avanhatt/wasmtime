@@ -10,6 +10,8 @@ function expand() {
         "$@"
 }
 
+rm -f output/*.out
+
 expand \
     --term-name sink_load_into_addr \
     > output/sink_load_into_addr.out
@@ -38,3 +40,10 @@ expand \
     --term-name lower \
     --no-expand-internal-extractors \
     > output/lower_internal_extractors.out
+
+expand \
+    --term-name lower \
+    --no-expand-internal-extractors \
+    --maximal-inlining \
+    --max-rules 3 \
+    > output/lower_internal_extractors_maximal_inline_3.out

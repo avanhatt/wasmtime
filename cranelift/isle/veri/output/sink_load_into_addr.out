@@ -1,5 +1,4 @@
 inline term: sink_load_into_addr
-finish: #complete = 0
 expansions = 1
 expansion {
 	term = sink_load_into_addr

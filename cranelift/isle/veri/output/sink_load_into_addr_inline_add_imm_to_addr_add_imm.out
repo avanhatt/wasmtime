@@ -1,9 +1,6 @@
 inline term: add_imm_to_addr
 inline term: add_imm
 inline term: sink_load_into_addr
-finish: #complete = 0
-finish: #complete = 1
-finish: #complete = 2
 expansions = 3
 expansion {
 	term = sink_load_into_addr
