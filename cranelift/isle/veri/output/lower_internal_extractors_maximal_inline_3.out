@@ -6273,7 +6273,7 @@ expansion {
 		3:	some
 		6:	some
 		8:	some
-		11:	const_prim(R64)
+		11:	const_prim(I64)
 		12:	some
 		19:	const_prim(false)
 		21:	const_prim(true)
@@ -6440,7 +6440,7 @@ expansion {
 		5:	const_prim(R32)
 		6:	some
 		8:	some
-		11:	const_prim(I64)
+		11:	const_prim(R64)
 		12:	some
 		19:	const_prim(false)
 		21:	const_prim(true)
@@ -6482,7 +6482,7 @@ expansion {
 		5:	const_prim(R32)
 		6:	some
 		8:	some
-		11:	const_prim(R64)
+		11:	const_prim(I32)
 		12:	some
 		19:	const_prim(false)
 		21:	const_prim(true)
@@ -6521,89 +6521,6 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		6:	some
-		8:	some
-		11:	const_prim(I64)
-		12:	some
-		19:	const_prim(false)
-		21:	const_prim(true)
-	]
-	result = 29
-}
-expansion {
-	term = lower
-	rules = [
-		../../codegen/src/isa/aarch64/lower.isle line 2480
-		../../codegen/src/prelude.isle line 330
-		../../codegen/src/prelude.isle line 332
-		../../codegen/src/isa/aarch64/inst.isle line 3471
-		../../codegen/src/prelude_lower.isle line 73
-	]
-	bindings = [
-		0: Inst	argument(0)
-		3: Option((Type, Inst))	extractor(has_type, 0)
-		4: (Type, Inst)	match_some(3)
-		5: Type	match_tuple(4, 0)
-		6: Option(Type)	constructor(ty_int_ref_scalar_64, [5], 0)
-		7: Inst	match_tuple(4, 1)
-		8: Option((MemFlags, Value))	extractor(bitcast, 7)
-		9: (MemFlags, Value)	match_some(8)
-		10: Value	match_tuple(9, 1)
-		11: Type	extractor(value_type, 10)
-		12: Option(Type)	constructor(ty_int_ref_scalar_64, [11], 0)
-		15: Reg	constructor(put_in_reg, [10], 1)
-		19: bool	const_prim(true)
-		21: bool	const_prim(false)
-		24: Type	const_prim(I32)
-		25: WritableReg	constructor(temp_writable_reg, [24], 1)
-		26: Reg	constructor(writable_reg_to_reg, [25], 0)
-		28: ValueRegs	constructor(value_reg, [26], 1)
-		29: InstOutput	constructor(output, [28], 2)
-	]
-	constraints = [
-		3:	some
-		6:	some
-		8:	some
-		11:	const_prim(R32)
-		12:	some
-		19:	const_prim(false)
-		21:	const_prim(true)
-	]
-	result = 29
-}
-expansion {
-	term = lower
-	rules = [
-		../../codegen/src/isa/aarch64/lower.isle line 2480
-		../../codegen/src/prelude.isle line 330
-		../../codegen/src/prelude.isle line 331
-		../../codegen/src/isa/aarch64/inst.isle line 3477
-		../../codegen/src/prelude_lower.isle line 73
-	]
-	bindings = [
-		0: Inst	argument(0)
-		3: Option((Type, Inst))	extractor(has_type, 0)
-		4: (Type, Inst)	match_some(3)
-		5: Type	match_tuple(4, 0)
-		6: Option(Type)	constructor(ty_int_ref_scalar_64, [5], 0)
-		7: Inst	match_tuple(4, 1)
-		8: Option((MemFlags, Value))	extractor(bitcast, 7)
-		9: (MemFlags, Value)	match_some(8)
-		10: Value	match_tuple(9, 1)
-		11: Type	extractor(value_type, 10)
-		12: Option(Type)	constructor(ty_int_ref_scalar_64, [11], 0)
-		15: Reg	constructor(put_in_reg, [10], 1)
-		19: bool	const_prim(true)
-		21: bool	const_prim(true)
-		24: Type	const_prim(I64)
-		25: WritableReg	constructor(temp_writable_reg, [24], 1)
-		26: Reg	constructor(writable_reg_to_reg, [25], 0)
-		28: ValueRegs	constructor(value_reg, [26], 1)
-		29: InstOutput	constructor(output, [28], 2)
-	]
-	constraints = [
-		3:	some
-		5:	const_prim(R64)
 		6:	some
 		8:	some
 		11:	const_prim(I64)
@@ -6618,6 +6535,89 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2480
 		../../codegen/src/prelude.isle line 330
+		../../codegen/src/prelude.isle line 332
+		../../codegen/src/isa/aarch64/inst.isle line 3471
+		../../codegen/src/prelude_lower.isle line 73
+	]
+	bindings = [
+		0: Inst	argument(0)
+		3: Option((Type, Inst))	extractor(has_type, 0)
+		4: (Type, Inst)	match_some(3)
+		5: Type	match_tuple(4, 0)
+		6: Option(Type)	constructor(ty_int_ref_scalar_64, [5], 0)
+		7: Inst	match_tuple(4, 1)
+		8: Option((MemFlags, Value))	extractor(bitcast, 7)
+		9: (MemFlags, Value)	match_some(8)
+		10: Value	match_tuple(9, 1)
+		11: Type	extractor(value_type, 10)
+		12: Option(Type)	constructor(ty_int_ref_scalar_64, [11], 0)
+		15: Reg	constructor(put_in_reg, [10], 1)
+		19: bool	const_prim(true)
+		21: bool	const_prim(false)
+		24: Type	const_prim(I32)
+		25: WritableReg	constructor(temp_writable_reg, [24], 1)
+		26: Reg	constructor(writable_reg_to_reg, [25], 0)
+		28: ValueRegs	constructor(value_reg, [26], 1)
+		29: InstOutput	constructor(output, [28], 2)
+	]
+	constraints = [
+		3:	some
+		6:	some
+		8:	some
+		11:	const_prim(I32)
+		12:	some
+		19:	const_prim(false)
+		21:	const_prim(true)
+	]
+	result = 29
+}
+expansion {
+	term = lower
+	rules = [
+		../../codegen/src/isa/aarch64/lower.isle line 2480
+		../../codegen/src/prelude.isle line 330
+		../../codegen/src/prelude.isle line 331
+		../../codegen/src/isa/aarch64/inst.isle line 3477
+		../../codegen/src/prelude_lower.isle line 73
+	]
+	bindings = [
+		0: Inst	argument(0)
+		3: Option((Type, Inst))	extractor(has_type, 0)
+		4: (Type, Inst)	match_some(3)
+		5: Type	match_tuple(4, 0)
+		6: Option(Type)	constructor(ty_int_ref_scalar_64, [5], 0)
+		7: Inst	match_tuple(4, 1)
+		8: Option((MemFlags, Value))	extractor(bitcast, 7)
+		9: (MemFlags, Value)	match_some(8)
+		10: Value	match_tuple(9, 1)
+		11: Type	extractor(value_type, 10)
+		12: Option(Type)	constructor(ty_int_ref_scalar_64, [11], 0)
+		15: Reg	constructor(put_in_reg, [10], 1)
+		19: bool	const_prim(true)
+		21: bool	const_prim(true)
+		24: Type	const_prim(I64)
+		25: WritableReg	constructor(temp_writable_reg, [24], 1)
+		26: Reg	constructor(writable_reg_to_reg, [25], 0)
+		28: ValueRegs	constructor(value_reg, [26], 1)
+		29: InstOutput	constructor(output, [28], 2)
+	]
+	constraints = [
+		3:	some
+		5:	const_prim(R64)
+		6:	some
+		8:	some
+		11:	const_prim(I64)
+		12:	some
+		19:	const_prim(false)
+		21:	const_prim(true)
+	]
+	result = 29
+}
+expansion {
+	term = lower
+	rules = [
+		../../codegen/src/isa/aarch64/lower.isle line 2480
+		../../codegen/src/prelude.isle line 330
 		../../codegen/src/prelude.isle line 331
 		../../codegen/src/isa/aarch64/inst.isle line 3471
 		../../codegen/src/prelude_lower.isle line 73
@@ -6648,7 +6648,7 @@ expansion {
 		5:	const_prim(R64)
 		6:	some
 		8:	some
-		11:	const_prim(R32)
+		11:	const_prim(I32)
 		12:	some
 		19:	const_prim(false)
 		21:	const_prim(true)
@@ -6690,7 +6690,7 @@ expansion {
 		5:	const_prim(R32)
 		6:	some
 		8:	some
-		11:	const_prim(R32)
+		11:	const_prim(I64)
 		12:	some
 		19:	const_prim(false)
 		21:	const_prim(true)
@@ -7227,7 +7227,7 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	const_prim(I32)
+		5:	const_prim(R32)
 		6:	some
 		8:	some
 		11:	const_prim(R64)
@@ -7353,7 +7353,7 @@ expansion {
 	]
 	constraints = [
 		3:	some
-		5:	const_prim(I64)
+		5:	const_prim(R64)
 		6:	some
 		8:	some
 		11:	const_prim(R32)
