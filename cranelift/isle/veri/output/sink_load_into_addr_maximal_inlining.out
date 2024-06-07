@@ -1,0 +1,363 @@
+inline term: sink_load_into_addr
+finish: #complete = 0
+finish: #complete = 1
+finish: #complete = 2
+finish: #complete = 3
+finish: #complete = 4
+finish: #complete = 5
+finish: #complete = 6
+finish: #complete = 7
+expansions = 8
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3234
+		../../codegen/src/isa/aarch64/inst.isle line 2960
+		../../codegen/src/isa/aarch64/inst.isle line 2432
+		../../codegen/src/isa/aarch64/inst.isle line 1899
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Type	const_prim(I64)
+		17: ImmExtend	make_variant(ImmExtend::Zero, [])
+		23: Option(Type)	extractor(integral_ty, 16)
+		24: Type	match_some(23)
+		25: Reg	constructor(load_constant64_full, [24, 17, 12], 1)
+		29: ALUOp	make_variant(ALUOp::Add, [])
+		35: Type	const_prim(I64)
+		36: WritableReg	constructor(temp_writable_reg, [35], 1)
+		37: Reg	constructor(writable_reg_to_reg, [36], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		23:	some
+	]
+	result = 37
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3234
+		../../codegen/src/isa/aarch64/inst.isle line 2949
+		../../codegen/src/isa/aarch64/inst.isle line 2432
+		../../codegen/src/isa/aarch64/inst.isle line 2709
+		../../codegen/src/isa/aarch64/inst.isle line 1899
+		../../codegen/src/isa/aarch64/inst.isle line 1885
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Type	const_prim(I64)
+		17: ImmExtend	make_variant(ImmExtend::Zero, [])
+		23: Option(Type)	extractor(integral_ty, 16)
+		24: Type	match_some(23)
+		25: Option(ImmLogic)	constructor(imm_logic_from_u64, [24, 12], 0)
+		26: Option(u16)	constructor(imm_size_from_type, [24], 0)
+		27: Reg	constructor(zero_reg, [], 1)
+		28: ImmLogic	match_some(25)
+		30: u16	match_some(26)
+		31: Reg	constructor(add_range_fact, [55, 30, 12, 12], 3)
+		35: ALUOp	make_variant(ALUOp::Add, [])
+		40: ALUOp	make_variant(ALUOp::Orr, [])
+		46: Type	const_prim(I64)
+		47: WritableReg	constructor(temp_writable_reg, [46], 1)
+		48: Reg	constructor(writable_reg_to_reg, [47], 0)
+		53: Type	const_prim(I64)
+		54: WritableReg	constructor(temp_writable_reg, [53], 1)
+		55: Reg	constructor(writable_reg_to_reg, [54], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		17:	variant(ImmExtend::Zero)
+		23:	some
+		25:	some
+		26:	some
+	]
+	result = 48
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3234
+		../../codegen/src/isa/aarch64/inst.isle line 2941
+		../../codegen/src/isa/aarch64/inst.isle line 2432
+		../../codegen/src/isa/aarch64/inst.isle line 1227
+		../../codegen/src/isa/aarch64/inst.isle line 1878
+		../../codegen/src/isa/aarch64/inst.isle line 1899
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Type	const_prim(I64)
+		17: ImmExtend	make_variant(ImmExtend::Zero, [])
+		23: Option(Type)	extractor(integral_ty, 16)
+		24: Type	match_some(23)
+		25: Option(Type)	extractor(ty_32_or_64, 24)
+		26: Type	match_some(25)
+		27: Option(MoveWideConst)	constructor(move_wide_const_from_inverted_u64, [26, 12], 0)
+		28: MoveWideConst	match_some(27)
+		31: u16	const_int(64, u16)
+		32: Reg	constructor(add_range_fact, [45, 31, 12, 12], 3)
+		36: ALUOp	make_variant(ALUOp::Add, [])
+		39: Option(Type)	extractor(fits_in_64, 26)
+		40: OperandSize	make_variant(OperandSize::Size64, [])
+		43: Type	const_prim(I64)
+		44: WritableReg	constructor(temp_writable_reg, [43], 1)
+		45: Reg	constructor(writable_reg_to_reg, [44], 0)
+		50: Type	const_prim(I64)
+		51: WritableReg	constructor(temp_writable_reg, [50], 1)
+		52: Reg	constructor(writable_reg_to_reg, [51], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		17:	variant(ImmExtend::Zero)
+		23:	some
+		25:	some
+		27:	some
+		39:	some
+	]
+	result = 52
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3234
+		../../codegen/src/isa/aarch64/inst.isle line 2941
+		../../codegen/src/isa/aarch64/inst.isle line 2432
+		../../codegen/src/isa/aarch64/inst.isle line 1226
+		../../codegen/src/isa/aarch64/inst.isle line 1878
+		../../codegen/src/isa/aarch64/inst.isle line 1899
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Type	const_prim(I64)
+		17: ImmExtend	make_variant(ImmExtend::Zero, [])
+		23: Option(Type)	extractor(integral_ty, 16)
+		24: Type	match_some(23)
+		25: Option(Type)	extractor(ty_32_or_64, 24)
+		26: Type	match_some(25)
+		27: Option(MoveWideConst)	constructor(move_wide_const_from_inverted_u64, [26, 12], 0)
+		28: MoveWideConst	match_some(27)
+		31: u16	const_int(64, u16)
+		32: Reg	constructor(add_range_fact, [45, 31, 12, 12], 3)
+		36: ALUOp	make_variant(ALUOp::Add, [])
+		39: Option(Type)	extractor(fits_in_32, 26)
+		40: OperandSize	make_variant(OperandSize::Size32, [])
+		43: Type	const_prim(I64)
+		44: WritableReg	constructor(temp_writable_reg, [43], 1)
+		45: Reg	constructor(writable_reg_to_reg, [44], 0)
+		50: Type	const_prim(I64)
+		51: WritableReg	constructor(temp_writable_reg, [50], 1)
+		52: Reg	constructor(writable_reg_to_reg, [51], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		17:	variant(ImmExtend::Zero)
+		23:	some
+		25:	some
+		27:	some
+		39:	some
+	]
+	result = 52
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3234
+		../../codegen/src/isa/aarch64/inst.isle line 2936
+		../../codegen/src/isa/aarch64/inst.isle line 2432
+		../../codegen/src/isa/aarch64/inst.isle line 1227
+		../../codegen/src/isa/aarch64/inst.isle line 1871
+		../../codegen/src/isa/aarch64/inst.isle line 1899
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Type	const_prim(I64)
+		17: ImmExtend	make_variant(ImmExtend::Zero, [])
+		23: Option(Type)	extractor(integral_ty, 16)
+		24: Type	match_some(23)
+		25: Option(MoveWideConst)	constructor(move_wide_const_from_u64, [24, 12], 0)
+		26: MoveWideConst	match_some(25)
+		29: u16	const_int(64, u16)
+		30: Reg	constructor(add_range_fact, [43, 29, 12, 12], 3)
+		34: ALUOp	make_variant(ALUOp::Add, [])
+		37: Option(Type)	extractor(fits_in_64, 24)
+		38: OperandSize	make_variant(OperandSize::Size64, [])
+		41: Type	const_prim(I64)
+		42: WritableReg	constructor(temp_writable_reg, [41], 1)
+		43: Reg	constructor(writable_reg_to_reg, [42], 0)
+		48: Type	const_prim(I64)
+		49: WritableReg	constructor(temp_writable_reg, [48], 1)
+		50: Reg	constructor(writable_reg_to_reg, [49], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		17:	variant(ImmExtend::Zero)
+		23:	some
+		25:	some
+		37:	some
+	]
+	result = 50
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3234
+		../../codegen/src/isa/aarch64/inst.isle line 2936
+		../../codegen/src/isa/aarch64/inst.isle line 2432
+		../../codegen/src/isa/aarch64/inst.isle line 1226
+		../../codegen/src/isa/aarch64/inst.isle line 1871
+		../../codegen/src/isa/aarch64/inst.isle line 1899
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Type	const_prim(I64)
+		17: ImmExtend	make_variant(ImmExtend::Zero, [])
+		23: Option(Type)	extractor(integral_ty, 16)
+		24: Type	match_some(23)
+		25: Option(MoveWideConst)	constructor(move_wide_const_from_u64, [24, 12], 0)
+		26: MoveWideConst	match_some(25)
+		29: u16	const_int(64, u16)
+		30: Reg	constructor(add_range_fact, [43, 29, 12, 12], 3)
+		34: ALUOp	make_variant(ALUOp::Add, [])
+		37: Option(Type)	extractor(fits_in_32, 24)
+		38: OperandSize	make_variant(OperandSize::Size32, [])
+		41: Type	const_prim(I64)
+		42: WritableReg	constructor(temp_writable_reg, [41], 1)
+		43: Reg	constructor(writable_reg_to_reg, [42], 0)
+		48: Type	const_prim(I64)
+		49: WritableReg	constructor(temp_writable_reg, [48], 1)
+		50: Reg	constructor(writable_reg_to_reg, [49], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		17:	variant(ImmExtend::Zero)
+		23:	some
+		25:	some
+		37:	some
+	]
+	result = 50
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3233
+		../../codegen/src/isa/aarch64/inst.isle line 2435
+		../../codegen/src/isa/aarch64/inst.isle line 2003
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+		16: Option(Imm12)	extractor(imm12_from_u64, 12)
+		17: Type	const_prim(I64)
+		18: Imm12	match_some(16)
+		23: ALUOp	make_variant(ALUOp::Add, [])
+		29: Type	const_prim(I64)
+		30: WritableReg	constructor(temp_writable_reg, [29], 1)
+		31: Reg	constructor(writable_reg_to_reg, [30], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		16:	some
+	]
+	result = 31
+}
+expansion {
+	term = sink_load_into_addr
+	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3227
+		../../codegen/src/isa/aarch64/inst.isle line 3232
+	]
+	bindings = [
+		0: Type	argument(0)
+		1: Inst	argument(1)
+		5: InstructionData	extractor(inst_data, 1)
+		6: Opcode	match_variant(5, InstructionData::Load, opcode)
+		7: Value	match_variant(5, InstructionData::Load, arg)
+		8: Reg	constructor(put_in_reg, [7], 2)
+		9: Offset32	match_variant(5, InstructionData::Load, offset)
+		10: i32	extractor(offset32, 9)
+		11: i64	constructor(i32_as_i64, [10], 0)
+		12: u64	constructor(i64_as_u64, [11], 0)
+	]
+	constraints = [
+		5:	variant(InstructionData::Load)
+		6:	variant(Opcode::Load)
+		12:	const_int(0)
+	]
+	result = 8
+}

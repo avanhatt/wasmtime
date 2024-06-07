@@ -11,5 +11,7 @@ function reachable() {
         > "output/${arch}.reachable"
 }
 
+rm -f output/*.reachable
+
 reachable "aarch64"
 reachable "x64"
