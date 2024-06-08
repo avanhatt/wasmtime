@@ -19,12 +19,13 @@ expansion {
 		12: ScalarSize	constructor(lane_size, [11], 2)
 		13: Reg	constructor(vec_extend, [7, 9, 10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -45,12 +46,13 @@ expansion {
 		12: ScalarSize	constructor(lane_size, [11], 2)
 		13: Reg	constructor(vec_extend, [7, 9, 10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -66,12 +68,13 @@ expansion {
 		7: Reg	constructor(put_in_reg, [6], 1)
 		8: ValueRegs	constructor(value_reg, [7], 2)
 		9: InstOutput	constructor(output, [8], 3)
+		10: Option(InstOutput)	some(9)
 	]
 	constraints = [
 		3:	some
 		5:	const_int(0)
 	]
-	result = 9
+	result = 10
 }
 expansion {
 	term = lower
@@ -86,11 +89,12 @@ expansion {
 		6: Reg	constructor(writable_reg_to_reg, [5], 0)
 		7: ValueRegs	constructor(value_reg, [6], 4)
 		8: InstOutput	constructor(output, [7], 5)
+		9: Option(InstOutput)	some(8)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 8
+	result = 9
 }
 expansion {
 	term = lower
@@ -116,13 +120,14 @@ expansion {
 		17: ScalarSize	constructor(lane_size, [12], 5)
 		18: Reg	constructor(uqxtn2, [14, 16, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -150,13 +155,14 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 4)
 		20: Reg	constructor(uqxtn, [17, 19], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -180,6 +186,7 @@ expansion {
 		15: ScalarSize	constructor(lane_size, [14], 2)
 		16: Reg	constructor(uqxtn, [13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -187,7 +194,7 @@ expansion {
 		9:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -213,13 +220,14 @@ expansion {
 		17: ScalarSize	constructor(lane_size, [12], 5)
 		18: Reg	constructor(sqxtun2, [14, 16, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -247,13 +255,14 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 4)
 		20: Reg	constructor(sqxtun, [17, 19], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -277,6 +286,7 @@ expansion {
 		15: ScalarSize	constructor(lane_size, [14], 2)
 		16: Reg	constructor(sqxtun, [13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -284,7 +294,7 @@ expansion {
 		9:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -310,13 +320,14 @@ expansion {
 		17: ScalarSize	constructor(lane_size, [12], 5)
 		18: Reg	constructor(sqxtn2, [14, 16, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -344,13 +355,14 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 4)
 		20: Reg	constructor(sqxtn, [17, 19], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -374,6 +386,7 @@ expansion {
 		15: ScalarSize	constructor(lane_size, [14], 2)
 		16: Reg	constructor(sqxtn, [13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -381,7 +394,7 @@ expansion {
 		9:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -406,13 +419,14 @@ expansion {
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -437,13 +451,14 @@ expansion {
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -468,13 +483,14 @@ expansion {
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -499,13 +515,14 @@ expansion {
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -530,13 +547,14 @@ expansion {
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -561,13 +579,14 @@ expansion {
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -594,6 +613,7 @@ expansion {
 		18: Reg	constructor(vec_rrr, [11, 14, 16, 17], 4)
 		19: ValueRegs	constructor(value_reg, [18], 5)
 		20: InstOutput	constructor(output, [19], 6)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -601,7 +621,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -625,13 +645,14 @@ expansion {
 		15: Reg	constructor(sub_vec, [11, 13, 14], 4)
 		16: ValueRegs	constructor(value_reg, [15], 5)
 		17: InstOutput	constructor(output, [16], 6)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -655,13 +676,14 @@ expansion {
 		15: Reg	constructor(add_vec, [11, 13, 14], 4)
 		16: ValueRegs	constructor(value_reg, [15], 5)
 		17: InstOutput	constructor(output, [16], 6)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -677,11 +699,12 @@ expansion {
 		7: bool	const_prim(false)
 		8: Reg	constructor(vec_rr_long, [4, 6, 7], 2)
 		9: InstOutput	constructor(output_reg, [8], 3)
+		10: Option(InstOutput)	some(9)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 9
+	result = 10
 }
 expansion {
 	term = lower
@@ -702,6 +725,7 @@ expansion {
 		12: ExternalName	match_tuple(11, 0)
 		13: Reg	constructor(macho_tls_get_addr, [12], 1)
 		14: InstOutput	constructor(output_reg, [13], 2)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
@@ -709,7 +733,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -730,6 +754,7 @@ expansion {
 		12: ExternalName	match_tuple(11, 0)
 		13: Reg	constructor(elf_tls_get_addr, [12], 1)
 		14: InstOutput	constructor(output_reg, [13], 2)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
@@ -737,7 +762,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -771,13 +796,14 @@ expansion {
 		25: Reg	constructor(with_flags_reg, [22, 24], 10)
 		26: ValueRegs	constructor(value_reg, [25], 12)
 		27: InstOutput	constructor(output_pair, [16, 26], 13)
+		28: Option(InstOutput)	some(27)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 27
+	result = 28
 }
 expansion {
 	term = lower
@@ -807,13 +833,14 @@ expansion {
 		21: Reg	constructor(with_flags_reg, [18, 20], 7)
 		22: ValueRegs	constructor(value_reg, [21], 9)
 		23: InstOutput	constructor(output_pair, [15, 22], 10)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -846,13 +873,14 @@ expansion {
 		24: Reg	constructor(with_flags_reg, [21, 23], 8)
 		25: ValueRegs	constructor(value_reg, [24], 10)
 		26: InstOutput	constructor(output_pair, [17, 25], 11)
+		27: Option(InstOutput)	some(26)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 26
+	result = 27
 }
 expansion {
 	term = lower
@@ -886,13 +914,14 @@ expansion {
 		25: Reg	constructor(with_flags_reg, [22, 24], 11)
 		26: ValueRegs	constructor(value_reg, [25], 13)
 		27: InstOutput	constructor(output_pair, [16, 26], 14)
+		28: Option(InstOutput)	some(27)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 27
+	result = 28
 }
 expansion {
 	term = lower
@@ -922,13 +951,14 @@ expansion {
 		21: Reg	constructor(with_flags_reg, [18, 20], 7)
 		22: ValueRegs	constructor(value_reg, [21], 9)
 		23: InstOutput	constructor(output_pair, [15, 22], 10)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -961,13 +991,14 @@ expansion {
 		24: Reg	constructor(with_flags_reg, [21, 23], 8)
 		25: ValueRegs	constructor(value_reg, [24], 10)
 		26: InstOutput	constructor(output_pair, [17, 25], 11)
+		27: Option(InstOutput)	some(26)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 26
+	result = 27
 }
 expansion {
 	term = lower
@@ -988,13 +1019,14 @@ expansion {
 		12: ALUOp	make_variant(ALUOp::SbcS, [])
 		13: Cond	make_variant(Cond::Vs, [])
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -1016,13 +1048,14 @@ expansion {
 		13: ALUOp	make_variant(ALUOp::SubS, [])
 		14: Cond	make_variant(Cond::Vs, [])
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1044,13 +1077,14 @@ expansion {
 		13: ArgumentExtension	make_variant(ArgumentExtension::Sext, [])
 		14: ALUOp	make_variant(ALUOp::Sub, [])
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1071,13 +1105,14 @@ expansion {
 		12: ALUOp	make_variant(ALUOp::SbcS, [])
 		13: Cond	make_variant(Cond::Lo, [])
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -1099,13 +1134,14 @@ expansion {
 		13: ALUOp	make_variant(ALUOp::SubS, [])
 		14: Cond	make_variant(Cond::Lo, [])
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1127,13 +1163,14 @@ expansion {
 		13: ArgumentExtension	make_variant(ArgumentExtension::Uext, [])
 		14: ALUOp	make_variant(ALUOp::Sub, [])
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1154,13 +1191,14 @@ expansion {
 		12: ALUOp	make_variant(ALUOp::AdcS, [])
 		13: Cond	make_variant(Cond::Vs, [])
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -1182,13 +1220,14 @@ expansion {
 		13: ALUOp	make_variant(ALUOp::AddS, [])
 		14: Cond	make_variant(Cond::Vs, [])
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1210,13 +1249,14 @@ expansion {
 		13: ArgumentExtension	make_variant(ArgumentExtension::Sext, [])
 		14: ALUOp	make_variant(ALUOp::Add, [])
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1237,13 +1277,14 @@ expansion {
 		12: ALUOp	make_variant(ALUOp::AdcS, [])
 		13: Cond	make_variant(Cond::Hs, [])
 		14: InstOutput	constructor(overflow_op_128, [9, 10, 11, 12, 13], 1)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -1265,13 +1306,14 @@ expansion {
 		13: ALUOp	make_variant(ALUOp::AddS, [])
 		14: Cond	make_variant(Cond::Hs, [])
 		15: InstOutput	constructor(overflow_op_normal, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1293,13 +1335,14 @@ expansion {
 		13: ArgumentExtension	make_variant(ArgumentExtension::Uext, [])
 		14: ALUOp	make_variant(ALUOp::Add, [])
 		15: InstOutput	constructor(overflow_op_small, [9, 11, 12, 13, 14], 1)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -1324,13 +1367,14 @@ expansion {
 		16: TrapCode	match_tuple(10, 2)
 		17: Reg	constructor(trap_if_overflow, [15, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -1360,12 +1404,13 @@ expansion {
 		21: ShiftOpAndAmt	match_some(20)
 		22: Reg	constructor(add_shift, [6, 13, 18, 21], 9)
 		23: InstOutput	constructor(output_reg, [22], 10)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -1389,12 +1434,13 @@ expansion {
 		15: ScalarSize	make_variant(ScalarSize::Size32, [])
 		16: Reg	constructor(mov_from_vec, [13, 14, 15], 6)
 		17: InstOutput	constructor(output_reg, [16], 7)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32X4)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1418,12 +1464,13 @@ expansion {
 		15: ScalarSize	make_variant(ScalarSize::Size16, [])
 		16: Reg	constructor(mov_from_vec, [13, 14, 15], 6)
 		17: InstOutput	constructor(output_reg, [16], 7)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16X8)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1451,12 +1498,13 @@ expansion {
 		19: ScalarSize	make_variant(ScalarSize::Size16, [])
 		20: Reg	constructor(mov_from_vec, [17, 18, 19], 8)
 		21: InstOutput	constructor(output_reg, [20], 9)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8X16)
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -1471,11 +1519,12 @@ expansion {
 		6: Offset32	match_tuple(4, 1)
 		7: Reg	constructor(compute_stack_addr, [5, 6], 1)
 		8: InstOutput	constructor(output_reg, [7], 2)
+		9: Option(InstOutput)	some(8)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 8
+	result = 9
 }
 expansion {
 	term = lower
@@ -1499,12 +1548,13 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(mov_vec_elem, [9, 10, 12, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1527,12 +1577,13 @@ expansion {
 		14: VectorSize	constructor(vector_size, [13], 3)
 		15: Reg	constructor(mov_to_vec, [9, 10, 12, 14], 4)
 		16: InstOutput	constructor(output_reg, [15], 5)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -1556,13 +1607,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 2)
 		16: Reg	constructor(fpu_move_from_vec, [11, 13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1586,13 +1638,14 @@ expansion {
 		15: ScalarSize	constructor(scalar_size, [14], 2)
 		16: Reg	constructor(mov_from_vec, [11, 13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1612,6 +1665,7 @@ expansion {
 		11: u8	extractor(u8_from_uimm8, 10)
 		12: Value	match_tuple(9, 0)
 		13: InstOutput	constructor(output_value, [12], 1)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -1619,7 +1673,7 @@ expansion {
 		8:	some
 		11:	const_int(0)
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -1637,6 +1691,7 @@ expansion {
 		9: Value	match_tuple(8, 1)
 		10: Type	extractor(value_type, 9)
 		11: InstOutput	constructor(output_value, [9], 1)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
@@ -1644,7 +1699,7 @@ expansion {
 		7:	some
 		10:	const_prim(I128)
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -1664,6 +1719,7 @@ expansion {
 		11: Type	extractor(value_type, 10)
 		12: Option(Type)	constructor(ty_int_ref_scalar_64, [11], 0)
 		13: InstOutput	constructor(output_value, [10], 1)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -1671,7 +1727,7 @@ expansion {
 		8:	some
 		12:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -1695,6 +1751,7 @@ expansion {
 		15: Reg	constructor(put_in_reg, [10], 1)
 		16: Reg	constructor(copy_reg, [11, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1704,7 +1761,7 @@ expansion {
 		13:	const_prim(false)
 		14:	const_prim(true)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1728,6 +1785,7 @@ expansion {
 		15: Reg	constructor(put_in_reg, [10], 1)
 		16: Reg	constructor(copy_reg, [5, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1737,7 +1795,7 @@ expansion {
 		13:	const_prim(true)
 		14:	const_prim(false)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -1763,6 +1821,7 @@ expansion {
 		17: ScalarSize	constructor(scalar_size, [5], 2)
 		18: Reg	constructor(mov_from_vec, [15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -1771,7 +1830,7 @@ expansion {
 		12:	some
 		14:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -1794,6 +1853,7 @@ expansion {
 		14: ScalarSize	constructor(scalar_size, [11], 2)
 		15: Reg	constructor(mov_to_fpu, [13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -1801,7 +1861,7 @@ expansion {
 		8:	some
 		12:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -1821,6 +1881,7 @@ expansion {
 		11: Type	extractor(value_type, 10)
 		12: Option(Type)	extractor(ty_float_or_vec, 11)
 		13: InstOutput	constructor(output_value, [10], 1)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -1828,7 +1889,7 @@ expansion {
 		8:	some
 		12:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -1842,11 +1903,12 @@ expansion {
 		5: Reg	constructor(put_in_reg, [4], 1)
 		6: SideEffectNoResult	constructor(write_pinned_reg, [5], 2)
 		7: InstOutput	constructor(side_effect, [6], 3)
+		8: Option(InstOutput)	some(7)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 7
+	result = 8
 }
 expansion {
 	term = lower
@@ -1859,11 +1921,12 @@ expansion {
 		4: PReg	constructor(preg_pinned, [], 1)
 		5: Reg	constructor(mov_from_preg, [4], 2)
 		6: InstOutput	constructor(output_reg, [5], 3)
+		7: Option(InstOutput)	some(6)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 6
+	result = 7
 }
 expansion {
 	term = lower
@@ -1886,12 +1949,13 @@ expansion {
 		14: Reg	constructor(put_in_reg, [5], 2)
 		15: SideEffectNoResult	constructor(aarch64_fpustore128, [12, 13, 14], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -1914,12 +1978,13 @@ expansion {
 		14: Reg	constructor(put_in_reg, [5], 2)
 		15: SideEffectNoResult	constructor(aarch64_fpustore64, [12, 13, 14], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -1942,12 +2007,13 @@ expansion {
 		14: Reg	constructor(put_in_reg, [5], 2)
 		15: SideEffectNoResult	constructor(aarch64_fpustore128, [12, 13, 14], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -1970,12 +2036,13 @@ expansion {
 		14: Reg	constructor(put_in_reg, [5], 2)
 		15: SideEffectNoResult	constructor(aarch64_fpustore64, [12, 13, 14], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2001,12 +2068,13 @@ expansion {
 		17: Reg	constructor(value_regs_get, [15, 16], 5)
 		18: SideEffectNoResult	constructor(aarch64_storep64, [10, 11, 14, 17], 6)
 		19: InstOutput	constructor(side_effect, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(I128)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -2028,12 +2096,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_fpustore64, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(F64)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2055,12 +2124,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_fpustore32, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(F32)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2081,11 +2151,12 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: SideEffectNoResult	constructor(aarch64_store32, [9, 10, 12], 3)
 		14: InstOutput	constructor(side_effect, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -2106,11 +2177,12 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: SideEffectNoResult	constructor(aarch64_store16, [9, 10, 12], 3)
 		14: InstOutput	constructor(side_effect, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -2131,11 +2203,12 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: SideEffectNoResult	constructor(aarch64_store8, [9, 10, 12], 3)
 		14: InstOutput	constructor(side_effect, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -2157,12 +2230,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_store64, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(R64)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2184,12 +2258,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_store64, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(I64)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2211,12 +2286,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_store32, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(I32)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2238,12 +2314,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_store16, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(I16)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2265,12 +2342,13 @@ expansion {
 		13: Reg	constructor(put_in_reg, [5], 2)
 		14: SideEffectNoResult	constructor(aarch64_store8, [11, 12, 13], 3)
 		15: InstOutput	constructor(side_effect, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	const_prim(I8)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2293,11 +2371,12 @@ expansion {
 		14: ScalarSize	make_variant(ScalarSize::Size64, [])
 		15: Reg	constructor(vec_extend, [4, 12, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2320,11 +2399,12 @@ expansion {
 		14: ScalarSize	make_variant(ScalarSize::Size64, [])
 		15: Reg	constructor(vec_extend, [4, 12, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2347,11 +2427,12 @@ expansion {
 		14: ScalarSize	make_variant(ScalarSize::Size32, [])
 		15: Reg	constructor(vec_extend, [4, 12, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2374,11 +2455,12 @@ expansion {
 		14: ScalarSize	make_variant(ScalarSize::Size32, [])
 		15: Reg	constructor(vec_extend, [4, 12, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2401,11 +2483,12 @@ expansion {
 		14: ScalarSize	make_variant(ScalarSize::Size16, [])
 		15: Reg	constructor(vec_extend, [4, 12, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2428,11 +2511,12 @@ expansion {
 		14: ScalarSize	make_variant(ScalarSize::Size16, [])
 		15: Reg	constructor(vec_extend, [4, 12, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2451,11 +2535,12 @@ expansion {
 		10: MemFlags	match_tuple(5, 0)
 		11: Reg	constructor(aarch64_sload32, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -2474,11 +2559,12 @@ expansion {
 		10: MemFlags	match_tuple(5, 0)
 		11: Reg	constructor(aarch64_uload32, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -2497,11 +2583,12 @@ expansion {
 		10: MemFlags	match_tuple(5, 0)
 		11: Reg	constructor(aarch64_sload16, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -2520,11 +2607,12 @@ expansion {
 		10: MemFlags	match_tuple(5, 0)
 		11: Reg	constructor(aarch64_uload16, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -2543,11 +2631,12 @@ expansion {
 		10: MemFlags	match_tuple(5, 0)
 		11: Reg	constructor(aarch64_sload8, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -2566,11 +2655,12 @@ expansion {
 		10: MemFlags	match_tuple(5, 0)
 		11: Reg	constructor(aarch64_uload8, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -2594,13 +2684,14 @@ expansion {
 		15: MemFlags	match_tuple(10, 0)
 		16: Reg	constructor(aarch64_fpuload128, [14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -2624,13 +2715,14 @@ expansion {
 		15: MemFlags	match_tuple(10, 0)
 		16: Reg	constructor(aarch64_fpuload64, [14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -2654,13 +2746,14 @@ expansion {
 		15: MemFlags	match_tuple(10, 0)
 		16: Reg	constructor(aarch64_fpuload128, [14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -2684,13 +2777,14 @@ expansion {
 		15: MemFlags	match_tuple(10, 0)
 		16: Reg	constructor(aarch64_fpuload64, [14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -2712,13 +2806,14 @@ expansion {
 		13: MemFlags	match_tuple(8, 0)
 		14: ValueRegs	constructor(aarch64_loadp64, [12, 13], 2)
 		15: InstOutput	constructor(output, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -2741,13 +2836,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_fpuload64, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2770,13 +2866,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_fpuload32, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2799,13 +2896,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_uload64, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(R64)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2828,13 +2926,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_uload64, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2857,13 +2956,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_uload32, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2886,13 +2986,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_uload16, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2915,13 +3016,14 @@ expansion {
 		14: MemFlags	match_tuple(9, 0)
 		15: Reg	constructor(aarch64_uload8, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -2936,11 +3038,12 @@ expansion {
 		6: Value	match_tuple(4, 1)
 		7: ValueSlice	match_tuple(4, 2)
 		8: InstOutput	constructor(gen_return_call_indirect, [5, 6, 7], 1)
+		9: Option(InstOutput)	some(8)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 8
+	result = 9
 }
 expansion {
 	term = lower
@@ -2958,11 +3061,12 @@ expansion {
 		9: RelocDistance	match_tuple(6, 2)
 		10: ValueSlice	match_tuple(4, 1)
 		11: InstOutput	constructor(gen_return_call, [7, 8, 9, 10], 1)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -2974,11 +3078,12 @@ expansion {
 		3: Option(ValueSlice)	extractor(return, 0)
 		4: ValueSlice	match_some(3)
 		5: InstOutput	constructor(lower_return, [4], 1)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -2993,11 +3098,12 @@ expansion {
 		6: Value	match_tuple(4, 1)
 		7: ValueSlice	match_tuple(4, 2)
 		8: InstOutput	constructor(gen_call_indirect, [5, 6, 7], 1)
+		9: Option(InstOutput)	some(8)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 8
+	result = 9
 }
 expansion {
 	term = lower
@@ -3015,11 +3121,12 @@ expansion {
 		9: RelocDistance	match_tuple(6, 2)
 		10: ValueSlice	match_tuple(4, 1)
 		11: InstOutput	constructor(gen_call, [7, 8, 9, 10], 1)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -3031,11 +3138,12 @@ expansion {
 		3: Option(())	extractor(get_return_address, 0)
 		4: Reg	constructor(aarch64_link, [], 1)
 		5: InstOutput	constructor(output_reg, [4], 2)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -3047,11 +3155,12 @@ expansion {
 		3: Option(())	extractor(get_stack_pointer, 0)
 		4: Reg	constructor(aarch64_sp, [], 1)
 		5: InstOutput	constructor(output_reg, [4], 2)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -3063,11 +3172,12 @@ expansion {
 		3: Option(())	extractor(get_frame_pointer, 0)
 		4: Reg	constructor(aarch64_fp, [], 1)
 		5: InstOutput	constructor(output_reg, [4], 2)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -3085,12 +3195,13 @@ expansion {
 		9: i64	match_tuple(6, 2)
 		10: Reg	constructor(load_ext_name, [8, 9], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 		5:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -3107,11 +3218,12 @@ expansion {
 		8: i64	const_int(0, i64)
 		9: Reg	constructor(load_ext_name, [7, 8], 2)
 		10: InstOutput	constructor(output_reg, [9], 3)
+		11: Option(InstOutput)	some(10)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 10
+	result = 11
 }
 expansion {
 	term = lower
@@ -3123,11 +3235,12 @@ expansion {
 		3: Option(())	extractor(debugtrap, 0)
 		4: SideEffectNoResult	constructor(brk, [], 1)
 		5: InstOutput	constructor(side_effect, [4], 2)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -3148,11 +3261,12 @@ expansion {
 		12: ConsumesFlags	constructor(materialize_bool_result, [11], 5)
 		13: ValueRegs	constructor(with_flags, [10, 12], 6)
 		14: InstOutput	constructor(output, [13], 7)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -3173,11 +3287,12 @@ expansion {
 		12: ConsumesFlags	constructor(materialize_bool_result, [11], 5)
 		13: ValueRegs	constructor(with_flags, [10, 12], 6)
 		14: InstOutput	constructor(output, [13], 7)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -3189,11 +3304,12 @@ expansion {
 		3: Option(())	extractor(fence, 0)
 		4: SideEffectNoResult	constructor(aarch64_fence, [], 1)
 		5: InstOutput	constructor(side_effect, [4], 2)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -3218,13 +3334,14 @@ expansion {
 		16: ScalarSize	constructor(lane_size, [5], 3)
 		17: Reg	constructor(vec_extend, [9, 14, 15, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -3247,13 +3364,14 @@ expansion {
 		14: ScalarSize	constructor(lane_size, [13], 2)
 		15: Reg	constructor(vec_extend, [9, 11, 12, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -3274,12 +3392,13 @@ expansion {
 		12: ScalarSize	constructor(lane_size, [11], 2)
 		13: Reg	constructor(vec_extend, [7, 9, 10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -3304,13 +3423,14 @@ expansion {
 		16: ScalarSize	constructor(lane_size, [5], 3)
 		17: Reg	constructor(vec_extend, [9, 14, 15, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -3333,13 +3453,14 @@ expansion {
 		14: ScalarSize	constructor(lane_size, [13], 2)
 		15: Reg	constructor(vec_extend, [9, 11, 12, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -3360,12 +3481,13 @@ expansion {
 		12: ScalarSize	constructor(lane_size, [11], 2)
 		13: Reg	constructor(vec_extend, [7, 9, 10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -3391,13 +3513,14 @@ expansion {
 		17: ScalarSize	constructor(lane_size, [12], 5)
 		18: Reg	constructor(uqxtn2, [14, 16, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3425,13 +3548,14 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 4)
 		20: Reg	constructor(uqxtn, [17, 19], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -3455,6 +3579,7 @@ expansion {
 		15: ScalarSize	constructor(lane_size, [14], 2)
 		16: Reg	constructor(uqxtn, [13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3462,7 +3587,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -3488,13 +3613,14 @@ expansion {
 		17: ScalarSize	constructor(lane_size, [12], 5)
 		18: Reg	constructor(sqxtun2, [14, 16, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3522,13 +3648,14 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 4)
 		20: Reg	constructor(sqxtun, [17, 19], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -3552,6 +3679,7 @@ expansion {
 		15: ScalarSize	constructor(lane_size, [14], 2)
 		16: Reg	constructor(sqxtun, [13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3559,7 +3687,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -3585,13 +3713,14 @@ expansion {
 		17: ScalarSize	constructor(lane_size, [12], 5)
 		18: Reg	constructor(sqxtn2, [14, 16, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3619,13 +3748,14 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 4)
 		20: Reg	constructor(sqxtn, [17, 19], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -3649,6 +3779,7 @@ expansion {
 		15: ScalarSize	constructor(lane_size, [14], 2)
 		16: Reg	constructor(sqxtn, [13, 15], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3656,7 +3787,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -3671,11 +3802,12 @@ expansion {
 		6: ScalarSize	make_variant(ScalarSize::Size32, [])
 		7: Reg	constructor(fcvtn, [5, 6], 2)
 		8: InstOutput	constructor(output_reg, [7], 3)
+		9: Option(InstOutput)	some(8)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 8
+	result = 9
 }
 expansion {
 	term = lower
@@ -3701,13 +3833,14 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_cas_loop, [11, 13, 15, 16, 17], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3734,6 +3867,7 @@ expansion {
 		18: MemFlags	match_tuple(10, 0)
 		19: Reg	constructor(lse_atomic_cas, [12, 14, 16, 17, 18], 4)
 		20: InstOutput	constructor(output_reg, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -3741,7 +3875,7 @@ expansion {
 		7:	some
 		9:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -3767,6 +3901,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3774,7 +3909,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Xchg)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3800,6 +3935,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3807,7 +3943,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Umax)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3833,6 +3969,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3840,7 +3977,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Umin)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3866,6 +4003,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3873,7 +4011,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Smax)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3899,6 +4037,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3906,7 +4045,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Smin)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3932,6 +4071,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3939,7 +4079,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Xor)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3965,6 +4105,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3972,7 +4113,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Or)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -3998,6 +4139,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4005,7 +4147,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Nand)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4031,6 +4173,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4038,7 +4181,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::And)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4064,6 +4207,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4071,7 +4215,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Sub)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4097,6 +4241,7 @@ expansion {
 		17: MemFlags	match_tuple(9, 0)
 		18: Reg	constructor(atomic_rmw_loop, [11, 13, 15, 16, 17], 3)
 		19: InstOutput	constructor(output_reg, [18], 4)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4104,7 +4249,7 @@ expansion {
 		8:	some
 		10:	variant(AtomicRmwOp::Add)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4132,6 +4277,7 @@ expansion {
 		19: MemFlags	match_tuple(10, 0)
 		20: Reg	constructor(lse_atomic_rmw, [12, 13, 18, 14, 19], 4)
 		21: InstOutput	constructor(output_reg, [20], 5)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4140,7 +4286,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::And)
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -4168,6 +4314,7 @@ expansion {
 		19: MemFlags	match_tuple(10, 0)
 		20: Reg	constructor(lse_atomic_rmw, [12, 13, 18, 14, 19], 4)
 		21: InstOutput	constructor(output_reg, [20], 5)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4176,7 +4323,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Sub)
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -4202,6 +4349,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4210,7 +4358,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Umin)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4236,6 +4384,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4244,7 +4393,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Umax)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4270,6 +4419,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4278,7 +4428,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Smin)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4304,6 +4454,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4312,7 +4463,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Smax)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4338,6 +4489,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4346,7 +4498,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Or)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4372,6 +4524,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4380,7 +4533,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Xor)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4406,6 +4559,7 @@ expansion {
 		17: MemFlags	match_tuple(10, 0)
 		18: Reg	constructor(lse_atomic_rmw, [12, 13, 15, 16, 17], 2)
 		19: InstOutput	constructor(output_reg, [18], 3)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4414,7 +4568,7 @@ expansion {
 		9:	some
 		11:	variant(AtomicRmwOp::Add)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -4435,12 +4589,13 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: SideEffectNoResult	constructor(store_release, [8, 9, 10, 12], 3)
 		14: InstOutput	constructor(side_effect, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -4462,13 +4617,14 @@ expansion {
 		13: Reg	constructor(put_in_reg, [12], 1)
 		14: Reg	constructor(load_acquire, [9, 11, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -4495,6 +4651,7 @@ expansion {
 		18: MemFlags	match_tuple(17, 0)
 		19: Reg	constructor(ld1r, [15, 16, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -4503,7 +4660,7 @@ expansion {
 		10:	some
 		11:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -4530,6 +4687,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [17], 1)
 		19: Reg	constructor(splat_const, [16, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -4539,7 +4697,7 @@ expansion {
 		12:	some
 		14:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -4562,6 +4720,7 @@ expansion {
 		14: VectorSize	constructor(vector_size, [13], 1)
 		15: Reg	constructor(splat_const, [12, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -4569,7 +4728,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -4592,6 +4751,7 @@ expansion {
 		14: VectorSize	constructor(vector_size, [13], 1)
 		15: Reg	constructor(splat_const, [12, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -4599,7 +4759,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -4623,6 +4783,7 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 1)
 		16: Reg	constructor(splat_const, [13, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -4630,7 +4791,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -4652,13 +4813,14 @@ expansion {
 		13: u8	const_int(0, u8)
 		14: Reg	constructor(vec_dup_from_fpu, [10, 12, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		9:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -4679,13 +4841,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [11], 2)
 		13: Reg	constructor(vec_dup, [10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		9:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -4705,6 +4868,7 @@ expansion {
 		11: u64	match_some(8)
 		12: Reg	constructor(constant_f64, [11], 1)
 		13: InstOutput	constructor(output_reg, [12], 2)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -4712,7 +4876,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -4732,6 +4896,7 @@ expansion {
 		11: u128	match_some(10)
 		12: Reg	constructor(constant_f128, [11], 1)
 		13: InstOutput	constructor(output_reg, [12], 2)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -4739,7 +4904,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -4771,13 +4936,14 @@ expansion {
 		23: Value	match_tuple(7, 2)
 		24: ValueRegs	constructor(lower_select, [19, 20, 21, 22, 23], 7)
 		25: InstOutput	constructor(output, [24], 8)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		9:	const_prim(I128)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -4804,13 +4970,14 @@ expansion {
 		18: Value	match_tuple(7, 2)
 		19: ValueRegs	constructor(lower_select, [14, 15, 16, 17, 18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		10:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -4844,6 +5011,7 @@ expansion {
 		25: Value	match_tuple(7, 2)
 		26: ValueRegs	constructor(lower_select, [20, 22, 23, 24, 25], 5)
 		27: InstOutput	constructor(output, [26], 8)
+		28: Option(InstOutput)	some(27)
 	]
 	constraints = [
 		3:	some
@@ -4852,7 +5020,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 27
+	result = 28
 }
 expansion {
 	term = lower
@@ -4884,13 +5052,14 @@ expansion {
 		23: Value	match_tuple(7, 2)
 		24: ValueRegs	constructor(lower_select, [19, 20, 21, 22, 23], 7)
 		25: InstOutput	constructor(output, [24], 8)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		9:	const_prim(I128)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -4917,13 +5086,14 @@ expansion {
 		18: Value	match_tuple(7, 2)
 		19: ValueRegs	constructor(lower_select, [14, 15, 16, 17, 18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		10:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -4950,13 +5120,14 @@ expansion {
 		18: Value	match_tuple(7, 2)
 		19: ValueRegs	constructor(lower_select, [14, 15, 16, 17, 18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		10:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -4983,13 +5154,14 @@ expansion {
 		18: Value	match_tuple(7, 2)
 		19: ValueRegs	constructor(lower_select, [14, 15, 16, 17, 18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		9:	const_prim(I8)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5024,6 +5196,7 @@ expansion {
 		26: Value	match_tuple(7, 2)
 		27: ValueRegs	constructor(lower_select, [21, 23, 24, 25, 26], 6)
 		28: InstOutput	constructor(output, [27], 7)
+		29: Option(InstOutput)	some(28)
 	]
 	constraints = [
 		3:	some
@@ -5032,7 +5205,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 28
+	result = 29
 }
 expansion {
 	term = lower
@@ -5066,6 +5239,7 @@ expansion {
 		25: Value	match_tuple(7, 2)
 		26: ValueRegs	constructor(lower_select, [20, 22, 23, 24, 25], 5)
 		27: InstOutput	constructor(output, [26], 6)
+		28: Option(InstOutput)	some(27)
 	]
 	constraints = [
 		3:	some
@@ -5074,7 +5248,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 27
+	result = 28
 }
 expansion {
 	term = lower
@@ -5087,11 +5261,12 @@ expansion {
 		4: TrapCode	match_some(3)
 		5: SideEffectNoResult	constructor(udf, [4], 1)
 		6: InstOutput	constructor(side_effect, [5], 2)
+		7: Option(InstOutput)	some(6)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 6
+	result = 7
 }
 expansion {
 	term = lower
@@ -5104,11 +5279,12 @@ expansion {
 		4: TrapCode	match_some(3)
 		5: SideEffectNoResult	constructor(udf, [4], 1)
 		6: InstOutput	constructor(side_effect, [5], 2)
+		7: Option(InstOutput)	some(6)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 6
+	result = 7
 }
 expansion {
 	term = lower
@@ -5126,11 +5302,12 @@ expansion {
 		9: Type	const_prim(I8)
 		10: ValueRegs	constructor(lower_icmp_into_reg, [5, 6, 7, 8, 9], 1)
 		11: InstOutput	constructor(output, [10], 2)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -5157,6 +5334,7 @@ expansion {
 		18: Reg	constructor(int_cmp_zero_swap, [14, 16, 17], 3)
 		19: ValueRegs	constructor(value_reg, [18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5165,7 +5343,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5192,6 +5370,7 @@ expansion {
 		18: Reg	constructor(not, [17, 16], 4)
 		19: ValueRegs	constructor(value_reg, [18], 5)
 		20: InstOutput	constructor(output, [19], 6)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5200,7 +5379,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5227,6 +5406,7 @@ expansion {
 		18: Reg	constructor(int_cmp_zero, [14, 16, 17], 3)
 		19: ValueRegs	constructor(value_reg, [18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5235,7 +5415,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5262,6 +5442,7 @@ expansion {
 		18: Reg	constructor(not, [17, 16], 4)
 		19: ValueRegs	constructor(value_reg, [18], 5)
 		20: InstOutput	constructor(output, [19], 6)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5270,7 +5451,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5294,13 +5475,14 @@ expansion {
 		15: Cond	constructor(fp_cond_code, [14], 3)
 		16: Reg	constructor(vec_cmp, [11, 13, 9, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		10:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -5328,13 +5510,14 @@ expansion {
 		19: ConsumesFlags	constructor(materialize_bool_result, [18], 6)
 		20: ValueRegs	constructor(with_flags, [16, 19], 7)
 		21: InstOutput	constructor(output, [20], 8)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		10:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -5361,6 +5544,7 @@ expansion {
 		18: Reg	constructor(float_cmp_zero_swap, [14, 16, 17], 3)
 		19: ValueRegs	constructor(value_reg, [18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5369,7 +5553,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5396,6 +5580,7 @@ expansion {
 		18: Reg	constructor(not, [17, 16], 4)
 		19: ValueRegs	constructor(value_reg, [18], 5)
 		20: InstOutput	constructor(output, [19], 6)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5404,7 +5589,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5431,6 +5616,7 @@ expansion {
 		18: Reg	constructor(float_cmp_zero, [14, 16, 17], 3)
 		19: ValueRegs	constructor(value_reg, [18], 4)
 		20: InstOutput	constructor(output, [19], 5)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5439,7 +5625,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5466,6 +5652,7 @@ expansion {
 		18: Reg	constructor(not, [17, 16], 4)
 		19: ValueRegs	constructor(value_reg, [18], 5)
 		20: InstOutput	constructor(output, [19], 6)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -5474,7 +5661,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5494,13 +5681,14 @@ expansion {
 		11: usize	const_int(0, usize)
 		12: Reg	constructor(value_regs_get, [10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -5525,13 +5713,14 @@ expansion {
 		16: Reg	constructor(put_in_reg, [15], 3)
 		17: Reg	constructor(bsl, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -5558,13 +5747,14 @@ expansion {
 		18: Reg	constructor(bic, [7, 16, 17], 6)
 		19: Reg	constructor(orr, [7, 14, 18], 7)
 		20: InstOutput	constructor(output_reg, [19], 8)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -5583,13 +5773,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size8x16, [])
 		11: Reg	constructor(vec_cnt, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8X16)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -5626,13 +5817,14 @@ expansion {
 		28: Reg	constructor(imm, [25, 26, 27], 9)
 		29: ValueRegs	constructor(value_regs, [24, 28], 10)
 		30: InstOutput	constructor(output, [29], 11)
+		31: Option(InstOutput)	some(30)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 30
+	result = 31
 }
 expansion {
 	term = lower
@@ -5657,13 +5849,14 @@ expansion {
 		16: ScalarSize	make_variant(ScalarSize::Size8, [])
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 5)
 		18: InstOutput	constructor(output_reg, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -5688,13 +5881,14 @@ expansion {
 		16: ScalarSize	make_variant(ScalarSize::Size8, [])
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 5)
 		18: InstOutput	constructor(output_reg, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -5719,13 +5913,14 @@ expansion {
 		16: ScalarSize	make_variant(ScalarSize::Size8, [])
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 5)
 		18: InstOutput	constructor(output_reg, [17], 6)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -5749,13 +5944,14 @@ expansion {
 		15: ScalarSize	make_variant(ScalarSize::Size8, [])
 		16: Reg	constructor(mov_from_vec, [13, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8)
 		7:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -5774,12 +5970,13 @@ expansion {
 		10: ValueRegs	constructor(put_in_regs, [8], 1)
 		11: ValueRegs	constructor(lower_bmask, [7, 9, 10], 2)
 		12: InstOutput	constructor(output, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -5805,13 +6002,14 @@ expansion {
 		17: Reg	constructor(a64_rev64, [8, 16], 6)
 		18: ValueRegs	constructor(value_regs, [13, 17], 7)
 		19: InstOutput	constructor(output, [18], 8)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -5830,13 +6028,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(a64_rev64, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -5855,13 +6054,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(a64_rev32, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -5880,13 +6080,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(a64_rev16, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -5904,12 +6105,13 @@ expansion {
 		9: Reg	constructor(put_in_reg, [8], 1)
 		10: Reg	constructor(a64_cls, [7, 9], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -5949,13 +6151,14 @@ expansion {
 		31: Reg	constructor(imm, [8, 29, 30], 16)
 		32: ValueRegs	constructor(value_regs, [28, 31], 17)
 		33: InstOutput	constructor(output, [32], 18)
+		34: Option(InstOutput)	some(33)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 33
+	result = 34
 }
 expansion {
 	term = lower
@@ -5977,13 +6180,14 @@ expansion {
 		13: Imm12	constructor(u8_into_imm12, [12], 3)
 		14: Reg	constructor(sub_imm, [8, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -6005,13 +6209,14 @@ expansion {
 		13: Imm12	constructor(u8_into_imm12, [12], 3)
 		14: Reg	constructor(sub_imm, [8, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -6030,12 +6235,13 @@ expansion {
 		10: Reg	constructor(rbit, [7, 9], 2)
 		11: Reg	constructor(a64_clz, [7, 10], 3)
 		12: InstOutput	constructor(output_reg, [11], 4)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -6061,13 +6267,14 @@ expansion {
 		17: ValueRegs	constructor(value_regs, [13, 16], 6)
 		18: ValueRegs	constructor(lower_clz128, [17], 7)
 		19: InstOutput	constructor(output, [18], 8)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -6090,13 +6297,14 @@ expansion {
 		14: Reg	constructor(orr_imm, [8, 11, 13], 4)
 		15: Reg	constructor(a64_clz, [8, 14], 5)
 		16: InstOutput	constructor(output_reg, [15], 6)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -6119,13 +6327,14 @@ expansion {
 		14: Reg	constructor(orr_imm, [8, 11, 13], 4)
 		15: Reg	constructor(a64_clz, [8, 14], 5)
 		16: InstOutput	constructor(output_reg, [15], 6)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -6143,12 +6352,13 @@ expansion {
 		9: Reg	constructor(put_in_reg, [8], 1)
 		10: Reg	constructor(a64_clz, [7, 9], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -6166,13 +6376,14 @@ expansion {
 		9: ValueRegs	constructor(put_in_regs, [8], 1)
 		10: ValueRegs	constructor(lower_clz128, [9], 2)
 		11: InstOutput	constructor(output, [10], 3)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -6194,13 +6405,14 @@ expansion {
 		13: Imm12	constructor(u8_into_imm12, [12], 3)
 		14: Reg	constructor(sub_imm, [8, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -6222,13 +6434,14 @@ expansion {
 		13: Imm12	constructor(u8_into_imm12, [12], 3)
 		14: Reg	constructor(sub_imm, [8, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -6246,12 +6459,13 @@ expansion {
 		9: Reg	constructor(put_in_reg, [8], 1)
 		10: Reg	constructor(rbit, [7, 9], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -6276,13 +6490,14 @@ expansion {
 		16: Reg	constructor(rbit, [8, 15], 3)
 		17: ValueRegs	constructor(value_regs, [13, 16], 6)
 		18: InstOutput	constructor(output, [17], 7)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -6304,13 +6519,14 @@ expansion {
 		13: ImmShift	constructor(imm_shift_from_u8, [12], 3)
 		14: Reg	constructor(lsr_imm, [8, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I16)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -6332,13 +6548,14 @@ expansion {
 		13: ImmShift	constructor(imm_shift_from_u8, [12], 3)
 		14: Reg	constructor(lsr_imm, [8, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I8)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -6375,13 +6592,14 @@ expansion {
 		28: Reg	constructor(orr, [8, 26, 27], 10)
 		29: ValueRegs	constructor(value_regs, [24, 28], 14)
 		30: InstOutput	constructor(output, [29], 15)
+		31: Option(InstOutput)	some(30)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 30
+	result = 31
 }
 expansion {
 	term = lower
@@ -6408,6 +6626,7 @@ expansion {
 		18: ImmShift	match_some(15)
 		19: Reg	constructor(a64_rotr_imm, [13, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -6417,7 +6636,7 @@ expansion {
 		12:	some
 		15:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -6444,6 +6663,7 @@ expansion {
 		18: ImmShift	match_some(15)
 		19: Reg	constructor(a64_rotr_imm, [13, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -6453,7 +6673,7 @@ expansion {
 		12:	some
 		15:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -6481,6 +6701,7 @@ expansion {
 		19: ImmShift	match_some(16)
 		20: Reg	constructor(small_rotr_imm, [14, 18, 19], 2)
 		21: InstOutput	constructor(output_reg, [20], 3)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -6490,7 +6711,7 @@ expansion {
 		13:	some
 		16:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -6514,13 +6735,14 @@ expansion {
 		15: Reg	constructor(value_regs_get, [13, 14], 3)
 		16: Reg	constructor(a64_rotr, [8, 11, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -6544,13 +6766,14 @@ expansion {
 		15: Reg	constructor(value_regs_get, [13, 14], 3)
 		16: Reg	constructor(a64_rotr, [8, 11, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -6575,13 +6798,14 @@ expansion {
 		16: Reg	constructor(value_regs_get, [14, 15], 3)
 		17: Reg	constructor(small_rotr, [9, 12, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -6618,13 +6842,14 @@ expansion {
 		28: Reg	constructor(orr, [8, 26, 27], 13)
 		29: ValueRegs	constructor(value_regs, [24, 28], 14)
 		30: InstOutput	constructor(output, [29], 15)
+		31: Option(InstOutput)	some(30)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 30
+	result = 31
 }
 expansion {
 	term = lower
@@ -6652,6 +6877,7 @@ expansion {
 		19: ImmShift	constructor(negate_imm_shift, [13, 18], 2)
 		20: Reg	constructor(a64_rotr_imm, [13, 17, 19], 3)
 		21: InstOutput	constructor(output_reg, [20], 4)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -6661,7 +6887,7 @@ expansion {
 		12:	some
 		15:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -6689,6 +6915,7 @@ expansion {
 		19: ImmShift	constructor(negate_imm_shift, [13, 18], 2)
 		20: Reg	constructor(a64_rotr_imm, [13, 17, 19], 3)
 		21: InstOutput	constructor(output_reg, [20], 4)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -6698,7 +6925,7 @@ expansion {
 		12:	some
 		15:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -6724,13 +6951,14 @@ expansion {
 		17: Reg	constructor(sub, [8, 12, 16], 4)
 		18: Reg	constructor(a64_rotr, [8, 11, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -6756,13 +6984,14 @@ expansion {
 		17: Reg	constructor(sub, [8, 12, 16], 4)
 		18: Reg	constructor(a64_rotr, [8, 11, 17], 6)
 		19: InstOutput	constructor(output_reg, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I32)
 		7:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -6791,6 +7020,7 @@ expansion {
 		20: ImmShift	constructor(negate_imm_shift, [14, 19], 2)
 		21: Reg	constructor(small_rotr_imm, [14, 18, 20], 3)
 		22: InstOutput	constructor(output_reg, [21], 4)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6800,7 +7030,7 @@ expansion {
 		13:	some
 		16:	some
 	]
-	result = 22
+	result = 23
 }
 expansion {
 	term = lower
@@ -6828,13 +7058,14 @@ expansion {
 		19: Reg	constructor(sub, [13, 14, 18], 4)
 		20: Reg	constructor(small_rotr, [9, 12, 19], 6)
 		21: InstOutput	constructor(output_reg, [20], 7)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -6860,6 +7091,7 @@ expansion {
 		17: u8	constructor(shift_masked_imm, [14, 16], 0)
 		18: Value	match_tuple(9, 0)
 		19: InstOutput	constructor(output_value, [18], 1)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -6869,7 +7101,7 @@ expansion {
 		13:	some
 		17:	const_int(0)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -6898,6 +7130,7 @@ expansion {
 		20: VectorSize	constructor(vector_size, [16], 2)
 		21: Reg	constructor(sshr_vec_imm, [15, 19, 20], 3)
 		22: InstOutput	constructor(output_reg, [21], 4)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6906,7 +7139,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 22
+	result = 23
 }
 expansion {
 	term = lower
@@ -6937,13 +7170,14 @@ expansion {
 		22: Reg	constructor(vec_dup, [20, 21], 7)
 		23: Reg	constructor(sshl, [11, 22, 21], 9)
 		24: InstOutput	constructor(output_reg, [23], 10)
+		25: Option(InstOutput)	some(24)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 24
+	result = 25
 }
 expansion {
 	term = lower
@@ -6966,13 +7200,14 @@ expansion {
 		14: Reg	constructor(value_regs_get, [12, 13], 3)
 		15: ValueRegs	constructor(lower_sshr128, [10, 14], 4)
 		16: InstOutput	constructor(output, [15], 5)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -6994,13 +7229,14 @@ expansion {
 		13: Value	match_tuple(10, 1)
 		14: Reg	constructor(do_shift, [8, 9, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -7023,13 +7259,14 @@ expansion {
 		14: Value	match_tuple(11, 1)
 		15: Reg	constructor(do_shift, [9, 10, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -7055,6 +7292,7 @@ expansion {
 		17: u8	constructor(shift_masked_imm, [14, 16], 0)
 		18: Value	match_tuple(9, 0)
 		19: InstOutput	constructor(output_value, [18], 1)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7064,7 +7302,7 @@ expansion {
 		13:	some
 		17:	const_int(0)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -7093,6 +7331,7 @@ expansion {
 		20: VectorSize	constructor(vector_size, [16], 2)
 		21: Reg	constructor(ushr_vec_imm, [15, 19, 20], 3)
 		22: InstOutput	constructor(output_reg, [21], 4)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
@@ -7101,7 +7340,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 22
+	result = 23
 }
 expansion {
 	term = lower
@@ -7132,13 +7371,14 @@ expansion {
 		22: Reg	constructor(vec_dup, [20, 21], 7)
 		23: Reg	constructor(ushl, [11, 22, 21], 9)
 		24: InstOutput	constructor(output_reg, [23], 10)
+		25: Option(InstOutput)	some(24)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 24
+	result = 25
 }
 expansion {
 	term = lower
@@ -7161,13 +7401,14 @@ expansion {
 		14: Reg	constructor(value_regs_get, [12, 13], 3)
 		15: ValueRegs	constructor(lower_ushr128, [10, 14], 4)
 		16: InstOutput	constructor(output, [15], 5)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -7189,13 +7430,14 @@ expansion {
 		13: Value	match_tuple(10, 1)
 		14: Reg	constructor(do_shift, [8, 9, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -7218,13 +7460,14 @@ expansion {
 		14: Value	match_tuple(11, 1)
 		15: Reg	constructor(do_shift, [9, 10, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -7253,6 +7496,7 @@ expansion {
 		20: VectorSize	constructor(vector_size, [16], 2)
 		21: Reg	constructor(ushl_vec_imm, [15, 19, 20], 3)
 		22: InstOutput	constructor(output_reg, [21], 4)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
@@ -7261,7 +7505,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 22
+	result = 23
 }
 expansion {
 	term = lower
@@ -7289,13 +7533,14 @@ expansion {
 		19: Reg	constructor(vec_dup, [17, 18], 5)
 		20: Reg	constructor(sshl, [11, 19, 18], 7)
 		21: InstOutput	constructor(output_reg, [20], 8)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -7318,13 +7563,14 @@ expansion {
 		14: Reg	constructor(value_regs_get, [12, 13], 3)
 		15: ValueRegs	constructor(lower_shl128, [10, 14], 4)
 		16: InstOutput	constructor(output, [15], 5)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -7346,13 +7592,14 @@ expansion {
 		13: Value	match_tuple(10, 1)
 		14: Reg	constructor(do_shift, [8, 9, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -7375,13 +7622,14 @@ expansion {
 		14: Value	match_tuple(11, 1)
 		15: Reg	constructor(do_shift, [9, 10, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -7406,6 +7654,7 @@ expansion {
 		16: Value	match_some(12)
 		17: ValueRegs	constructor(i128_alu_bitop, [13, 14, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -7414,7 +7663,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -7439,6 +7688,7 @@ expansion {
 		16: Value	match_some(12)
 		17: ValueRegs	constructor(i128_alu_bitop, [13, 14, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -7447,7 +7697,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -7473,6 +7723,7 @@ expansion {
 		17: Value	match_some(13)
 		18: Reg	constructor(alu_rs_imm_logic, [14, 15, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7481,7 +7732,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -7507,6 +7758,7 @@ expansion {
 		17: Value	match_some(13)
 		18: Reg	constructor(alu_rs_imm_logic, [14, 15, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7515,7 +7767,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -7539,13 +7791,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(eor_vec, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -7566,13 +7819,14 @@ expansion {
 		12: Value	match_tuple(10, 1)
 		13: ValueRegs	constructor(i128_alu_bitop, [8, 9, 11, 12], 1)
 		14: InstOutput	constructor(output, [13], 2)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -7594,13 +7848,14 @@ expansion {
 		13: Value	match_tuple(11, 1)
 		14: Reg	constructor(alu_rs_imm_logic_commutative, [9, 10, 12, 13], 1)
 		15: InstOutput	constructor(output_reg, [14], 2)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -7625,6 +7880,7 @@ expansion {
 		16: Value	match_some(12)
 		17: ValueRegs	constructor(i128_alu_bitop, [13, 14, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -7633,7 +7889,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -7658,6 +7914,7 @@ expansion {
 		16: Value	match_some(12)
 		17: ValueRegs	constructor(i128_alu_bitop, [13, 14, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -7666,7 +7923,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -7692,6 +7949,7 @@ expansion {
 		17: Value	match_some(13)
 		18: Reg	constructor(alu_rs_imm_logic, [14, 15, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7700,7 +7958,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -7726,6 +7984,7 @@ expansion {
 		17: Value	match_some(13)
 		18: Reg	constructor(alu_rs_imm_logic, [14, 15, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7734,7 +7993,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -7758,13 +8017,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(orr_vec, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -7785,13 +8045,14 @@ expansion {
 		12: Value	match_tuple(10, 1)
 		13: ValueRegs	constructor(i128_alu_bitop, [8, 9, 11, 12], 1)
 		14: InstOutput	constructor(output, [13], 2)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -7813,13 +8074,14 @@ expansion {
 		13: Value	match_tuple(11, 1)
 		14: Reg	constructor(alu_rs_imm_logic_commutative, [9, 10, 12, 13], 1)
 		15: InstOutput	constructor(output_reg, [14], 2)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -7847,6 +8109,7 @@ expansion {
 		19: VectorSize	constructor(vector_size, [18], 3)
 		20: Reg	constructor(bic_vec, [15, 17, 19], 4)
 		21: InstOutput	constructor(output_reg, [20], 5)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -7855,7 +8118,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -7883,6 +8146,7 @@ expansion {
 		19: VectorSize	constructor(vector_size, [18], 3)
 		20: Reg	constructor(bic_vec, [15, 17, 19], 4)
 		21: InstOutput	constructor(output_reg, [20], 5)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -7891,7 +8155,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -7916,6 +8180,7 @@ expansion {
 		16: Value	match_some(12)
 		17: ValueRegs	constructor(i128_alu_bitop, [13, 14, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -7924,7 +8189,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -7949,6 +8214,7 @@ expansion {
 		16: Value	match_some(12)
 		17: ValueRegs	constructor(i128_alu_bitop, [13, 14, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -7957,7 +8223,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -7983,6 +8249,7 @@ expansion {
 		17: Value	match_some(13)
 		18: Reg	constructor(alu_rs_imm_logic, [14, 15, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7991,7 +8258,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -8017,6 +8284,7 @@ expansion {
 		17: Value	match_some(13)
 		18: Reg	constructor(alu_rs_imm_logic, [14, 15, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -8025,7 +8293,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -8049,13 +8317,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(and_vec, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8076,13 +8345,14 @@ expansion {
 		12: Value	match_tuple(10, 1)
 		13: ValueRegs	constructor(i128_alu_bitop, [8, 9, 11, 12], 1)
 		14: InstOutput	constructor(output, [13], 2)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -8104,13 +8374,14 @@ expansion {
 		13: Value	match_tuple(11, 1)
 		14: Reg	constructor(alu_rs_imm_logic_commutative, [9, 10, 12, 13], 1)
 		15: InstOutput	constructor(output_reg, [14], 2)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -8135,6 +8406,7 @@ expansion {
 		16: Value	match_tuple(14, 1)
 		17: ValueRegs	constructor(i128_alu_bitop, [12, 13, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8143,7 +8415,7 @@ expansion {
 		9:	some
 		11:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -8169,6 +8441,7 @@ expansion {
 		17: Value	match_tuple(15, 1)
 		18: Reg	constructor(alu_rs_imm_logic, [13, 14, 16, 17], 1)
 		19: InstOutput	constructor(output_reg, [18], 2)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -8177,7 +8450,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -8198,13 +8471,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [11], 2)
 		13: Reg	constructor(not, [10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -8231,13 +8505,14 @@ expansion {
 		18: Reg	constructor(orr_not, [8, 15, 17], 7)
 		19: ValueRegs	constructor(value_regs, [14, 18], 8)
 		20: InstOutput	constructor(output, [19], 9)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -8270,6 +8545,7 @@ expansion {
 		24: ShiftOpAndAmt	match_some(20)
 		25: Reg	constructor(orr_not_shift, [18, 21, 23, 24], 3)
 		26: InstOutput	constructor(output_reg, [25], 4)
+		27: Option(InstOutput)	some(26)
 	]
 	constraints = [
 		3:	some
@@ -8281,7 +8557,7 @@ expansion {
 		17:	some
 		20:	some
 	]
-	result = 26
+	result = 27
 }
 expansion {
 	term = lower
@@ -8302,13 +8578,14 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: Reg	constructor(orr_not, [9, 10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -8340,6 +8617,7 @@ expansion {
 		23: Reg	constructor(asr_imm, [20, 19, 22], 4)
 		24: ValueRegs	constructor(value_regs, [19, 23], 5)
 		25: InstOutput	constructor(output, [24], 6)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -8349,7 +8627,7 @@ expansion {
 		11:	some
 		14:	const_prim(I64X2)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -8383,6 +8661,7 @@ expansion {
 		25: Reg	constructor(asr_imm, [20, 22, 24], 6)
 		26: ValueRegs	constructor(value_regs, [22, 25], 7)
 		27: InstOutput	constructor(output, [26], 8)
+		28: Option(InstOutput)	some(27)
 	]
 	constraints = [
 		3:	some
@@ -8392,7 +8671,7 @@ expansion {
 		11:	some
 		15:	some
 	]
-	result = 27
+	result = 28
 }
 expansion {
 	term = lower
@@ -8414,13 +8693,14 @@ expansion {
 		13: Reg	constructor(asr_imm, [10, 9, 12], 3)
 		14: ValueRegs	constructor(value_regs, [9, 13], 4)
 		15: InstOutput	constructor(output, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -8450,6 +8730,7 @@ expansion {
 		21: OperandSize	constructor(size_from_ty, [20], 3)
 		22: Reg	constructor(mov_from_vec_signed, [15, 17, 19, 21], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
@@ -8458,7 +8739,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -8482,13 +8763,14 @@ expansion {
 		15: u8	constructor(ty_bits, [14], 0)
 		16: Reg	constructor(extend, [10, 11, 13, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8520,6 +8802,7 @@ expansion {
 		23: Reg	constructor(imm, [20, 21, 22], 4)
 		24: ValueRegs	constructor(value_regs, [19, 23], 5)
 		25: InstOutput	constructor(output, [24], 6)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -8528,7 +8811,7 @@ expansion {
 		9:	some
 		11:	some
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -8550,13 +8833,14 @@ expansion {
 		13: Reg	constructor(imm, [10, 11, 12], 2)
 		14: ValueRegs	constructor(value_regs, [9, 13], 3)
 		15: InstOutput	constructor(output, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -8583,6 +8867,7 @@ expansion {
 		18: Reg	constructor(sink_atomic_load, [17], 1)
 		19: Reg	constructor(load_acquire, [14, 16, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -8592,7 +8877,7 @@ expansion {
 		12:	some
 		13:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -8620,6 +8905,7 @@ expansion {
 		19: ScalarSize	constructor(lane_size, [18], 2)
 		20: Reg	constructor(mov_from_vec, [15, 17, 19], 3)
 		21: InstOutput	constructor(output_reg, [20], 4)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -8628,7 +8914,7 @@ expansion {
 		10:	some
 		12:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -8652,13 +8938,14 @@ expansion {
 		15: u8	constructor(ty_bits, [14], 0)
 		16: Reg	constructor(extend, [10, 11, 13, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8685,13 +8972,14 @@ expansion {
 		18: Reg	constructor(put_in_reg, [13], 5)
 		19: Reg	constructor(bsl, [8, 16, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 		7:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -8715,13 +9003,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [7], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8748,13 +9037,14 @@ expansion {
 		18: Reg	constructor(put_in_reg, [13], 5)
 		19: Reg	constructor(bsl, [8, 16, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 		7:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -8778,13 +9068,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [7], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8811,13 +9102,14 @@ expansion {
 		18: Reg	constructor(put_in_reg, [11], 5)
 		19: Reg	constructor(bsl, [8, 16, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 		7:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -8841,13 +9133,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [7], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8874,13 +9167,14 @@ expansion {
 		18: Reg	constructor(put_in_reg, [11], 5)
 		19: Reg	constructor(bsl, [8, 16, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 		7:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -8904,13 +9198,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [7], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8934,6 +9229,7 @@ expansion {
 		15: Value	match_tuple(13, 1)
 		16: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 14, 15], 1)
 		17: InstOutput	constructor(output, [16], 2)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -8941,7 +9237,7 @@ expansion {
 		7:	some
 		9:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8965,6 +9261,7 @@ expansion {
 		15: Value	match_tuple(13, 1)
 		16: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 14, 15], 1)
 		17: InstOutput	constructor(output, [16], 2)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -8972,7 +9269,7 @@ expansion {
 		7:	some
 		9:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -8996,6 +9293,7 @@ expansion {
 		15: Value	match_tuple(13, 1)
 		16: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 14, 15], 1)
 		17: InstOutput	constructor(output, [16], 2)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -9003,7 +9301,7 @@ expansion {
 		7:	some
 		9:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -9027,6 +9325,7 @@ expansion {
 		15: Value	match_tuple(13, 1)
 		16: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 14, 15], 1)
 		17: InstOutput	constructor(output, [16], 2)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -9034,7 +9333,7 @@ expansion {
 		7:	some
 		9:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -9058,13 +9357,14 @@ expansion {
 		15: Reg	constructor(a64_sdiv, [9, 12, 14], 3)
 		16: Reg	constructor(msub, [9, 15, 14, 12], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -9088,13 +9388,14 @@ expansion {
 		15: Reg	constructor(a64_udiv, [9, 12, 14], 3)
 		16: Reg	constructor(msub, [9, 15, 14, 12], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -9125,6 +9426,7 @@ expansion {
 		22: Reg	constructor(imm, [14, 20, 21], 2)
 		23: Reg	constructor(a64_sdiv, [17, 19, 22], 3)
 		24: InstOutput	constructor(output_reg, [23], 4)
+		25: Option(InstOutput)	some(24)
 	]
 	constraints = [
 		3:	some
@@ -9134,7 +9436,7 @@ expansion {
 		13:	some
 		16:	some
 	]
-	result = 24
+	result = 25
 }
 expansion {
 	term = lower
@@ -9159,13 +9461,14 @@ expansion {
 		16: Reg	constructor(trap_if_div_overflow, [10, 13, 15], 3)
 		17: Reg	constructor(a64_sdiv, [9, 16, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -9188,13 +9491,14 @@ expansion {
 		14: Reg	constructor(put_nonzero_in_reg_zext64, [13], 2)
 		15: Reg	constructor(a64_udiv, [9, 12, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -9223,13 +9527,14 @@ expansion {
 		20: Reg	constructor(lsr_imm, [9, 16, 19], 6)
 		21: ValueRegs	constructor(value_reg, [20], 7)
 		22: InstOutput	constructor(output, [21], 8)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 22
+	result = 23
 }
 expansion {
 	term = lower
@@ -9251,13 +9556,14 @@ expansion {
 		13: Reg	constructor(put_in_reg, [12], 2)
 		14: Reg	constructor(umulh, [8, 11, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -9285,13 +9591,14 @@ expansion {
 		19: ImmShift	constructor(imm_shift_from_u8, [18], 5)
 		20: Reg	constructor(asr_imm, [9, 16, 19], 6)
 		21: InstOutput	constructor(output_reg, [20], 7)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -9313,13 +9620,14 @@ expansion {
 		13: Reg	constructor(put_in_reg, [12], 2)
 		14: Reg	constructor(smulh, [8, 11, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -9351,6 +9659,7 @@ expansion {
 		23: bool	const_prim(true)
 		24: Reg	constructor(umull32, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9363,7 +9672,7 @@ expansion {
 		18:	some
 		20:	const_prim(I32X4)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9395,6 +9704,7 @@ expansion {
 		23: bool	const_prim(false)
 		24: Reg	constructor(umull32, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9407,7 +9717,7 @@ expansion {
 		18:	some
 		20:	const_prim(I32X4)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9439,6 +9749,7 @@ expansion {
 		23: bool	const_prim(true)
 		24: Reg	constructor(smull32, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9451,7 +9762,7 @@ expansion {
 		18:	some
 		20:	const_prim(I32X4)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9483,6 +9794,7 @@ expansion {
 		23: bool	const_prim(false)
 		24: Reg	constructor(smull32, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9495,7 +9807,7 @@ expansion {
 		18:	some
 		20:	const_prim(I32X4)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9527,6 +9839,7 @@ expansion {
 		23: bool	const_prim(true)
 		24: Reg	constructor(umull16, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9539,7 +9852,7 @@ expansion {
 		18:	some
 		20:	const_prim(I16X8)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9571,6 +9884,7 @@ expansion {
 		23: bool	const_prim(false)
 		24: Reg	constructor(umull16, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9583,7 +9897,7 @@ expansion {
 		18:	some
 		20:	const_prim(I16X8)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9615,6 +9929,7 @@ expansion {
 		23: bool	const_prim(true)
 		24: Reg	constructor(smull16, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9627,7 +9942,7 @@ expansion {
 		18:	some
 		20:	const_prim(I16X8)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9659,6 +9974,7 @@ expansion {
 		23: bool	const_prim(false)
 		24: Reg	constructor(smull16, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9671,7 +9987,7 @@ expansion {
 		18:	some
 		20:	const_prim(I16X8)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9703,6 +10019,7 @@ expansion {
 		23: bool	const_prim(true)
 		24: Reg	constructor(umull8, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9715,7 +10032,7 @@ expansion {
 		18:	some
 		20:	const_prim(I8X16)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9747,6 +10064,7 @@ expansion {
 		23: bool	const_prim(false)
 		24: Reg	constructor(umull8, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9759,7 +10077,7 @@ expansion {
 		18:	some
 		20:	const_prim(I8X16)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9791,6 +10109,7 @@ expansion {
 		23: bool	const_prim(true)
 		24: Reg	constructor(smull8, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9803,7 +10122,7 @@ expansion {
 		18:	some
 		20:	const_prim(I8X16)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9835,6 +10154,7 @@ expansion {
 		23: bool	const_prim(false)
 		24: Reg	constructor(smull8, [21, 22, 23], 3)
 		25: InstOutput	constructor(output_reg, [24], 4)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
@@ -9847,7 +10167,7 @@ expansion {
 		18:	some
 		20:	const_prim(I8X16)
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -9877,13 +10197,14 @@ expansion {
 		21: Reg	constructor(xtn, [14, 19], 5)
 		22: Reg	constructor(umlal32, [18, 20, 21, 17], 9)
 		23: InstOutput	constructor(output_reg, [22], 10)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 		7:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -9908,6 +10229,7 @@ expansion {
 		16: VectorSize	constructor(vector_size, [9], 3)
 		17: Reg	constructor(mul, [13, 15, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
@@ -9915,7 +10237,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -9948,13 +10270,14 @@ expansion {
 		24: Reg	constructor(madd, [8, 20, 16, 23], 9)
 		25: ValueRegs	constructor(value_regs, [18, 24], 12)
 		26: InstOutput	constructor(output, [25], 13)
+		27: Option(InstOutput)	some(26)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 26
+	result = 27
 }
 expansion {
 	term = lower
@@ -9978,13 +10301,14 @@ expansion {
 		15: Reg	constructor(zero_reg, [], 3)
 		16: Reg	constructor(madd, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10005,13 +10329,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [11], 2)
 		13: Reg	constructor(neg, [10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -10030,13 +10355,14 @@ expansion {
 		10: ValueRegs	constructor(put_in_regs, [9], 2)
 		11: ValueRegs	constructor(sub_i128, [8, 10], 3)
 		12: InstOutput	constructor(output, [11], 4)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -10057,13 +10383,14 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: Reg	constructor(sub, [9, 10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -10087,13 +10414,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(sqsub, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10117,13 +10445,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(uqsub, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10147,13 +10476,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(sqadd, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10177,13 +10507,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [14], 3)
 		16: Reg	constructor(uqadd, [11, 13, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10204,13 +10535,14 @@ expansion {
 		12: ValueRegs	constructor(put_in_regs, [11], 2)
 		13: ValueRegs	constructor(sub_i128, [10, 12], 3)
 		14: InstOutput	constructor(output, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -10233,13 +10565,14 @@ expansion {
 		14: VectorSize	constructor(vector_size, [7], 3)
 		15: Reg	constructor(sub_vec, [11, 13, 14], 4)
 		16: InstOutput	constructor(output_reg, [15], 5)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -10274,6 +10607,7 @@ expansion {
 		26: ShiftOpAndAmt	match_some(21)
 		27: Reg	constructor(sub_shift, [19, 23, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
+		29: Option(InstOutput)	some(28)
 	]
 	constraints = [
 		3:	some
@@ -10285,7 +10619,7 @@ expansion {
 		18:	some
 		21:	some
 	]
-	result = 28
+	result = 29
 }
 expansion {
 	term = lower
@@ -10309,6 +10643,7 @@ expansion {
 		15: ExtendedValue	match_some(11)
 		16: Reg	constructor(sub_extend, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -10316,7 +10651,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10340,6 +10675,7 @@ expansion {
 		15: Imm12	match_some(11)
 		16: Reg	constructor(add_imm, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -10347,7 +10683,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10371,6 +10707,7 @@ expansion {
 		15: Imm12	match_some(11)
 		16: Reg	constructor(sub_imm, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -10378,7 +10715,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -10401,13 +10738,14 @@ expansion {
 		14: Reg	constructor(put_in_reg, [13], 2)
 		15: Reg	constructor(sub, [9, 12, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -10429,6 +10767,7 @@ expansion {
 		13: Type	const_prim(I64)
 		14: Reg	constructor(fpu_to_int_cvt_sat, [10, 11, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
@@ -10436,7 +10775,7 @@ expansion {
 		7:	some
 		9:	const_prim(F64)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -10459,6 +10798,7 @@ expansion {
 		14: Type	match_some(6)
 		15: Reg	constructor(fpu_to_int_cvt_sat, [11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -10466,7 +10806,7 @@ expansion {
 		8:	some
 		10:	const_prim(F64)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -10488,6 +10828,7 @@ expansion {
 		13: Type	const_prim(I64)
 		14: Reg	constructor(fpu_to_int_cvt_sat, [10, 11, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
@@ -10495,7 +10836,7 @@ expansion {
 		7:	some
 		9:	const_prim(F32)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -10518,6 +10859,7 @@ expansion {
 		14: Type	match_some(6)
 		15: Reg	constructor(fpu_to_int_cvt_sat, [11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -10525,7 +10867,7 @@ expansion {
 		8:	some
 		10:	const_prim(F32)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -10552,6 +10894,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10561,7 +10904,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -10588,6 +10931,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10597,7 +10941,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -10619,6 +10963,7 @@ expansion {
 		13: Type	const_prim(I64)
 		14: Reg	constructor(fpu_to_int_cvt_sat, [10, 11, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
@@ -10626,7 +10971,7 @@ expansion {
 		7:	some
 		9:	const_prim(F64)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -10649,6 +10994,7 @@ expansion {
 		14: Type	match_some(6)
 		15: Reg	constructor(fpu_to_int_cvt_sat, [11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -10656,7 +11002,7 @@ expansion {
 		8:	some
 		10:	const_prim(F64)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -10678,6 +11024,7 @@ expansion {
 		13: Type	const_prim(I64)
 		14: Reg	constructor(fpu_to_int_cvt_sat, [10, 11, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
@@ -10685,7 +11032,7 @@ expansion {
 		7:	some
 		9:	const_prim(F32)
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -10708,6 +11055,7 @@ expansion {
 		14: Type	match_some(6)
 		15: Reg	constructor(fpu_to_int_cvt_sat, [11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -10715,7 +11063,7 @@ expansion {
 		8:	some
 		10:	const_prim(F32)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -10742,6 +11090,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10751,7 +11100,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -10778,6 +11127,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10787,7 +11137,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -10807,6 +11157,7 @@ expansion {
 		11: Reg	constructor(put_in_reg, [8], 1)
 		12: Reg	constructor(int_to_fpu, [10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -10814,7 +11165,7 @@ expansion {
 		7:	some
 		9:	const_prim(I64)
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -10834,6 +11185,7 @@ expansion {
 		11: Reg	constructor(put_in_reg, [8], 1)
 		12: Reg	constructor(int_to_fpu, [10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -10841,7 +11193,7 @@ expansion {
 		7:	some
 		9:	const_prim(I64)
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -10862,6 +11214,7 @@ expansion {
 		12: Reg	constructor(put_in_reg_sext32, [8], 1)
 		13: Reg	constructor(int_to_fpu, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
@@ -10869,7 +11222,7 @@ expansion {
 		7:	some
 		10:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -10890,6 +11243,7 @@ expansion {
 		12: Reg	constructor(put_in_reg_sext32, [8], 1)
 		13: Reg	constructor(int_to_fpu, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
@@ -10897,7 +11251,7 @@ expansion {
 		7:	some
 		10:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -10924,6 +11278,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10933,7 +11288,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -10960,6 +11315,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10969,7 +11325,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -10989,6 +11345,7 @@ expansion {
 		11: Reg	constructor(put_in_reg, [8], 1)
 		12: Reg	constructor(int_to_fpu, [10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -10996,7 +11353,7 @@ expansion {
 		7:	some
 		9:	const_prim(I64)
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -11016,6 +11373,7 @@ expansion {
 		11: Reg	constructor(put_in_reg, [8], 1)
 		12: Reg	constructor(int_to_fpu, [10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
@@ -11023,7 +11381,7 @@ expansion {
 		7:	some
 		9:	const_prim(I64)
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -11044,6 +11402,7 @@ expansion {
 		12: Reg	constructor(put_in_reg_zext32, [8], 1)
 		13: Reg	constructor(int_to_fpu, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
@@ -11051,7 +11410,7 @@ expansion {
 		7:	some
 		10:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11072,6 +11431,7 @@ expansion {
 		12: Reg	constructor(put_in_reg_zext32, [8], 1)
 		13: Reg	constructor(int_to_fpu, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
@@ -11079,7 +11439,7 @@ expansion {
 		7:	some
 		10:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11106,6 +11466,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -11115,7 +11476,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -11142,6 +11503,7 @@ expansion {
 		18: VectorSize	constructor(vector_size, [5], 2)
 		19: Reg	constructor(vec_misc, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
@@ -11151,7 +11513,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -11174,6 +11536,7 @@ expansion {
 		14: Type	const_prim(I64)
 		15: Reg	constructor(fpu_to_int_cvt, [10, 11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -11181,7 +11544,7 @@ expansion {
 		7:	some
 		9:	const_prim(F64)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -11205,6 +11568,7 @@ expansion {
 		15: Type	match_some(6)
 		16: Reg	constructor(fpu_to_int_cvt, [11, 12, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -11212,7 +11576,7 @@ expansion {
 		8:	some
 		10:	const_prim(F64)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -11235,6 +11599,7 @@ expansion {
 		14: Type	const_prim(I64)
 		15: Reg	constructor(fpu_to_int_cvt, [10, 11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -11242,7 +11607,7 @@ expansion {
 		7:	some
 		9:	const_prim(F32)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -11266,6 +11631,7 @@ expansion {
 		15: Type	match_some(6)
 		16: Reg	constructor(fpu_to_int_cvt, [11, 12, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -11273,7 +11639,7 @@ expansion {
 		8:	some
 		10:	const_prim(F32)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -11296,6 +11662,7 @@ expansion {
 		14: Type	const_prim(I64)
 		15: Reg	constructor(fpu_to_int_cvt, [10, 11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -11303,7 +11670,7 @@ expansion {
 		7:	some
 		9:	const_prim(F64)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -11327,6 +11694,7 @@ expansion {
 		15: Type	match_some(6)
 		16: Reg	constructor(fpu_to_int_cvt, [11, 12, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -11334,7 +11702,7 @@ expansion {
 		8:	some
 		10:	const_prim(F64)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -11357,6 +11725,7 @@ expansion {
 		14: Type	const_prim(I64)
 		15: Reg	constructor(fpu_to_int_cvt, [10, 11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
@@ -11364,7 +11733,7 @@ expansion {
 		7:	some
 		9:	const_prim(F32)
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -11388,6 +11757,7 @@ expansion {
 		15: Type	match_some(6)
 		16: Reg	constructor(fpu_to_int_cvt, [11, 12, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -11395,7 +11765,7 @@ expansion {
 		8:	some
 		10:	const_prim(F32)
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -11416,12 +11786,13 @@ expansion {
 		12: Type	match_tuple(4, 0)
 		13: Reg	constructor(fcopy_sign, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11444,13 +11815,14 @@ expansion {
 		14: VectorSize	constructor(vector_size, [5], 1)
 		15: Reg	constructor(lower_fmla, [9, 11, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -11477,13 +11849,14 @@ expansion {
 		18: Reg	constructor(put_in_reg, [17], 4)
 		19: Reg	constructor(fpu_rrrr, [9, 11, 14, 16, 18], 5)
 		20: InstOutput	constructor(output_reg, [19], 6)
+		21: Option(InstOutput)	some(20)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 20
+	result = 21
 }
 expansion {
 	term = lower
@@ -11502,13 +11875,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11527,13 +11901,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11554,13 +11929,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11579,13 +11955,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11604,13 +11981,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11631,13 +12009,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11656,13 +12035,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11681,13 +12061,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11708,13 +12089,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11733,13 +12115,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11758,13 +12141,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(fpu_round, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -11785,13 +12169,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11811,13 +12196,14 @@ expansion {
 		11: ScalarSize	make_variant(ScalarSize::Size64, [])
 		12: Reg	constructor(fpu_rr, [8, 10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32)
 		7:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -11837,13 +12223,14 @@ expansion {
 		11: ScalarSize	make_variant(ScalarSize::Size32, [])
 		12: Reg	constructor(fpu_rr, [8, 10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64)
 		7:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -11865,13 +12252,14 @@ expansion {
 		13: ScalarSize	constructor(scalar_size, [12], 2)
 		14: Reg	constructor(fpu_rr, [9, 11, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -11892,13 +12280,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11920,13 +12309,14 @@ expansion {
 		13: ScalarSize	constructor(scalar_size, [12], 2)
 		14: Reg	constructor(fpu_rr, [9, 11, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -11947,13 +12337,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -11975,13 +12366,14 @@ expansion {
 		13: ScalarSize	constructor(scalar_size, [12], 2)
 		14: Reg	constructor(fpu_rr, [9, 11, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -12002,13 +12394,14 @@ expansion {
 		12: VectorSize	constructor(vector_size, [5], 2)
 		13: Reg	constructor(vec_misc, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -12033,13 +12426,14 @@ expansion {
 		16: ScalarSize	constructor(scalar_size, [15], 3)
 		17: Reg	constructor(fpu_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12063,13 +12457,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12094,13 +12489,14 @@ expansion {
 		16: ScalarSize	constructor(scalar_size, [15], 3)
 		17: Reg	constructor(fpu_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12124,13 +12520,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12155,13 +12552,14 @@ expansion {
 		16: ScalarSize	constructor(scalar_size, [15], 3)
 		17: Reg	constructor(fpu_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12185,13 +12583,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12216,13 +12615,14 @@ expansion {
 		16: ScalarSize	constructor(scalar_size, [15], 3)
 		17: Reg	constructor(fpu_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12246,13 +12646,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12277,13 +12678,14 @@ expansion {
 		16: ScalarSize	constructor(scalar_size, [15], 3)
 		17: Reg	constructor(fpu_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12307,13 +12709,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12338,13 +12741,14 @@ expansion {
 		16: ScalarSize	constructor(scalar_size, [15], 3)
 		17: Reg	constructor(fpu_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12368,13 +12772,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12398,13 +12803,14 @@ expansion {
 		15: VectorSize	constructor(vector_size, [5], 3)
 		16: Reg	constructor(vec_rrr, [9, 12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -12429,13 +12835,14 @@ expansion {
 		16: VectorSize	constructor(vector_size, [15], 3)
 		17: Reg	constructor(vec_rrr, [9, 12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -12467,13 +12874,14 @@ expansion {
 		23: Reg	constructor(add_vec, [20, 22, 13], 10)
 		24: Reg	constructor(add_vec, [17, 23, 13], 11)
 		25: InstOutput	constructor(output_reg, [24], 12)
+		26: Option(InstOutput)	some(25)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64X2)
 		7:	some
 	]
-	result = 25
+	result = 26
 }
 expansion {
 	term = lower
@@ -12503,13 +12911,14 @@ expansion {
 		21: ConsumesFlags	constructor(sbc_paired, [8, 20, 17], 9)
 		22: ValueRegs	constructor(with_flags, [19, 21], 10)
 		23: InstOutput	constructor(output, [22], 11)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -12529,13 +12938,14 @@ expansion {
 		11: Reg	constructor(put_in_reg_sext32, [10], 1)
 		12: Reg	constructor(abs, [9, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -12554,13 +12964,14 @@ expansion {
 		10: Reg	constructor(put_in_reg, [9], 1)
 		11: Reg	constructor(abs, [8, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -12580,13 +12991,14 @@ expansion {
 		11: VectorSize	constructor(vector_size, [5], 2)
 		12: Reg	constructor(vec_abs, [10, 11], 3)
 		13: InstOutput	constructor(output_reg, [12], 4)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -12608,12 +13020,13 @@ expansion {
 		13: VectorSize	constructor(vector_size, [12], 3)
 		14: Reg	constructor(addp, [9, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
+		16: Option(InstOutput)	some(15)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 15
+	result = 16
 }
 expansion {
 	term = lower
@@ -12641,6 +13054,7 @@ expansion {
 		19: Reg	constructor(put_in_reg, [17], 1)
 		20: Reg	constructor(uaddlp16, [19], 2)
 		21: InstOutput	constructor(output_reg, [20], 3)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12654,7 +13068,7 @@ expansion {
 	equals = [
 		18 == 17
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -12682,6 +13096,7 @@ expansion {
 		19: Reg	constructor(put_in_reg, [17], 1)
 		20: Reg	constructor(uaddlp8, [19], 2)
 		21: InstOutput	constructor(output_reg, [20], 3)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12695,7 +13110,7 @@ expansion {
 	equals = [
 		18 == 17
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -12723,6 +13138,7 @@ expansion {
 		19: Reg	constructor(put_in_reg, [17], 1)
 		20: Reg	constructor(saddlp16, [19], 2)
 		21: InstOutput	constructor(output_reg, [20], 3)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12736,7 +13152,7 @@ expansion {
 	equals = [
 		18 == 17
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -12764,6 +13180,7 @@ expansion {
 		19: Reg	constructor(put_in_reg, [17], 1)
 		20: Reg	constructor(saddlp8, [19], 2)
 		21: InstOutput	constructor(output_reg, [20], 3)
+		22: Option(InstOutput)	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12777,7 +13194,7 @@ expansion {
 	equals = [
 		18 == 17
 	]
-	result = 21
+	result = 22
 }
 expansion {
 	term = lower
@@ -12795,11 +13212,12 @@ expansion {
 		9: ConsumesFlags	constructor(materialize_bool_result, [8], 3)
 		10: ValueRegs	constructor(with_flags, [7, 9], 4)
 		11: InstOutput	constructor(output, [10], 5)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -12828,13 +13246,14 @@ expansion {
 		20: ConsumesFlags	constructor(materialize_bool_result, [19], 7)
 		21: ValueRegs	constructor(with_flags, [18, 20], 8)
 		22: InstOutput	constructor(output, [21], 9)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 22
+	result = 23
 }
 expansion {
 	term = lower
@@ -12867,6 +13286,7 @@ expansion {
 		24: ConsumesFlags	constructor(ccmp_imm, [18, 15, 19, 22, 23], 7)
 		25: ValueRegs	constructor(with_flags, [17, 24], 8)
 		26: InstOutput	constructor(output, [25], 9)
+		27: Option(InstOutput)	some(26)
 	]
 	constraints = [
 		3:	some
@@ -12874,7 +13294,7 @@ expansion {
 		8:	const_int(32)
 		9:	const_int(2)
 	]
-	result = 26
+	result = 27
 }
 expansion {
 	term = lower
@@ -12900,6 +13320,7 @@ expansion {
 		17: ConsumesFlags	constructor(materialize_bool_result, [16], 5)
 		18: ValueRegs	constructor(with_flags, [15, 17], 6)
 		19: InstOutput	constructor(output, [18], 7)
+		20: Option(InstOutput)	some(19)
 	]
 	constraints = [
 		3:	some
@@ -12907,7 +13328,7 @@ expansion {
 		8:	const_int(64)
 		9:	const_int(2)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = lower
@@ -12924,12 +13345,13 @@ expansion {
 		8: ScalarSize	make_variant(ScalarSize::Size32, [])
 		9: Reg	constructor(mov_to_fpu, [7, 8], 2)
 		10: InstOutput	constructor(output_reg, [9], 3)
+		11: Option(InstOutput)	some(10)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 10
+	result = 11
 }
 expansion {
 	term = lower
@@ -12945,12 +13367,13 @@ expansion {
 		7: ScalarSize	make_variant(ScalarSize::Size64, [])
 		8: Reg	constructor(mov_to_fpu, [6, 7], 2)
 		9: InstOutput	constructor(output_reg, [8], 3)
+		10: Option(InstOutput)	some(9)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I64)
 	]
-	result = 9
+	result = 10
 }
 expansion {
 	term = lower
@@ -12969,13 +13392,14 @@ expansion {
 		10: ScalarSize	make_variant(ScalarSize::Size64, [])
 		11: Reg	constructor(fpu_extend, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F64X2)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -12994,13 +13418,14 @@ expansion {
 		10: ScalarSize	make_variant(ScalarSize::Size32, [])
 		11: Reg	constructor(fpu_extend, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(F32X4)
 		7:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13021,13 +13446,14 @@ expansion {
 		12: Reg	constructor(put_in_reg, [11], 2)
 		13: ValueRegs	constructor(value_regs, [10, 12], 3)
 		14: InstOutput	constructor(output, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13047,12 +13473,13 @@ expansion {
 		11: Reg	constructor(value_regs_get, [6, 10], 4)
 		12: ValueRegs	constructor(value_reg, [11], 5)
 		13: InstOutput	constructor(output_pair, [9, 12], 6)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -13072,12 +13499,13 @@ expansion {
 		11: Reg	constructor(put_in_reg, [10], 2)
 		12: Reg	constructor(vec_tbl, [9, 11], 3)
 		13: InstOutput	constructor(output_reg, [12], 4)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -13102,13 +13530,14 @@ expansion {
 		16: Type	match_tuple(4, 0)
 		17: Reg	constructor(vec_tbl2, [11, 13, 15, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
+		19: Option(InstOutput)	some(18)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		9:	some
 	]
-	result = 18
+	result = 19
 }
 expansion {
 	term = lower
@@ -13127,13 +13556,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size32x4, [])
 		11: Reg	constructor(rev64, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(14673614102390417578512422760905835780)
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13152,13 +13582,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size16x8, [])
 		11: Reg	constructor(rev64, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(12004814239757670119517129289737963270)
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13177,13 +13608,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size8x16, [])
 		11: Reg	constructor(rev64, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(10680758337341567148842519922299176455)
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13202,13 +13634,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size16x8, [])
 		11: Reg	constructor(rev32, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(17342576855639742879858139805557719810)
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13227,13 +13660,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size8x16, [])
 		11: Reg	constructor(rev32, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(16018520953223639909183530438118932995)
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13252,13 +13686,14 @@ expansion {
 		10: VectorSize	make_variant(VectorSize::Size8x16, [])
 		11: Reg	constructor(rev16, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(18687320815856387368178823909286805505)
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13279,13 +13714,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size32x4, [])
 		13: Reg	constructor(vec_trn2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362427188014754909301208165426529540)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13306,13 +13742,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size32x4, [])
 		13: Reg	constructor(vec_trn1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(36024664569647092737326704519438008576)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13333,13 +13770,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size16x8, [])
 		13: Reg	constructor(vec_trn2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362142128814346332279593629287318274)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13360,13 +13798,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size16x8, [])
 		13: Reg	constructor(vec_trn1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(38693260819630515246292341806293057792)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13387,13 +13826,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size8x16, [])
 		13: Reg	constructor(vec_trn2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41284541550424544734358823780242100481)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13414,13 +13854,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size8x16, [])
 		13: Reg	constructor(vec_trn1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(39950100895832629191365197868744970240)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13441,13 +13882,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size32x4, [])
 		13: Reg	constructor(vec_zip2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362427188014754909590568856778836232)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13468,13 +13910,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size32x4, [])
 		13: Reg	constructor(vec_zip1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(30686901951279430565641561564801794304)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13495,13 +13938,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size16x8, [])
 		13: Reg	constructor(vec_zip2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362142129435743685477327603181816072)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13522,13 +13966,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size16x8, [])
 		13: Reg	constructor(vec_zip1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(30686616892700419341528320311204774144)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13549,13 +13994,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size8x16, [])
 		13: Reg	constructor(vec_zip2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41284561912683712994304547342093195272)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13576,13 +14022,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size8x16, [])
 		13: Reg	constructor(vec_zip1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(30609036675948388650355540050116153344)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13603,13 +14050,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size64x2, [])
 		13: Reg	constructor(vec_uzp2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362427191743139026172726477975062792)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13630,13 +14078,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size64x2, [])
 		13: Reg	constructor(vec_uzp1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(30686901955007814682223719185998020864)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13657,13 +14106,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size32x4, [])
 		13: Reg	constructor(vec_uzp2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362427190500344320355979912890680580)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13684,13 +14134,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size32x4, [])
 		13: Reg	constructor(vec_uzp1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(36024664572132682148381476266902159616)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13711,13 +14162,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size16x8, [])
 		13: Reg	constructor(vec_uzp2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41362386467224802506860000736977486594)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13738,13 +14190,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size16x8, [])
 		13: Reg	constructor(vec_uzp1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(38693505158040971420872748913983226112)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13765,13 +14218,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size8x16, [])
 		13: Reg	constructor(vec_uzp2, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(41357194091136896220700492464948314881)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13792,13 +14246,14 @@ expansion {
 		12: VectorSize	make_variant(VectorSize::Size8x16, [])
 		13: Reg	constructor(vec_uzp1, [9, 11, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
+		15: Option(InstOutput)	some(14)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		7:	const_int(40022753436544980677706866553451184640)
 	]
-	result = 14
+	result = 15
 }
 expansion {
 	term = lower
@@ -13818,12 +14273,13 @@ expansion {
 		11: u8	match_some(6)
 		12: Reg	constructor(vec_extract, [8, 10, 11], 3)
 		13: InstOutput	constructor(output_reg, [12], 4)
+		14: Option(InstOutput)	some(13)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 13
+	result = 14
 }
 expansion {
 	term = lower
@@ -13842,12 +14298,13 @@ expansion {
 		10: u8	match_some(6)
 		11: Reg	constructor(vec_dup_from_fpu, [8, 9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13866,12 +14323,13 @@ expansion {
 		10: u8	match_some(6)
 		11: Reg	constructor(vec_dup_from_fpu, [8, 9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13890,12 +14348,13 @@ expansion {
 		10: u8	match_some(6)
 		11: Reg	constructor(vec_dup_from_fpu, [8, 9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13914,12 +14373,13 @@ expansion {
 		10: u8	match_some(6)
 		11: Reg	constructor(vec_dup_from_fpu, [8, 9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
 expansion {
 	term = lower
@@ -13949,13 +14409,14 @@ expansion {
 		21: ConsumesFlags	constructor(adc_paired, [8, 19, 20], 8)
 		22: ValueRegs	constructor(with_flags, [17, 21], 9)
 		23: InstOutput	constructor(output, [22], 10)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
 		5:	const_prim(I128)
 		7:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -13978,13 +14439,14 @@ expansion {
 		14: VectorSize	constructor(vector_size, [7], 3)
 		15: Reg	constructor(add_vec, [11, 13, 14], 4)
 		16: InstOutput	constructor(output_reg, [15], 5)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -14014,6 +14476,7 @@ expansion {
 		21: Reg	constructor(put_in_reg, [20], 3)
 		22: Reg	constructor(msub, [14, 17, 19, 21], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
@@ -14022,7 +14485,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -14052,6 +14515,7 @@ expansion {
 		21: Reg	constructor(put_in_reg, [20], 3)
 		22: Reg	constructor(madd, [14, 17, 19, 21], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
@@ -14060,7 +14524,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -14090,6 +14554,7 @@ expansion {
 		21: Reg	constructor(put_in_reg, [20], 3)
 		22: Reg	constructor(madd, [14, 17, 19, 21], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
+		24: Option(InstOutput)	some(23)
 	]
 	constraints = [
 		3:	some
@@ -14098,7 +14563,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 23
+	result = 24
 }
 expansion {
 	term = lower
@@ -14133,6 +14598,7 @@ expansion {
 		26: ShiftOpAndAmt	match_some(21)
 		27: Reg	constructor(add_shift, [19, 23, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
+		29: Option(InstOutput)	some(28)
 	]
 	constraints = [
 		3:	some
@@ -14144,7 +14610,7 @@ expansion {
 		18:	some
 		21:	some
 	]
-	result = 28
+	result = 29
 }
 expansion {
 	term = lower
@@ -14179,6 +14645,7 @@ expansion {
 		26: ShiftOpAndAmt	match_some(21)
 		27: Reg	constructor(add_shift, [19, 23, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
+		29: Option(InstOutput)	some(28)
 	]
 	constraints = [
 		3:	some
@@ -14190,7 +14657,7 @@ expansion {
 		18:	some
 		21:	some
 	]
-	result = 28
+	result = 29
 }
 expansion {
 	term = lower
@@ -14214,6 +14681,7 @@ expansion {
 		15: ExtendedValue	match_some(11)
 		16: Reg	constructor(add_extend, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -14221,7 +14689,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -14245,6 +14713,7 @@ expansion {
 		15: ExtendedValue	match_some(11)
 		16: Reg	constructor(add_extend, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -14252,7 +14721,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -14276,6 +14745,7 @@ expansion {
 		15: Imm12	match_some(11)
 		16: Reg	constructor(sub_imm, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -14283,7 +14753,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -14307,6 +14777,7 @@ expansion {
 		15: Imm12	match_some(11)
 		16: Reg	constructor(sub_imm, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -14314,7 +14785,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -14338,6 +14809,7 @@ expansion {
 		15: Imm12	match_some(11)
 		16: Reg	constructor(add_imm, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -14345,7 +14817,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -14369,6 +14841,7 @@ expansion {
 		15: Imm12	match_some(11)
 		16: Reg	constructor(add_imm, [12, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
+		18: Option(InstOutput)	some(17)
 	]
 	constraints = [
 		3:	some
@@ -14376,7 +14849,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 18
 }
 expansion {
 	term = lower
@@ -14399,13 +14872,14 @@ expansion {
 		14: Reg	constructor(put_in_reg, [13], 2)
 		15: Reg	constructor(add, [9, 12, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
+		17: Option(InstOutput)	some(16)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 17
 }
 expansion {
 	term = lower
@@ -14417,11 +14891,12 @@ expansion {
 		3: Option(())	extractor(nop, 0)
 		4: Reg	constructor(invalid_reg, [], 1)
 		5: InstOutput	constructor(output_reg, [4], 2)
+		6: Option(InstOutput)	some(5)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 5
+	result = 6
 }
 expansion {
 	term = lower
@@ -14435,11 +14910,12 @@ expansion {
 		5: u64	extractor(u64_from_ieee64, 4)
 		6: Reg	constructor(constant_f64, [5], 1)
 		7: InstOutput	constructor(output_reg, [6], 2)
+		8: Option(InstOutput)	some(7)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 7
+	result = 8
 }
 expansion {
 	term = lower
@@ -14453,11 +14929,12 @@ expansion {
 		5: u32	extractor(u32_from_ieee32, 4)
 		6: Reg	constructor(constant_f32, [5], 1)
 		7: InstOutput	constructor(output_reg, [6], 2)
+		8: Option(InstOutput)	some(7)
 	]
 	constraints = [
 		3:	some
 	]
-	result = 7
+	result = 8
 }
 expansion {
 	term = lower
@@ -14475,12 +14952,13 @@ expansion {
 		9: u64	const_int(0, u64)
 		10: Reg	constructor(imm, [7, 8, 9], 1)
 		11: InstOutput	constructor(output_reg, [10], 2)
+		12: Option(InstOutput)	some(11)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 11
+	result = 12
 }
 expansion {
 	term = lower
@@ -14499,10 +14977,11 @@ expansion {
 		10: u64	extractor(u64_from_imm64, 9)
 		11: Reg	constructor(imm, [7, 8, 10], 1)
 		12: InstOutput	constructor(output_reg, [11], 2)
+		13: Option(InstOutput)	some(12)
 	]
 	constraints = [
 		3:	some
 		6:	some
 	]
-	result = 12
+	result = 13
 }
