@@ -13,22 +13,23 @@ expansion {
 		1: Inst	argument(1)
 		5: InstructionData	extractor(inst_data, 1)
 		6: Opcode	match_variant(5, InstructionData::Load, opcode)
-		7: Value	match_variant(5, InstructionData::Load, arg)
-		8: Reg	constructor(put_in_reg, [7], 2)
-		9: Offset32	match_variant(5, InstructionData::Load, offset)
-		10: i32	extractor(offset32, 9)
-		11: i64	constructor(i32_as_i64, [10], 0)
-		12: u64	constructor(i64_as_u64, [11], 0)
-		16: Type	const_prim(I64)
-		17: ImmExtend	make_variant(ImmExtend::Zero, [])
-		18: Reg	constructor(imm, [16, 17, 12], 1)
-		19: Reg	constructor(add, [16, 8, 18], 2)
+		7: Unit	constructor(sink_inst, [1], 1)
+		8: Value	match_variant(5, InstructionData::Load, arg)
+		9: Reg	constructor(put_in_reg, [8], 2)
+		10: Offset32	match_variant(5, InstructionData::Load, offset)
+		11: i32	extractor(offset32, 10)
+		12: i64	constructor(i32_as_i64, [11], 0)
+		13: u64	constructor(i64_as_u64, [12], 0)
+		17: Type	const_prim(I64)
+		18: ImmExtend	make_variant(ImmExtend::Zero, [])
+		19: Reg	constructor(imm, [17, 18, 13], 1)
+		20: Reg	constructor(add, [17, 9, 19], 2)
 	]
 	constraints = [
 		5:	variant(InstructionData::Load)
 		6:	variant(Opcode::Load)
 	]
-	result = 19
+	result = 20
 }
 expansion {
 	term = sink_load_into_addr
@@ -42,24 +43,25 @@ expansion {
 		1: Inst	argument(1)
 		5: InstructionData	extractor(inst_data, 1)
 		6: Opcode	match_variant(5, InstructionData::Load, opcode)
-		7: Value	match_variant(5, InstructionData::Load, arg)
-		8: Reg	constructor(put_in_reg, [7], 2)
-		9: Offset32	match_variant(5, InstructionData::Load, offset)
-		10: i32	extractor(offset32, 9)
-		11: i64	constructor(i32_as_i64, [10], 0)
-		12: u64	constructor(i64_as_u64, [11], 0)
-		16: Option(Imm12)	extractor(imm12_from_u64, 12)
-		17: Type	const_prim(I64)
-		18: Imm12	match_some(16)
-		23: ALUOp	make_variant(ALUOp::Add, [])
-		24: Reg	constructor(alu_rr_imm12, [23, 17, 8, 18], 1)
+		7: Unit	constructor(sink_inst, [1], 1)
+		8: Value	match_variant(5, InstructionData::Load, arg)
+		9: Reg	constructor(put_in_reg, [8], 2)
+		10: Offset32	match_variant(5, InstructionData::Load, offset)
+		11: i32	extractor(offset32, 10)
+		12: i64	constructor(i32_as_i64, [11], 0)
+		13: u64	constructor(i64_as_u64, [12], 0)
+		17: Option(Imm12)	extractor(imm12_from_u64, 13)
+		18: Type	const_prim(I64)
+		19: Imm12	match_some(17)
+		24: ALUOp	make_variant(ALUOp::Add, [])
+		25: Reg	constructor(alu_rr_imm12, [24, 18, 9, 19], 1)
 	]
 	constraints = [
 		5:	variant(InstructionData::Load)
 		6:	variant(Opcode::Load)
-		16:	some
+		17:	some
 	]
-	result = 24
+	result = 25
 }
 expansion {
 	term = sink_load_into_addr
@@ -72,17 +74,18 @@ expansion {
 		1: Inst	argument(1)
 		5: InstructionData	extractor(inst_data, 1)
 		6: Opcode	match_variant(5, InstructionData::Load, opcode)
-		7: Value	match_variant(5, InstructionData::Load, arg)
-		8: Reg	constructor(put_in_reg, [7], 2)
-		9: Offset32	match_variant(5, InstructionData::Load, offset)
-		10: i32	extractor(offset32, 9)
-		11: i64	constructor(i32_as_i64, [10], 0)
-		12: u64	constructor(i64_as_u64, [11], 0)
+		7: Unit	constructor(sink_inst, [1], 1)
+		8: Value	match_variant(5, InstructionData::Load, arg)
+		9: Reg	constructor(put_in_reg, [8], 2)
+		10: Offset32	match_variant(5, InstructionData::Load, offset)
+		11: i32	extractor(offset32, 10)
+		12: i64	constructor(i32_as_i64, [11], 0)
+		13: u64	constructor(i64_as_u64, [12], 0)
 	]
 	constraints = [
 		5:	variant(InstructionData::Load)
 		6:	variant(Opcode::Load)
-		12:	const_int(0)
+		13:	const_int(0)
 	]
-	result = 8
+	result = 9
 }

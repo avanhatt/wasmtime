@@ -51,8 +51,8 @@ expand \
     --term-name lower \
     --no-expand-internal-extractors \
     --maximal-inlining \
-    --max-rules 3 \
-    > output/lower_internal_extractors_maximal_inline_3.out
+    --max-rules 1 \
+    > output/lower_internal_extractors_maximal_inline_1.out
 
 expand \
     --name x64 \
