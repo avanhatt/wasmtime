@@ -55,6 +55,24 @@ expand \
     > output/lower_internal_extractors_maximal_inline_1.out
 
 expand \
+    --name aarch64 \
+    --term-name lower \
+    --no-expand-internal-extractors \
+    --maximal-inlining \
+    --max-rules 2 \
+    --exclude-inline operand_size \
+    > output/lower_internal_extractors_maximal_inline_2.out
+
+expand \
+    --name aarch64 \
+    --term-name lower \
+    --no-expand-internal-extractors \
+    --maximal-inlining \
+    --max-rules 3 \
+    --exclude-inline operand_size \
+    > output/lower_internal_extractors_maximal_inline_3.out
+
+expand \
     --name x64 \
     --term-name lower \
     --no-expand-internal-extractors \

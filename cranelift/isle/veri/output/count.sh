@@ -11,4 +11,9 @@ function count() {
 
 rm -f output/*.count
 
-count --name "aarch64" --term-name lower > "output/aarch64_lower.count"
+count \
+    --name "aarch64" \
+    --term-name lower \
+    --max-rules 3 \
+    --exclude-inline operand_size \
+    > "output/aarch64_lower.count"
