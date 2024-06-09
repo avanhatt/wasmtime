@@ -4,8 +4,8 @@ expansions = 3
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -32,8 +32,8 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
-		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3233
+		../../codegen/src/isa/aarch64/inst.isle line 3220
+		../../codegen/src/isa/aarch64/inst.isle line 3226
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -61,8 +61,8 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
-		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3232
+		../../codegen/src/isa/aarch64/inst.isle line 3220
+		../../codegen/src/isa/aarch64/inst.isle line 3225
 	]
 	bindings = [
 		0: Type	argument(0)

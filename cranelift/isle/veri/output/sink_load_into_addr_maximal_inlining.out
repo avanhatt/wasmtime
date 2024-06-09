@@ -3,11 +3,11 @@ expansions = 8
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
-		../../codegen/src/isa/aarch64/inst.isle line 2960
-		../../codegen/src/isa/aarch64/inst.isle line 2432
-		../../codegen/src/isa/aarch64/inst.isle line 1899
+		../../codegen/src/isa/aarch64/inst.isle line 2953
+		../../codegen/src/isa/aarch64/inst.isle line 2425
+		../../codegen/src/isa/aarch64/inst.isle line 1892
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -40,13 +40,13 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
-		../../codegen/src/isa/aarch64/inst.isle line 2949
-		../../codegen/src/isa/aarch64/inst.isle line 2432
-		../../codegen/src/isa/aarch64/inst.isle line 2709
-		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/isa/aarch64/inst.isle line 1885
+		../../codegen/src/isa/aarch64/inst.isle line 2942
+		../../codegen/src/isa/aarch64/inst.isle line 2425
+		../../codegen/src/isa/aarch64/inst.isle line 2702
+		../../codegen/src/isa/aarch64/inst.isle line 1892
+		../../codegen/src/isa/aarch64/inst.isle line 1878
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -91,13 +91,13 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
-		../../codegen/src/isa/aarch64/inst.isle line 2941
-		../../codegen/src/isa/aarch64/inst.isle line 2432
-		../../codegen/src/isa/aarch64/inst.isle line 1227
-		../../codegen/src/isa/aarch64/inst.isle line 1878
-		../../codegen/src/isa/aarch64/inst.isle line 1899
+		../../codegen/src/isa/aarch64/inst.isle line 2934
+		../../codegen/src/isa/aarch64/inst.isle line 2425
+		../../codegen/src/isa/aarch64/inst.isle line 1220
+		../../codegen/src/isa/aarch64/inst.isle line 1871
+		../../codegen/src/isa/aarch64/inst.isle line 1892
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -144,13 +144,13 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
-		../../codegen/src/isa/aarch64/inst.isle line 2941
-		../../codegen/src/isa/aarch64/inst.isle line 2432
-		../../codegen/src/isa/aarch64/inst.isle line 1226
-		../../codegen/src/isa/aarch64/inst.isle line 1878
-		../../codegen/src/isa/aarch64/inst.isle line 1899
+		../../codegen/src/isa/aarch64/inst.isle line 2934
+		../../codegen/src/isa/aarch64/inst.isle line 2425
+		../../codegen/src/isa/aarch64/inst.isle line 1219
+		../../codegen/src/isa/aarch64/inst.isle line 1871
+		../../codegen/src/isa/aarch64/inst.isle line 1892
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -197,13 +197,13 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
-		../../codegen/src/isa/aarch64/inst.isle line 2936
-		../../codegen/src/isa/aarch64/inst.isle line 2432
-		../../codegen/src/isa/aarch64/inst.isle line 1227
-		../../codegen/src/isa/aarch64/inst.isle line 1871
-		../../codegen/src/isa/aarch64/inst.isle line 1899
+		../../codegen/src/isa/aarch64/inst.isle line 2929
+		../../codegen/src/isa/aarch64/inst.isle line 2425
+		../../codegen/src/isa/aarch64/inst.isle line 1220
+		../../codegen/src/isa/aarch64/inst.isle line 1864
+		../../codegen/src/isa/aarch64/inst.isle line 1892
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -247,13 +247,13 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
+		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3234
-		../../codegen/src/isa/aarch64/inst.isle line 2936
-		../../codegen/src/isa/aarch64/inst.isle line 2432
-		../../codegen/src/isa/aarch64/inst.isle line 1226
-		../../codegen/src/isa/aarch64/inst.isle line 1871
-		../../codegen/src/isa/aarch64/inst.isle line 1899
+		../../codegen/src/isa/aarch64/inst.isle line 2929
+		../../codegen/src/isa/aarch64/inst.isle line 2425
+		../../codegen/src/isa/aarch64/inst.isle line 1219
+		../../codegen/src/isa/aarch64/inst.isle line 1864
+		../../codegen/src/isa/aarch64/inst.isle line 1892
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -297,10 +297,10 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
-		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3233
-		../../codegen/src/isa/aarch64/inst.isle line 2435
-		../../codegen/src/isa/aarch64/inst.isle line 2003
+		../../codegen/src/isa/aarch64/inst.isle line 3220
+		../../codegen/src/isa/aarch64/inst.isle line 3226
+		../../codegen/src/isa/aarch64/inst.isle line 2428
+		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
 		0: Type	argument(0)
@@ -331,8 +331,8 @@ expansion {
 expansion {
 	term = sink_load_into_addr
 	rules = [
-		../../codegen/src/isa/aarch64/inst.isle line 3227
-		../../codegen/src/isa/aarch64/inst.isle line 3232
+		../../codegen/src/isa/aarch64/inst.isle line 3220
+		../../codegen/src/isa/aarch64/inst.isle line 3225
 	]
 	bindings = [
 		0: Type	argument(0)

@@ -1,9 +1,9 @@
 inline term: lower
-expansions = 566
+expansions = 564
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4807
+		../../codegen/src/isa/x64/lower.isle line 4809
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -20,7 +20,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4779
+		../../codegen/src/isa/x64/lower.isle line 4781
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -78,7 +78,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4761
+		../../codegen/src/isa/x64/lower.isle line 4763
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -104,7 +104,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4735
+		../../codegen/src/isa/x64/lower.isle line 4737
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -150,7 +150,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4719
+		../../codegen/src/isa/x64/lower.isle line 4721
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -183,7 +183,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4714
+		../../codegen/src/isa/x64/lower.isle line 4716
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -212,7 +212,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4711
+		../../codegen/src/isa/x64/lower.isle line 4713
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -241,7 +241,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4708
+		../../codegen/src/isa/x64/lower.isle line 4710
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -270,7 +270,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4700
+		../../codegen/src/isa/x64/lower.isle line 4702
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -296,7 +296,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4695
+		../../codegen/src/isa/x64/lower.isle line 4697
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -320,7 +320,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4687
+		../../codegen/src/isa/x64/lower.isle line 4689
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -355,7 +355,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4678
+		../../codegen/src/isa/x64/lower.isle line 4680
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -383,7 +383,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4675
+		../../codegen/src/isa/x64/lower.isle line 4677
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -411,7 +411,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4672
+		../../codegen/src/isa/x64/lower.isle line 4674
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -439,7 +439,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4655
+		../../codegen/src/isa/x64/lower.isle line 4657
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -469,7 +469,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4645
+		../../codegen/src/isa/x64/lower.isle line 4647
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -499,7 +499,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4635
+		../../codegen/src/isa/x64/lower.isle line 4637
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -528,7 +528,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4626
+		../../codegen/src/isa/x64/lower.isle line 4628
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -553,7 +553,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4620
+		../../codegen/src/isa/x64/lower.isle line 4622
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -589,7 +589,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4618
+		../../codegen/src/isa/x64/lower.isle line 4620
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -615,7 +615,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4616
+		../../codegen/src/isa/x64/lower.isle line 4618
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -644,7 +644,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4609
+		../../codegen/src/isa/x64/lower.isle line 4611
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -680,7 +680,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4606
+		../../codegen/src/isa/x64/lower.isle line 4608
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -717,7 +717,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4593
+		../../codegen/src/isa/x64/lower.isle line 4595
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -744,7 +744,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4590
+		../../codegen/src/isa/x64/lower.isle line 4592
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -771,7 +771,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4583
+		../../codegen/src/isa/x64/lower.isle line 4585
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -801,7 +801,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4581
+		../../codegen/src/isa/x64/lower.isle line 4583
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -830,7 +830,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4573
+		../../codegen/src/isa/x64/lower.isle line 4575
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -860,7 +860,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4571
+		../../codegen/src/isa/x64/lower.isle line 4573
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -894,7 +894,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4568
+		../../codegen/src/isa/x64/lower.isle line 4570
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -924,7 +924,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4566
+		../../codegen/src/isa/x64/lower.isle line 4568
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -955,7 +955,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4557
+		../../codegen/src/isa/x64/lower.isle line 4559
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -985,7 +985,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4553
+		../../codegen/src/isa/x64/lower.isle line 4555
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1023,7 +1023,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4550
+		../../codegen/src/isa/x64/lower.isle line 4552
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1053,7 +1053,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4547
+		../../codegen/src/isa/x64/lower.isle line 4549
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1085,7 +1085,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4544
+		../../codegen/src/isa/x64/lower.isle line 4546
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1117,7 +1117,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4528
+		../../codegen/src/isa/x64/lower.isle line 4530
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1142,7 +1142,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4526
+		../../codegen/src/isa/x64/lower.isle line 4528
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1167,7 +1167,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4521
+		../../codegen/src/isa/x64/lower.isle line 4523
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1187,7 +1187,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4516
+		../../codegen/src/isa/x64/lower.isle line 4518
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1207,7 +1207,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4507
+		../../codegen/src/isa/x64/lower.isle line 4509
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1233,7 +1233,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4505
+		../../codegen/src/isa/x64/lower.isle line 4507
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1257,7 +1257,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4502
+		../../codegen/src/isa/x64/lower.isle line 4504
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1283,7 +1283,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4498
+		../../codegen/src/isa/x64/lower.isle line 4500
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1308,7 +1308,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4496
+		../../codegen/src/isa/x64/lower.isle line 4498
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1332,7 +1332,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4493
+		../../codegen/src/isa/x64/lower.isle line 4495
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1358,7 +1358,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4489
+		../../codegen/src/isa/x64/lower.isle line 4491
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1382,7 +1382,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4484
+		../../codegen/src/isa/x64/lower.isle line 4486
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1410,7 +1410,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4477
+		../../codegen/src/isa/x64/lower.isle line 4479
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1443,7 +1443,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4473
+		../../codegen/src/isa/x64/lower.isle line 4475
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1469,7 +1469,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4466
+		../../codegen/src/isa/x64/lower.isle line 4468
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1494,7 +1494,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4462
+		../../codegen/src/isa/x64/lower.isle line 4464
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1518,7 +1518,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4458
+		../../codegen/src/isa/x64/lower.isle line 4460
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1545,7 +1545,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4435
+		../../codegen/src/isa/x64/lower.isle line 4437
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1569,7 +1569,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4429
+		../../codegen/src/isa/x64/lower.isle line 4431
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1598,7 +1598,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4416
+		../../codegen/src/isa/x64/lower.isle line 4418
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1631,7 +1631,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4408
+		../../codegen/src/isa/x64/lower.isle line 4410
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1664,7 +1664,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4401
+		../../codegen/src/isa/x64/lower.isle line 4403
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1703,7 +1703,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4394
+		../../codegen/src/isa/x64/lower.isle line 4396
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1735,7 +1735,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4381
+		../../codegen/src/isa/x64/lower.isle line 4383
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1761,7 +1761,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4379
+		../../codegen/src/isa/x64/lower.isle line 4381
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1787,7 +1787,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4365
+		../../codegen/src/isa/x64/lower.isle line 4367
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1817,7 +1817,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4357
+		../../codegen/src/isa/x64/lower.isle line 4359
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1844,7 +1844,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4355
+		../../codegen/src/isa/x64/lower.isle line 4357
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1871,7 +1871,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4351
+		../../codegen/src/isa/x64/lower.isle line 4353
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1898,7 +1898,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4349
+		../../codegen/src/isa/x64/lower.isle line 4351
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1925,7 +1925,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4345
+		../../codegen/src/isa/x64/lower.isle line 4347
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1952,7 +1952,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4343
+		../../codegen/src/isa/x64/lower.isle line 4345
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1979,7 +1979,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4339
+		../../codegen/src/isa/x64/lower.isle line 4341
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2006,7 +2006,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4337
+		../../codegen/src/isa/x64/lower.isle line 4339
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2033,7 +2033,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4328
+		../../codegen/src/isa/x64/lower.isle line 4330
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2057,7 +2057,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4326
+		../../codegen/src/isa/x64/lower.isle line 4328
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2081,7 +2081,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4309
+		../../codegen/src/isa/x64/lower.isle line 4311
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2105,7 +2105,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4307
+		../../codegen/src/isa/x64/lower.isle line 4309
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2129,7 +2129,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4305
+		../../codegen/src/isa/x64/lower.isle line 4307
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2153,7 +2153,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4303
+		../../codegen/src/isa/x64/lower.isle line 4305
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2177,7 +2177,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4291
+		../../codegen/src/isa/x64/lower.isle line 4293
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2205,7 +2205,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4280
+		../../codegen/src/isa/x64/lower.isle line 4282
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2233,7 +2233,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4270
+		../../codegen/src/isa/x64/lower.isle line 4272
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2261,7 +2261,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4265
+		../../codegen/src/isa/x64/lower.isle line 4267
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2285,7 +2285,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4260
+		../../codegen/src/isa/x64/lower.isle line 4262
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2304,7 +2304,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4255
+		../../codegen/src/isa/x64/lower.isle line 4257
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2321,7 +2321,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4250
+		../../codegen/src/isa/x64/lower.isle line 4252
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2350,7 +2350,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4247
+		../../codegen/src/isa/x64/lower.isle line 4249
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2379,7 +2379,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4242
+		../../codegen/src/isa/x64/lower.isle line 4244
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2408,7 +2408,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4239
+		../../codegen/src/isa/x64/lower.isle line 4241
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2437,7 +2437,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4228
+		../../codegen/src/isa/x64/lower.isle line 4230
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2464,7 +2464,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4222
+		../../codegen/src/isa/x64/lower.isle line 4224
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2495,7 +2495,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4209
+		../../codegen/src/isa/x64/lower.isle line 4211
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2532,7 +2532,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4200
+		../../codegen/src/isa/x64/lower.isle line 4202
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2576,7 +2576,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4185
+		../../codegen/src/isa/x64/lower.isle line 4187
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2610,7 +2610,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4176
+		../../codegen/src/isa/x64/lower.isle line 4178
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2644,7 +2644,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4143
+		../../codegen/src/isa/x64/lower.isle line 4145
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2675,7 +2675,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4137
+		../../codegen/src/isa/x64/lower.isle line 4139
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2705,7 +2705,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4127
+		../../codegen/src/isa/x64/lower.isle line 4129
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2739,7 +2739,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4118
+		../../codegen/src/isa/x64/lower.isle line 4120
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2768,7 +2768,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4104
+		../../codegen/src/isa/x64/lower.isle line 4106
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2788,7 +2788,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4099
+		../../codegen/src/isa/x64/lower.isle line 4101
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2809,7 +2809,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4094
+		../../codegen/src/isa/x64/lower.isle line 4096
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2830,7 +2830,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4089
+		../../codegen/src/isa/x64/lower.isle line 4091
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2851,7 +2851,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4084
+		../../codegen/src/isa/x64/lower.isle line 4086
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2872,7 +2872,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4024
+		../../codegen/src/isa/x64/lower.isle line 4026
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2909,7 +2909,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4018
+		../../codegen/src/isa/x64/lower.isle line 4020
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2946,7 +2946,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4012
+		../../codegen/src/isa/x64/lower.isle line 4014
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2974,7 +2974,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4005
+		../../codegen/src/isa/x64/lower.isle line 4007
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3010,7 +3010,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 4000
+		../../codegen/src/isa/x64/lower.isle line 4002
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3046,7 +3046,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3993
+		../../codegen/src/isa/x64/lower.isle line 3995
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3074,7 +3074,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3989
+		../../codegen/src/isa/x64/lower.isle line 3991
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3103,7 +3103,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3986
+		../../codegen/src/isa/x64/lower.isle line 3988
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3132,7 +3132,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3983
+		../../codegen/src/isa/x64/lower.isle line 3985
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3161,7 +3161,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3980
+		../../codegen/src/isa/x64/lower.isle line 3982
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3190,7 +3190,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3943
+		../../codegen/src/isa/x64/lower.isle line 3945
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3223,7 +3223,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3933
+		../../codegen/src/isa/x64/lower.isle line 3935
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3255,7 +3255,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3930
+		../../codegen/src/isa/x64/lower.isle line 3932
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3285,7 +3285,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3924
+		../../codegen/src/isa/x64/lower.isle line 3926
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3334,7 +3334,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3900
+		../../codegen/src/isa/x64/lower.isle line 3902
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3393,7 +3393,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3891
+		../../codegen/src/isa/x64/lower.isle line 3893
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3423,7 +3423,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3888
+		../../codegen/src/isa/x64/lower.isle line 3890
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3453,7 +3453,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3883
+		../../codegen/src/isa/x64/lower.isle line 3885
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3483,7 +3483,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3881
+		../../codegen/src/isa/x64/lower.isle line 3883
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3513,7 +3513,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3879
+		../../codegen/src/isa/x64/lower.isle line 3881
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3543,7 +3543,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3864
+		../../codegen/src/isa/x64/lower.isle line 3866
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3567,7 +3567,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3860
+		../../codegen/src/isa/x64/lower.isle line 3862
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3596,7 +3596,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3857
+		../../codegen/src/isa/x64/lower.isle line 3859
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3625,7 +3625,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3854
+		../../codegen/src/isa/x64/lower.isle line 3856
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3654,7 +3654,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3846
+		../../codegen/src/isa/x64/lower.isle line 3848
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3688,7 +3688,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3841
+		../../codegen/src/isa/x64/lower.isle line 3843
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3719,7 +3719,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3838
+		../../codegen/src/isa/x64/lower.isle line 3840
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3750,7 +3750,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3832
+		../../codegen/src/isa/x64/lower.isle line 3834
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3782,7 +3782,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3827
+		../../codegen/src/isa/x64/lower.isle line 3829
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3817,7 +3817,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3822
+		../../codegen/src/isa/x64/lower.isle line 3824
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3852,7 +3852,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3799
+		../../codegen/src/isa/x64/lower.isle line 3801
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3876,7 +3876,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3795
+		../../codegen/src/isa/x64/lower.isle line 3797
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3905,7 +3905,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3792
+		../../codegen/src/isa/x64/lower.isle line 3794
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3934,7 +3934,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3789
+		../../codegen/src/isa/x64/lower.isle line 3791
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3963,7 +3963,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3780
+		../../codegen/src/isa/x64/lower.isle line 3782
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4035,7 +4035,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3766
+		../../codegen/src/isa/x64/lower.isle line 3768
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4090,7 +4090,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3757
+		../../codegen/src/isa/x64/lower.isle line 3759
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4139,7 +4139,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3749
+		../../codegen/src/isa/x64/lower.isle line 3751
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4186,7 +4186,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3739
+		../../codegen/src/isa/x64/lower.isle line 3741
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4236,7 +4236,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3727
+		../../codegen/src/isa/x64/lower.isle line 3729
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4271,7 +4271,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3723
+		../../codegen/src/isa/x64/lower.isle line 3725
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4301,7 +4301,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3697
+		../../codegen/src/isa/x64/lower.isle line 3699
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4352,7 +4352,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3693
+		../../codegen/src/isa/x64/lower.isle line 3695
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4382,7 +4382,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3677
+		../../codegen/src/isa/x64/lower.isle line 3679
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4430,7 +4430,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3672
+		../../codegen/src/isa/x64/lower.isle line 3674
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4457,7 +4457,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3625
+		../../codegen/src/isa/x64/lower.isle line 3627
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4510,7 +4510,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3554
+		../../codegen/src/isa/x64/lower.isle line 3556
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4552,7 +4552,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3550
+		../../codegen/src/isa/x64/lower.isle line 3552
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4579,7 +4579,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3547
+		../../codegen/src/isa/x64/lower.isle line 3549
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4606,7 +4606,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3544
+		../../codegen/src/isa/x64/lower.isle line 3546
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4633,7 +4633,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3541
+		../../codegen/src/isa/x64/lower.isle line 3543
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4660,7 +4660,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3517
+		../../codegen/src/isa/x64/lower.isle line 3519
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4702,7 +4702,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3489
+		../../codegen/src/isa/x64/lower.isle line 3491
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4731,7 +4731,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3481
+		../../codegen/src/isa/x64/lower.isle line 3483
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4771,7 +4771,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3466
+		../../codegen/src/isa/x64/lower.isle line 3468
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4819,7 +4819,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3435
+		../../codegen/src/isa/x64/lower.isle line 3437
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4845,7 +4845,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3432
+		../../codegen/src/isa/x64/lower.isle line 3434
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4881,7 +4881,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3429
+		../../codegen/src/isa/x64/lower.isle line 3431
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4917,7 +4917,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3424
+		../../codegen/src/isa/x64/lower.isle line 3426
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4950,7 +4950,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3415
+		../../codegen/src/isa/x64/lower.isle line 3417
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4984,7 +4984,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3409
+		../../codegen/src/isa/x64/lower.isle line 3411
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5005,7 +5005,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3406
+		../../codegen/src/isa/x64/lower.isle line 3408
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5039,7 +5039,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3403
+		../../codegen/src/isa/x64/lower.isle line 3405
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5071,7 +5071,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3400
+		../../codegen/src/isa/x64/lower.isle line 3402
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5103,7 +5103,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3397
+		../../codegen/src/isa/x64/lower.isle line 3399
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5137,7 +5137,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3394
+		../../codegen/src/isa/x64/lower.isle line 3396
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5169,7 +5169,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3391
+		../../codegen/src/isa/x64/lower.isle line 3393
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5201,7 +5201,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3368
+		../../codegen/src/isa/x64/lower.isle line 3370
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5231,7 +5231,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3363
+		../../codegen/src/isa/x64/lower.isle line 3365
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5267,7 +5267,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3360
+		../../codegen/src/isa/x64/lower.isle line 3362
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5298,7 +5298,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3296
+		../../codegen/src/isa/x64/lower.isle line 3298
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5322,7 +5322,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3293
+		../../codegen/src/isa/x64/lower.isle line 3295
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5339,7 +5339,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3290
+		../../codegen/src/isa/x64/lower.isle line 3292
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5356,7 +5356,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3285
+		../../codegen/src/isa/x64/lower.isle line 3287
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5376,7 +5376,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3282
+		../../codegen/src/isa/x64/lower.isle line 3284
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5399,7 +5399,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3277
+		../../codegen/src/isa/x64/lower.isle line 3279
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5419,7 +5419,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3274
+		../../codegen/src/isa/x64/lower.isle line 3276
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5442,7 +5442,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3268
+		../../codegen/src/isa/x64/lower.isle line 3270
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5479,7 +5479,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3252
+		../../codegen/src/isa/x64/lower.isle line 3254
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5516,7 +5516,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3243
+		../../codegen/src/isa/x64/lower.isle line 3245
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5549,7 +5549,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3235
+		../../codegen/src/isa/x64/lower.isle line 3237
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5585,7 +5585,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3233
+		../../codegen/src/isa/x64/lower.isle line 3235
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5613,7 +5613,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3221
+		../../codegen/src/isa/x64/lower.isle line 3223
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5637,7 +5637,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3216
+		../../codegen/src/isa/x64/lower.isle line 3218
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5659,7 +5659,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3211
+		../../codegen/src/isa/x64/lower.isle line 3213
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5676,7 +5676,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3196
+		../../codegen/src/isa/x64/lower.isle line 3198
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5732,7 +5732,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3182
+		../../codegen/src/isa/x64/lower.isle line 3184
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5788,7 +5788,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3168
+		../../codegen/src/isa/x64/lower.isle line 3170
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5844,7 +5844,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3154
+		../../codegen/src/isa/x64/lower.isle line 3156
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5900,7 +5900,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3140
+		../../codegen/src/isa/x64/lower.isle line 3142
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5956,7 +5956,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3126
+		../../codegen/src/isa/x64/lower.isle line 3128
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6012,7 +6012,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3112
+		../../codegen/src/isa/x64/lower.isle line 3114
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6068,7 +6068,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3098
+		../../codegen/src/isa/x64/lower.isle line 3100
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6124,7 +6124,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3084
+		../../codegen/src/isa/x64/lower.isle line 3086
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6180,7 +6180,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3073
+		../../codegen/src/isa/x64/lower.isle line 3075
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6222,7 +6222,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3066
+		../../codegen/src/isa/x64/lower.isle line 3068
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6264,7 +6264,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3059
+		../../codegen/src/isa/x64/lower.isle line 3061
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6306,7 +6306,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3052
+		../../codegen/src/isa/x64/lower.isle line 3054
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6348,7 +6348,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3046
+		../../codegen/src/isa/x64/lower.isle line 3048
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6389,7 +6389,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3040
+		../../codegen/src/isa/x64/lower.isle line 3042
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6430,7 +6430,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3021
+		../../codegen/src/isa/x64/lower.isle line 3023
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6467,7 +6467,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3013
+		../../codegen/src/isa/x64/lower.isle line 3015
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6495,7 +6495,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 3005
+		../../codegen/src/isa/x64/lower.isle line 3007
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6522,7 +6522,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2997
+		../../codegen/src/isa/x64/lower.isle line 2999
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6549,7 +6549,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2989
+		../../codegen/src/isa/x64/lower.isle line 2991
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6576,7 +6576,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2981
+		../../codegen/src/isa/x64/lower.isle line 2983
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6603,7 +6603,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2976
+		../../codegen/src/isa/x64/lower.isle line 2978
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6644,7 +6644,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2971
+		../../codegen/src/isa/x64/lower.isle line 2973
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6670,7 +6670,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2968
+		../../codegen/src/isa/x64/lower.isle line 2970
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6696,7 +6696,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2965
+		../../codegen/src/isa/x64/lower.isle line 2967
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6722,7 +6722,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2957
+		../../codegen/src/isa/x64/lower.isle line 2959
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6751,7 +6751,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2951
+		../../codegen/src/isa/x64/lower.isle line 2953
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6782,7 +6782,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2949
+		../../codegen/src/isa/x64/lower.isle line 2951
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6813,7 +6813,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2947
+		../../codegen/src/isa/x64/lower.isle line 2949
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6844,7 +6844,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2945
+		../../codegen/src/isa/x64/lower.isle line 2947
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6875,7 +6875,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2943
+		../../codegen/src/isa/x64/lower.isle line 2945
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6906,7 +6906,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2941
+		../../codegen/src/isa/x64/lower.isle line 2943
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6937,7 +6937,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2937
+		../../codegen/src/isa/x64/lower.isle line 2939
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6968,7 +6968,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2934
+		../../codegen/src/isa/x64/lower.isle line 2936
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6999,7 +6999,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2931
+		../../codegen/src/isa/x64/lower.isle line 2933
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7030,7 +7030,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2928
+		../../codegen/src/isa/x64/lower.isle line 2930
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7061,7 +7061,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2925
+		../../codegen/src/isa/x64/lower.isle line 2927
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7092,7 +7092,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2922
+		../../codegen/src/isa/x64/lower.isle line 2924
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7123,7 +7123,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2912
+		../../codegen/src/isa/x64/lower.isle line 2914
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7155,7 +7155,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2908
+		../../codegen/src/isa/x64/lower.isle line 2910
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7185,7 +7185,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2906
+		../../codegen/src/isa/x64/lower.isle line 2908
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7214,7 +7214,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2904
+		../../codegen/src/isa/x64/lower.isle line 2906
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7243,7 +7243,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2902
+		../../codegen/src/isa/x64/lower.isle line 2904
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7272,7 +7272,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2900
+		../../codegen/src/isa/x64/lower.isle line 2902
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7301,7 +7301,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2893
+		../../codegen/src/isa/x64/lower.isle line 2895
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7332,7 +7332,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2891
+		../../codegen/src/isa/x64/lower.isle line 2893
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7363,7 +7363,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2889
+		../../codegen/src/isa/x64/lower.isle line 2891
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7394,7 +7394,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2887
+		../../codegen/src/isa/x64/lower.isle line 2889
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7425,7 +7425,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2885
+		../../codegen/src/isa/x64/lower.isle line 2887
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7456,7 +7456,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2883
+		../../codegen/src/isa/x64/lower.isle line 2885
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7487,7 +7487,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2878
+		../../codegen/src/isa/x64/lower.isle line 2880
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7516,7 +7516,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2874
+		../../codegen/src/isa/x64/lower.isle line 2876
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7552,7 +7552,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2836
+		../../codegen/src/isa/x64/lower.isle line 2838
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7580,7 +7580,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2820
+		../../codegen/src/isa/x64/lower.isle line 2822
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7629,7 +7629,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2796
+		../../codegen/src/isa/x64/lower.isle line 2798
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7703,7 +7703,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2793
+		../../codegen/src/isa/x64/lower.isle line 2795
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7734,7 +7734,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2791
+		../../codegen/src/isa/x64/lower.isle line 2793
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7765,7 +7765,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2742
+		../../codegen/src/isa/x64/lower.isle line 2744
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7810,7 +7810,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2699
+		../../codegen/src/isa/x64/lower.isle line 2701
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7855,7 +7855,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2693
+		../../codegen/src/isa/x64/lower.isle line 2695
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7885,7 +7885,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2691
+		../../codegen/src/isa/x64/lower.isle line 2693
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7915,7 +7915,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2679
+		../../codegen/src/isa/x64/lower.isle line 2681
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7958,7 +7958,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2636
+		../../codegen/src/isa/x64/lower.isle line 2638
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8001,7 +8001,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2621
+		../../codegen/src/isa/x64/lower.isle line 2623
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8031,7 +8031,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2619
+		../../codegen/src/isa/x64/lower.isle line 2621
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8061,7 +8061,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2614
+		../../codegen/src/isa/x64/lower.isle line 2616
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8086,7 +8086,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2610
+		../../codegen/src/isa/x64/lower.isle line 2612
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8113,7 +8113,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2606
+		../../codegen/src/isa/x64/lower.isle line 2608
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8139,7 +8139,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2602
+		../../codegen/src/isa/x64/lower.isle line 2604
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8166,7 +8166,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2598
+		../../codegen/src/isa/x64/lower.isle line 2600
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8191,7 +8191,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2596
+		../../codegen/src/isa/x64/lower.isle line 2598
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8216,7 +8216,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2594
+		../../codegen/src/isa/x64/lower.isle line 2596
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8243,7 +8243,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2592
+		../../codegen/src/isa/x64/lower.isle line 2594
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8270,7 +8270,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2588
+		../../codegen/src/isa/x64/lower.isle line 2590
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8298,7 +8298,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2586
+		../../codegen/src/isa/x64/lower.isle line 2588
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8326,7 +8326,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2584
+		../../codegen/src/isa/x64/lower.isle line 2586
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8354,7 +8354,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2582
+		../../codegen/src/isa/x64/lower.isle line 2584
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8382,7 +8382,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2577
+		../../codegen/src/isa/x64/lower.isle line 2579
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8413,7 +8413,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2575
+		../../codegen/src/isa/x64/lower.isle line 2577
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8444,7 +8444,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2573
+		../../codegen/src/isa/x64/lower.isle line 2575
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8475,7 +8475,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2571
+		../../codegen/src/isa/x64/lower.isle line 2573
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8506,7 +8506,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2566
+		../../codegen/src/isa/x64/lower.isle line 2568
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8534,7 +8534,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2564
+		../../codegen/src/isa/x64/lower.isle line 2566
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8562,7 +8562,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2562
+		../../codegen/src/isa/x64/lower.isle line 2564
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8590,7 +8590,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2560
+		../../codegen/src/isa/x64/lower.isle line 2562
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8618,7 +8618,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2555
+		../../codegen/src/isa/x64/lower.isle line 2557
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8646,7 +8646,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2553
+		../../codegen/src/isa/x64/lower.isle line 2555
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8674,7 +8674,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2551
+		../../codegen/src/isa/x64/lower.isle line 2553
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8702,7 +8702,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2549
+		../../codegen/src/isa/x64/lower.isle line 2551
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8730,7 +8730,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2544
+		../../codegen/src/isa/x64/lower.isle line 2546
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8761,7 +8761,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2542
+		../../codegen/src/isa/x64/lower.isle line 2544
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8792,7 +8792,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2540
+		../../codegen/src/isa/x64/lower.isle line 2542
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8823,7 +8823,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2538
+		../../codegen/src/isa/x64/lower.isle line 2540
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8854,7 +8854,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2533
+		../../codegen/src/isa/x64/lower.isle line 2535
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8882,7 +8882,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2531
+		../../codegen/src/isa/x64/lower.isle line 2533
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8910,7 +8910,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2529
+		../../codegen/src/isa/x64/lower.isle line 2531
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8938,7 +8938,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2527
+		../../codegen/src/isa/x64/lower.isle line 2529
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8966,7 +8966,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2521
+		../../codegen/src/isa/x64/lower.isle line 2523
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8996,7 +8996,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2516
+		../../codegen/src/isa/x64/lower.isle line 2518
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9013,7 +9013,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2511
+		../../codegen/src/isa/x64/lower.isle line 2513
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9040,7 +9040,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2505
+		../../codegen/src/isa/x64/lower.isle line 2507
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9066,7 +9066,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2499
+		../../codegen/src/isa/x64/lower.isle line 2501
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9093,7 +9093,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2494
+		../../codegen/src/isa/x64/lower.isle line 2496
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9119,7 +9119,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2488
+		../../codegen/src/isa/x64/lower.isle line 2490
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9152,7 +9152,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2479
+		../../codegen/src/isa/x64/lower.isle line 2481
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9179,7 +9179,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2474
+		../../codegen/src/isa/x64/lower.isle line 2476
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9205,7 +9205,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2470
+		../../codegen/src/isa/x64/lower.isle line 2472
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9235,7 +9235,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2461
+		../../codegen/src/isa/x64/lower.isle line 2463
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9261,7 +9261,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2453
+		../../codegen/src/isa/x64/lower.isle line 2455
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9287,7 +9287,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2445
+		../../codegen/src/isa/x64/lower.isle line 2447
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9322,7 +9322,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2442
+		../../codegen/src/isa/x64/lower.isle line 2444
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9348,7 +9348,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2439
+		../../codegen/src/isa/x64/lower.isle line 2441
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9374,7 +9374,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2436
+		../../codegen/src/isa/x64/lower.isle line 2438
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9403,7 +9403,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2369
+		../../codegen/src/isa/x64/lower.isle line 2371
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9438,7 +9438,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2366
+		../../codegen/src/isa/x64/lower.isle line 2368
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9464,7 +9464,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2363
+		../../codegen/src/isa/x64/lower.isle line 2365
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9490,7 +9490,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2360
+		../../codegen/src/isa/x64/lower.isle line 2362
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9516,7 +9516,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2357
+		../../codegen/src/isa/x64/lower.isle line 2359
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9542,7 +9542,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2343
+		../../codegen/src/isa/x64/lower.isle line 2345
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9594,7 +9594,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2327
+		../../codegen/src/isa/x64/lower.isle line 2329
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9639,7 +9639,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2301
+		../../codegen/src/isa/x64/lower.isle line 2303
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9668,7 +9668,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2228
+		../../codegen/src/isa/x64/lower.isle line 2230
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9706,7 +9706,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2223
+		../../codegen/src/isa/x64/lower.isle line 2225
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9734,7 +9734,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2218
+		../../codegen/src/isa/x64/lower.isle line 2220
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9761,7 +9761,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2212
+		../../codegen/src/isa/x64/lower.isle line 2214
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9801,7 +9801,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2208
+		../../codegen/src/isa/x64/lower.isle line 2210
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9831,7 +9831,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2204
+		../../codegen/src/isa/x64/lower.isle line 2206
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9860,7 +9860,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2185
+		../../codegen/src/isa/x64/lower.isle line 2180
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9907,7 +9907,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2180
+		../../codegen/src/isa/x64/lower.isle line 2175
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9922,21 +9922,28 @@ expansion {
 		11: Value	match_some(8)
 		12: ExtendKind	make_variant(ExtendKind::Zero, [])
 		13: Gpr	constructor(extend_to_gpr, [11, 9, 12], 1)
-		14: Gpr	constructor(do_ctz, [9, 10, 13], 2)
-		15: InstOutput	constructor(output_gpr, [14], 3)
-		16: Option(InstOutput)	some(15)
+		14: u32	const_int(1, u32)
+		15: u8	constructor(ty_bits, [10], 0)
+		16: u32	constructor(u8_as_u32, [15], 0)
+		17: u32	constructor(u32_shl, [14, 16], 0)
+		18: RegMemImm	make_variant(RegMemImm::Imm, [17])
+		19: GprMemImm	constructor(gpr_mem_imm_new, [18], 2)
+		20: Gpr	constructor(x64_or, [9, 13, 19], 3)
+		21: Gpr	constructor(do_ctz, [9, 10, 20], 4)
+		22: InstOutput	constructor(output_gpr, [21], 5)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 23
 }
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2177
+		../../codegen/src/isa/x64/lower.isle line 2172
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9963,36 +9970,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2173
-	]
-	bindings = [
-		0: Inst	argument(0)
-		3: Option((Type, Inst))	extractor(has_type, 0)
-		4: (Type, Inst)	match_some(3)
-		5: Type	match_tuple(4, 0)
-		6: Option(Type)	extractor(ty_32_or_64, 5)
-		7: bool	constructor(use_bmi1, [], 0)
-		8: Inst	match_tuple(4, 1)
-		9: Option(Value)	extractor(ctz, 8)
-		10: Type	match_some(6)
-		11: Value	match_some(9)
-		12: Gpr	constructor(put_in_gpr, [11], 1)
-		13: Gpr	constructor(x64_tzcnt, [10, 12], 2)
-		14: InstOutput	constructor(output_gpr, [13], 3)
-		15: Option(InstOutput)	some(14)
-	]
-	constraints = [
-		3:	some
-		6:	some
-		7:	const_prim(true)
-		9:	some
-	]
-	result = 15
-}
-expansion {
-	term = lower
-	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2148
+		../../codegen/src/isa/x64/lower.isle line 2141
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10039,7 +10017,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2143
+		../../codegen/src/isa/x64/lower.isle line 2135
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10049,26 +10027,33 @@ expansion {
 		6: Option(Value)	extractor(clz, 5)
 		7: Type	match_tuple(4, 0)
 		8: Option(Type)	extractor(ty_8_or_16, 7)
-		9: Type	const_prim(I32)
-		10: Type	match_some(8)
-		11: Value	match_some(6)
-		12: ExtendKind	make_variant(ExtendKind::Zero, [])
-		13: Gpr	constructor(extend_to_gpr, [11, 9, 12], 1)
-		14: Gpr	constructor(do_clz, [9, 10, 13], 2)
-		15: InstOutput	constructor(output_gpr, [14], 3)
-		16: Option(InstOutput)	some(15)
+		9: Type	const_prim(I64)
+		10: Value	match_some(6)
+		11: ExtendKind	make_variant(ExtendKind::Zero, [])
+		12: Gpr	constructor(extend_to_gpr, [10, 9, 11], 1)
+		13: Gpr	constructor(do_clz, [9, 9, 12], 2)
+		14: u32	const_int(64, u32)
+		15: Type	match_some(8)
+		16: u8	constructor(ty_bits, [15], 0)
+		17: u32	constructor(u8_as_u32, [16], 0)
+		18: u32	constructor(u32_sub, [14, 17], 0)
+		19: RegMemImm	make_variant(RegMemImm::Imm, [18])
+		20: GprMemImm	constructor(gpr_mem_imm_new, [19], 3)
+		21: Gpr	constructor(x64_sub, [9, 13, 20], 4)
+		22: InstOutput	constructor(output_gpr, [21], 5)
+		23: Option(InstOutput)	some(22)
 	]
 	constraints = [
 		3:	some
 		6:	some
 		8:	some
 	]
-	result = 16
+	result = 23
 }
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2140
+		../../codegen/src/isa/x64/lower.isle line 2132
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10091,35 +10076,6 @@ expansion {
 		8:	some
 	]
 	result = 14
-}
-expansion {
-	term = lower
-	rules = [
-		../../codegen/src/isa/x64/lower.isle line 2136
-	]
-	bindings = [
-		0: Inst	argument(0)
-		3: Option((Type, Inst))	extractor(has_type, 0)
-		4: (Type, Inst)	match_some(3)
-		5: Type	match_tuple(4, 0)
-		6: Option(Type)	extractor(ty_32_or_64, 5)
-		7: Inst	match_tuple(4, 1)
-		8: Option(Value)	extractor(clz, 7)
-		9: bool	constructor(use_lzcnt, [], 0)
-		10: Type	match_some(6)
-		11: Value	match_some(8)
-		12: Gpr	constructor(put_in_gpr, [11], 1)
-		13: Gpr	constructor(x64_lzcnt, [10, 12], 2)
-		14: InstOutput	constructor(output_gpr, [13], 3)
-		15: Option(InstOutput)	some(14)
-	]
-	constraints = [
-		3:	some
-		6:	some
-		8:	some
-		9:	const_prim(true)
-	]
-	result = 15
 }
 expansion {
 	term = lower
