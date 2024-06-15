@@ -29,6 +29,7 @@ expansion {
 		6:	variant(Opcode::Load)
 	]
 	result = 20
+	feasible = true
 }
 expansion {
 	term = sink_load_into_addr
@@ -59,6 +60,7 @@ expansion {
 		17:	some
 	]
 	result = 20
+	feasible = true
 }
 expansion {
 	term = sink_load_into_addr
@@ -85,4 +87,5 @@ expansion {
 		13:	const_int(0)
 	]
 	result = 9
+	feasible = true
 }

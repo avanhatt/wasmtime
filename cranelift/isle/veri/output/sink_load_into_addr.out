@@ -24,4 +24,5 @@ expansion {
 		6:	variant(Opcode::Load)
 	]
 	result = 14
+	feasible = true
 }
