@@ -20,14 +20,13 @@ expansion {
 		13: Reg	constructor(vec_extend, [11, 7, 12, 10], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::UwidenHigh)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -50,14 +49,13 @@ expansion {
 		13: Reg	constructor(vec_extend, [11, 7, 12, 10], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::SwidenHigh)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -75,14 +73,13 @@ expansion {
 		8: ValueRegs	constructor(value_reg, [7], 2)
 		9: InstOutput	constructor(output, [8], 3)
 		10: Option(InstOutput)	some(9)
-		11: Option(Option(InstOutput))	some(10)
 	]
 	constraints = [
 		3:	variant(InstructionData::BinaryImm8)
 		4:	variant(Opcode::ExtractVector)
 		5:	const_int(0)
 	]
-	result = 11
+	result = 10
 	feasible = true
 }
 expansion {
@@ -103,13 +100,12 @@ expansion {
 		11: ValueRegs	constructor(value_reg, [10], 4)
 		12: InstOutput	constructor(output, [11], 5)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::DynamicStackLoad)
 		4:	variant(Opcode::DynamicStackAddr)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -138,7 +134,6 @@ expansion {
 		19: Reg	constructor(uqxtn2, [15, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -146,7 +141,7 @@ expansion {
 		5:	variant(Opcode::Uunarrow)
 		8:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -177,7 +172,6 @@ expansion {
 		21: Reg	constructor(uqxtn, [18, 20], 5)
 		22: InstOutput	constructor(output_reg, [21], 6)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -185,7 +179,7 @@ expansion {
 		5:	variant(Opcode::Uunarrow)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -212,7 +206,6 @@ expansion {
 		17: Reg	constructor(uqxtn, [14, 16], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -221,7 +214,7 @@ expansion {
 		9:	some
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -250,7 +243,6 @@ expansion {
 		19: Reg	constructor(sqxtun2, [15, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -258,7 +250,7 @@ expansion {
 		5:	variant(Opcode::Unarrow)
 		8:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -289,7 +281,6 @@ expansion {
 		21: Reg	constructor(sqxtun, [18, 20], 5)
 		22: InstOutput	constructor(output_reg, [21], 6)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -297,7 +288,7 @@ expansion {
 		5:	variant(Opcode::Unarrow)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -324,7 +315,6 @@ expansion {
 		17: Reg	constructor(sqxtun, [14, 16], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -333,7 +323,7 @@ expansion {
 		9:	some
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -362,7 +352,6 @@ expansion {
 		19: Reg	constructor(sqxtn2, [15, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -370,7 +359,7 @@ expansion {
 		5:	variant(Opcode::Snarrow)
 		8:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -401,7 +390,6 @@ expansion {
 		21: Reg	constructor(sqxtn, [18, 20], 5)
 		22: InstOutput	constructor(output_reg, [21], 6)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -409,7 +397,7 @@ expansion {
 		5:	variant(Opcode::Snarrow)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -436,7 +424,6 @@ expansion {
 		17: Reg	constructor(sqxtn, [14, 16], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -445,7 +432,7 @@ expansion {
 		9:	some
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -473,7 +460,6 @@ expansion {
 		18: ValueRegs	constructor(value_reg, [17], 5)
 		19: InstOutput	constructor(output, [18], 6)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -481,7 +467,7 @@ expansion {
 		5:	variant(Opcode::Fmax)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -509,7 +495,6 @@ expansion {
 		18: ValueRegs	constructor(value_reg, [17], 5)
 		19: InstOutput	constructor(output, [18], 6)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -517,7 +502,7 @@ expansion {
 		5:	variant(Opcode::Fmin)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -545,7 +530,6 @@ expansion {
 		18: ValueRegs	constructor(value_reg, [17], 5)
 		19: InstOutput	constructor(output, [18], 6)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -553,7 +537,7 @@ expansion {
 		5:	variant(Opcode::Fdiv)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -581,7 +565,6 @@ expansion {
 		18: ValueRegs	constructor(value_reg, [17], 5)
 		19: InstOutput	constructor(output, [18], 6)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -589,7 +572,7 @@ expansion {
 		5:	variant(Opcode::Fmul)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -617,7 +600,6 @@ expansion {
 		18: ValueRegs	constructor(value_reg, [17], 5)
 		19: InstOutput	constructor(output, [18], 6)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -625,7 +607,7 @@ expansion {
 		5:	variant(Opcode::Fsub)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -653,7 +635,6 @@ expansion {
 		18: ValueRegs	constructor(value_reg, [17], 5)
 		19: InstOutput	constructor(output, [18], 6)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -661,7 +642,7 @@ expansion {
 		5:	variant(Opcode::Fadd)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -691,7 +672,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 5)
 		21: InstOutput	constructor(output, [20], 6)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -700,7 +680,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -727,7 +707,6 @@ expansion {
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -735,7 +714,7 @@ expansion {
 		5:	variant(Opcode::Isub)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -762,7 +741,6 @@ expansion {
 		17: ValueRegs	constructor(value_reg, [16], 5)
 		18: InstOutput	constructor(output, [17], 6)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -770,7 +748,7 @@ expansion {
 		5:	variant(Opcode::Iadd)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -789,13 +767,12 @@ expansion {
 		9: Reg	constructor(vec_rr_long, [7, 6, 8], 2)
 		10: InstOutput	constructor(output_reg, [9], 3)
 		11: Option(InstOutput)	some(10)
-		12: Option(Option(InstOutput))	some(11)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::FvpromoteLow)
 	]
-	result = 12
+	result = 11
 	feasible = true
 }
 expansion {
@@ -818,7 +795,6 @@ expansion {
 		13: Reg	constructor(macho_tls_get_addr, [12], 1)
 		14: InstOutput	constructor(output_reg, [13], 2)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -827,7 +803,7 @@ expansion {
 		7:	some
 		10:	variant(TlsModel::Macho)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -850,7 +826,6 @@ expansion {
 		13: Reg	constructor(elf_tls_get_addr, [12], 1)
 		14: InstOutput	constructor(output_reg, [13], 2)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -859,7 +834,7 @@ expansion {
 		7:	some
 		10:	variant(TlsModel::ElfGd)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -896,7 +871,6 @@ expansion {
 		27: ValueRegs	constructor(value_reg, [25], 12)
 		28: InstOutput	constructor(output_pair, [26, 27], 13)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -904,7 +878,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::SmulOverflow)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -937,7 +911,6 @@ expansion {
 		23: ValueRegs	constructor(value_reg, [21], 9)
 		24: InstOutput	constructor(output_pair, [22, 23], 10)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -945,7 +918,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::SmulOverflow)
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -981,7 +954,6 @@ expansion {
 		26: ValueRegs	constructor(value_reg, [24], 10)
 		27: InstOutput	constructor(output_pair, [25, 26], 11)
 		28: Option(InstOutput)	some(27)
-		29: Option(Option(InstOutput))	some(28)
 	]
 	constraints = [
 		3:	some
@@ -989,7 +961,7 @@ expansion {
 		5:	variant(Opcode::SmulOverflow)
 		8:	some
 	]
-	result = 29
+	result = 28
 	feasible = true
 }
 expansion {
@@ -1026,7 +998,6 @@ expansion {
 		27: ValueRegs	constructor(value_reg, [25], 13)
 		28: InstOutput	constructor(output_pair, [26, 27], 14)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -1034,7 +1005,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::UmulOverflow)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -1067,7 +1038,6 @@ expansion {
 		23: ValueRegs	constructor(value_reg, [21], 9)
 		24: InstOutput	constructor(output_pair, [22, 23], 10)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -1075,7 +1045,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::UmulOverflow)
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -1111,7 +1081,6 @@ expansion {
 		26: ValueRegs	constructor(value_reg, [24], 10)
 		27: InstOutput	constructor(output_pair, [25, 26], 11)
 		28: Option(InstOutput)	some(27)
-		29: Option(Option(InstOutput))	some(28)
 	]
 	constraints = [
 		3:	some
@@ -1119,7 +1088,7 @@ expansion {
 		5:	variant(Opcode::UmulOverflow)
 		8:	some
 	]
-	result = 29
+	result = 28
 	feasible = true
 }
 expansion {
@@ -1143,7 +1112,6 @@ expansion {
 		14: Cond	make_variant(Cond::Vs, [])
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -1151,7 +1119,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::SsubOverflow)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -1176,7 +1144,6 @@ expansion {
 		15: Cond	make_variant(Cond::Vs, [])
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1184,7 +1151,7 @@ expansion {
 		5:	variant(Opcode::SsubOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1209,7 +1176,6 @@ expansion {
 		15: ALUOp	make_variant(ALUOp::Sub, [])
 		16: InstOutput	constructor(overflow_op_small, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1217,7 +1183,7 @@ expansion {
 		5:	variant(Opcode::SsubOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1241,7 +1207,6 @@ expansion {
 		14: Cond	make_variant(Cond::Lo, [])
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -1249,7 +1214,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::UsubOverflow)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -1274,7 +1239,6 @@ expansion {
 		15: Cond	make_variant(Cond::Lo, [])
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1282,7 +1246,7 @@ expansion {
 		5:	variant(Opcode::UsubOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1307,7 +1271,6 @@ expansion {
 		15: ALUOp	make_variant(ALUOp::Sub, [])
 		16: InstOutput	constructor(overflow_op_small, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1315,7 +1278,7 @@ expansion {
 		5:	variant(Opcode::UsubOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1339,7 +1302,6 @@ expansion {
 		14: Cond	make_variant(Cond::Vs, [])
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -1347,7 +1309,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::SaddOverflow)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -1372,7 +1334,6 @@ expansion {
 		15: Cond	make_variant(Cond::Vs, [])
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1380,7 +1341,7 @@ expansion {
 		5:	variant(Opcode::SaddOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1405,7 +1366,6 @@ expansion {
 		15: ALUOp	make_variant(ALUOp::Add, [])
 		16: InstOutput	constructor(overflow_op_small, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1413,7 +1373,7 @@ expansion {
 		5:	variant(Opcode::SaddOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1437,7 +1397,6 @@ expansion {
 		14: Cond	make_variant(Cond::Hs, [])
 		15: InstOutput	constructor(overflow_op_128, [10, 11, 12, 13, 14], 1)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -1445,7 +1404,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::UaddOverflow)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -1470,7 +1429,6 @@ expansion {
 		15: Cond	make_variant(Cond::Hs, [])
 		16: InstOutput	constructor(overflow_op_normal, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1478,7 +1436,7 @@ expansion {
 		5:	variant(Opcode::UaddOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1503,7 +1461,6 @@ expansion {
 		15: ALUOp	make_variant(ALUOp::Add, [])
 		16: InstOutput	constructor(overflow_op_small, [9, 12, 13, 14, 15], 1)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1511,7 +1468,7 @@ expansion {
 		5:	variant(Opcode::UaddOverflow)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1539,7 +1496,6 @@ expansion {
 		18: Reg	constructor(trap_if_overflow, [16, 17], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -1547,7 +1503,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::UaddOverflowTrap)
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -1580,14 +1536,13 @@ expansion {
 		23: Reg	constructor(add_shift, [16, 19, 17, 22], 9)
 		24: InstOutput	constructor(output_reg, [23], 10)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VhighBits)
 		6:	const_prim(I64X2)
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -1614,14 +1569,13 @@ expansion {
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 6)
 		18: InstOutput	constructor(output_reg, [17], 7)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VhighBits)
 		6:	const_prim(I32X4)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -1648,14 +1602,13 @@ expansion {
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 6)
 		18: InstOutput	constructor(output_reg, [17], 7)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VhighBits)
 		6:	const_prim(I16X8)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -1686,14 +1639,13 @@ expansion {
 		21: Reg	constructor(mov_from_vec, [18, 19, 20], 8)
 		22: InstOutput	constructor(output_reg, [21], 9)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VhighBits)
 		6:	const_prim(I8X16)
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -1710,13 +1662,12 @@ expansion {
 		7: Reg	constructor(compute_stack_addr, [5, 6], 1)
 		8: InstOutput	constructor(output_reg, [7], 2)
 		9: Option(InstOutput)	some(8)
-		10: Option(Option(InstOutput))	some(9)
 	]
 	constraints = [
 		3:	variant(InstructionData::StackLoad)
 		4:	variant(Opcode::StackAddr)
 	]
-	result = 10
+	result = 9
 	feasible = true
 }
 expansion {
@@ -1744,14 +1695,13 @@ expansion {
 		18: Reg	constructor(mov_vec_elem, [11, 12, 16, 17, 14], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	variant(InstructionData::TernaryImm8)
 		4:	variant(Opcode::Insertlane)
 		9:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -1778,14 +1728,13 @@ expansion {
 		17: Reg	constructor(mov_to_vec, [11, 12, 16, 14], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::TernaryImm8)
 		4:	variant(Opcode::Insertlane)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -1810,7 +1759,6 @@ expansion {
 		15: Reg	constructor(fpu_move_from_vec, [10, 14, 12], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1818,7 +1766,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Extractlane)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1843,7 +1791,6 @@ expansion {
 		15: Reg	constructor(mov_from_vec, [10, 14, 12], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1851,7 +1798,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Extractlane)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -1872,7 +1819,6 @@ expansion {
 		11: Value	match_variant(4, InstructionData::BinaryImm8, arg)
 		12: InstOutput	constructor(output_value, [11], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -1881,7 +1827,7 @@ expansion {
 		8:	variant(Opcode::Extractlane)
 		10:	const_int(0)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -1900,7 +1846,6 @@ expansion {
 		9: Type	extractor(value_type, 8)
 		10: InstOutput	constructor(output_value, [8], 1)
 		11: Option(InstOutput)	some(10)
-		12: Option(Option(InstOutput))	some(11)
 	]
 	constraints = [
 		3:	some
@@ -1909,7 +1854,7 @@ expansion {
 		7:	variant(Opcode::Bitcast)
 		9:	const_prim(I128)
 	]
-	result = 12
+	result = 11
 	feasible = true
 }
 expansion {
@@ -1930,7 +1875,6 @@ expansion {
 		11: Option(Type)	constructor(ty_int_ref_scalar_64, [10], 0)
 		12: InstOutput	constructor(output_value, [9], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -1939,7 +1883,7 @@ expansion {
 		8:	variant(Opcode::Bitcast)
 		11:	some
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -1964,7 +1908,6 @@ expansion {
 		15: Reg	constructor(copy_reg, [10, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -1975,7 +1918,7 @@ expansion {
 		12:	const_prim(false)
 		13:	const_prim(true)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2000,7 +1943,6 @@ expansion {
 		15: Reg	constructor(copy_reg, [6, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -2011,7 +1953,7 @@ expansion {
 		12:	const_prim(true)
 		13:	const_prim(false)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2038,7 +1980,6 @@ expansion {
 		17: Reg	constructor(mov_from_vec, [14, 16, 15], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -2048,7 +1989,7 @@ expansion {
 		11:	some
 		13:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -2072,7 +2013,6 @@ expansion {
 		14: Reg	constructor(mov_to_fpu, [12, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -2081,7 +2021,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -2102,7 +2042,6 @@ expansion {
 		11: Option(Type)	extractor(ty_float_or_vec, 10)
 		12: InstOutput	constructor(output_value, [9], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -2111,7 +2050,7 @@ expansion {
 		8:	some
 		11:	some
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -2128,13 +2067,12 @@ expansion {
 		7: SideEffectNoResult	constructor(write_pinned_reg, [6], 2)
 		8: InstOutput	constructor(side_effect, [7], 3)
 		9: Option(InstOutput)	some(8)
-		10: Option(Option(InstOutput))	some(9)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::SetPinnedReg)
 	]
-	result = 10
+	result = 9
 	feasible = true
 }
 expansion {
@@ -2150,13 +2088,12 @@ expansion {
 		6: Reg	constructor(mov_from_preg, [5], 2)
 		7: InstOutput	constructor(output_reg, [6], 3)
 		8: Option(InstOutput)	some(7)
-		9: Option(Option(InstOutput))	some(8)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::GetPinnedReg)
 	]
-	result = 9
+	result = 8
 	feasible = true
 }
 expansion {
@@ -2183,14 +2120,13 @@ expansion {
 		17: SideEffectNoResult	constructor(aarch64_fpustore128, [14, 16, 15], 3)
 		18: InstOutput	constructor(side_effect, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -2217,14 +2153,13 @@ expansion {
 		17: SideEffectNoResult	constructor(aarch64_fpustore64, [14, 16, 15], 3)
 		18: InstOutput	constructor(side_effect, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -2251,14 +2186,13 @@ expansion {
 		17: SideEffectNoResult	constructor(aarch64_fpustore128, [14, 16, 15], 3)
 		18: InstOutput	constructor(side_effect, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -2285,14 +2219,13 @@ expansion {
 		17: SideEffectNoResult	constructor(aarch64_fpustore64, [14, 16, 15], 3)
 		18: InstOutput	constructor(side_effect, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -2322,14 +2255,13 @@ expansion {
 		20: SideEffectNoResult	constructor(aarch64_storep64, [12, 19, 15, 18], 6)
 		21: InstOutput	constructor(side_effect, [20], 7)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I128)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -2355,14 +2287,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_fpustore64, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(F64)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2388,14 +2319,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_fpustore32, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(F32)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2420,13 +2350,12 @@ expansion {
 		15: SideEffectNoResult	constructor(aarch64_store32, [11, 14, 13], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Istore32)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2451,13 +2380,12 @@ expansion {
 		15: SideEffectNoResult	constructor(aarch64_store16, [11, 14, 13], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Istore16)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2482,13 +2410,12 @@ expansion {
 		15: SideEffectNoResult	constructor(aarch64_store8, [11, 14, 13], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Istore8)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2514,14 +2441,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_store64, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(R64)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2547,14 +2473,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_store64, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I64)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2580,14 +2505,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_store32, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I32)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2613,14 +2537,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_store16, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I16)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2646,14 +2569,13 @@ expansion {
 		16: SideEffectNoResult	constructor(aarch64_store8, [13, 15, 14], 3)
 		17: InstOutput	constructor(side_effect, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	variant(InstructionData::Store)
 		4:	variant(Opcode::Store)
 		8:	const_prim(I8)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -2678,13 +2600,12 @@ expansion {
 		15: Reg	constructor(vec_extend, [12, 11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Uload32x2)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2709,13 +2630,12 @@ expansion {
 		15: Reg	constructor(vec_extend, [12, 11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Sload32x2)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2740,13 +2660,12 @@ expansion {
 		15: Reg	constructor(vec_extend, [12, 11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Uload16x4)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2771,13 +2690,12 @@ expansion {
 		15: Reg	constructor(vec_extend, [12, 11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Sload16x4)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2802,13 +2720,12 @@ expansion {
 		15: Reg	constructor(vec_extend, [12, 11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Uload8x8)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2833,13 +2750,12 @@ expansion {
 		15: Reg	constructor(vec_extend, [12, 11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Sload8x8)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -2860,13 +2776,12 @@ expansion {
 		11: Reg	constructor(aarch64_sload32, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Sload32)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -2887,13 +2802,12 @@ expansion {
 		11: Reg	constructor(aarch64_uload32, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Uload32)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -2914,13 +2828,12 @@ expansion {
 		11: Reg	constructor(aarch64_sload16, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Sload16)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -2941,13 +2854,12 @@ expansion {
 		11: Reg	constructor(aarch64_uload16, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Uload16)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -2968,13 +2880,12 @@ expansion {
 		11: Reg	constructor(aarch64_sload8, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Sload8)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -2995,13 +2906,12 @@ expansion {
 		11: Reg	constructor(aarch64_uload8, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Load)
 		4:	variant(Opcode::Uload8)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -3026,7 +2936,6 @@ expansion {
 		15: Reg	constructor(aarch64_fpuload128, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3034,7 +2943,7 @@ expansion {
 		5:	variant(Opcode::Load)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -3059,7 +2968,6 @@ expansion {
 		15: Reg	constructor(aarch64_fpuload64, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3067,7 +2975,7 @@ expansion {
 		5:	variant(Opcode::Load)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -3092,7 +3000,6 @@ expansion {
 		15: Reg	constructor(aarch64_fpuload128, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3100,7 +3007,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Load)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -3125,7 +3032,6 @@ expansion {
 		15: Reg	constructor(aarch64_fpuload64, [13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3133,7 +3039,7 @@ expansion {
 		5:	variant(Opcode::Load)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -3156,7 +3062,6 @@ expansion {
 		13: ValueRegs	constructor(aarch64_loadp64, [11, 12], 2)
 		14: InstOutput	constructor(output, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -3164,7 +3069,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -3188,7 +3093,6 @@ expansion {
 		14: Reg	constructor(aarch64_fpuload64, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3196,7 +3100,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3220,7 +3124,6 @@ expansion {
 		14: Reg	constructor(aarch64_fpuload32, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3228,7 +3131,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3252,7 +3155,6 @@ expansion {
 		14: Reg	constructor(aarch64_uload64, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3260,7 +3162,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3284,7 +3186,6 @@ expansion {
 		14: Reg	constructor(aarch64_uload64, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3292,7 +3193,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3316,7 +3217,6 @@ expansion {
 		14: Reg	constructor(aarch64_uload32, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3324,7 +3224,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3348,7 +3248,6 @@ expansion {
 		14: Reg	constructor(aarch64_uload16, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3356,7 +3255,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3380,7 +3279,6 @@ expansion {
 		14: Reg	constructor(aarch64_uload8, [12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -3388,7 +3286,7 @@ expansion {
 		6:	variant(InstructionData::Load)
 		7:	variant(Opcode::Load)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3409,14 +3307,13 @@ expansion {
 		11: ValueSlice	match_tuple(9, 1)
 		12: InstOutput	constructor(gen_return_call_indirect, [8, 10, 11], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::CallIndirect)
 		4:	variant(Opcode::ReturnCallIndirect)
 		7:	some
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -3437,13 +3334,12 @@ expansion {
 		11: ValueSlice	extractor(value_list_slice, 10)
 		12: InstOutput	constructor(gen_return_call, [7, 8, 9, 11], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Call)
 		4:	variant(Opcode::ReturnCall)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -3459,13 +3355,12 @@ expansion {
 		6: ValueSlice	extractor(value_list_slice, 5)
 		7: InstOutput	constructor(lower_return, [6], 1)
 		8: Option(InstOutput)	some(7)
-		9: Option(Option(InstOutput))	some(8)
 	]
 	constraints = [
 		3:	variant(InstructionData::MultiAry)
 		4:	variant(Opcode::Return)
 	]
-	result = 9
+	result = 8
 	feasible = true
 }
 expansion {
@@ -3486,14 +3381,13 @@ expansion {
 		11: ValueSlice	match_tuple(9, 1)
 		12: InstOutput	constructor(gen_call_indirect, [8, 10, 11], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::CallIndirect)
 		4:	variant(Opcode::CallIndirect)
 		7:	some
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -3514,13 +3408,12 @@ expansion {
 		11: ValueSlice	extractor(value_list_slice, 10)
 		12: InstOutput	constructor(gen_call, [7, 8, 9, 11], 1)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Call)
 		4:	variant(Opcode::Call)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -3535,13 +3428,12 @@ expansion {
 		5: Reg	constructor(aarch64_link, [], 1)
 		6: InstOutput	constructor(output_reg, [5], 2)
 		7: Option(InstOutput)	some(6)
-		8: Option(Option(InstOutput))	some(7)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::GetReturnAddress)
 	]
-	result = 8
+	result = 7
 	feasible = true
 }
 expansion {
@@ -3556,13 +3448,12 @@ expansion {
 		5: Reg	constructor(aarch64_sp, [], 1)
 		6: InstOutput	constructor(output_reg, [5], 2)
 		7: Option(InstOutput)	some(6)
-		8: Option(Option(InstOutput))	some(7)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::GetStackPointer)
 	]
-	result = 8
+	result = 7
 	feasible = true
 }
 expansion {
@@ -3577,13 +3468,12 @@ expansion {
 		5: Reg	constructor(aarch64_fp, [], 1)
 		6: InstOutput	constructor(output_reg, [5], 2)
 		7: Option(InstOutput)	some(6)
-		8: Option(Option(InstOutput))	some(7)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::GetFramePointer)
 	]
-	result = 8
+	result = 7
 	feasible = true
 }
 expansion {
@@ -3604,14 +3494,13 @@ expansion {
 		11: Reg	constructor(load_ext_name, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::UnaryGlobalValue)
 		4:	variant(Opcode::SymbolValue)
 		6:	some
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -3631,13 +3520,12 @@ expansion {
 		10: Reg	constructor(load_ext_name, [8, 9], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	variant(InstructionData::FuncAddr)
 		4:	variant(Opcode::FuncAddr)
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -3652,13 +3540,12 @@ expansion {
 		5: SideEffectNoResult	constructor(brk, [], 1)
 		6: InstOutput	constructor(side_effect, [5], 2)
 		7: Option(InstOutput)	some(6)
-		8: Option(Option(InstOutput))	some(7)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::Debugtrap)
 	]
-	result = 8
+	result = 7
 	feasible = true
 }
 expansion {
@@ -3682,13 +3569,12 @@ expansion {
 		14: ValueRegs	constructor(with_flags, [11, 13], 6)
 		15: InstOutput	constructor(output, [14], 7)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::IsInvalid)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3712,13 +3598,12 @@ expansion {
 		14: ValueRegs	constructor(with_flags, [11, 13], 6)
 		15: InstOutput	constructor(output, [14], 7)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::IsNull)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -3733,13 +3618,12 @@ expansion {
 		5: SideEffectNoResult	constructor(aarch64_fence, [], 1)
 		6: InstOutput	constructor(side_effect, [5], 2)
 		7: Option(InstOutput)	some(6)
-		8: Option(Option(InstOutput))	some(7)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::Fence)
 	]
-	result = 8
+	result = 7
 	feasible = true
 }
 expansion {
@@ -3766,7 +3650,6 @@ expansion {
 		17: Reg	constructor(vec_extend, [15, 13, 16, 14], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3774,7 +3657,7 @@ expansion {
 		5:	variant(Opcode::UwidenHigh)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -3799,7 +3682,6 @@ expansion {
 		15: Reg	constructor(vec_extend, [13, 10, 14, 12], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3807,7 +3689,7 @@ expansion {
 		5:	variant(Opcode::UwidenHigh)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -3830,14 +3712,13 @@ expansion {
 		13: Reg	constructor(vec_extend, [11, 7, 12, 10], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::UwidenLow)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -3864,7 +3745,6 @@ expansion {
 		17: Reg	constructor(vec_extend, [15, 13, 16, 14], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -3872,7 +3752,7 @@ expansion {
 		5:	variant(Opcode::SwidenHigh)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -3897,7 +3777,6 @@ expansion {
 		15: Reg	constructor(vec_extend, [13, 10, 14, 12], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -3905,7 +3784,7 @@ expansion {
 		5:	variant(Opcode::SwidenHigh)
 		8:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -3928,14 +3807,13 @@ expansion {
 		13: Reg	constructor(vec_extend, [11, 7, 12, 10], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::SwidenLow)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -3964,7 +3842,6 @@ expansion {
 		19: Reg	constructor(uqxtn2, [15, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -3972,7 +3849,7 @@ expansion {
 		5:	variant(Opcode::Uunarrow)
 		8:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4003,7 +3880,6 @@ expansion {
 		21: Reg	constructor(uqxtn, [18, 20], 5)
 		22: InstOutput	constructor(output_reg, [21], 6)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -4011,7 +3887,7 @@ expansion {
 		5:	variant(Opcode::Uunarrow)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -4038,7 +3914,6 @@ expansion {
 		17: Reg	constructor(uqxtn, [14, 16], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4047,7 +3922,7 @@ expansion {
 		8:	some
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -4076,7 +3951,6 @@ expansion {
 		19: Reg	constructor(sqxtun2, [15, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4084,7 +3958,7 @@ expansion {
 		5:	variant(Opcode::Unarrow)
 		8:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4115,7 +3989,6 @@ expansion {
 		21: Reg	constructor(sqxtun, [18, 20], 5)
 		22: InstOutput	constructor(output_reg, [21], 6)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -4123,7 +3996,7 @@ expansion {
 		5:	variant(Opcode::Unarrow)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -4150,7 +4023,6 @@ expansion {
 		17: Reg	constructor(sqxtun, [14, 16], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4159,7 +4031,7 @@ expansion {
 		8:	some
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -4188,7 +4060,6 @@ expansion {
 		19: Reg	constructor(sqxtn2, [15, 17, 18], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4196,7 +4067,7 @@ expansion {
 		5:	variant(Opcode::Snarrow)
 		8:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4227,7 +4098,6 @@ expansion {
 		21: Reg	constructor(sqxtn, [18, 20], 5)
 		22: InstOutput	constructor(output_reg, [21], 6)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -4235,7 +4105,7 @@ expansion {
 		5:	variant(Opcode::Snarrow)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -4262,7 +4132,6 @@ expansion {
 		17: Reg	constructor(sqxtn, [14, 16], 3)
 		18: InstOutput	constructor(output_reg, [17], 4)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -4271,7 +4140,7 @@ expansion {
 		8:	some
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -4289,13 +4158,12 @@ expansion {
 		8: Reg	constructor(fcvtn, [6, 7], 2)
 		9: InstOutput	constructor(output_reg, [8], 3)
 		10: Option(InstOutput)	some(9)
-		11: Option(Option(InstOutput))	some(10)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::Fvdemote)
 	]
-	result = 11
+	result = 10
 	feasible = true
 }
 expansion {
@@ -4324,7 +4192,6 @@ expansion {
 		19: Reg	constructor(atomic_cas_loop, [12, 14, 16, 17, 18], 4)
 		20: InstOutput	constructor(output_reg, [19], 5)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4332,7 +4199,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::AtomicCas)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4362,7 +4229,6 @@ expansion {
 		20: Reg	constructor(lse_atomic_cas, [13, 15, 17, 18, 19], 4)
 		21: InstOutput	constructor(output_reg, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -4371,7 +4237,7 @@ expansion {
 		8:	some
 		9:	variant(Opcode::AtomicCas)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -4400,7 +4266,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4409,7 +4274,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Xchg)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4438,7 +4303,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4447,7 +4311,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Umax)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4476,7 +4340,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4485,7 +4348,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Umin)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4514,7 +4377,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4523,7 +4385,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Smax)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4552,7 +4414,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4561,7 +4422,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Smin)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4590,7 +4451,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4599,7 +4459,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Xor)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4628,7 +4488,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4637,7 +4496,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Or)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4666,7 +4525,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4675,7 +4533,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Nand)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4704,7 +4562,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4713,7 +4570,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::And)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4742,7 +4599,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4751,7 +4607,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Sub)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4780,7 +4636,6 @@ expansion {
 		19: Reg	constructor(atomic_rmw_loop, [16, 13, 15, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4789,7 +4644,7 @@ expansion {
 		8:	variant(Opcode::AtomicRmw)
 		9:	variant(AtomicRmwOp::Add)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4820,7 +4675,6 @@ expansion {
 		21: Reg	constructor(lse_atomic_rmw, [18, 19, 17, 16, 20], 4)
 		22: InstOutput	constructor(output_reg, [21], 5)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -4830,7 +4684,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::And)
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -4861,7 +4715,6 @@ expansion {
 		21: Reg	constructor(lse_atomic_rmw, [18, 19, 17, 16, 20], 4)
 		22: InstOutput	constructor(output_reg, [21], 5)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -4871,7 +4724,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Sub)
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -4900,7 +4753,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4910,7 +4762,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Umin)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4939,7 +4791,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4949,7 +4800,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Umax)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -4978,7 +4829,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -4988,7 +4838,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Smin)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -5017,7 +4867,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -5027,7 +4876,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Smax)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -5056,7 +4905,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -5066,7 +4914,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Or)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -5095,7 +4943,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -5105,7 +4952,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Xor)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -5134,7 +4981,6 @@ expansion {
 		19: Reg	constructor(lse_atomic_rmw, [15, 16, 14, 17, 18], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -5144,7 +4990,7 @@ expansion {
 		9:	variant(Opcode::AtomicRmw)
 		10:	variant(AtomicRmwOp::Add)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -5169,14 +5015,13 @@ expansion {
 		15: SideEffectNoResult	constructor(store_release, [13, 14, 10, 12], 3)
 		16: InstOutput	constructor(side_effect, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::StoreNoOffset)
 		4:	variant(Opcode::AtomicStore)
 		9:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -5199,7 +5044,6 @@ expansion {
 		13: Reg	constructor(load_acquire, [11, 12, 10], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -5207,7 +5051,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::AtomicLoad)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -5236,7 +5080,6 @@ expansion {
 		19: Reg	constructor(ld1r, [16, 17, 18], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -5247,7 +5090,7 @@ expansion {
 		10:	some
 		11:	variant(Opcode::Load)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -5278,7 +5121,6 @@ expansion {
 		21: Reg	constructor(splat_const, [20, 18], 2)
 		22: InstOutput	constructor(output_reg, [21], 3)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -5291,7 +5133,7 @@ expansion {
 		14:	variant(InstructionData::UnaryImm)
 		15:	variant(Opcode::Iconst)
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -5317,7 +5159,6 @@ expansion {
 		16: Reg	constructor(splat_const, [15, 13], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -5327,7 +5168,7 @@ expansion {
 		9:	variant(InstructionData::UnaryImm)
 		10:	variant(Opcode::Iconst)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -5353,7 +5194,6 @@ expansion {
 		16: Reg	constructor(splat_const, [15, 13], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -5363,7 +5203,7 @@ expansion {
 		9:	variant(InstructionData::UnaryIeee64)
 		10:	variant(Opcode::F64const)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -5390,7 +5230,6 @@ expansion {
 		17: Reg	constructor(splat_const, [16, 13], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -5400,7 +5239,7 @@ expansion {
 		9:	variant(InstructionData::UnaryIeee32)
 		10:	variant(Opcode::F32const)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -5424,7 +5263,6 @@ expansion {
 		14: Reg	constructor(vec_dup_from_fpu, [9, 12, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -5432,7 +5270,7 @@ expansion {
 		5:	variant(Opcode::Splat)
 		8:	some
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -5455,7 +5293,6 @@ expansion {
 		13: Reg	constructor(vec_dup, [9, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -5463,7 +5300,7 @@ expansion {
 		5:	variant(Opcode::Splat)
 		8:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -5485,7 +5322,6 @@ expansion {
 		12: Reg	constructor(constant_f64, [11], 1)
 		13: InstOutput	constructor(output_reg, [12], 2)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -5494,7 +5330,7 @@ expansion {
 		7:	some
 		10:	some
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -5516,7 +5352,6 @@ expansion {
 		12: Reg	constructor(constant_f128, [11], 1)
 		13: InstOutput	constructor(output_reg, [12], 2)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -5525,7 +5360,7 @@ expansion {
 		8:	variant(Opcode::Vconst)
 		10:	some
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -5560,7 +5395,6 @@ expansion {
 		25: ValueRegs	constructor(lower_select, [19, 20, 22, 23, 24], 7)
 		26: InstOutput	constructor(output, [25], 8)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -5568,7 +5402,7 @@ expansion {
 		5:	variant(Opcode::SelectSpectreGuard)
 		9:	const_prim(I128)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -5598,7 +5432,6 @@ expansion {
 		20: ValueRegs	constructor(lower_select, [14, 15, 17, 18, 19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -5606,7 +5439,7 @@ expansion {
 		5:	variant(Opcode::SelectSpectreGuard)
 		10:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -5647,7 +5480,6 @@ expansion {
 		31: InstOutput	constructor(side_effect, [30], 7)
 		32: InstOutput	constructor(output, [29], 8)
 		33: Option(InstOutput)	some(32)
-		34: Option(Option(InstOutput))	some(33)
 	]
 	constraints = [
 		3:	some
@@ -5658,7 +5490,7 @@ expansion {
 		13:	variant(InstructionData::IntCompare)
 		14:	variant(Opcode::Icmp)
 	]
-	result = 34
+	result = 33
 	feasible = true
 }
 expansion {
@@ -5693,7 +5525,6 @@ expansion {
 		25: ValueRegs	constructor(lower_select, [19, 20, 22, 23, 24], 7)
 		26: InstOutput	constructor(output, [25], 8)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -5701,7 +5532,7 @@ expansion {
 		5:	variant(Opcode::Select)
 		9:	const_prim(I128)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -5731,7 +5562,6 @@ expansion {
 		20: ValueRegs	constructor(lower_select, [14, 15, 17, 18, 19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -5739,7 +5569,7 @@ expansion {
 		5:	variant(Opcode::Select)
 		10:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -5769,7 +5599,6 @@ expansion {
 		20: ValueRegs	constructor(lower_select, [14, 15, 17, 18, 19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -5777,7 +5606,7 @@ expansion {
 		5:	variant(Opcode::Select)
 		10:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -5807,7 +5636,6 @@ expansion {
 		20: ValueRegs	constructor(lower_select, [14, 15, 17, 18, 19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -5815,7 +5643,7 @@ expansion {
 		5:	variant(Opcode::Select)
 		9:	const_prim(I8)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -5855,7 +5683,6 @@ expansion {
 		30: ValueRegs	constructor(lower_select, [25, 16, 27, 28, 29], 6)
 		31: InstOutput	constructor(output, [30], 7)
 		32: Option(InstOutput)	some(31)
-		33: Option(Option(InstOutput))	some(32)
 	]
 	constraints = [
 		3:	some
@@ -5866,7 +5693,7 @@ expansion {
 		13:	variant(InstructionData::FloatCompare)
 		14:	variant(Opcode::Fcmp)
 	]
-	result = 33
+	result = 32
 	feasible = true
 }
 expansion {
@@ -5905,7 +5732,6 @@ expansion {
 		29: ValueRegs	constructor(lower_select, [22, 24, 26, 27, 28], 5)
 		30: InstOutput	constructor(output, [29], 6)
 		31: Option(InstOutput)	some(30)
-		32: Option(Option(InstOutput))	some(31)
 	]
 	constraints = [
 		3:	some
@@ -5916,7 +5742,7 @@ expansion {
 		13:	variant(InstructionData::IntCompare)
 		14:	variant(Opcode::Icmp)
 	]
-	result = 32
+	result = 31
 	feasible = true
 }
 expansion {
@@ -5932,13 +5758,12 @@ expansion {
 		6: SideEffectNoResult	constructor(udf, [5], 1)
 		7: InstOutput	constructor(side_effect, [6], 2)
 		8: Option(InstOutput)	some(7)
-		9: Option(Option(InstOutput))	some(8)
 	]
 	constraints = [
 		3:	variant(InstructionData::Trap)
 		4:	variant(Opcode::ResumableTrap)
 	]
-	result = 9
+	result = 8
 	feasible = true
 }
 expansion {
@@ -5954,13 +5779,12 @@ expansion {
 		6: SideEffectNoResult	constructor(udf, [5], 1)
 		7: InstOutput	constructor(side_effect, [6], 2)
 		8: Option(InstOutput)	some(7)
-		9: Option(Option(InstOutput))	some(8)
 	]
 	constraints = [
 		3:	variant(InstructionData::Trap)
 		4:	variant(Opcode::Trap)
 	]
-	result = 9
+	result = 8
 	feasible = true
 }
 expansion {
@@ -5982,13 +5806,12 @@ expansion {
 		12: ValueRegs	constructor(lower_icmp_into_reg, [5, 8, 9, 10, 11], 1)
 		13: InstOutput	constructor(output, [12], 2)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	variant(InstructionData::IntCompare)
 		4:	variant(Opcode::Icmp)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -6018,7 +5841,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6028,7 +5850,7 @@ expansion {
 		10:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6058,7 +5880,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 5)
 		21: InstOutput	constructor(output, [20], 6)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6068,7 +5889,7 @@ expansion {
 		10:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6098,7 +5919,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6108,7 +5928,7 @@ expansion {
 		12:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6138,7 +5958,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 5)
 		21: InstOutput	constructor(output, [20], 6)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6148,7 +5967,7 @@ expansion {
 		10:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6174,7 +5993,6 @@ expansion {
 		16: Reg	constructor(vec_cmp, [11, 13, 9, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -6182,7 +6000,7 @@ expansion {
 		5:	variant(Opcode::Fcmp)
 		10:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -6212,7 +6030,6 @@ expansion {
 		20: ValueRegs	constructor(with_flags, [16, 19], 7)
 		21: InstOutput	constructor(output, [20], 8)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6220,7 +6037,7 @@ expansion {
 		5:	variant(Opcode::Fcmp)
 		10:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6250,7 +6067,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6260,7 +6076,7 @@ expansion {
 		10:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6290,7 +6106,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 5)
 		21: InstOutput	constructor(output, [20], 6)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6300,7 +6115,7 @@ expansion {
 		10:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6330,7 +6145,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 4)
 		21: InstOutput	constructor(output, [20], 5)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6340,7 +6154,7 @@ expansion {
 		12:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6370,7 +6184,6 @@ expansion {
 		20: ValueRegs	constructor(value_reg, [19], 5)
 		21: InstOutput	constructor(output, [20], 6)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6380,7 +6193,7 @@ expansion {
 		10:	some
 		14:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6402,7 +6215,6 @@ expansion {
 		12: Reg	constructor(value_regs_get, [10, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -6410,7 +6222,7 @@ expansion {
 		5:	variant(Opcode::Ireduce)
 		8:	some
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -6438,7 +6250,6 @@ expansion {
 		18: Reg	constructor(bsl, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -6446,7 +6257,7 @@ expansion {
 		5:	variant(Opcode::Bitselect)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -6476,7 +6287,6 @@ expansion {
 		20: Reg	constructor(orr, [7, 15, 19], 7)
 		21: InstOutput	constructor(output_reg, [20], 8)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -6484,7 +6294,7 @@ expansion {
 		5:	variant(Opcode::Bitselect)
 		8:	some
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -6505,7 +6315,6 @@ expansion {
 		11: Reg	constructor(vec_cnt, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -6513,7 +6322,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -6552,7 +6361,6 @@ expansion {
 		29: ValueRegs	constructor(value_regs, [24, 28], 10)
 		30: InstOutput	constructor(output, [29], 11)
 		31: Option(InstOutput)	some(30)
-		32: Option(Option(InstOutput))	some(31)
 	]
 	constraints = [
 		3:	some
@@ -6560,7 +6368,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
 	]
-	result = 32
+	result = 31
 	feasible = true
 }
 expansion {
@@ -6587,7 +6395,6 @@ expansion {
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 5)
 		18: InstOutput	constructor(output_reg, [17], 6)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -6595,7 +6402,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -6622,7 +6429,6 @@ expansion {
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 5)
 		18: InstOutput	constructor(output_reg, [17], 6)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -6630,7 +6436,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -6657,7 +6463,6 @@ expansion {
 		17: Reg	constructor(mov_from_vec, [14, 15, 16], 5)
 		18: InstOutput	constructor(output_reg, [17], 6)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -6665,7 +6470,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -6691,7 +6496,6 @@ expansion {
 		16: Reg	constructor(mov_from_vec, [13, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -6699,7 +6503,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Popcnt)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -6720,14 +6524,13 @@ expansion {
 		11: ValueRegs	constructor(lower_bmask, [9, 10, 7], 2)
 		12: InstOutput	constructor(output, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Bmask)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -6755,7 +6558,6 @@ expansion {
 		18: ValueRegs	constructor(value_regs, [13, 17], 7)
 		19: InstOutput	constructor(output, [18], 8)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -6763,7 +6565,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bswap)
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -6784,7 +6586,6 @@ expansion {
 		11: Reg	constructor(a64_rev64, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -6792,7 +6593,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bswap)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -6813,7 +6614,6 @@ expansion {
 		11: Reg	constructor(a64_rev32, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -6821,7 +6621,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bswap)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -6842,7 +6642,6 @@ expansion {
 		11: Reg	constructor(a64_rev16, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -6850,7 +6649,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bswap)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -6870,14 +6669,13 @@ expansion {
 		10: Reg	constructor(a64_cls, [9, 7], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Cls)
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -6919,7 +6717,6 @@ expansion {
 		32: ValueRegs	constructor(value_regs, [28, 31], 17)
 		33: InstOutput	constructor(output, [32], 18)
 		34: Option(InstOutput)	some(33)
-		35: Option(Option(InstOutput))	some(34)
 	]
 	constraints = [
 		3:	some
@@ -6927,7 +6724,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Cls)
 	]
-	result = 35
+	result = 34
 	feasible = true
 }
 expansion {
@@ -6951,7 +6748,6 @@ expansion {
 		14: Reg	constructor(sub_imm, [10, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -6959,7 +6755,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Cls)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -6983,7 +6779,6 @@ expansion {
 		14: Reg	constructor(sub_imm, [10, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -6991,7 +6786,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Cls)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -7012,14 +6807,13 @@ expansion {
 		11: Reg	constructor(a64_clz, [9, 10], 3)
 		12: InstOutput	constructor(output_reg, [11], 4)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Ctz)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -7047,7 +6841,6 @@ expansion {
 		18: ValueRegs	constructor(lower_clz128, [17], 7)
 		19: InstOutput	constructor(output, [18], 8)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -7055,7 +6848,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ctz)
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -7080,7 +6873,6 @@ expansion {
 		15: Reg	constructor(a64_clz, [10, 14], 5)
 		16: InstOutput	constructor(output_reg, [15], 6)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -7088,7 +6880,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ctz)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -7113,7 +6905,6 @@ expansion {
 		15: Reg	constructor(a64_clz, [10, 14], 5)
 		16: InstOutput	constructor(output_reg, [15], 6)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -7121,7 +6912,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ctz)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -7141,14 +6932,13 @@ expansion {
 		10: Reg	constructor(a64_clz, [9, 7], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Clz)
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -7168,7 +6958,6 @@ expansion {
 		10: ValueRegs	constructor(lower_clz128, [9], 2)
 		11: InstOutput	constructor(output, [10], 3)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	some
@@ -7176,7 +6965,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Clz)
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -7200,7 +6989,6 @@ expansion {
 		14: Reg	constructor(sub_imm, [10, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -7208,7 +6996,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Clz)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -7232,7 +7020,6 @@ expansion {
 		14: Reg	constructor(sub_imm, [10, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -7240,7 +7027,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Clz)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -7260,14 +7047,13 @@ expansion {
 		10: Reg	constructor(rbit, [9, 7], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Unary)
 		5:	variant(Opcode::Bitrev)
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -7294,7 +7080,6 @@ expansion {
 		17: ValueRegs	constructor(value_regs, [16, 13], 6)
 		18: InstOutput	constructor(output, [17], 7)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7302,7 +7087,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bitrev)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -7326,7 +7111,6 @@ expansion {
 		14: Reg	constructor(lsr_imm, [10, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -7334,7 +7118,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bitrev)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -7358,7 +7142,6 @@ expansion {
 		14: Reg	constructor(lsr_imm, [10, 11, 13], 4)
 		15: InstOutput	constructor(output_reg, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -7366,7 +7149,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bitrev)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -7406,7 +7189,6 @@ expansion {
 		30: ValueRegs	constructor(value_regs, [29, 26], 14)
 		31: InstOutput	constructor(output, [30], 15)
 		32: Option(InstOutput)	some(31)
-		33: Option(Option(InstOutput))	some(32)
 	]
 	constraints = [
 		3:	some
@@ -7414,7 +7196,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotr)
 	]
-	result = 33
+	result = 32
 	feasible = true
 }
 expansion {
@@ -7445,7 +7227,6 @@ expansion {
 		21: Reg	constructor(a64_rotr_imm, [15, 19, 20], 2)
 		22: InstOutput	constructor(output_reg, [21], 3)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -7457,7 +7238,7 @@ expansion {
 		14:	variant(Opcode::Iconst)
 		17:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -7488,7 +7269,6 @@ expansion {
 		21: Reg	constructor(a64_rotr_imm, [15, 19, 20], 2)
 		22: InstOutput	constructor(output_reg, [21], 3)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -7500,7 +7280,7 @@ expansion {
 		14:	variant(Opcode::Iconst)
 		17:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -7532,7 +7312,6 @@ expansion {
 		22: Reg	constructor(small_rotr_imm, [16, 20, 21], 2)
 		23: InstOutput	constructor(output_reg, [22], 3)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -7544,7 +7323,7 @@ expansion {
 		15:	some
 		18:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -7571,7 +7350,6 @@ expansion {
 		17: Reg	constructor(a64_rotr, [16, 11, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7579,7 +7357,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotr)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -7606,7 +7384,6 @@ expansion {
 		17: Reg	constructor(a64_rotr, [16, 11, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -7614,7 +7391,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotr)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -7642,7 +7419,6 @@ expansion {
 		18: Reg	constructor(small_rotr, [17, 12, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -7650,7 +7426,7 @@ expansion {
 		5:	variant(Opcode::Rotr)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -7690,7 +7466,6 @@ expansion {
 		30: ValueRegs	constructor(value_regs, [25, 29], 14)
 		31: InstOutput	constructor(output, [30], 15)
 		32: Option(InstOutput)	some(31)
-		33: Option(Option(InstOutput))	some(32)
 	]
 	constraints = [
 		3:	some
@@ -7698,7 +7473,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotl)
 	]
-	result = 33
+	result = 32
 	feasible = true
 }
 expansion {
@@ -7730,7 +7505,6 @@ expansion {
 		22: Reg	constructor(a64_rotr_imm, [15, 19, 21], 3)
 		23: InstOutput	constructor(output_reg, [22], 4)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -7742,7 +7516,7 @@ expansion {
 		14:	variant(Opcode::Iconst)
 		17:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -7774,7 +7548,6 @@ expansion {
 		22: Reg	constructor(a64_rotr_imm, [15, 19, 21], 3)
 		23: InstOutput	constructor(output_reg, [22], 4)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -7786,7 +7559,7 @@ expansion {
 		14:	variant(Opcode::Iconst)
 		17:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -7815,7 +7588,6 @@ expansion {
 		19: Reg	constructor(a64_rotr, [15, 18, 16], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -7823,7 +7595,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotl)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -7852,7 +7624,6 @@ expansion {
 		19: Reg	constructor(a64_rotr, [15, 18, 16], 6)
 		20: InstOutput	constructor(output_reg, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -7860,7 +7631,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Rotl)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -7893,7 +7664,6 @@ expansion {
 		23: Reg	constructor(small_rotr_imm, [16, 20, 22], 3)
 		24: InstOutput	constructor(output_reg, [23], 4)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -7905,7 +7675,7 @@ expansion {
 		15:	some
 		18:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -7936,7 +7706,6 @@ expansion {
 		21: Reg	constructor(small_rotr, [20, 19, 17], 6)
 		22: InstOutput	constructor(output_reg, [21], 7)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -7944,7 +7713,7 @@ expansion {
 		5:	variant(Opcode::Rotl)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -7974,7 +7743,6 @@ expansion {
 		20: Value	match_tuple(7, 0)
 		21: InstOutput	constructor(output_value, [20], 1)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -7986,7 +7754,7 @@ expansion {
 		15:	some
 		19:	const_int(0)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -8019,7 +7787,6 @@ expansion {
 		23: Reg	constructor(sshr_vec_imm, [17, 22, 19], 3)
 		24: InstOutput	constructor(output_reg, [23], 4)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -8030,7 +7797,7 @@ expansion {
 		12:	variant(Opcode::Iconst)
 		15:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -8064,7 +7831,6 @@ expansion {
 		24: Reg	constructor(sshl, [23, 21, 10], 9)
 		25: InstOutput	constructor(output_reg, [24], 10)
 		26: Option(InstOutput)	some(25)
-		27: Option(Option(InstOutput))	some(26)
 	]
 	constraints = [
 		3:	some
@@ -8072,7 +7838,7 @@ expansion {
 		5:	variant(Opcode::Sshr)
 		8:	some
 	]
-	result = 27
+	result = 26
 	feasible = true
 }
 expansion {
@@ -8098,7 +7864,6 @@ expansion {
 		16: ValueRegs	constructor(lower_sshr128, [11, 15], 4)
 		17: InstOutput	constructor(output, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8106,7 +7871,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Sshr)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -8131,7 +7896,6 @@ expansion {
 		15: Reg	constructor(do_shift, [12, 13, 11, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -8139,7 +7903,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Sshr)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -8165,7 +7929,6 @@ expansion {
 		16: Reg	constructor(do_shift, [13, 14, 12, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8173,7 +7936,7 @@ expansion {
 		5:	variant(Opcode::Sshr)
 		8:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -8203,7 +7966,6 @@ expansion {
 		20: Value	match_tuple(7, 0)
 		21: InstOutput	constructor(output_value, [20], 1)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -8215,7 +7977,7 @@ expansion {
 		15:	some
 		19:	const_int(0)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -8248,7 +8010,6 @@ expansion {
 		23: Reg	constructor(ushr_vec_imm, [17, 22, 19], 3)
 		24: InstOutput	constructor(output_reg, [23], 4)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -8259,7 +8020,7 @@ expansion {
 		12:	variant(Opcode::Iconst)
 		15:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -8293,7 +8054,6 @@ expansion {
 		24: Reg	constructor(ushl, [23, 21, 10], 9)
 		25: InstOutput	constructor(output_reg, [24], 10)
 		26: Option(InstOutput)	some(25)
-		27: Option(Option(InstOutput))	some(26)
 	]
 	constraints = [
 		3:	some
@@ -8301,7 +8061,7 @@ expansion {
 		5:	variant(Opcode::Ushr)
 		8:	some
 	]
-	result = 27
+	result = 26
 	feasible = true
 }
 expansion {
@@ -8327,7 +8087,6 @@ expansion {
 		16: ValueRegs	constructor(lower_ushr128, [11, 15], 4)
 		17: InstOutput	constructor(output, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8335,7 +8094,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Ushr)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -8360,7 +8119,6 @@ expansion {
 		15: Reg	constructor(do_shift, [12, 13, 11, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -8368,7 +8126,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Ushr)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -8394,7 +8152,6 @@ expansion {
 		16: Reg	constructor(do_shift, [13, 14, 12, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8402,7 +8159,7 @@ expansion {
 		5:	variant(Opcode::Ushr)
 		8:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -8435,7 +8192,6 @@ expansion {
 		23: Reg	constructor(ushl_vec_imm, [17, 22, 19], 3)
 		24: InstOutput	constructor(output_reg, [23], 4)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -8446,7 +8202,7 @@ expansion {
 		12:	variant(Opcode::Iconst)
 		15:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -8477,7 +8233,6 @@ expansion {
 		21: Reg	constructor(sshl, [20, 18, 10], 7)
 		22: InstOutput	constructor(output_reg, [21], 8)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -8485,7 +8240,7 @@ expansion {
 		5:	variant(Opcode::Ishl)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -8511,7 +8266,6 @@ expansion {
 		16: ValueRegs	constructor(lower_shl128, [11, 15], 4)
 		17: InstOutput	constructor(output, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8519,7 +8273,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Ishl)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -8544,7 +8298,6 @@ expansion {
 		15: Reg	constructor(do_shift, [12, 13, 11, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -8552,7 +8305,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Ishl)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -8578,7 +8331,6 @@ expansion {
 		16: Reg	constructor(do_shift, [13, 14, 12, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -8586,7 +8338,7 @@ expansion {
 		5:	variant(Opcode::Ishl)
 		8:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -8615,7 +8367,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [15, 16, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -8626,7 +8377,7 @@ expansion {
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -8655,7 +8406,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [15, 16, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -8666,7 +8416,7 @@ expansion {
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -8696,7 +8446,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [16, 17, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -8707,7 +8456,7 @@ expansion {
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -8737,7 +8486,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [16, 17, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -8748,7 +8496,7 @@ expansion {
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -8775,7 +8523,6 @@ expansion {
 		17: Reg	constructor(eor_vec, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -8783,7 +8530,7 @@ expansion {
 		5:	variant(Opcode::Bxor)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -8807,7 +8554,6 @@ expansion {
 		14: ValueRegs	constructor(i128_alu_bitop, [8, 9, 12, 13], 1)
 		15: InstOutput	constructor(output, [14], 2)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -8815,7 +8561,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Bxor)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -8840,7 +8586,6 @@ expansion {
 		15: Reg	constructor(alu_rs_imm_logic_commutative, [9, 10, 13, 14], 1)
 		16: InstOutput	constructor(output_reg, [15], 2)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -8848,7 +8593,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Bxor)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -8877,7 +8622,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [15, 16, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -8888,7 +8632,7 @@ expansion {
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -8917,7 +8661,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [15, 16, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -8928,7 +8671,7 @@ expansion {
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -8958,7 +8701,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [16, 17, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -8969,7 +8711,7 @@ expansion {
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -8999,7 +8741,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [16, 17, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -9010,7 +8751,7 @@ expansion {
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -9037,7 +8778,6 @@ expansion {
 		17: Reg	constructor(orr_vec, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -9045,7 +8785,7 @@ expansion {
 		5:	variant(Opcode::Bor)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -9069,7 +8809,6 @@ expansion {
 		14: ValueRegs	constructor(i128_alu_bitop, [8, 9, 12, 13], 1)
 		15: InstOutput	constructor(output, [14], 2)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -9077,7 +8816,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Bor)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -9102,7 +8841,6 @@ expansion {
 		15: Reg	constructor(alu_rs_imm_logic_commutative, [9, 10, 13, 14], 1)
 		16: InstOutput	constructor(output_reg, [15], 2)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -9110,7 +8848,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Bor)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -9142,7 +8880,6 @@ expansion {
 		22: Reg	constructor(bic_vec, [17, 19, 21], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -9153,7 +8890,7 @@ expansion {
 		12:	variant(Opcode::Bnot)
 		15:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -9185,7 +8922,6 @@ expansion {
 		22: Reg	constructor(bic_vec, [17, 19, 21], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -9196,7 +8932,7 @@ expansion {
 		12:	variant(Opcode::Bnot)
 		15:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -9225,7 +8961,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [15, 16, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -9236,7 +8971,7 @@ expansion {
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -9265,7 +9000,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [15, 16, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -9276,7 +9010,7 @@ expansion {
 		13:	variant(InstructionData::Unary)
 		14:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -9306,7 +9040,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [16, 17, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -9317,7 +9050,7 @@ expansion {
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -9347,7 +9080,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [16, 17, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -9358,7 +9090,7 @@ expansion {
 		14:	variant(InstructionData::Unary)
 		15:	variant(Opcode::Bnot)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -9385,7 +9117,6 @@ expansion {
 		17: Reg	constructor(and_vec, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -9393,7 +9124,7 @@ expansion {
 		5:	variant(Opcode::Band)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -9417,7 +9148,6 @@ expansion {
 		14: ValueRegs	constructor(i128_alu_bitop, [8, 9, 12, 13], 1)
 		15: InstOutput	constructor(output, [14], 2)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -9425,7 +9155,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Band)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -9450,7 +9180,6 @@ expansion {
 		15: Reg	constructor(alu_rs_imm_logic_commutative, [9, 10, 13, 14], 1)
 		16: InstOutput	constructor(output_reg, [15], 2)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -9458,7 +9187,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Band)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -9487,7 +9216,6 @@ expansion {
 		19: ValueRegs	constructor(i128_alu_bitop, [13, 14, 17, 18], 1)
 		20: InstOutput	constructor(output, [19], 2)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -9498,7 +9226,7 @@ expansion {
 		11:	variant(InstructionData::Binary)
 		12:	variant(Opcode::Bxor)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -9528,7 +9256,6 @@ expansion {
 		20: Reg	constructor(alu_rs_imm_logic, [14, 15, 18, 19], 1)
 		21: InstOutput	constructor(output_reg, [20], 2)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -9539,7 +9266,7 @@ expansion {
 		12:	variant(InstructionData::Binary)
 		13:	variant(Opcode::Bxor)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -9562,7 +9289,6 @@ expansion {
 		13: Reg	constructor(not, [10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -9570,7 +9296,7 @@ expansion {
 		5:	variant(Opcode::Bnot)
 		8:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -9599,7 +9325,6 @@ expansion {
 		19: ValueRegs	constructor(value_regs, [16, 18], 8)
 		20: InstOutput	constructor(output, [19], 9)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -9607,7 +9332,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Bnot)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -9645,7 +9370,6 @@ expansion {
 		28: Reg	constructor(orr_not_shift, [21, 24, 26, 27], 3)
 		29: InstOutput	constructor(output_reg, [28], 4)
 		30: Option(InstOutput)	some(29)
-		31: Option(Option(InstOutput))	some(30)
 	]
 	constraints = [
 		3:	some
@@ -9660,7 +9384,7 @@ expansion {
 		20:	variant(Opcode::Iconst)
 		23:	some
 	]
-	result = 31
+	result = 30
 	feasible = true
 }
 expansion {
@@ -9683,7 +9407,6 @@ expansion {
 		13: Reg	constructor(orr_not, [12, 9, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -9691,7 +9414,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Bnot)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -9726,7 +9449,6 @@ expansion {
 		25: Reg	constructor(aarch64_sload, [19, 23, 24], 3)
 		26: InstOutput	constructor(output_reg, [25], 4)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -9739,7 +9461,7 @@ expansion {
 		14:	some
 		15:	variant(Opcode::Load)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -9773,7 +9495,6 @@ expansion {
 		24: ValueRegs	constructor(value_regs, [19, 23], 5)
 		25: InstOutput	constructor(output, [24], 6)
 		26: Option(InstOutput)	some(25)
-		27: Option(Option(InstOutput))	some(26)
 	]
 	constraints = [
 		3:	some
@@ -9785,7 +9506,7 @@ expansion {
 		12:	variant(Opcode::Extractlane)
 		14:	const_prim(I64X2)
 	]
-	result = 27
+	result = 26
 	feasible = true
 }
 expansion {
@@ -9821,7 +9542,6 @@ expansion {
 		26: ValueRegs	constructor(value_regs, [22, 25], 7)
 		27: InstOutput	constructor(output, [26], 8)
 		28: Option(InstOutput)	some(27)
-		29: Option(Option(InstOutput))	some(28)
 	]
 	constraints = [
 		3:	some
@@ -9833,7 +9553,7 @@ expansion {
 		12:	variant(Opcode::Extractlane)
 		15:	some
 	]
-	result = 29
+	result = 28
 	feasible = true
 }
 expansion {
@@ -9857,7 +9577,6 @@ expansion {
 		14: ValueRegs	constructor(value_regs, [9, 13], 4)
 		15: InstOutput	constructor(output, [14], 5)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -9865,7 +9584,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Sextend)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -9897,7 +9616,6 @@ expansion {
 		22: Reg	constructor(mov_from_vec_signed, [15, 21, 17, 19], 4)
 		23: InstOutput	constructor(output_reg, [22], 5)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -9908,7 +9626,7 @@ expansion {
 		12:	variant(InstructionData::BinaryImm8)
 		13:	variant(Opcode::Extractlane)
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -9934,7 +9652,6 @@ expansion {
 		16: Reg	constructor(extend, [10, 11, 13, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -9942,7 +9659,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Sextend)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -9977,7 +9694,6 @@ expansion {
 		25: Reg	constructor(aarch64_uload, [19, 23, 24], 3)
 		26: InstOutput	constructor(output_reg, [25], 4)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -9990,7 +9706,7 @@ expansion {
 		14:	some
 		15:	variant(Opcode::Load)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -10024,7 +9740,6 @@ expansion {
 		24: ValueRegs	constructor(value_regs, [19, 23], 5)
 		25: InstOutput	constructor(output, [24], 6)
 		26: Option(InstOutput)	some(25)
-		27: Option(Option(InstOutput))	some(26)
 	]
 	constraints = [
 		3:	some
@@ -10035,7 +9750,7 @@ expansion {
 		11:	variant(InstructionData::BinaryImm8)
 		12:	variant(Opcode::Extractlane)
 	]
-	result = 27
+	result = 26
 	feasible = true
 }
 expansion {
@@ -10059,7 +9774,6 @@ expansion {
 		14: ValueRegs	constructor(value_regs, [9, 13], 3)
 		15: InstOutput	constructor(output, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -10067,7 +9781,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Uextend)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -10096,7 +9810,6 @@ expansion {
 		19: Reg	constructor(load_acquire, [17, 18, 16], 2)
 		20: InstOutput	constructor(output_reg, [19], 3)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -10108,7 +9821,7 @@ expansion {
 		13:	variant(Opcode::AtomicLoad)
 		14:	some
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -10138,7 +9851,6 @@ expansion {
 		20: Reg	constructor(mov_from_vec, [15, 19, 17], 3)
 		21: InstOutput	constructor(output_reg, [20], 4)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -10149,7 +9861,7 @@ expansion {
 		12:	variant(InstructionData::BinaryImm8)
 		13:	variant(Opcode::Extractlane)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -10175,7 +9887,6 @@ expansion {
 		16: Reg	constructor(extend, [10, 11, 13, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -10183,7 +9894,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Uextend)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -10213,7 +9924,6 @@ expansion {
 		20: Reg	constructor(bsl, [19, 16, 17, 18], 6)
 		21: InstOutput	constructor(output_reg, [20], 7)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -10221,7 +9931,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Umax)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -10248,7 +9958,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10256,7 +9965,7 @@ expansion {
 		5:	variant(Opcode::Umax)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10286,7 +9995,6 @@ expansion {
 		20: Reg	constructor(bsl, [19, 16, 17, 18], 6)
 		21: InstOutput	constructor(output_reg, [20], 7)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -10294,7 +10002,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Smax)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -10321,7 +10029,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10329,7 +10036,7 @@ expansion {
 		5:	variant(Opcode::Smax)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10359,7 +10066,6 @@ expansion {
 		20: Reg	constructor(bsl, [19, 16, 17, 18], 6)
 		21: InstOutput	constructor(output_reg, [20], 7)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -10367,7 +10073,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Umin)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -10394,7 +10100,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10402,7 +10107,7 @@ expansion {
 		5:	variant(Opcode::Umin)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10432,7 +10137,6 @@ expansion {
 		20: Reg	constructor(bsl, [19, 16, 17, 18], 6)
 		21: InstOutput	constructor(output_reg, [20], 7)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -10440,7 +10144,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Smin)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -10467,7 +10171,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10475,7 +10178,7 @@ expansion {
 		5:	variant(Opcode::Smin)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10502,7 +10205,6 @@ expansion {
 		17: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10511,7 +10213,7 @@ expansion {
 		8:	variant(Opcode::Smax)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10538,7 +10240,6 @@ expansion {
 		17: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10547,7 +10248,7 @@ expansion {
 		8:	variant(Opcode::Umax)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10574,7 +10275,6 @@ expansion {
 		17: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10583,7 +10283,7 @@ expansion {
 		8:	variant(Opcode::Smin)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10610,7 +10310,6 @@ expansion {
 		17: ValueRegs	constructor(cmp_and_choose, [10, 11, 12, 15, 16], 1)
 		18: InstOutput	constructor(output, [17], 2)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10619,7 +10318,7 @@ expansion {
 		8:	variant(Opcode::Umin)
 		9:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10646,7 +10345,6 @@ expansion {
 		17: Reg	constructor(msub, [15, 16, 14, 12], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10654,7 +10352,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Srem)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10681,7 +10379,6 @@ expansion {
 		17: Reg	constructor(msub, [15, 16, 14, 12], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -10689,7 +10386,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Urem)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -10724,7 +10421,6 @@ expansion {
 		25: Reg	constructor(a64_sdiv, [24, 20, 23], 3)
 		26: InstOutput	constructor(output_reg, [25], 4)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -10736,7 +10432,7 @@ expansion {
 		15:	variant(Opcode::Iconst)
 		18:	some
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -10764,7 +10460,6 @@ expansion {
 		18: Reg	constructor(a64_sdiv, [17, 16, 14], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -10772,7 +10467,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Sdiv)
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -10798,7 +10493,6 @@ expansion {
 		16: Reg	constructor(a64_udiv, [15, 12, 14], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -10806,7 +10500,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Udiv)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -10838,7 +10532,6 @@ expansion {
 		22: ValueRegs	constructor(value_reg, [21], 7)
 		23: InstOutput	constructor(output, [22], 8)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -10846,7 +10539,7 @@ expansion {
 		5:	variant(Opcode::Umulhi)
 		8:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -10871,7 +10564,6 @@ expansion {
 		15: Reg	constructor(umulh, [14, 11, 13], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -10879,7 +10571,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Umulhi)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -10910,7 +10602,6 @@ expansion {
 		21: Reg	constructor(asr_imm, [16, 17, 20], 6)
 		22: InstOutput	constructor(output_reg, [21], 7)
 		23: Option(InstOutput)	some(22)
-		24: Option(Option(InstOutput))	some(23)
 	]
 	constraints = [
 		3:	some
@@ -10918,7 +10609,7 @@ expansion {
 		5:	variant(Opcode::Smulhi)
 		8:	some
 	]
-	result = 24
+	result = 23
 	feasible = true
 }
 expansion {
@@ -10943,7 +10634,6 @@ expansion {
 		15: Reg	constructor(smulh, [14, 11, 13], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -10951,7 +10641,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Smulhi)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -10988,7 +10678,6 @@ expansion {
 		27: Reg	constructor(umull32, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11004,7 +10693,7 @@ expansion {
 		21:	const_prim(I32X4)
 		23:	const_prim(I32X4)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11041,7 +10730,6 @@ expansion {
 		27: Reg	constructor(umull32, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11057,7 +10745,7 @@ expansion {
 		21:	const_prim(I32X4)
 		23:	const_prim(I32X4)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11094,7 +10782,6 @@ expansion {
 		27: Reg	constructor(smull32, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11110,7 +10797,7 @@ expansion {
 		21:	const_prim(I32X4)
 		23:	const_prim(I32X4)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11147,7 +10834,6 @@ expansion {
 		27: Reg	constructor(smull32, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11163,7 +10849,7 @@ expansion {
 		21:	const_prim(I32X4)
 		23:	const_prim(I32X4)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11200,7 +10886,6 @@ expansion {
 		27: Reg	constructor(umull16, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11216,7 +10901,7 @@ expansion {
 		21:	const_prim(I16X8)
 		23:	const_prim(I16X8)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11253,7 +10938,6 @@ expansion {
 		27: Reg	constructor(umull16, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11269,7 +10953,7 @@ expansion {
 		21:	const_prim(I16X8)
 		23:	const_prim(I16X8)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11306,7 +10990,6 @@ expansion {
 		27: Reg	constructor(smull16, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11322,7 +11005,7 @@ expansion {
 		21:	const_prim(I16X8)
 		23:	const_prim(I16X8)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11359,7 +11042,6 @@ expansion {
 		27: Reg	constructor(smull16, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11375,7 +11057,7 @@ expansion {
 		21:	const_prim(I16X8)
 		23:	const_prim(I16X8)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11412,7 +11094,6 @@ expansion {
 		27: Reg	constructor(umull8, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11428,7 +11109,7 @@ expansion {
 		21:	const_prim(I8X16)
 		23:	const_prim(I8X16)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11465,7 +11146,6 @@ expansion {
 		27: Reg	constructor(umull8, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11481,7 +11161,7 @@ expansion {
 		21:	const_prim(I8X16)
 		23:	const_prim(I8X16)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11518,7 +11198,6 @@ expansion {
 		27: Reg	constructor(smull8, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11534,7 +11213,7 @@ expansion {
 		21:	const_prim(I8X16)
 		23:	const_prim(I8X16)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11571,7 +11250,6 @@ expansion {
 		27: Reg	constructor(smull8, [24, 25, 26], 3)
 		28: InstOutput	constructor(output_reg, [27], 4)
 		29: Option(InstOutput)	some(28)
-		30: Option(Option(InstOutput))	some(29)
 	]
 	constraints = [
 		3:	some
@@ -11587,7 +11265,7 @@ expansion {
 		21:	const_prim(I8X16)
 		23:	const_prim(I8X16)
 	]
-	result = 30
+	result = 29
 	feasible = true
 }
 expansion {
@@ -11620,7 +11298,6 @@ expansion {
 		23: Reg	constructor(umlal32, [22, 20, 18, 21], 9)
 		24: InstOutput	constructor(output_reg, [23], 10)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -11628,7 +11305,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Imul)
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -11656,7 +11333,6 @@ expansion {
 		18: Reg	constructor(mul, [14, 16, 17], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -11665,7 +11341,7 @@ expansion {
 		8:	some
 		10:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -11701,7 +11377,6 @@ expansion {
 		26: ValueRegs	constructor(value_regs, [25, 23], 12)
 		27: InstOutput	constructor(output, [26], 13)
 		28: Option(InstOutput)	some(27)
-		29: Option(Option(InstOutput))	some(28)
 	]
 	constraints = [
 		3:	some
@@ -11709,7 +11384,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Imul)
 	]
-	result = 29
+	result = 28
 	feasible = true
 }
 expansion {
@@ -11736,7 +11411,6 @@ expansion {
 		17: Reg	constructor(madd, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -11744,7 +11418,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Imul)
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -11767,7 +11441,6 @@ expansion {
 		13: Reg	constructor(neg, [10, 12], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -11775,7 +11448,7 @@ expansion {
 		5:	variant(Opcode::Ineg)
 		8:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -11796,7 +11469,6 @@ expansion {
 		11: ValueRegs	constructor(sub_i128, [8, 10], 3)
 		12: InstOutput	constructor(output, [11], 4)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -11804,7 +11476,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ineg)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -11827,7 +11499,6 @@ expansion {
 		13: Reg	constructor(sub, [12, 9, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -11835,7 +11506,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Ineg)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -11862,7 +11533,6 @@ expansion {
 		17: Reg	constructor(sqsub, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -11870,7 +11540,7 @@ expansion {
 		5:	variant(Opcode::SsubSat)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -11897,7 +11567,6 @@ expansion {
 		17: Reg	constructor(uqsub, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -11905,7 +11574,7 @@ expansion {
 		5:	variant(Opcode::UsubSat)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -11932,7 +11601,6 @@ expansion {
 		17: Reg	constructor(sqadd, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -11940,7 +11608,7 @@ expansion {
 		5:	variant(Opcode::SaddSat)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -11967,7 +11635,6 @@ expansion {
 		17: Reg	constructor(uqadd, [12, 14, 16], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -11975,7 +11642,7 @@ expansion {
 		5:	variant(Opcode::UaddSat)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -11999,7 +11666,6 @@ expansion {
 		14: ValueRegs	constructor(sub_i128, [11, 13], 3)
 		15: InstOutput	constructor(output, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -12007,7 +11673,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Isub)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -12033,7 +11699,6 @@ expansion {
 		16: Reg	constructor(sub_vec, [12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -12041,7 +11706,7 @@ expansion {
 		5:	variant(Opcode::Isub)
 		8:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -12082,7 +11747,6 @@ expansion {
 		31: Reg	constructor(sub_shift, [23, 27, 29, 30], 3)
 		32: InstOutput	constructor(output_reg, [31], 4)
 		33: Option(InstOutput)	some(32)
-		34: Option(Option(InstOutput))	some(33)
 	]
 	constraints = [
 		3:	some
@@ -12097,7 +11761,7 @@ expansion {
 		22:	variant(Opcode::Iconst)
 		25:	some
 	]
-	result = 34
+	result = 33
 	feasible = true
 }
 expansion {
@@ -12124,7 +11788,6 @@ expansion {
 		17: Reg	constructor(sub_extend, [15, 14, 16], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -12133,7 +11796,7 @@ expansion {
 		8:	variant(Opcode::Isub)
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -12160,7 +11823,6 @@ expansion {
 		17: Reg	constructor(add_imm, [15, 14, 16], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -12169,7 +11831,7 @@ expansion {
 		8:	variant(Opcode::Isub)
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -12202,7 +11864,6 @@ expansion {
 		23: Reg	constructor(sub_imm, [21, 20, 22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -12214,7 +11875,7 @@ expansion {
 		15:	variant(Opcode::Iconst)
 		18:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -12240,7 +11901,6 @@ expansion {
 		16: Reg	constructor(sub, [15, 12, 14], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -12248,7 +11908,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Isub)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -12272,7 +11932,6 @@ expansion {
 		14: Reg	constructor(fpu_to_int_cvt_sat, [11, 10, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -12281,7 +11940,7 @@ expansion {
 		7:	variant(Opcode::FcvtToSintSat)
 		9:	const_prim(F64)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -12306,7 +11965,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt_sat, [12, 11, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -12315,7 +11973,7 @@ expansion {
 		7:	const_prim(F64)
 		10:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -12339,7 +11997,6 @@ expansion {
 		14: Reg	constructor(fpu_to_int_cvt_sat, [11, 10, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -12348,7 +12005,7 @@ expansion {
 		7:	variant(Opcode::FcvtToSintSat)
 		9:	const_prim(F32)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -12373,7 +12030,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt_sat, [12, 11, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -12382,7 +12038,7 @@ expansion {
 		7:	const_prim(F32)
 		10:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -12411,7 +12067,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12422,7 +12077,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -12451,7 +12106,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12462,7 +12116,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -12486,7 +12140,6 @@ expansion {
 		14: Reg	constructor(fpu_to_int_cvt_sat, [11, 10, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -12495,7 +12148,7 @@ expansion {
 		7:	variant(Opcode::FcvtToUintSat)
 		9:	const_prim(F64)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -12520,7 +12173,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt_sat, [12, 11, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -12529,7 +12181,7 @@ expansion {
 		7:	const_prim(F64)
 		10:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -12553,7 +12205,6 @@ expansion {
 		14: Reg	constructor(fpu_to_int_cvt_sat, [11, 10, 12, 13], 2)
 		15: InstOutput	constructor(output_reg, [14], 3)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -12562,7 +12213,7 @@ expansion {
 		7:	variant(Opcode::FcvtToUintSat)
 		9:	const_prim(F32)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -12587,7 +12238,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt_sat, [12, 11, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -12596,7 +12246,7 @@ expansion {
 		7:	const_prim(F32)
 		10:	some
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -12625,7 +12275,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12636,7 +12285,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -12665,7 +12314,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12676,7 +12324,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -12698,7 +12346,6 @@ expansion {
 		12: Reg	constructor(int_to_fpu, [11, 10], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -12707,7 +12354,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromSint)
 		9:	const_prim(I64)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -12729,7 +12376,6 @@ expansion {
 		12: Reg	constructor(int_to_fpu, [11, 10], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -12738,7 +12384,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromSint)
 		9:	const_prim(I64)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -12761,7 +12407,6 @@ expansion {
 		13: Reg	constructor(int_to_fpu, [12, 11], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -12770,7 +12415,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromSint)
 		10:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -12793,7 +12438,6 @@ expansion {
 		13: Reg	constructor(int_to_fpu, [12, 11], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -12802,7 +12446,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromSint)
 		10:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -12831,7 +12475,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12842,7 +12485,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -12871,7 +12514,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -12882,7 +12524,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -12904,7 +12546,6 @@ expansion {
 		12: Reg	constructor(int_to_fpu, [11, 10], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -12913,7 +12554,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromUint)
 		9:	const_prim(I64)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -12935,7 +12576,6 @@ expansion {
 		12: Reg	constructor(int_to_fpu, [11, 10], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -12944,7 +12584,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromUint)
 		9:	const_prim(I64)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -12967,7 +12607,6 @@ expansion {
 		13: Reg	constructor(int_to_fpu, [12, 11], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -12976,7 +12615,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromUint)
 		10:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -12999,7 +12638,6 @@ expansion {
 		13: Reg	constructor(int_to_fpu, [12, 11], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -13008,7 +12646,7 @@ expansion {
 		7:	variant(Opcode::FcvtFromUint)
 		10:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -13037,7 +12675,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -13048,7 +12685,7 @@ expansion {
 		13:	some
 		15:	const_int(64)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -13077,7 +12714,6 @@ expansion {
 		19: Reg	constructor(vec_misc, [18, 16, 17], 3)
 		20: InstOutput	constructor(output_reg, [19], 4)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	some
@@ -13088,7 +12724,7 @@ expansion {
 		13:	some
 		15:	const_int(32)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -13113,7 +12749,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt, [11, 10, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -13122,7 +12757,7 @@ expansion {
 		7:	variant(Opcode::FcvtToSint)
 		9:	const_prim(F64)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -13148,7 +12783,6 @@ expansion {
 		16: Reg	constructor(fpu_to_int_cvt, [12, 11, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -13157,7 +12791,7 @@ expansion {
 		7:	const_prim(F64)
 		10:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -13182,7 +12816,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt, [11, 10, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -13191,7 +12824,7 @@ expansion {
 		7:	variant(Opcode::FcvtToSint)
 		9:	const_prim(F32)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -13217,7 +12850,6 @@ expansion {
 		16: Reg	constructor(fpu_to_int_cvt, [12, 11, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -13226,7 +12858,7 @@ expansion {
 		7:	const_prim(F32)
 		10:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -13251,7 +12883,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt, [11, 10, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -13260,7 +12891,7 @@ expansion {
 		7:	variant(Opcode::FcvtToUint)
 		9:	const_prim(F64)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -13286,7 +12917,6 @@ expansion {
 		16: Reg	constructor(fpu_to_int_cvt, [12, 11, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -13295,7 +12925,7 @@ expansion {
 		7:	const_prim(F64)
 		10:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -13320,7 +12950,6 @@ expansion {
 		15: Reg	constructor(fpu_to_int_cvt, [11, 10, 12, 13, 14], 2)
 		16: InstOutput	constructor(output_reg, [15], 3)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
@@ -13329,7 +12958,7 @@ expansion {
 		7:	variant(Opcode::FcvtToUint)
 		9:	const_prim(F32)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -13355,7 +12984,6 @@ expansion {
 		16: Reg	constructor(fpu_to_int_cvt, [12, 11, 13, 14, 15], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -13364,7 +12992,7 @@ expansion {
 		7:	const_prim(F32)
 		10:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -13388,14 +13016,13 @@ expansion {
 		14: Reg	constructor(fcopy_sign, [9, 11, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Fcopysign)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -13421,7 +13048,6 @@ expansion {
 		16: Reg	constructor(lower_fmla, [10, 13, 14, 15, 9], 2)
 		17: InstOutput	constructor(output_reg, [16], 3)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -13429,7 +13055,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Fma)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -13459,7 +13085,6 @@ expansion {
 		20: Reg	constructor(fpu_rrrr, [19, 10, 14, 16, 18], 5)
 		21: InstOutput	constructor(output_reg, [20], 6)
 		22: Option(InstOutput)	some(21)
-		23: Option(Option(InstOutput))	some(22)
 	]
 	constraints = [
 		3:	some
@@ -13467,7 +13092,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Fma)
 	]
-	result = 23
+	result = 22
 	feasible = true
 }
 expansion {
@@ -13488,7 +13113,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13496,7 +13120,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Nearest)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13517,7 +13141,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13525,7 +13148,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Nearest)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13548,7 +13171,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -13556,7 +13178,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Nearest)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -13577,7 +13199,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13585,7 +13206,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Trunc)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13606,7 +13227,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13614,7 +13234,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Trunc)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13637,7 +13257,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -13645,7 +13264,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Trunc)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -13666,7 +13285,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13674,7 +13292,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Floor)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13695,7 +13313,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13703,7 +13320,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Floor)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13726,7 +13343,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -13734,7 +13350,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Floor)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -13755,7 +13371,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13763,7 +13378,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ceil)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13784,7 +13399,6 @@ expansion {
 		11: Reg	constructor(fpu_round, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -13792,7 +13406,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Ceil)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -13815,7 +13429,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -13823,7 +13436,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Ceil)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -13845,7 +13458,6 @@ expansion {
 		12: Reg	constructor(fpu_rr, [10, 9, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -13853,7 +13465,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Fdemote)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -13875,7 +13487,6 @@ expansion {
 		12: Reg	constructor(fpu_rr, [10, 9, 11], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -13883,7 +13494,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Fpromote)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -13907,7 +13518,6 @@ expansion {
 		14: Reg	constructor(fpu_rr, [13, 10, 12], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -13915,7 +13525,7 @@ expansion {
 		5:	variant(Opcode::Fabs)
 		8:	some
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -13938,7 +13548,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -13946,7 +13555,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Fabs)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -13970,7 +13579,6 @@ expansion {
 		14: Reg	constructor(fpu_rr, [13, 10, 12], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -13978,7 +13586,7 @@ expansion {
 		5:	variant(Opcode::Fneg)
 		8:	some
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -14001,7 +13609,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -14009,7 +13616,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Fneg)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -14033,7 +13640,6 @@ expansion {
 		14: Reg	constructor(fpu_rr, [13, 10, 12], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -14041,7 +13647,7 @@ expansion {
 		5:	variant(Opcode::Sqrt)
 		8:	some
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -14064,7 +13670,6 @@ expansion {
 		13: Reg	constructor(vec_misc, [12, 10, 11], 3)
 		14: InstOutput	constructor(output_reg, [13], 4)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	some
@@ -14072,7 +13677,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Sqrt)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -14100,7 +13705,6 @@ expansion {
 		18: Reg	constructor(fpu_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14108,7 +13712,7 @@ expansion {
 		5:	variant(Opcode::Fmax)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14135,7 +13739,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14143,7 +13746,7 @@ expansion {
 		5:	variant(Opcode::Fmax)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14171,7 +13774,6 @@ expansion {
 		18: Reg	constructor(fpu_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14179,7 +13781,7 @@ expansion {
 		5:	variant(Opcode::Fmin)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14206,7 +13808,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14214,7 +13815,7 @@ expansion {
 		5:	variant(Opcode::Fmin)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14242,7 +13843,6 @@ expansion {
 		18: Reg	constructor(fpu_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14250,7 +13850,7 @@ expansion {
 		5:	variant(Opcode::Fdiv)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14277,7 +13877,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14285,7 +13884,7 @@ expansion {
 		5:	variant(Opcode::Fdiv)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14313,7 +13912,6 @@ expansion {
 		18: Reg	constructor(fpu_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14321,7 +13919,7 @@ expansion {
 		5:	variant(Opcode::Fmul)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14348,7 +13946,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14356,7 +13953,7 @@ expansion {
 		5:	variant(Opcode::Fmul)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14384,7 +13981,6 @@ expansion {
 		18: Reg	constructor(fpu_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14392,7 +13988,7 @@ expansion {
 		5:	variant(Opcode::Fsub)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14419,7 +14015,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14427,7 +14022,7 @@ expansion {
 		5:	variant(Opcode::Fsub)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14455,7 +14050,6 @@ expansion {
 		18: Reg	constructor(fpu_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14463,7 +14057,7 @@ expansion {
 		5:	variant(Opcode::Fadd)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14490,7 +14084,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14498,7 +14091,7 @@ expansion {
 		5:	variant(Opcode::Fadd)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14525,7 +14118,6 @@ expansion {
 		17: Reg	constructor(vec_rrr, [16, 12, 14, 15], 4)
 		18: InstOutput	constructor(output_reg, [17], 5)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -14533,7 +14125,7 @@ expansion {
 		5:	variant(Opcode::SqmulRoundSat)
 		8:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -14561,7 +14153,6 @@ expansion {
 		18: Reg	constructor(vec_rrr, [17, 12, 14, 16], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -14569,7 +14160,7 @@ expansion {
 		5:	variant(Opcode::AvgRound)
 		8:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -14604,7 +14195,6 @@ expansion {
 		25: Reg	constructor(add_vec, [18, 24, 9], 11)
 		26: InstOutput	constructor(output_reg, [25], 12)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -14612,7 +14202,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::AvgRound)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -14644,7 +14234,6 @@ expansion {
 		22: ValueRegs	constructor(with_flags, [20, 21], 10)
 		23: InstOutput	constructor(output, [22], 11)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	some
@@ -14652,7 +14241,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Iabs)
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -14674,7 +14263,6 @@ expansion {
 		12: Reg	constructor(abs, [11, 10], 2)
 		13: InstOutput	constructor(output_reg, [12], 3)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -14682,7 +14270,7 @@ expansion {
 		5:	variant(Opcode::Iabs)
 		8:	some
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -14703,7 +14291,6 @@ expansion {
 		11: Reg	constructor(abs, [10, 9], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -14711,7 +14298,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::Iabs)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -14733,7 +14320,6 @@ expansion {
 		12: Reg	constructor(vec_abs, [10, 11], 3)
 		13: InstOutput	constructor(output_reg, [12], 4)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
@@ -14741,7 +14327,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Iabs)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -14766,14 +14352,13 @@ expansion {
 		15: Reg	constructor(addp, [9, 11, 14], 4)
 		16: InstOutput	constructor(output_reg, [15], 5)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::IaddPairwise)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -14806,7 +14391,6 @@ expansion {
 		23: Reg	constructor(uaddlp16, [22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -14823,7 +14407,7 @@ expansion {
 	equals = [
 		21 == 20
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -14856,7 +14440,6 @@ expansion {
 		23: Reg	constructor(uaddlp8, [22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -14873,7 +14456,7 @@ expansion {
 	equals = [
 		21 == 20
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -14906,7 +14489,6 @@ expansion {
 		23: Reg	constructor(saddlp16, [22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -14923,7 +14505,7 @@ expansion {
 	equals = [
 		21 == 20
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -14956,7 +14538,6 @@ expansion {
 		23: Reg	constructor(saddlp8, [22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -14973,7 +14554,7 @@ expansion {
 	equals = [
 		21 == 20
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -14994,13 +14575,12 @@ expansion {
 		11: ValueRegs	constructor(with_flags, [8, 10], 4)
 		12: InstOutput	constructor(output, [11], 5)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::VanyTrue)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -15032,7 +14612,6 @@ expansion {
 		22: ValueRegs	constructor(with_flags, [19, 21], 8)
 		23: InstOutput	constructor(output, [22], 9)
 		24: Option(InstOutput)	some(23)
-		25: Option(Option(InstOutput))	some(24)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
@@ -15040,7 +14619,7 @@ expansion {
 		7:	some
 		9:	some
 	]
-	result = 25
+	result = 24
 	feasible = true
 }
 expansion {
@@ -15076,7 +14655,6 @@ expansion {
 		26: ValueRegs	constructor(with_flags, [18, 25], 8)
 		27: InstOutput	constructor(output, [26], 9)
 		28: Option(InstOutput)	some(27)
-		29: Option(Option(InstOutput))	some(28)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
@@ -15085,7 +14663,7 @@ expansion {
 		9:	const_int(32)
 		10:	const_int(2)
 	]
-	result = 29
+	result = 28
 	feasible = true
 }
 expansion {
@@ -15114,7 +14692,6 @@ expansion {
 		19: ValueRegs	constructor(with_flags, [16, 18], 6)
 		20: InstOutput	constructor(output, [19], 7)
 		21: Option(InstOutput)	some(20)
-		22: Option(Option(InstOutput))	some(21)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
@@ -15123,7 +14700,7 @@ expansion {
 		9:	const_int(64)
 		10:	const_int(2)
 	]
-	result = 22
+	result = 21
 	feasible = true
 }
 expansion {
@@ -15143,14 +14720,13 @@ expansion {
 		10: Reg	constructor(mov_to_fpu, [8, 9], 2)
 		11: InstOutput	constructor(output_reg, [10], 3)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::ScalarToVector)
 		7:	some
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -15169,14 +14745,13 @@ expansion {
 		9: Reg	constructor(mov_to_fpu, [7, 8], 2)
 		10: InstOutput	constructor(output_reg, [9], 3)
 		11: Option(InstOutput)	some(10)
-		12: Option(Option(InstOutput))	some(11)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::ScalarToVector)
 		6:	const_prim(I64)
 	]
-	result = 12
+	result = 11
 	feasible = true
 }
 expansion {
@@ -15197,7 +14772,6 @@ expansion {
 		11: Reg	constructor(fpu_extend, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -15205,7 +14779,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::ScalarToVector)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -15226,7 +14800,6 @@ expansion {
 		11: Reg	constructor(fpu_extend, [9, 10], 2)
 		12: InstOutput	constructor(output_reg, [11], 3)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
@@ -15234,7 +14807,7 @@ expansion {
 		6:	variant(InstructionData::Unary)
 		7:	variant(Opcode::ScalarToVector)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
 expansion {
@@ -15258,7 +14831,6 @@ expansion {
 		14: ValueRegs	constructor(value_regs, [11, 13], 3)
 		15: InstOutput	constructor(output, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	some
@@ -15266,7 +14838,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Iconcat)
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -15289,14 +14861,13 @@ expansion {
 		13: ValueRegs	constructor(value_reg, [12], 5)
 		14: InstOutput	constructor(output_pair, [10, 13], 6)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Unary)
 		4:	variant(Opcode::Isplit)
 		6:	const_prim(I128)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15318,14 +14889,13 @@ expansion {
 		12: Reg	constructor(vec_tbl, [9, 11], 3)
 		13: InstOutput	constructor(output_reg, [12], 4)
 		14: Option(InstOutput)	some(13)
-		15: Option(Option(InstOutput))	some(14)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::Binary)
 		5:	variant(Opcode::Swizzle)
 	]
-	result = 15
+	result = 14
 	feasible = true
 }
 expansion {
@@ -15353,7 +14923,6 @@ expansion {
 		18: Reg	constructor(vec_tbl2, [13, 15, 9, 17], 4)
 		19: InstOutput	constructor(output_reg, [18], 5)
 		20: Option(InstOutput)	some(19)
-		21: Option(Option(InstOutput))	some(20)
 	]
 	constraints = [
 		3:	some
@@ -15361,7 +14930,7 @@ expansion {
 		5:	variant(Opcode::Shuffle)
 		7:	some
 	]
-	result = 21
+	result = 20
 	feasible = true
 }
 expansion {
@@ -15384,7 +14953,6 @@ expansion {
 		13: Reg	constructor(rev64, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15392,7 +14960,7 @@ expansion {
 		6:	some
 		7:	const_int(14673614102390417578512422760905835780)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15415,7 +14983,6 @@ expansion {
 		13: Reg	constructor(rev64, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15423,7 +14990,7 @@ expansion {
 		6:	some
 		7:	const_int(12004814239757670119517129289737963270)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15446,7 +15013,6 @@ expansion {
 		13: Reg	constructor(rev64, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15454,7 +15020,7 @@ expansion {
 		6:	some
 		7:	const_int(10680758337341567148842519922299176455)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15477,7 +15043,6 @@ expansion {
 		13: Reg	constructor(rev32, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15485,7 +15050,7 @@ expansion {
 		6:	some
 		7:	const_int(17342576855639742879858139805557719810)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15508,7 +15073,6 @@ expansion {
 		13: Reg	constructor(rev32, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15516,7 +15080,7 @@ expansion {
 		6:	some
 		7:	const_int(16018520953223639909183530438118932995)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15539,7 +15103,6 @@ expansion {
 		13: Reg	constructor(rev16, [11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15547,7 +15110,7 @@ expansion {
 		6:	some
 		7:	const_int(18687320815856387368178823909286805505)
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -15572,7 +15135,6 @@ expansion {
 		15: Reg	constructor(vec_trn2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15580,7 +15142,7 @@ expansion {
 		6:	some
 		7:	const_int(41362427188014754909301208165426529540)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15605,7 +15167,6 @@ expansion {
 		15: Reg	constructor(vec_trn1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15613,7 +15174,7 @@ expansion {
 		6:	some
 		7:	const_int(36024664569647092737326704519438008576)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15638,7 +15199,6 @@ expansion {
 		15: Reg	constructor(vec_trn2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15646,7 +15206,7 @@ expansion {
 		6:	some
 		7:	const_int(41362142128814346332279593629287318274)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15671,7 +15231,6 @@ expansion {
 		15: Reg	constructor(vec_trn1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15679,7 +15238,7 @@ expansion {
 		6:	some
 		7:	const_int(38693260819630515246292341806293057792)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15704,7 +15263,6 @@ expansion {
 		15: Reg	constructor(vec_trn2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15712,7 +15270,7 @@ expansion {
 		6:	some
 		7:	const_int(41284541550424544734358823780242100481)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15737,7 +15295,6 @@ expansion {
 		15: Reg	constructor(vec_trn1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15745,7 +15302,7 @@ expansion {
 		6:	some
 		7:	const_int(39950100895832629191365197868744970240)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15770,7 +15327,6 @@ expansion {
 		15: Reg	constructor(vec_zip2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15778,7 +15334,7 @@ expansion {
 		6:	some
 		7:	const_int(41362427188014754909590568856778836232)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15803,7 +15359,6 @@ expansion {
 		15: Reg	constructor(vec_zip1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15811,7 +15366,7 @@ expansion {
 		6:	some
 		7:	const_int(30686901951279430565641561564801794304)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15836,7 +15391,6 @@ expansion {
 		15: Reg	constructor(vec_zip2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15844,7 +15398,7 @@ expansion {
 		6:	some
 		7:	const_int(41362142129435743685477327603181816072)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15869,7 +15423,6 @@ expansion {
 		15: Reg	constructor(vec_zip1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15877,7 +15430,7 @@ expansion {
 		6:	some
 		7:	const_int(30686616892700419341528320311204774144)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15902,7 +15455,6 @@ expansion {
 		15: Reg	constructor(vec_zip2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15910,7 +15462,7 @@ expansion {
 		6:	some
 		7:	const_int(41284561912683712994304547342093195272)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15935,7 +15487,6 @@ expansion {
 		15: Reg	constructor(vec_zip1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15943,7 +15494,7 @@ expansion {
 		6:	some
 		7:	const_int(30609036675948388650355540050116153344)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -15968,7 +15519,6 @@ expansion {
 		15: Reg	constructor(vec_uzp2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -15976,7 +15526,7 @@ expansion {
 		6:	some
 		7:	const_int(41362427191743139026172726477975062792)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16001,7 +15551,6 @@ expansion {
 		15: Reg	constructor(vec_uzp1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16009,7 +15558,7 @@ expansion {
 		6:	some
 		7:	const_int(30686901955007814682223719185998020864)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16034,7 +15583,6 @@ expansion {
 		15: Reg	constructor(vec_uzp2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16042,7 +15590,7 @@ expansion {
 		6:	some
 		7:	const_int(41362427190500344320355979912890680580)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16067,7 +15615,6 @@ expansion {
 		15: Reg	constructor(vec_uzp1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16075,7 +15622,7 @@ expansion {
 		6:	some
 		7:	const_int(36024664572132682148381476266902159616)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16100,7 +15647,6 @@ expansion {
 		15: Reg	constructor(vec_uzp2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16108,7 +15654,7 @@ expansion {
 		6:	some
 		7:	const_int(41362386467224802506860000736977486594)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16133,7 +15679,6 @@ expansion {
 		15: Reg	constructor(vec_uzp1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16141,7 +15686,7 @@ expansion {
 		6:	some
 		7:	const_int(38693505158040971420872748913983226112)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16166,7 +15711,6 @@ expansion {
 		15: Reg	constructor(vec_uzp2, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16174,7 +15718,7 @@ expansion {
 		6:	some
 		7:	const_int(41357194091136896220700492464948314881)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16199,7 +15743,6 @@ expansion {
 		15: Reg	constructor(vec_uzp1, [11, 13, 14], 3)
 		16: InstOutput	constructor(output_reg, [15], 4)
 		17: Option(InstOutput)	some(16)
-		18: Option(Option(InstOutput))	some(17)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
@@ -16207,7 +15750,7 @@ expansion {
 		6:	some
 		7:	const_int(40022753436544980677706866553451184640)
 	]
-	result = 18
+	result = 17
 	feasible = true
 }
 expansion {
@@ -16231,14 +15774,13 @@ expansion {
 		14: Reg	constructor(vec_extract, [10, 12, 13], 3)
 		15: InstOutput	constructor(output_reg, [14], 4)
 		16: Option(InstOutput)	some(15)
-		17: Option(Option(InstOutput))	some(16)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
-	result = 17
+	result = 16
 	feasible = true
 }
 expansion {
@@ -16261,14 +15803,13 @@ expansion {
 		13: Reg	constructor(vec_dup_from_fpu, [10, 11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -16291,14 +15832,13 @@ expansion {
 		13: Reg	constructor(vec_dup_from_fpu, [10, 11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -16321,14 +15861,13 @@ expansion {
 		13: Reg	constructor(vec_dup_from_fpu, [10, 11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -16351,14 +15890,13 @@ expansion {
 		13: Reg	constructor(vec_dup_from_fpu, [10, 11, 12], 2)
 		14: InstOutput	constructor(output_reg, [13], 3)
 		15: Option(InstOutput)	some(14)
-		16: Option(Option(InstOutput))	some(15)
 	]
 	constraints = [
 		3:	variant(InstructionData::Shuffle)
 		4:	variant(Opcode::Shuffle)
 		6:	some
 	]
-	result = 16
+	result = 15
 	feasible = true
 }
 expansion {
@@ -16391,7 +15929,6 @@ expansion {
 		23: ValueRegs	constructor(with_flags, [21, 22], 9)
 		24: InstOutput	constructor(output, [23], 10)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -16399,7 +15936,7 @@ expansion {
 		6:	variant(InstructionData::Binary)
 		7:	variant(Opcode::Iadd)
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -16425,7 +15962,6 @@ expansion {
 		16: Reg	constructor(add_vec, [12, 14, 15], 4)
 		17: InstOutput	constructor(output_reg, [16], 5)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -16433,7 +15969,7 @@ expansion {
 		5:	variant(Opcode::Iadd)
 		8:	some
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -16468,7 +16004,6 @@ expansion {
 		25: Reg	constructor(msub, [24, 19, 21, 23], 4)
 		26: InstOutput	constructor(output_reg, [25], 5)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -16479,7 +16014,7 @@ expansion {
 		14:	variant(InstructionData::Binary)
 		15:	variant(Opcode::Imul)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -16514,7 +16049,6 @@ expansion {
 		25: Reg	constructor(madd, [24, 19, 21, 23], 4)
 		26: InstOutput	constructor(output_reg, [25], 5)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -16525,7 +16059,7 @@ expansion {
 		14:	variant(InstructionData::Binary)
 		15:	variant(Opcode::Imul)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -16560,7 +16094,6 @@ expansion {
 		25: Reg	constructor(madd, [24, 19, 21, 23], 4)
 		26: InstOutput	constructor(output_reg, [25], 5)
 		27: Option(InstOutput)	some(26)
-		28: Option(Option(InstOutput))	some(27)
 	]
 	constraints = [
 		3:	some
@@ -16571,7 +16104,7 @@ expansion {
 		14:	variant(InstructionData::Binary)
 		15:	variant(Opcode::Imul)
 	]
-	result = 28
+	result = 27
 	feasible = true
 }
 expansion {
@@ -16612,7 +16145,6 @@ expansion {
 		31: Reg	constructor(add_shift, [23, 27, 29, 30], 3)
 		32: InstOutput	constructor(output_reg, [31], 4)
 		33: Option(InstOutput)	some(32)
-		34: Option(Option(InstOutput))	some(33)
 	]
 	constraints = [
 		3:	some
@@ -16627,7 +16159,7 @@ expansion {
 		22:	variant(Opcode::Iconst)
 		25:	some
 	]
-	result = 34
+	result = 33
 	feasible = true
 }
 expansion {
@@ -16668,7 +16200,6 @@ expansion {
 		31: Reg	constructor(add_shift, [23, 27, 29, 30], 3)
 		32: InstOutput	constructor(output_reg, [31], 4)
 		33: Option(InstOutput)	some(32)
-		34: Option(Option(InstOutput))	some(33)
 	]
 	constraints = [
 		3:	some
@@ -16683,7 +16214,7 @@ expansion {
 		22:	variant(Opcode::Iconst)
 		25:	some
 	]
-	result = 34
+	result = 33
 	feasible = true
 }
 expansion {
@@ -16710,7 +16241,6 @@ expansion {
 		17: Reg	constructor(add_extend, [15, 14, 16], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -16719,7 +16249,7 @@ expansion {
 		8:	variant(Opcode::Iadd)
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -16746,7 +16276,6 @@ expansion {
 		17: Reg	constructor(add_extend, [15, 14, 16], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -16755,7 +16284,7 @@ expansion {
 		8:	variant(Opcode::Iadd)
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -16782,7 +16311,6 @@ expansion {
 		17: Reg	constructor(sub_imm, [15, 14, 16], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -16791,7 +16319,7 @@ expansion {
 		8:	variant(Opcode::Iadd)
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -16818,7 +16346,6 @@ expansion {
 		17: Reg	constructor(sub_imm, [15, 14, 16], 2)
 		18: InstOutput	constructor(output_reg, [17], 3)
 		19: Option(InstOutput)	some(18)
-		20: Option(Option(InstOutput))	some(19)
 	]
 	constraints = [
 		3:	some
@@ -16827,7 +16354,7 @@ expansion {
 		8:	variant(Opcode::Iadd)
 		12:	some
 	]
-	result = 20
+	result = 19
 	feasible = true
 }
 expansion {
@@ -16860,7 +16387,6 @@ expansion {
 		23: Reg	constructor(add_imm, [21, 20, 22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -16872,7 +16398,7 @@ expansion {
 		15:	variant(Opcode::Iconst)
 		18:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -16905,7 +16431,6 @@ expansion {
 		23: Reg	constructor(add_imm, [21, 20, 22], 2)
 		24: InstOutput	constructor(output_reg, [23], 3)
 		25: Option(InstOutput)	some(24)
-		26: Option(Option(InstOutput))	some(25)
 	]
 	constraints = [
 		3:	some
@@ -16917,7 +16442,7 @@ expansion {
 		15:	variant(Opcode::Iconst)
 		18:	some
 	]
-	result = 26
+	result = 25
 	feasible = true
 }
 expansion {
@@ -16943,7 +16468,6 @@ expansion {
 		16: Reg	constructor(add, [15, 12, 14], 3)
 		17: InstOutput	constructor(output_reg, [16], 4)
 		18: Option(InstOutput)	some(17)
-		19: Option(Option(InstOutput))	some(18)
 	]
 	constraints = [
 		3:	some
@@ -16951,7 +16475,7 @@ expansion {
 		7:	some
 		8:	variant(Opcode::Iadd)
 	]
-	result = 19
+	result = 18
 	feasible = true
 }
 expansion {
@@ -16966,13 +16490,12 @@ expansion {
 		5: Reg	constructor(invalid_reg, [], 1)
 		6: InstOutput	constructor(output_reg, [5], 2)
 		7: Option(InstOutput)	some(6)
-		8: Option(Option(InstOutput))	some(7)
 	]
 	constraints = [
 		3:	variant(InstructionData::NullAry)
 		4:	variant(Opcode::Nop)
 	]
-	result = 8
+	result = 7
 	feasible = true
 }
 expansion {
@@ -16989,13 +16512,12 @@ expansion {
 		7: Reg	constructor(constant_f64, [6], 1)
 		8: InstOutput	constructor(output_reg, [7], 2)
 		9: Option(InstOutput)	some(8)
-		10: Option(Option(InstOutput))	some(9)
 	]
 	constraints = [
 		3:	variant(InstructionData::UnaryIeee64)
 		4:	variant(Opcode::F64const)
 	]
-	result = 10
+	result = 9
 	feasible = true
 }
 expansion {
@@ -17012,13 +16534,12 @@ expansion {
 		7: Reg	constructor(constant_f32, [6], 1)
 		8: InstOutput	constructor(output_reg, [7], 2)
 		9: Option(InstOutput)	some(8)
-		10: Option(Option(InstOutput))	some(9)
 	]
 	constraints = [
 		3:	variant(InstructionData::UnaryIeee32)
 		4:	variant(Opcode::F32const)
 	]
-	result = 10
+	result = 9
 	feasible = true
 }
 expansion {
@@ -17038,14 +16559,13 @@ expansion {
 		10: Reg	constructor(imm, [7, 8, 9], 1)
 		11: InstOutput	constructor(output_reg, [10], 2)
 		12: Option(InstOutput)	some(11)
-		13: Option(Option(InstOutput))	some(12)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::NullAry)
 		5:	variant(Opcode::Null)
 	]
-	result = 13
+	result = 12
 	feasible = true
 }
 expansion {
@@ -17066,13 +16586,12 @@ expansion {
 		11: Reg	constructor(imm, [7, 8, 10], 1)
 		12: InstOutput	constructor(output_reg, [11], 2)
 		13: Option(InstOutput)	some(12)
-		14: Option(Option(InstOutput))	some(13)
 	]
 	constraints = [
 		3:	some
 		4:	variant(InstructionData::UnaryImm)
 		5:	variant(Opcode::Iconst)
 	]
-	result = 14
+	result = 13
 	feasible = true
 }
