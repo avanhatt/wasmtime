@@ -6,8 +6,8 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2953
-		../../codegen/src/isa/aarch64/inst.isle line 2425
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		add_to_alu_rrr
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 	]
 	bindings = [
@@ -51,8 +51,8 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2953
-		../../codegen/src/isa/aarch64/inst.isle line 2425
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		add_to_alu_rrr
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 	]
 	bindings = [
@@ -96,9 +96,9 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2942
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 2702
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 		../../codegen/src/isa/aarch64/inst.isle line 1220
@@ -161,9 +161,9 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2942
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 2702
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 		../../codegen/src/isa/aarch64/inst.isle line 1219
@@ -226,9 +226,9 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2942
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 2702
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 1220
@@ -291,9 +291,9 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2942
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 2702
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 1219
@@ -356,10 +356,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2934
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 		../../codegen/src/isa/aarch64/inst.isle line 1871
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 	]
 	bindings = [
@@ -420,10 +420,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2934
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 		../../codegen/src/isa/aarch64/inst.isle line 1871
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 	]
 	bindings = [
@@ -484,10 +484,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2934
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 1871
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 	]
 	bindings = [
@@ -548,10 +548,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2934
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 1871
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 	]
 	bindings = [
@@ -612,10 +612,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2929
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 		../../codegen/src/isa/aarch64/inst.isle line 1864
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 	]
 	bindings = [
@@ -673,10 +673,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2929
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 		../../codegen/src/isa/aarch64/inst.isle line 1864
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 	]
 	bindings = [
@@ -734,10 +734,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2929
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 1864
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1220
 	]
 	bindings = [
@@ -795,10 +795,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3227
 		../../codegen/src/isa/aarch64/inst.isle line 2929
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 1864
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1219
 	]
 	bindings = [

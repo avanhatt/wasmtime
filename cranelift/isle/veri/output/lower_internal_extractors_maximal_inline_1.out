@@ -5,7 +5,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 97
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -40,7 +40,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 92
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -123,7 +123,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 75
 		../../codegen/src/isa/aarch64/inst.isle line 2565
 		../../codegen/src/isa/aarch64/inst.isle line 2569
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2209
 	]
@@ -173,7 +173,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 71
 		../../codegen/src/isa/aarch64/inst.isle line 2285
 		../../codegen/src/isa/aarch64/inst.isle line 2565
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -222,7 +222,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 67
 		../../codegen/src/isa/aarch64/inst.isle line 2565
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -265,7 +265,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 61
 		../../codegen/src/isa/aarch64/inst.isle line 2557
 		../../codegen/src/isa/aarch64/inst.isle line 2561
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2209
 	]
@@ -315,7 +315,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 57
 		../../codegen/src/isa/aarch64/inst.isle line 2285
 		../../codegen/src/isa/aarch64/inst.isle line 2557
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -364,7 +364,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 53
 		../../codegen/src/isa/aarch64/inst.isle line 2557
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -407,7 +407,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 47
 		../../codegen/src/isa/aarch64/inst.isle line 2549
 		../../codegen/src/isa/aarch64/inst.isle line 2553
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2209
 	]
@@ -457,7 +457,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 43
 		../../codegen/src/isa/aarch64/inst.isle line 2285
 		../../codegen/src/isa/aarch64/inst.isle line 2549
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -506,7 +506,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower_dynamic_neon.isle line 39
 		../../codegen/src/isa/aarch64/inst.isle line 2549
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -895,7 +895,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2882
 		../../codegen/src/isa/aarch64/inst.isle line 2216
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -924,7 +924,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2877
 		../../codegen/src/isa/aarch64/inst.isle line 3815
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -961,7 +961,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2874
 		../../codegen/src/isa/aarch64/inst.isle line 3808
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1005,7 +1005,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2377
 		../../codegen/src/prelude_lower.isle line 568
 		../../codegen/src/isa/aarch64/inst.isle line 2043
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -1199,7 +1199,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2377
 		../../codegen/src/prelude_lower.isle line 568
 		../../codegen/src/isa/aarch64/inst.isle line 2043
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2117
 	]
 	bindings = [
@@ -2107,7 +2107,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2625
 		../../codegen/src/isa/aarch64/inst.isle line 2073
 		../../codegen/src/isa/aarch64/inst.isle line 3026
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/prelude_lower.isle line 568
 	]
 	bindings = [
@@ -2160,7 +2160,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2667
 		../../codegen/src/isa/aarch64/inst.isle line 2667
 		../../codegen/src/isa/aarch64/inst.isle line 2437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 		../../codegen/src/isa/aarch64/inst.isle line 2003
@@ -2232,7 +2232,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2719
 		../../codegen/src/isa/aarch64/inst.isle line 2607
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1968
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 1961
@@ -2291,7 +2291,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2719
 		../../codegen/src/isa/aarch64/inst.isle line 2607
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1968
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 1961
@@ -2352,7 +2352,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2592
 		../../codegen/src/isa/aarch64/inst.isle line 2607
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1968
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 1899
@@ -2422,7 +2422,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2547
 		../../codegen/src/isa/aarch64/inst.isle line 3702
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2450,7 +2450,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2540
 		../../codegen/src/isa/aarch64/inst.isle line 2285
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2488,7 +2488,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2535
 		../../codegen/src/isa/aarch64/inst.isle line 2278
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2525,7 +2525,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2528
 		../../codegen/src/isa/aarch64/inst.isle line 2305
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2564,7 +2564,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2523
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2693,7 +2693,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2502
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2730,7 +2730,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2496
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2768,7 +2768,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2489
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2811,7 +2811,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2484
 		../../codegen/src/isa/aarch64/inst.isle line 2264
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -2907,7 +2907,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2471
 		../../codegen/src/isa/aarch64/inst.isle line 3480
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3431,7 +3431,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2393
 		../../codegen/src/isa/aarch64/inst.isle line 2855
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3472,7 +3472,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2387
 		../../codegen/src/isa/aarch64/inst.isle line 2855
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3513,7 +3513,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2381
 		../../codegen/src/isa/aarch64/inst.isle line 2855
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3554,7 +3554,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2375
 		../../codegen/src/isa/aarch64/inst.isle line 2855
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3595,7 +3595,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2369
 		../../codegen/src/isa/aarch64/inst.isle line 2855
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3636,7 +3636,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2363
 		../../codegen/src/isa/aarch64/inst.isle line 2855
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3676,7 +3676,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2359
 		../../codegen/src/isa/aarch64/inst.isle line 2840
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3708,7 +3708,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2356
 		../../codegen/src/isa/aarch64/inst.isle line 2835
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3740,7 +3740,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2353
 		../../codegen/src/isa/aarch64/inst.isle line 2830
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3772,7 +3772,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2350
 		../../codegen/src/isa/aarch64/inst.isle line 2825
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3804,7 +3804,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2347
 		../../codegen/src/isa/aarch64/inst.isle line 2820
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3836,7 +3836,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2344
 		../../codegen/src/isa/aarch64/inst.isle line 2815
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3868,7 +3868,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2339
 		../../codegen/src/isa/aarch64/inst.isle line 2860
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3907,7 +3907,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2335
 		../../codegen/src/isa/aarch64/inst.isle line 2855
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3946,7 +3946,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2331
 		../../codegen/src/isa/aarch64/inst.isle line 2860
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -3985,7 +3985,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2327
 		../../codegen/src/isa/aarch64/inst.isle line 2855
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4062,7 +4062,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2321
 		../../codegen/src/isa/aarch64/inst.isle line 2855
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4100,7 +4100,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2318
 		../../codegen/src/isa/aarch64/inst.isle line 2850
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4138,7 +4138,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2315
 		../../codegen/src/isa/aarch64/inst.isle line 2845
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4176,7 +4176,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2312
 		../../codegen/src/isa/aarch64/inst.isle line 2845
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4214,7 +4214,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2309
 		../../codegen/src/isa/aarch64/inst.isle line 2835
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4252,7 +4252,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2306
 		../../codegen/src/isa/aarch64/inst.isle line 2825
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4290,7 +4290,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2303
 		../../codegen/src/isa/aarch64/inst.isle line 2815
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4437,7 +4437,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2276
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4458,7 +4458,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2273
 		../../codegen/src/isa/aarch64/inst.isle line 3502
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3480
 	]
 	bindings = [
@@ -4485,7 +4485,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2270
 		../../codegen/src/isa/aarch64/inst.isle line 3506
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3480
 	]
 	bindings = [
@@ -4512,7 +4512,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2265
 		../../codegen/src/isa/aarch64/inst.isle line 3101
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4544,7 +4544,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2260
 		../../codegen/src/isa/aarch64/inst.isle line 3101
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4691,7 +4691,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2231
 		../../codegen/src/isa/aarch64/inst.isle line 2305
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4735,7 +4735,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2228
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4773,7 +4773,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2223
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4809,7 +4809,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2216
 		../../codegen/src/isa/aarch64/inst.isle line 2305
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4853,7 +4853,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2213
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4891,7 +4891,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2208
 		../../codegen/src/isa/aarch64/inst.isle line 2326
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -4927,7 +4927,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2565
 		../../codegen/src/isa/aarch64/inst.isle line 2569
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2209
 	]
@@ -4977,7 +4977,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2197
 		../../codegen/src/isa/aarch64/inst.isle line 2285
 		../../codegen/src/isa/aarch64/inst.isle line 2565
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5026,7 +5026,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2193
 		../../codegen/src/isa/aarch64/inst.isle line 2565
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5069,7 +5069,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2185
 		../../codegen/src/isa/aarch64/inst.isle line 2557
 		../../codegen/src/isa/aarch64/inst.isle line 2561
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2209
 	]
@@ -5119,7 +5119,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2181
 		../../codegen/src/isa/aarch64/inst.isle line 2285
 		../../codegen/src/isa/aarch64/inst.isle line 2557
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5168,7 +5168,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2177
 		../../codegen/src/isa/aarch64/inst.isle line 2557
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5211,7 +5211,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2170
 		../../codegen/src/isa/aarch64/inst.isle line 2549
 		../../codegen/src/isa/aarch64/inst.isle line 2553
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 		../../codegen/src/isa/aarch64/inst.isle line 2209
 	]
@@ -5261,7 +5261,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2166
 		../../codegen/src/isa/aarch64/inst.isle line 2285
 		../../codegen/src/isa/aarch64/inst.isle line 2549
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5310,7 +5310,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2162
 		../../codegen/src/isa/aarch64/inst.isle line 2549
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5352,7 +5352,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2157
 		../../codegen/src/isa/aarch64/inst.isle line 2545
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2201
 	]
 	bindings = [
@@ -5382,7 +5382,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2152
 		../../codegen/src/isa/aarch64/inst.isle line 3451
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5424,7 +5424,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2147
 		../../codegen/src/isa/aarch64/inst.isle line 3423
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5466,7 +5466,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2142
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5510,7 +5510,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2139
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5554,7 +5554,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2136
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5598,7 +5598,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2133
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5642,7 +5642,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2130
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5686,7 +5686,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2127
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5730,7 +5730,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2124
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5774,7 +5774,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2121
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5818,7 +5818,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2118
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5862,7 +5862,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2115
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5906,7 +5906,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2112
 		../../codegen/src/isa/aarch64/inst.isle line 3437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -5951,8 +5951,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2106
 		../../codegen/src/isa/aarch64/inst.isle line 2793
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6004,8 +6004,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2102
 		../../codegen/src/isa/aarch64/inst.isle line 2445
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6056,7 +6056,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2098
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6099,7 +6099,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2094
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6142,7 +6142,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2090
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6185,7 +6185,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2086
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6228,7 +6228,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2082
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6271,7 +6271,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2078
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6314,7 +6314,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2074
 		../../codegen/src/isa/aarch64/inst.isle line 3413
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6389,7 +6389,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2062
 		../../codegen/src/isa/aarch64/inst.isle line 2340
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6427,7 +6427,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2056
 		../../codegen/src/isa/aarch64/inst.isle line 3220
 		../../codegen/src/isa/aarch64/inst.isle line 3094
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6480,7 +6480,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2053
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6520,7 +6520,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2050
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6554,7 +6554,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2047
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6588,7 +6588,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2044
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6624,7 +6624,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2041
 		../../codegen/src/isa/aarch64/inst.isle line 1982
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6661,7 +6661,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2037
 		../../codegen/src/isa/aarch64/inst.isle line 1975
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6696,7 +6696,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2031
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6727,7 +6727,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 2028
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6760,7 +6760,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 2017
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 2111
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -6904,7 +6904,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1986
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 2111
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7426,7 +7426,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1901
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7693,7 +7693,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1866
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7724,7 +7724,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1858
 		../../codegen/src/isa/aarch64/inst.isle line 2803
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1914
 	]
 	bindings = [
@@ -7769,10 +7769,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2713
 		../../codegen/src/isa/aarch64/inst.isle line 2731
 		../../codegen/src/isa/aarch64/inst.isle line 2699
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -7828,7 +7828,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1847
 		../../codegen/src/isa/aarch64/inst.isle line 2798
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -7941,7 +7941,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2798
 		../../codegen/src/isa/aarch64/inst.isle line 2607
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 		../../codegen/src/isa/aarch64/inst.isle line 1961
 	]
@@ -8000,7 +8000,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2798
 		../../codegen/src/isa/aarch64/inst.isle line 2607
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 		../../codegen/src/isa/aarch64/inst.isle line 1961
 	]
@@ -8059,7 +8059,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2798
 		../../codegen/src/isa/aarch64/inst.isle line 2588
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
@@ -8117,7 +8117,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2264
 		../../codegen/src/isa/aarch64/inst.isle line 2798
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -8242,7 +8242,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1782
 		../../codegen/src/isa/aarch64/inst.isle line 2788
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
 	bindings = [
@@ -8279,7 +8279,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1779
 		../../codegen/src/isa/aarch64/inst.isle line 2785
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
 	bindings = [
@@ -8316,7 +8316,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1776
 		../../codegen/src/isa/aarch64/inst.isle line 2782
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
 	bindings = [
@@ -8353,7 +8353,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1771
 		../../codegen/src/isa/aarch64/inst.isle line 2777
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
 	bindings = [
@@ -8395,14 +8395,14 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2123
 		../../codegen/src/isa/aarch64/inst.isle line 2369
 		../../codegen/src/prelude_lower.isle line 568
-		../../codegen/src/isa/aarch64/inst.isle line 2425
+		add_to_alu_rrr
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 2066
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 		../../codegen/src/isa/aarch64/inst.isle line 2117
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -8499,7 +8499,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1745
 		../../codegen/src/isa/aarch64/inst.isle line 2777
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
@@ -8547,7 +8547,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1742
 		../../codegen/src/isa/aarch64/inst.isle line 2777
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
@@ -8595,7 +8595,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1737
 		../../codegen/src/isa/aarch64/inst.isle line 2767
 		../../codegen/src/isa/aarch64/inst.isle line 2772
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
@@ -8737,7 +8737,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2767
 		../../codegen/src/isa/aarch64/inst.isle line 2702
 		../../codegen/src/isa/aarch64/inst.isle line 2772
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 2066
@@ -8794,7 +8794,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2767
 		../../codegen/src/isa/aarch64/inst.isle line 2702
 		../../codegen/src/isa/aarch64/inst.isle line 2772
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 2066
@@ -8849,7 +8849,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1704
 		../../codegen/src/isa/aarch64/inst.isle line 2772
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
 	bindings = [
@@ -8958,7 +8958,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1698
 		../../codegen/src/isa/aarch64/inst.isle line 2772
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
@@ -9006,7 +9006,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1695
 		../../codegen/src/isa/aarch64/inst.isle line 2772
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
@@ -9053,7 +9053,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1689
 		../../codegen/src/isa/aarch64/inst.isle line 2767
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 	]
 	bindings = [
@@ -9138,7 +9138,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1680
 		../../codegen/src/isa/aarch64/inst.isle line 2767
 		../../codegen/src/isa/aarch64/inst.isle line 2667
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
@@ -9186,7 +9186,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1674
 		../../codegen/src/isa/aarch64/inst.isle line 2767
 		../../codegen/src/isa/aarch64/inst.isle line 2667
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2066
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
@@ -9237,7 +9237,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1342
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 2699
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2664
 		../../codegen/src/isa/aarch64/inst.isle line 2664
 		../../codegen/src/isa/aarch64/inst.isle line 2691
@@ -9256,20 +9256,20 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2355
 		../../codegen/src/isa/aarch64/inst.isle line 2369
 		../../codegen/src/isa/aarch64/inst.isle line 2369
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9476,7 +9476,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1610
 		../../codegen/src/isa/aarch64/inst.isle line 2762
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
 	bindings = [
@@ -9524,7 +9524,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1605
 		../../codegen/src/isa/aarch64/inst.isle line 2762
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
 	bindings = [
@@ -9572,13 +9572,13 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1600
 		../../codegen/src/isa/aarch64/lower.isle line 1648
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2667
 		../../codegen/src/isa/aarch64/inst.isle line 2674
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9642,8 +9642,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1596
 		../../codegen/src/isa/aarch64/inst.isle line 2759
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9684,8 +9684,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1592
 		../../codegen/src/isa/aarch64/inst.isle line 2759
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9726,7 +9726,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1588
 		../../codegen/src/isa/aarch64/lower.isle line 1627
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2716
 		../../codegen/src/isa/aarch64/inst.isle line 2448
 		../../codegen/src/isa/aarch64/inst.isle line 2445
@@ -9735,10 +9735,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1996
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -9824,7 +9824,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1449
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 2699
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2671
 		../../codegen/src/isa/aarch64/inst.isle line 2671
 		../../codegen/src/isa/aarch64/inst.isle line 2691
@@ -9843,20 +9843,20 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2355
 		../../codegen/src/isa/aarch64/inst.isle line 2369
 		../../codegen/src/isa/aarch64/inst.isle line 2369
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10063,7 +10063,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1565
 		../../codegen/src/isa/aarch64/inst.isle line 2762
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
 	bindings = [
@@ -10112,7 +10112,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1560
 		../../codegen/src/isa/aarch64/inst.isle line 2762
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
 	bindings = [
@@ -10162,9 +10162,9 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1554
 		../../codegen/src/isa/aarch64/inst.isle line 2445
 		../../codegen/src/isa/aarch64/inst.isle line 2759
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10214,9 +10214,9 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1548
 		../../codegen/src/isa/aarch64/inst.isle line 2445
 		../../codegen/src/isa/aarch64/inst.isle line 2759
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10265,13 +10265,13 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1535
 		../../codegen/src/isa/aarch64/lower.isle line 1648
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2667
 		../../codegen/src/isa/aarch64/inst.isle line 2674
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10337,8 +10337,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1529
 		../../codegen/src/isa/aarch64/inst.isle line 2445
 		../../codegen/src/isa/aarch64/lower.isle line 1627
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2716
 		../../codegen/src/isa/aarch64/inst.isle line 2448
 		../../codegen/src/isa/aarch64/inst.isle line 2445
@@ -10347,10 +10347,10 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2699
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1996
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10480,7 +10480,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1491
 		../../codegen/src/isa/aarch64/inst.isle line 2754
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1968
 	]
 	bindings = [
@@ -10531,9 +10531,9 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2445
 		../../codegen/src/isa/aarch64/inst.isle line 1975
 		../../codegen/src/isa/aarch64/inst.isle line 2738
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1878
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -10607,13 +10607,13 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2355
 		../../codegen/src/isa/aarch64/inst.isle line 2369
 		../../codegen/src/isa/aarch64/inst.isle line 2369
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10724,7 +10724,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1473
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10756,7 +10756,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1469
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -10829,7 +10829,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1433
 		../../codegen/src/isa/aarch64/inst.isle line 2750
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1968
 	]
 	bindings = [
@@ -10880,9 +10880,9 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2445
 		../../codegen/src/isa/aarch64/inst.isle line 1975
 		../../codegen/src/isa/aarch64/inst.isle line 2742
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1878
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -10955,12 +10955,12 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2355
 		../../codegen/src/isa/aarch64/inst.isle line 2369
 		../../codegen/src/isa/aarch64/inst.isle line 2369
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11063,7 +11063,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1416
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11095,7 +11095,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1412
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11129,7 +11129,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1364
 		../../codegen/src/isa/aarch64/inst.isle line 2746
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1968
 	]
 	bindings = [
@@ -11179,7 +11179,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2716
 		../../codegen/src/isa/aarch64/inst.isle line 1975
 		../../codegen/src/isa/aarch64/inst.isle line 2738
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1878
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
@@ -11244,12 +11244,12 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2355
 		../../codegen/src/isa/aarch64/inst.isle line 2369
 		../../codegen/src/isa/aarch64/inst.isle line 2369
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11352,7 +11352,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1325
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11384,7 +11384,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1321
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11418,8 +11418,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1316
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11476,8 +11476,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1315
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11533,7 +11533,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1312
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11571,7 +11571,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1310
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11610,7 +11610,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1303
 		../../codegen/src/isa/aarch64/inst.isle line 2726
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -11651,8 +11651,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1301
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11702,7 +11702,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1298
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11735,8 +11735,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1294
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11793,8 +11793,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1293
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11850,7 +11850,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1290
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11888,7 +11888,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1288
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -11927,7 +11927,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1281
 		../../codegen/src/isa/aarch64/inst.isle line 2708
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -11968,8 +11968,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1279
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12019,7 +12019,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1276
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12052,7 +12052,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1271
 		../../codegen/src/isa/aarch64/inst.isle line 2734
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -12099,7 +12099,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1269
 		../../codegen/src/isa/aarch64/inst.isle line 2734
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -12146,8 +12146,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1267
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12204,8 +12204,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1266
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12261,7 +12261,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1263
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12299,7 +12299,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1261
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12338,7 +12338,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1254
 		../../codegen/src/isa/aarch64/inst.isle line 2719
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -12379,8 +12379,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1252
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12430,7 +12430,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1249
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12463,8 +12463,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1245
 		../../codegen/src/isa/aarch64/inst.isle line 3079
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12520,7 +12520,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1243
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12559,7 +12559,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1239
 		../../codegen/src/isa/aarch64/inst.isle line 2686
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -12598,8 +12598,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1230
 		../../codegen/src/isa/aarch64/inst.isle line 2691
 		../../codegen/src/isa/aarch64/inst.isle line 2691
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12648,7 +12648,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1224
 		../../codegen/src/isa/aarch64/inst.isle line 2694
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2003
 	]
 	bindings = [
@@ -12704,8 +12704,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1219
 		../../codegen/src/isa/aarch64/inst.isle line 2691
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12742,7 +12742,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1202
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12943,7 +12943,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1162
 		../../codegen/src/isa/aarch64/inst.isle line 2299
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -12990,7 +12990,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1157
 		../../codegen/src/isa/aarch64/inst.isle line 2312
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13028,7 +13028,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1143
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13155,7 +13155,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1125
 		../../codegen/src/isa/aarch64/inst.isle line 3033
 		../../codegen/src/isa/aarch64/inst.isle line 2340
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13205,7 +13205,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1118
 		../../codegen/src/isa/aarch64/inst.isle line 2292
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13250,7 +13250,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1113
 		../../codegen/src/isa/aarch64/inst.isle line 2312
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13290,7 +13290,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1106
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 2803
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1914
 	]
 	bindings = [
@@ -13339,7 +13339,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1103
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13379,7 +13379,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1100
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 2803
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1914
 	]
 	bindings = [
@@ -13428,7 +13428,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1097
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13468,7 +13468,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1094
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 2803
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1914
 	]
 	bindings = [
@@ -13517,7 +13517,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1091
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13557,7 +13557,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1088
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 2803
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1914
 	]
 	bindings = [
@@ -13606,7 +13606,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1085
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13778,8 +13778,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1046
 		../../codegen/src/isa/aarch64/inst.isle line 2682
 		../../codegen/src/isa/aarch64/inst.isle line 2485
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 	]
 	bindings = [
@@ -13828,8 +13828,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1039
 		../../codegen/src/isa/aarch64/inst.isle line 2678
 		../../codegen/src/isa/aarch64/inst.isle line 2485
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 	]
 	bindings = [
@@ -13877,8 +13877,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 1010
 		../../codegen/src/isa/aarch64/inst.isle line 2682
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13930,8 +13930,8 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 1001
 		../../codegen/src/isa/aarch64/inst.isle line 3007
 		../../codegen/src/isa/aarch64/inst.isle line 2682
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -13991,8 +13991,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 968
 		../../codegen/src/isa/aarch64/inst.isle line 2678
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -14085,8 +14085,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 949
 		../../codegen/src/isa/aarch64/inst.isle line 2513
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -14126,7 +14126,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 940
 		../../codegen/src/isa/aarch64/inst.isle line 2480
 		../../codegen/src/isa/aarch64/inst.isle line 2660
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 		../../codegen/src/isa/aarch64/inst.isle line 1885
 	]
@@ -14179,8 +14179,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 937
 		../../codegen/src/isa/aarch64/inst.isle line 2517
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -14219,7 +14219,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 930
 		../../codegen/src/isa/aarch64/inst.isle line 2653
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14274,7 +14274,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 924
 		../../codegen/src/isa/aarch64/inst.isle line 2653
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14329,7 +14329,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 918
 		../../codegen/src/isa/aarch64/inst.isle line 2649
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14384,7 +14384,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 912
 		../../codegen/src/isa/aarch64/inst.isle line 2649
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14439,7 +14439,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 906
 		../../codegen/src/isa/aarch64/inst.isle line 2645
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14494,7 +14494,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 900
 		../../codegen/src/isa/aarch64/inst.isle line 2645
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14549,7 +14549,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 894
 		../../codegen/src/isa/aarch64/inst.isle line 2641
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14604,7 +14604,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 888
 		../../codegen/src/isa/aarch64/inst.isle line 2641
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14659,7 +14659,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 882
 		../../codegen/src/isa/aarch64/inst.isle line 2637
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14714,7 +14714,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 876
 		../../codegen/src/isa/aarch64/inst.isle line 2637
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14769,7 +14769,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 870
 		../../codegen/src/isa/aarch64/inst.isle line 2633
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14824,7 +14824,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 864
 		../../codegen/src/isa/aarch64/inst.isle line 2633
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2180
 	]
 	bindings = [
@@ -14885,7 +14885,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2541
 		../../codegen/src/isa/aarch64/inst.isle line 2611
 		../../codegen/src/isa/aarch64/inst.isle line 2629
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 2201
@@ -14968,7 +14968,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 793
 		../../codegen/src/isa/aarch64/inst.isle line 2521
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -15014,7 +15014,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2480
 		../../codegen/src/isa/aarch64/inst.isle line 2480
 		../../codegen/src/isa/aarch64/inst.isle line 2480
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 		../../codegen/src/isa/aarch64/inst.isle line 2043
@@ -15084,7 +15084,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 761
 		../../codegen/src/isa/aarch64/inst.isle line 2480
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 	]
 	bindings = [
@@ -15126,7 +15126,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 755
 		../../codegen/src/isa/aarch64/inst.isle line 2525
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -15221,8 +15221,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 747
 		../../codegen/src/isa/aarch64/inst.isle line 2445
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15260,7 +15260,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 741
 		../../codegen/src/isa/aarch64/inst.isle line 2509
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -15301,7 +15301,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 736
 		../../codegen/src/isa/aarch64/inst.isle line 2505
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -15342,7 +15342,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 731
 		../../codegen/src/isa/aarch64/inst.isle line 2501
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -15383,7 +15383,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 726
 		../../codegen/src/isa/aarch64/inst.isle line 2497
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -15477,7 +15477,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 717
 		../../codegen/src/isa/aarch64/inst.isle line 2457
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -15517,7 +15517,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 711
 		../../codegen/src/isa/aarch64/inst.isle line 2454
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2003
 	]
 	bindings = [
@@ -15575,7 +15575,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 706
 		../../codegen/src/isa/aarch64/inst.isle line 2451
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2036
 		../../codegen/src/isa/aarch64/inst.isle line 2028
 	]
@@ -15622,7 +15622,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 700
 		../../codegen/src/isa/aarch64/inst.isle line 1803
 		../../codegen/src/isa/aarch64/inst.isle line 2428
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
@@ -15682,7 +15682,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 695
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
@@ -15725,8 +15725,8 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 691
 		../../codegen/src/isa/aarch64/inst.isle line 2445
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15765,7 +15765,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 683
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15798,7 +15798,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15832,7 +15832,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 677
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15865,7 +15865,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 674
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15900,7 +15900,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 671
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15945,7 +15945,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 668
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -15989,7 +15989,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 663
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16022,7 +16022,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 660
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16056,7 +16056,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 657
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16089,7 +16089,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 654
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16124,7 +16124,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 651
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16169,7 +16169,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 648
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16214,7 +16214,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 643
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16250,7 +16250,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 640
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16286,7 +16286,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 637
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16323,7 +16323,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 634
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16360,7 +16360,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 631
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16405,7 +16405,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 628
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16450,7 +16450,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 623
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16486,7 +16486,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 620
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16522,7 +16522,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 617
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16559,7 +16559,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 614
 		../../codegen/src/isa/aarch64/inst.isle line 3680
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16596,7 +16596,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 611
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16641,7 +16641,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 608
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -16686,7 +16686,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 603
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -16756,7 +16756,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 600
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -16827,7 +16827,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 597
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -16897,7 +16897,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 594
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -16968,7 +16968,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 589
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -17038,7 +17038,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 586
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -17109,7 +17109,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 583
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -17179,7 +17179,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 580
 		../../codegen/src/isa/aarch64/inst.isle line 3624
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 3561
 		../../codegen/src/isa/aarch64/inst.isle line 3608
 		../../codegen/src/isa/aarch64/inst.isle line 3672
@@ -17249,7 +17249,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 575
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17279,7 +17279,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 520
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17313,7 +17313,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 516
 		../../codegen/src/isa/aarch64/inst.isle line 1948
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17355,7 +17355,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 511
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17389,7 +17389,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 508
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17423,7 +17423,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 505
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17459,7 +17459,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 500
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17493,7 +17493,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 497
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17527,7 +17527,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 494
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17563,7 +17563,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 489
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17597,7 +17597,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 486
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17631,7 +17631,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 483
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17667,7 +17667,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 478
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17701,7 +17701,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 475
 		../../codegen/src/isa/aarch64/inst.isle line 2246
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17735,7 +17735,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 472
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17771,7 +17771,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 467
 		../../codegen/src/isa/aarch64/inst.isle line 1906
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17806,7 +17806,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 462
 		../../codegen/src/isa/aarch64/inst.isle line 1906
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17841,7 +17841,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 457
 		../../codegen/src/isa/aarch64/inst.isle line 1906
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17878,7 +17878,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 454
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17914,7 +17914,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 449
 		../../codegen/src/isa/aarch64/inst.isle line 1906
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17951,7 +17951,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 446
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -17987,7 +17987,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 441
 		../../codegen/src/isa/aarch64/inst.isle line 1906
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18024,7 +18024,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 438
 		../../codegen/src/isa/aarch64/inst.isle line 2142
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18060,7 +18060,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 433
 		../../codegen/src/isa/aarch64/inst.isle line 1941
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18100,7 +18100,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 430
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18139,7 +18139,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 425
 		../../codegen/src/isa/aarch64/inst.isle line 1941
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18179,7 +18179,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 422
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18218,7 +18218,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 417
 		../../codegen/src/isa/aarch64/inst.isle line 1941
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18258,7 +18258,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 414
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18297,7 +18297,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 409
 		../../codegen/src/isa/aarch64/inst.isle line 1941
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18337,7 +18337,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 406
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18376,7 +18376,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 401
 		../../codegen/src/isa/aarch64/inst.isle line 1941
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18416,7 +18416,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 398
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18455,7 +18455,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 393
 		../../codegen/src/isa/aarch64/inst.isle line 1941
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18495,7 +18495,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 390
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18534,7 +18534,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 385
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18573,7 +18573,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 380
 		../../codegen/src/isa/aarch64/inst.isle line 1899
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18618,7 +18618,7 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2750
 		../../codegen/src/isa/aarch64/inst.isle line 2440
 		../../codegen/src/isa/aarch64/inst.isle line 2440
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 		../../codegen/src/isa/aarch64/inst.isle line 1968
@@ -18702,8 +18702,8 @@ expansion {
 		../../codegen/src/isa/aarch64/inst.isle line 2089
 		../../codegen/src/isa/aarch64/inst.isle line 2134
 		../../codegen/src/isa/aarch64/inst.isle line 1885
-		../../codegen/src/isa/aarch64/inst.isle line 1892
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		alu_rrr_to_emit
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -18773,7 +18773,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 348
 		../../codegen/src/isa/aarch64/inst.isle line 2601
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2117
 		../../codegen/src/isa/aarch64/inst.isle line 2400
 	]
@@ -18820,7 +18820,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 345
 		../../codegen/src/isa/aarch64/inst.isle line 2601
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2117
 		../../codegen/src/isa/aarch64/inst.isle line 2400
 	]
@@ -18866,7 +18866,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 342
 		../../codegen/src/isa/aarch64/inst.isle line 2596
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -18903,7 +18903,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 337
 		../../codegen/src/isa/aarch64/inst.isle line 2588
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -18941,7 +18941,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 334
 		../../codegen/src/isa/aarch64/inst.isle line 2625
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2187
 	]
 	bindings = [
@@ -18993,7 +18993,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 330
 		../../codegen/src/isa/aarch64/inst.isle line 2622
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2187
 	]
 	bindings = [
@@ -19045,7 +19045,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 326
 		../../codegen/src/isa/aarch64/inst.isle line 2619
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2187
 	]
 	bindings = [
@@ -19097,7 +19097,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 322
 		../../codegen/src/isa/aarch64/inst.isle line 2616
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2187
 	]
 	bindings = [
@@ -19352,7 +19352,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 269
 		../../codegen/src/isa/aarch64/inst.isle line 2264
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -19383,7 +19383,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 266
 		../../codegen/src/isa/aarch64/inst.isle line 2264
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -19413,7 +19413,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 263
 		../../codegen/src/isa/aarch64/inst.isle line 2319
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -19447,7 +19447,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 260
 		../../codegen/src/isa/aarch64/inst.isle line 2319
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -19537,7 +19537,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 241
 		../../codegen/src/isa/aarch64/inst.isle line 2149
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -19571,7 +19571,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 235
 		../../codegen/src/isa/aarch64/inst.isle line 2162
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -19611,7 +19611,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 232
 		../../codegen/src/isa/aarch64/inst.isle line 2537
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -19647,7 +19647,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 230
 		../../codegen/src/isa/aarch64/inst.isle line 2537
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -19683,7 +19683,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 228
 		../../codegen/src/isa/aarch64/inst.isle line 2537
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -19719,7 +19719,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 226
 		../../codegen/src/isa/aarch64/inst.isle line 2533
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -19755,7 +19755,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 224
 		../../codegen/src/isa/aarch64/inst.isle line 2533
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -19791,7 +19791,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 222
 		../../codegen/src/isa/aarch64/inst.isle line 2529
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2142
 	]
 	bindings = [
@@ -19827,7 +19827,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 212
 		../../codegen/src/isa/aarch64/inst.isle line 4185
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -19865,7 +19865,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 210
 		../../codegen/src/isa/aarch64/inst.isle line 4181
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -19903,7 +19903,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 208
 		../../codegen/src/isa/aarch64/inst.isle line 4185
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -19941,7 +19941,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 206
 		../../codegen/src/isa/aarch64/inst.isle line 4181
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -19979,7 +19979,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 204
 		../../codegen/src/isa/aarch64/inst.isle line 4185
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20017,7 +20017,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 202
 		../../codegen/src/isa/aarch64/inst.isle line 4181
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20055,7 +20055,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 194
 		../../codegen/src/isa/aarch64/inst.isle line 4177
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20093,7 +20093,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 192
 		../../codegen/src/isa/aarch64/inst.isle line 4173
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20131,7 +20131,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 190
 		../../codegen/src/isa/aarch64/inst.isle line 4177
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20169,7 +20169,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 188
 		../../codegen/src/isa/aarch64/inst.isle line 4173
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20207,7 +20207,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 186
 		../../codegen/src/isa/aarch64/inst.isle line 4177
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20245,7 +20245,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 184
 		../../codegen/src/isa/aarch64/inst.isle line 4173
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20283,7 +20283,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 179
 		../../codegen/src/isa/aarch64/inst.isle line 4169
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20321,7 +20321,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 177
 		../../codegen/src/isa/aarch64/inst.isle line 4165
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20359,7 +20359,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 175
 		../../codegen/src/isa/aarch64/inst.isle line 4169
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20397,7 +20397,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 173
 		../../codegen/src/isa/aarch64/inst.isle line 4165
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20435,7 +20435,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 171
 		../../codegen/src/isa/aarch64/inst.isle line 4169
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20473,7 +20473,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 169
 		../../codegen/src/isa/aarch64/inst.isle line 4165
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20511,7 +20511,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 167
 		../../codegen/src/isa/aarch64/inst.isle line 4169
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20549,7 +20549,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 165
 		../../codegen/src/isa/aarch64/inst.isle line 4165
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20587,7 +20587,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 152
 		../../codegen/src/isa/aarch64/inst.isle line 2333
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -20621,7 +20621,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 133
 		../../codegen/src/isa/aarch64/inst.isle line 1982
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -20654,7 +20654,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 131
 		../../codegen/src/isa/aarch64/inst.isle line 1982
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -20687,7 +20687,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 129
 		../../codegen/src/isa/aarch64/inst.isle line 1982
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -20720,7 +20720,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 127
 		../../codegen/src/isa/aarch64/inst.isle line 1982
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -20805,7 +20805,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 100
 		../../codegen/src/isa/aarch64/inst.isle line 2440
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1899
 	]
 	bindings = [
@@ -20845,7 +20845,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 95
 		../../codegen/src/isa/aarch64/inst.isle line 2485
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 	]
 	bindings = [
@@ -20895,7 +20895,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 91
 		../../codegen/src/isa/aarch64/inst.isle line 2480
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 	]
 	bindings = [
@@ -20945,7 +20945,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 88
 		../../codegen/src/isa/aarch64/inst.isle line 2480
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2043
 	]
 	bindings = [
@@ -20995,7 +20995,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 82
 		../../codegen/src/isa/aarch64/inst.isle line 2437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2003
 	]
 	bindings = [
@@ -21053,7 +21053,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 77
 		../../codegen/src/isa/aarch64/inst.isle line 2437
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2003
 	]
 	bindings = [
@@ -21111,7 +21111,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 72
 		../../codegen/src/isa/aarch64/inst.isle line 2431
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2036
 		../../codegen/src/isa/aarch64/inst.isle line 2028
 	]
@@ -21157,7 +21157,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 69
 		../../codegen/src/isa/aarch64/inst.isle line 2431
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 2036
 		../../codegen/src/isa/aarch64/inst.isle line 2028
 	]
@@ -21204,7 +21204,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 63
 		../../codegen/src/isa/aarch64/inst.isle line 1803
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
@@ -21265,7 +21265,7 @@ expansion {
 		../../codegen/src/isa/aarch64/lower.isle line 59
 		../../codegen/src/isa/aarch64/inst.isle line 1803
 		../../codegen/src/isa/aarch64/inst.isle line 2448
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
@@ -21325,7 +21325,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 54
 		../../codegen/src/isa/aarch64/inst.isle line 2428
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
@@ -21368,7 +21368,7 @@ expansion {
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 51
 		../../codegen/src/isa/aarch64/inst.isle line 2428
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 		../../codegen/src/isa/aarch64/inst.isle line 1996
 	]
 	bindings = [
@@ -21409,10 +21409,10 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/aarch64/lower.isle line 47
-		../../codegen/src/isa/aarch64/inst.isle line 2425
-		../../codegen/src/prelude_lower.isle line 73
-		../../codegen/src/isa/aarch64/inst.isle line 1892
+		iadd_base_case
+		add_to_alu_rrr
+		output_reg
+		alu_rrr_to_emit
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -21451,7 +21451,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 39
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -21471,7 +21471,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 34
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -21493,7 +21493,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 29
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -21515,7 +21515,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 24
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)
@@ -21542,7 +21542,7 @@ expansion {
 	term = lower
 	rules = [
 		../../codegen/src/isa/aarch64/lower.isle line 19
-		../../codegen/src/prelude_lower.isle line 73
+		output_reg
 	]
 	bindings = [
 		0: Inst	argument(0)

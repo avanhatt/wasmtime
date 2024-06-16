@@ -16448,7 +16448,7 @@ expansion {
 expansion {
 	term = lower
 	rules = [
-		../../codegen/src/isa/aarch64/lower.isle line 47
+		iadd_base_case
 	]
 	bindings = [
 		0: Inst	argument(0)
