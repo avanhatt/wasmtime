@@ -325,6 +325,7 @@ impl<'a> Elaborator<'a> {
     fn elaborate_best_value(&mut self, value: Value) -> BestEntry {
         let best_found = self.value_to_best_value[value];
         if !best_found.1.is_reserved_value() {
+            trace!("skipping expensive elaboration, already have best for value {:?}", value);
             return best_found;
         }
         let mut seen_this_traversal: FxHashSet<Value> = FxHashSet::default();
