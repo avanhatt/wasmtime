@@ -6,7 +6,7 @@ use crate::{
     cursor::{Cursor, FuncCursor},
     inst_predicates::is_pure_for_egraph,
 };
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 
 pub(crate) struct Rewriter<'a> {
     cursor: FuncCursor<'a>,

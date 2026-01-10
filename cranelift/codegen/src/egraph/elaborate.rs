@@ -290,6 +290,95 @@ impl<'a> Elaborator<'a> {
         sorted
     }
 
+    fn best_value_traversal(
+        &self,
+        value: Value,
+        seen_this_traversal: &mut FxHashSet<Value>,
+    ) -> (BestEntry, FxHashSet<Value>) {
+        let def = self.func.dfg.value_def(value);
+        trace!("computing best for value {:?} def {:?}", value, def);
+
+        match def {
+            // Pick the best of the two options based on min-cost. This
+            // works because each element of `best` is a `(cost, value)`
+            // tuple; `cost` comes first so the natural comparison works
+            // based on cost, and breaks ties based on value number.
+            ValueDef::Union(x, y) => {
+                let (best_value_x, new_seen_x) = self.best_value_traversal(x, seen_this_traversal);
+                for x_val in &new_seen_x {
+                    seen_this_traversal.remove(x_val);
+                }
+                let (best_value_y, new_seen_y) = self.best_value_traversal(y, seen_this_traversal);
+                // Usually, right will be better. But if not, choose x and restore seen_this_traversal state
+                if best_value_x.0 > best_value_y.0 {
+                    for x_val in &new_seen_x {
+                        seen_this_traversal.insert(x_val.clone());
+                    }
+                    for y_val in new_seen_y {
+                        seen_this_traversal.remove(&y_val);
+                    }
+                    return (best_value_x, new_seen_x);
+                }
+                return (best_value_y, new_seen_y);
+            }
+
+            // Params always have 0 cost
+            ValueDef::Param(_, _) => {
+                let mut just_this = FxHashSet::default();
+                just_this.insert(value);
+                return (BestEntry(Cost::zero(), value), just_this);
+            }
+
+            // If the Inst is already been inserted into the layout, or if it has been seen
+            // during this traversal, then its cost is 0.
+            ValueDef::Result(inst, _) => {
+                let is_inserted =  self.func.layout.inst_block(inst).is_some();
+                if is_inserted || seen_this_traversal.contains(&value) {
+                    let mut just_this = FxHashSet::default();
+                    just_this.insert(value);
+                    let zero = Cost::zero();
+                    trace!(" -> cost of value {} = {:?}", value, zero);
+                    return (BestEntry(zero, value), just_this);
+                } else {
+                    // We are seeing a new instruction for this traversal, add it to our traversal-local
+                    // seen set
+                    seen_this_traversal.insert(value);
+                    // Now calculate the cost of the arguments.
+                    let inst_data = &self.func.dfg.insts[inst];
+                    let mut operand_costs = Vec::new();
+                    let mut union_of_new_seen =  FxHashSet::default();
+                    for arg in self.func.dfg.inst_values(inst) {
+                        let (best, new_seen) = self.best_value_traversal(arg, seen_this_traversal);
+                        for x in new_seen {
+                            union_of_new_seen.insert(x);
+                        }
+                        operand_costs.push(best.0);
+                    }
+                    // N.B.: at this point we know that the opcode is
+                    // pure, so `pure_op_cost`'s precondition is
+                    // satisfied.
+                    let cost = Cost::of_pure_op(
+                        inst_data.opcode(),
+                        operand_costs
+                    );
+                    trace!(" -> cost of value {} = {:?}", value, cost);
+                    return (BestEntry(cost, value), union_of_new_seen);
+                }
+            }
+        };
+    }
+
+    fn elaborate_best_value(&mut self, value: Value) -> BestEntry {
+        let mut seen_this_traversal: FxHashSet<Value> = FxHashSet::default();
+        let def = self.func.dfg.value_def(value);
+        trace!("elaborating value {:?} def {:?}", value, def);
+        // TODO AVH: update the type of _new_seen so it can actually be dynamic programming style
+        // to fill in value_to_best_value
+        let (best, _new_seen) =  self.best_value_traversal(value, &mut seen_this_traversal);
+        self.value_to_best_value[value] = best;
+        return best
+    }
+
     fn compute_best_values(&mut self) {
         let sorted_values = self.topo_sorted_values();
 
@@ -489,7 +578,8 @@ impl<'a> Elaborator<'a> {
                     // value) here so we have a full view of the
                     // eclass.
                     trace!("looking up best value for {}", value);
-                    let BestEntry(_, best_value) = self.value_to_best_value[value];
+                    // let BestEntry(_, best_value) = self.value_to_best_value[value];
+                    let BestEntry(_, best_value) = self.elaborate_best_value(value);
                     trace!("elaborate: value {} -> best {}", value, best_value);
                     debug_assert_ne!(best_value, Value::reserved_value());
 
@@ -904,7 +994,7 @@ impl<'a> Elaborator<'a> {
     pub(crate) fn elaborate(&mut self) {
         self.stats.elaborate_func += 1;
         self.stats.elaborate_func_pre_insts += self.func.dfg.num_insts() as u64;
-        self.compute_best_values();
+        // self.compute_best_values();
         self.elaborate_domtree(&self.domtree);
         self.stats.elaborate_func_post_insts += self.func.dfg.num_insts() as u64;
     }
