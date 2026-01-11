@@ -1,8 +1,5 @@
 //! Elaboration phase: lowers EGraph back to sequences of operations
 //! in CFG nodes.
-
-use std::borrow::ToOwned;
-
 use super::Stats;
 use super::cost::Cost;
 use crate::ctxhash::NullCtx;
