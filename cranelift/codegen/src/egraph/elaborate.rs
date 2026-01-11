@@ -321,6 +321,42 @@ impl<'a> Elaborator<'a> {
         };
     }
 
+    // Elaborate the best value (from required/skeleton use). If we have already found a best value,
+    // we can just return that. Otherwise, we traverse the aegraph from this point, keeping track
+    // of previously seen values along argument paths to avoid double-counting DAG entries (e.g., to
+    // have a cost function that does not repeat costs for subexpressions). This involves carefully
+    // handling union nodes, only counting their values as permanently seen once a choice is made between
+    // the unioned values.
+
+    // Once the `best_value_traversal` helper is complete, we know we have found a best value for the
+    // current node, and every node newly seen in its chosen traversal. We can thus add all of these
+    // values to our per-function `value_to_best_value` map.
+    fn elaborate_best_value(
+        dfg: &DataFlowGraph,
+        layout: &Layout,
+        best_map: &mut SecondaryMap<Value, BestEntry>,
+        value: Value,
+    ) -> BestEntry {
+        let best_found = best_map[value];
+        if !best_found.1.is_reserved_value() {
+            trace!(
+                "skipping expensive elaboration, already have best for value {:?}",
+                value
+            );
+            return best_found;
+        }
+        let mut seen_this_traversal: FxHashSet<Value> = FxHashSet::default();
+        let def = dfg.value_def(value);
+        trace!("elaborating value {:?} def {:?}", value, def);
+        let (best, new_seen) =
+            Self::best_value_traversal(dfg, layout, best_map, value, &mut seen_this_traversal);
+        best_map[value] = best;
+        for (v, best) in new_seen.iter() {
+            best_map[v] = *best;
+        }
+        return best;
+    }
+
     /// Elaborate use of an eclass, inserting any needed new
     /// instructions before the given inst `before`. Should only be
     /// given values corresponding to results of instructions or
