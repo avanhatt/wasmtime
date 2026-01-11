@@ -248,7 +248,7 @@ impl<'a> Elaborator<'a> {
                     seen_this_traversal.remove(&x_val);
                 }
                 let (best_value_y, new_seen_y) = self.best_value_traversal(y, seen_this_traversal);
-                // Usually, right will be better. But if not, choose x and restore seen_this_traversal state
+                // Usually, y will be better. But if not, choose x and restore seen_this_traversal state
                 if best_value_x.0 < best_value_y.0 {
                     for x_val in new_seen_x.keys() {
                         seen_this_traversal.insert(x_val.clone());
@@ -316,12 +316,25 @@ impl<'a> Elaborator<'a> {
                     let best = BestEntry(cost, value);
                     union_of_new_seen[value] = best;
                     trace!(" -> cost of value {} = {:?}", value, cost);
+
+                    // AVH TODO REMOVE
+                    trace!("size of new {}", union_of_new_seen.capacity());
                     return (best, union_of_new_seen);
                 }
             }
         };
     }
 
+    // Elaborate the best value (from required/skeleton use). If we have already found a best value,
+    // we can just return that. Otherwise, we traverse the aegraph from this point, keeping track
+    // of previously seen values along argument paths to avoid double-counting DAG entries (e.g., to
+    // have a cost function that does not repeat costs for subexpressions). This involves carefully
+    // handling union nodes, only counting their values as permanently seen once a choice is made between
+    // the unioned values.
+
+    // Once the `best_value_traversal` helper is complete, we know we have found a best value for the
+    // current node, and every node newly seen in its chosen traversal. We can thus add all of these
+    // values to our per-function `value_to_best_value` map.
     fn elaborate_best_value(&mut self, value: Value) -> BestEntry {
         let best_found = self.value_to_best_value[value];
         if !best_found.1.is_reserved_value() {

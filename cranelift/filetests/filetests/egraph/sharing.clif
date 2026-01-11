@@ -2,9 +2,6 @@ test optimize
 set opt_level=speed
 target x86_64
 
-;; iadd has cost 3, imul has cost 10
-;; (rule (simplify (ireduce ty (iadd _ x y))) (iadd ty (ireduce ty x) (ireduce ty y)))
-
 function %f0(i32, i32) -> i16 {
 block0(v0: i32, v1: i32):
     v2 = imul.i32 v0, v1
@@ -31,8 +28,11 @@ block0(v0: i32, v1: i32):
     v23 = imul.i32 v22, v22
     v24 = imul.i32 v23, v23
     v25 = isub.i32 v24, v1
-    ;; Chain of imuls saturate to infinity w/o DAG cost model
-    ;; then do a rewrite to a more expensive thing
+    ;; Chain of imuls saturate to infinity with a tree cost model that ignores
+    ;; sharing. A DAG cost model that attempts to avoid double-counting shared
+    ;; subterms will not saturate. To test, invoke one of the few rewrite rules
+    ;; that rewrites to a high-cost expression:
+    ;; (rule (simplify (ireduce ty (iadd _ x y))) (iadd ty (ireduce ty x) (ireduce ty y)))
     v26 = iadd.i32 v24, v25
     v27 = ireduce.i16 v26
     v28 = ireduce.i16 v0
