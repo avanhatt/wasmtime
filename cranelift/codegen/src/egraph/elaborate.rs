@@ -336,7 +336,10 @@ impl<'a> Elaborator<'a> {
     fn elaborate_best_value(&mut self, value: Value) -> BestEntry {
         let best_found = self.value_to_best_value[value];
         if !best_found.1.is_reserved_value() {
-            trace!("skipping expensive elaboration, already have best for value {:?}", value);
+            trace!(
+                "skipping expensive elaboration, already have best for value {:?}",
+                value
+            );
             return best_found;
         }
         let mut seen_this_traversal: FxHashSet<Value> = FxHashSet::default();
@@ -625,8 +628,8 @@ impl<'a> Elaborator<'a> {
                         }
                     }
 
-                    let arg_values: &[ElaboratedValue] = &self.elab_result_stack[arg_idx..].to_owned();
-
+                    let arg_values: &[ElaboratedValue] =
+                        &self.elab_result_stack[arg_idx..].to_owned();
 
                     // Now we need to place `inst` at the computed
                     // location (just before `before`). Note that
@@ -650,18 +653,21 @@ impl<'a> Elaborator<'a> {
                         // Create mappings in the
                         // value-to-elab'd-value map from original
                         // results to cloned results.
-                        for (&result, &new_result) in self
+                        let results: Vec<(Value, Value)> = self
                             .func
                             .dfg
                             .inst_results(inst)
                             .iter()
-                            .zip(self.func.dfg.inst_results(new_inst).iter())
-                        {
+                            .copied()
+                            .zip(self.func.dfg.inst_results(new_inst).iter().copied())
+                            .collect();
+
+                        for (result, new_result) in results {
                             let elab_value = ElaboratedValue {
                                 value: new_result,
                                 in_block: insert_block,
                             };
-                            let best_result = self.value_to_best_value[result];
+                            let best_result = self.elaborate_best_value(result);
                             assert!(!best_result.1.is_reserved_value());
                             self.value_to_elaborated_value.insert_if_absent_with_depth(
                                 &NullCtx,
