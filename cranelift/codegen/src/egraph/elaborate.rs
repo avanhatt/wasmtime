@@ -9,7 +9,7 @@ use crate::ctxhash::NullCtx;
 use crate::dominator_tree::DominatorTree;
 use crate::hash_map::Entry as HashEntry;
 use crate::inst_predicates::is_pure_for_egraph;
-use crate::ir::{Block, DataFlowGraph, Function, Inst, Value, ValueDef};
+use crate::ir::{Block, DataFlowGraph, Function, Inst, Layout, Value, ValueDef};
 use crate::loop_analysis::{Loop, LoopAnalysis};
 use crate::scoped_hash_map::ScopedHashMap;
 use crate::settings::Flags;
@@ -230,22 +230,26 @@ impl<'a> Elaborator<'a> {
     }
 
     fn best_value_traversal(
-        &self,
+        dfg: &DataFlowGraph,
+        layout: &Layout,
+        best_map: &mut SecondaryMap<Value, BestEntry>,
         value: Value,
         seen_this_traversal: &mut FxHashSet<Value>,
     ) -> (BestEntry, SecondaryMap<Value, BestEntry>) {
-        let def = self.func.dfg.value_def(value);
+        let def = dfg.value_def(value);
         trace!("computing best for value {:?} def {:?}", value, def);
 
         match def {
             // Traverse both union options, backtracking the state of subexpression we've seen on
             // each traversal. Pick the lower-cost option.
             ValueDef::Union(x, y) => {
-                let (best_value_x, new_seen_x) = self.best_value_traversal(x, seen_this_traversal);
+                let (best_value_x, new_seen_x) =
+                    Self::best_value_traversal(dfg, layout, best_map, x, seen_this_traversal);
                 for x_val in new_seen_x.keys() {
                     seen_this_traversal.remove(&x_val);
                 }
-                let (best_value_y, new_seen_y) = self.best_value_traversal(y, seen_this_traversal);
+                let (best_value_y, new_seen_y) =
+                    Self::best_value_traversal(dfg, layout, best_map, y, seen_this_traversal);
                 // Usually, y will be better. But if not, choose x and restore seen_this_traversal state
                 if best_value_x.0 < best_value_y.0 {
                     for x_val in new_seen_x.keys() {
@@ -273,9 +277,8 @@ impl<'a> Elaborator<'a> {
             // If the Inst is already been inserted into the layout, or if it has been seen
             // during this traversal, then its cost is 0.
             ValueDef::Result(inst, _) => {
-                let is_inserted = self.func.layout.inst_block(inst).is_some();
-                let is_already_in_elaborated =
-                    !self.value_to_best_value[value].1.is_reserved_value();
+                let is_inserted = layout.inst_block(inst).is_some();
+                let is_already_in_elaborated = !best_map[value].1.is_reserved_value();
                 if is_inserted || is_already_in_elaborated || seen_this_traversal.contains(&value) {
                     // Note: if we're counting the cost as zero here, we don't want to overwrite the saved
                     // best cost to zero (we previously must have added some non-zero cost).
@@ -293,14 +296,20 @@ impl<'a> Elaborator<'a> {
                     // seen set
                     seen_this_traversal.insert(value);
                     // Now calculate the cost of the arguments.
-                    let inst_data = &self.func.dfg.insts[inst];
+                    let inst_data = dfg.insts[inst];
                     let mut operand_costs = Vec::new();
                     let mut union_of_new_seen = SecondaryMap::with_default(BestEntry(
                         Cost::infinity(),
                         Value::reserved_value(),
                     ));
-                    for arg in self.func.dfg.inst_values(inst) {
-                        let (best, new_seen) = self.best_value_traversal(arg, seen_this_traversal);
+                    for arg in dfg.inst_values(inst) {
+                        let (best, new_seen) = Self::best_value_traversal(
+                            dfg,
+                            layout,
+                            best_map,
+                            arg,
+                            seen_this_traversal,
+                        );
                         for (v, e) in new_seen.iter() {
                             union_of_new_seen[v] = *e;
                         }
@@ -333,8 +342,13 @@ impl<'a> Elaborator<'a> {
     // Once the `best_value_traversal` helper is complete, we know we have found a best value for the
     // current node, and every node newly seen in its chosen traversal. We can thus add all of these
     // values to our per-function `value_to_best_value` map.
-    fn elaborate_best_value(&mut self, value: Value) -> BestEntry {
-        let best_found = self.value_to_best_value[value];
+    fn elaborate_best_value(
+        dfg: &DataFlowGraph,
+        layout: &Layout,
+        best_map: &mut SecondaryMap<Value, BestEntry>,
+        value: Value,
+    ) -> BestEntry {
+        let best_found = best_map[value];
         if !best_found.1.is_reserved_value() {
             trace!(
                 "skipping expensive elaboration, already have best for value {:?}",
@@ -343,12 +357,13 @@ impl<'a> Elaborator<'a> {
             return best_found;
         }
         let mut seen_this_traversal: FxHashSet<Value> = FxHashSet::default();
-        let def = self.func.dfg.value_def(value);
+        let def = dfg.value_def(value);
         trace!("elaborating value {:?} def {:?}", value, def);
-        let (best, new_seen) = self.best_value_traversal(value, &mut seen_this_traversal);
-        self.value_to_best_value[value] = best;
+        let (best, new_seen) =
+            Self::best_value_traversal(dfg, layout, best_map, value, &mut seen_this_traversal);
+        best_map[value] = best;
         for (v, best) in new_seen.iter() {
-            self.value_to_best_value[v] = *best;
+            best_map[v] = *best;
         }
         return best;
     }
@@ -427,7 +442,11 @@ impl<'a> Elaborator<'a> {
                     // value) here so we have a full view of the
                     // eclass.
                     trace!("finding best value for {}", value);
-                    let BestEntry(_, best_value) = self.elaborate_best_value(value);
+                    let best = &mut self.value_to_best_value;
+                    let dfg = &self.func.dfg;
+                    let layout = &self.func.layout;
+                    let BestEntry(_, best_value) =
+                        Self::elaborate_best_value(dfg, layout, best, value);
                     trace!("elaborate: value {} -> best {}", value, best_value);
                     debug_assert_ne!(best_value, Value::reserved_value());
 
@@ -643,6 +662,7 @@ impl<'a> Elaborator<'a> {
                     // don't want to rewrite the args in the original
                     // copy.
                     trace!("need inst {} before {}", inst, before);
+                    let best = &mut self.value_to_best_value;
                     let inst = if self.func.layout.inst_block(inst).is_some() || remat_arg {
                         // Clone the inst!
                         let new_inst = self.func.dfg.clone_inst(inst);
@@ -650,24 +670,23 @@ impl<'a> Elaborator<'a> {
                             " -> inst {} already has a location; cloned to {}",
                             inst, new_inst
                         );
+                        let dfg = &self.func.dfg;
+                        let layout = &self.func.layout;
                         // Create mappings in the
                         // value-to-elab'd-value map from original
                         // results to cloned results.
-                        let results: Vec<(Value, Value)> = self
+                        for (&result, &new_result) in self
                             .func
                             .dfg
                             .inst_results(inst)
                             .iter()
-                            .copied()
-                            .zip(self.func.dfg.inst_results(new_inst).iter().copied())
-                            .collect();
-
-                        for (result, new_result) in results {
+                            .zip(self.func.dfg.inst_results(new_inst).iter())
+                        {
                             let elab_value = ElaboratedValue {
                                 value: new_result,
                                 in_block: insert_block,
                             };
-                            let best_result = self.elaborate_best_value(result);
+                            let best_result = Self::elaborate_best_value(dfg, layout, best, result);
                             assert!(!best_result.1.is_reserved_value());
                             self.value_to_elaborated_value.insert_if_absent_with_depth(
                                 &NullCtx,
@@ -676,7 +695,7 @@ impl<'a> Elaborator<'a> {
                                 scope_depth,
                             );
 
-                            self.value_to_best_value[new_result] = best_result;
+                            best[new_result] = best_result;
 
                             trace!(
                                 " -> cloned inst has new result {} for orig {}",
@@ -689,13 +708,14 @@ impl<'a> Elaborator<'a> {
                         // Create identity mappings from result values
                         // to themselves in this scope, since we're
                         // using the original inst.
-                        let results: Vec<Value> = self.func.dfg.inst_results(inst).to_owned();
-                        for result in results {
+                        let dfg = &self.func.dfg;
+                        let layout = &self.func.layout;
+                        for &result in self.func.dfg.inst_results(inst) {
                             let elab_value = ElaboratedValue {
                                 value: result,
                                 in_block: insert_block,
                             };
-                            let best_result = self.elaborate_best_value(result);
+                            let best_result = Self::elaborate_best_value(dfg, layout, best, result);
                             assert!(!best_result.1.is_reserved_value());
                             self.value_to_elaborated_value.insert_if_absent_with_depth(
                                 &NullCtx,
@@ -790,10 +810,12 @@ impl<'a> Elaborator<'a> {
 
             // We need to put the results of this instruction in the
             // map now.
-            let results: Vec<Value> = self.func.dfg.inst_results(inst).to_owned();
-            for result in results {
+            let best = &mut self.value_to_best_value;
+            let dfg = &self.func.dfg;
+            let layout = &self.func.layout;
+            for &result in self.func.dfg.inst_results(inst) {
                 trace!(" -> result {}", result);
-                let best_result = self.elaborate_best_value(result);
+                let best_result = Self::elaborate_best_value(dfg, layout, best, result);
                 assert!(!best_result.1.is_reserved_value());
                 self.value_to_elaborated_value.insert_if_absent(
                     &NullCtx,
