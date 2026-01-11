@@ -238,10 +238,8 @@ impl<'a> Elaborator<'a> {
         trace!("computing best for value {:?} def {:?}", value, def);
 
         match def {
-            // Pick the best of the two options based on min-cost. This
-            // works because each element of `best` is a `(cost, value)`
-            // tuple; `cost` comes first so the natural comparison works
-            // based on cost, and breaks ties based on value number.
+            // Traverse both union options, backtracking the state of subexpression we've seen on
+            // each traversal. Pick the lower-cost option.
             ValueDef::Union(x, y) => {
                 let (best_value_x, new_seen_x) = self.best_value_traversal(x, seen_this_traversal);
                 for x_val in new_seen_x.keys() {
