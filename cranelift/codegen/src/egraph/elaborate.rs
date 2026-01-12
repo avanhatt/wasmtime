@@ -13,7 +13,7 @@ use crate::settings::Flags;
 use crate::trace;
 use alloc::vec::Vec;
 use cranelift_control::ControlPlane;
-use cranelift_entity::{EntitySet, SecondaryMap, packed_option::ReservedValue};
+use cranelift_entity::{SecondaryMap, packed_option::ReservedValue};
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::{SmallVec, smallvec};
 
@@ -232,12 +232,12 @@ impl<'a> Elaborator<'a> {
         best_map: &mut SecondaryMap<Value, BestEntry>,
         value: Value,
         seen_this_traversal: &mut FxHashSet<Value>,
-    ) -> (BestEntry, SecondaryMap<Value, BestEntry>) {
+    ) -> (BestEntry, FxHashMap<Value, BestEntry>) {
         let def = dfg.value_def(value);
         trace!("computing best for value {:?} def {:?}", value, def);
 
         match def {
-            // Traverse both union options, backtracking the state of subexpression we've seen on
+            // Traverse both union options, backtracking the state of subexpressions we've seen on
             // each traversal. Pick the lower-cost option.
             ValueDef::Union(x, y) => {
                 let (best_value_x, new_seen_x) =
@@ -250,7 +250,7 @@ impl<'a> Elaborator<'a> {
                 // Usually, y will be better. But if not, choose x and restore seen_this_traversal state
                 if best_value_x.0 < best_value_y.0 {
                     for x_val in new_seen_x.keys() {
-                        seen_this_traversal.insert(x_val.clone());
+                        seen_this_traversal.insert(*x_val);
                     }
                     for y_val in new_seen_y.keys() {
                         seen_this_traversal.remove(&y_val);
@@ -262,12 +262,9 @@ impl<'a> Elaborator<'a> {
 
             // Params always have 0 cost
             ValueDef::Param(_, _) => {
-                let mut just_this = SecondaryMap::with_default(BestEntry(
-                    Cost::infinity(),
-                    Value::reserved_value(),
-                ));
+                let mut just_this= FxHashMap::default();
                 let best = BestEntry(Cost::zero(), value);
-                just_this[value] = best;
+                just_this.insert(value, best);
                 return (best, just_this);
             }
 
@@ -279,15 +276,11 @@ impl<'a> Elaborator<'a> {
                 if is_inserted || is_already_in_elaborated || seen_this_traversal.contains(&value) {
                     // Note: if we're counting the cost as zero here, we don't want to overwrite the saved
                     // best cost to zero (we previously must have added some non-zero cost).
-                    let empty = SecondaryMap::with_default(BestEntry(
-                        Cost::infinity(),
-                        Value::reserved_value(),
-                    ));
                     trace!(
                         " -> cost of value {} is now 0, seen before along this traversal",
                         value
                     );
-                    return (BestEntry(Cost::zero(), value), empty);
+                    return (BestEntry(Cost::zero(), value), FxHashMap::default());
                 } else {
                     // We are seeing a new instruction for this traversal, add it to our traversal-local
                     // seen set
@@ -295,10 +288,7 @@ impl<'a> Elaborator<'a> {
                     // Now calculate the cost of the arguments.
                     let inst_data = dfg.insts[inst];
                     let mut operand_costs = Vec::new();
-                    let mut union_of_new_seen = SecondaryMap::with_default(BestEntry(
-                        Cost::infinity(),
-                        Value::reserved_value(),
-                    ));
+                    let mut union_of_new_seen = FxHashMap::default();
                     for arg in dfg.inst_values(inst) {
                         let (best, new_seen) = Self::best_value_traversal(
                             dfg,
@@ -308,7 +298,7 @@ impl<'a> Elaborator<'a> {
                             seen_this_traversal,
                         );
                         for (v, e) in new_seen.iter() {
-                            union_of_new_seen[v] = *e;
+                            union_of_new_seen.insert(*v, *e);
                         }
                         operand_costs.push(best.0);
                     }
@@ -318,7 +308,7 @@ impl<'a> Elaborator<'a> {
                     let cost = Cost::of_pure_op(inst_data.opcode(), operand_costs);
                     // Add this operation, with cost, to local best map
                     let best = BestEntry(cost, value);
-                    union_of_new_seen[value] = best;
+                    union_of_new_seen.insert(value, best);
                     trace!(" -> cost of value {} = {:?}", value, cost);
 
                     // AVH TODO REMOVE
@@ -360,7 +350,7 @@ impl<'a> Elaborator<'a> {
             Self::best_value_traversal(dfg, layout, best_map, value, &mut seen_this_traversal);
         best_map[value] = best;
         for (v, best) in new_seen.iter() {
-            best_map[v] = *best;
+            best_map[*v] = *best;
         }
         return best;
     }
@@ -644,8 +634,7 @@ impl<'a> Elaborator<'a> {
                         }
                     }
 
-                    let arg_values: &[ElaboratedValue] =
-                        &self.elab_result_stack[arg_idx..].to_owned();
+                    let arg_values: &[ElaboratedValue] = &self.elab_result_stack[arg_idx..];
 
                     // Now we need to place `inst` at the computed
                     // location (just before `before`). Note that
