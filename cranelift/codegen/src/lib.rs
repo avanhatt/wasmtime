@@ -1,5 +1,4 @@
 //! Cranelift code generation library.
-#![deny(missing_docs)]
 #![no_std]
 // Various bits and pieces of this crate might only be used for one platform or
 // another, but it's not really too useful to learn about that all the time. On
@@ -61,7 +60,7 @@ pub use crate::machinst::buffer::{
 };
 pub use crate::machinst::{
     CompiledCode, Final, MachBuffer, MachBufferFinalized, MachInst, MachInstEmit,
-    MachInstEmitState, MachLabel, RealReg, Reg, RelocDistance, TextSectionBuilder,
+    MachInstEmitState, MachLabel, RealReg, Reg, RegClass, RelocDistance, TextSectionBuilder,
     VCodeConstantData, VCodeConstants, Writable,
 };
 

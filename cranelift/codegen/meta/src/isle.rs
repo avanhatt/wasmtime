@@ -1,3 +1,5 @@
+use std::io::Result;
+
 /// A list of compilations (transformations from ISLE source to
 /// generated Rust source) that exist in the repository.
 ///
@@ -11,11 +13,62 @@ pub struct IsleCompilations {
     pub items: Vec<IsleCompilation>,
 }
 
+impl IsleCompilations {
+    pub fn lookup(&self, name: &str) -> Option<&IsleCompilation> {
+        for compilation in &self.items {
+            if compilation.name == name {
+                return Some(compilation);
+            }
+        }
+        None
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct IsleCompilation {
+    pub name: String,
     pub output: std::path::PathBuf,
-    pub inputs: Vec<std::path::PathBuf>,
+    pub tracked_inputs: Vec<std::path::PathBuf>,
     pub untracked_inputs: Vec<std::path::PathBuf>,
+    pub rule_trace: bool,
+}
+
+impl IsleCompilation {
+    /// All inputs to the computation, tracked or untracked. May contain directories.
+    pub fn inputs(&self) -> Vec<std::path::PathBuf> {
+        self.tracked_inputs
+            .iter()
+            .chain(self.untracked_inputs.iter())
+            .cloned()
+            .collect()
+    }
+
+    /// All path inputs to the compilation. Directory inputs are expanded to the
+    /// list of all ISLE files in the directory.
+    pub fn paths(&self) -> Result<Vec<std::path::PathBuf>> {
+        let mut paths = Vec::new();
+        for input in self.inputs() {
+            paths.extend(Self::expand_paths(&input)?);
+        }
+        Ok(paths)
+    }
+
+    fn expand_paths(input: &std::path::PathBuf) -> Result<Vec<std::path::PathBuf>> {
+        if input.is_file() {
+            return Ok(vec![input.clone()]);
+        }
+
+        let mut paths = Vec::new();
+        for entry in std::fs::read_dir(input)? {
+            let path = entry?.path();
+            if let Some(ext) = path.extension() {
+                if ext == "isle" {
+                    paths.push(path);
+                }
+            }
+        }
+        Ok(paths)
+    }
 }
 
 /// Construct the list of compilations (transformations from ISLE
@@ -30,6 +83,11 @@ pub fn get_isle_compilations(
     let prelude_isle = codegen_crate_dir.join("src").join("prelude.isle");
     let prelude_opt_isle = codegen_crate_dir.join("src").join("prelude_opt.isle");
     let prelude_lower_isle = codegen_crate_dir.join("src").join("prelude_lower.isle");
+    let prelude_spec_isle = codegen_crate_dir.join("src").join("prelude_spec.isle");
+    let inst_specs_isle = codegen_crate_dir.join("src").join("inst_specs.isle");
+    let inst_tags_isle = codegen_crate_dir.join("src").join("inst_tags.isle");
+    let fpconst_isle = codegen_crate_dir.join("src").join("fpconst.isle");
+    let state_isle = codegen_crate_dir.join("src").join("state.isle");
 
     // Directory for mid-end optimizations.
     let src_opts = codegen_crate_dir.join("src").join("opts");
@@ -61,10 +119,14 @@ pub fn get_isle_compilations(
         items: vec![
             // The mid-end optimization rules.
             IsleCompilation {
+                name: "opt".to_string(),
                 output: gen_dir.join("isle_opt.rs"),
-                inputs: vec![
+                tracked_inputs: vec![
                     prelude_isle.clone(),
                     prelude_opt_isle,
+                    prelude_spec_isle.clone(),
+                    inst_specs_isle.clone(),
+                    inst_tags_isle.clone(),
                     src_opts.join("arithmetic.isle"),
                     src_opts.join("bitops.isle"),
                     src_opts.join("cprop.isle"),
@@ -78,64 +140,90 @@ pub fn get_isle_compilations(
                     src_opts.join("vector.isle"),
                 ],
                 untracked_inputs: vec![clif_opt_isle],
+                rule_trace: false,
             },
             // The x86-64 instruction selector.
             IsleCompilation {
+                name: "x64".to_string(),
                 output: gen_dir.join("isle_x64.rs"),
-                inputs: vec![
+                tracked_inputs: vec![
                     prelude_isle.clone(),
                     prelude_lower_isle.clone(),
+                    prelude_spec_isle.clone(),
+                    inst_specs_isle.clone(),
+                    inst_tags_isle.clone(),
                     src_isa_x64.join("inst.isle"),
                     src_isa_x64.join("lower.isle"),
                 ],
                 untracked_inputs: vec![clif_lower_isle.clone()],
+                rule_trace: false,
             },
             // The aarch64 instruction selector.
             IsleCompilation {
+                name: "aarch64".to_string(),
                 output: gen_dir.join("isle_aarch64.rs"),
-                inputs: vec![
+                tracked_inputs: vec![
                     prelude_isle.clone(),
                     prelude_lower_isle.clone(),
+                    prelude_spec_isle.clone(),
+                    inst_specs_isle.clone(),
+                    inst_tags_isle.clone(),
+                    fpconst_isle.clone(),
+                    state_isle.clone(),
                     src_isa_aarch64.join("inst.isle"),
                     src_isa_aarch64.join("inst_neon.isle"),
+                    src_isa_aarch64.join("spec"),
                     src_isa_aarch64.join("lower.isle"),
                     src_isa_aarch64.join("lower_dynamic_neon.isle"),
                 ],
                 untracked_inputs: vec![clif_lower_isle.clone()],
+                rule_trace: true,
             },
             // The s390x instruction selector.
             IsleCompilation {
+                name: "s390x".to_string(),
                 output: gen_dir.join("isle_s390x.rs"),
-                inputs: vec![
+                tracked_inputs: vec![
                     prelude_isle.clone(),
                     prelude_lower_isle.clone(),
+                    prelude_spec_isle.clone(),
+                    inst_specs_isle.clone(),
+                    inst_tags_isle.clone(),
                     src_isa_s390x.join("inst.isle"),
                     src_isa_s390x.join("lower.isle"),
                 ],
                 untracked_inputs: vec![clif_lower_isle.clone()],
+                rule_trace: false,
             },
             // The risc-v instruction selector.
             IsleCompilation {
+                name: "riscv64".to_string(),
                 output: gen_dir.join("isle_riscv64.rs"),
-                inputs: vec![
+                tracked_inputs: vec![
                     prelude_isle.clone(),
                     prelude_lower_isle.clone(),
+                    prelude_spec_isle.clone(),
+                    inst_specs_isle.clone(),
+                    inst_tags_isle.clone(),
                     src_isa_risc_v.join("inst.isle"),
                     src_isa_risc_v.join("inst_vector.isle"),
                     src_isa_risc_v.join("lower.isle"),
                 ],
                 untracked_inputs: vec![clif_lower_isle.clone()],
+                rule_trace: false,
             },
             // The Pulley instruction selector.
             IsleCompilation {
+                name: "pulley".to_string(),
                 output: gen_dir.join("isle_pulley_shared.rs"),
-                inputs: vec![
+                tracked_inputs: vec![
                     prelude_isle.clone(),
                     prelude_lower_isle.clone(),
                     src_isa_pulley_shared.join("inst.isle"),
                     src_isa_pulley_shared.join("lower.isle"),
                 ],
                 untracked_inputs: vec![clif_lower_isle.clone()],
+                rule_trace: false,
             },
         ],
     }

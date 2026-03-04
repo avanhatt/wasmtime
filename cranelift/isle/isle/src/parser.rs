@@ -1,14 +1,27 @@
 //! Parser for ISLE language.
 
-use crate::ast::*;
+#![allow(missing_docs)]
+
 use crate::error::{Error, Span};
+use crate::files::Files;
 use crate::lexer::{Lexer, Pos, Token};
+use crate::{ast::*, log};
+use std::sync::Arc;
 
 type Result<T> = std::result::Result<T, Error>;
 
 /// Parse the top-level ISLE definitions and return their AST.
-pub fn parse(lexer: Lexer) -> Result<Vec<Def>> {
-    let parser = Parser::new(lexer);
+pub fn parse(lexer: Lexer, files: Arc<Files>) -> Result<Vec<Def>> {
+    let mut parser = Parser::new(lexer, files);
+    let result = parser.parse_defs()?;
+    Ok(result)
+}
+
+/// Parse without positional information. Provided mainly to support testing, to
+/// enable equality testing on structure alone.
+pub fn parse_without_pos(lexer: Lexer, files: Arc<Files>) -> Result<Vec<Def>> {
+    let mut parser = Parser::new(lexer, files);
+    parser.disable_pos();
     parser.parse_defs()
 }
 
@@ -16,8 +29,10 @@ pub fn parse(lexer: Lexer) -> Result<Vec<Def>> {
 ///
 /// Takes in a lexer and creates an AST.
 #[derive(Clone, Debug)]
-struct Parser<'a> {
+pub struct Parser<'a> {
     lexer: Lexer<'a>,
+    files: Arc<Files>,
+    disable_pos: bool,
 }
 
 /// Used during parsing a `(rule ...)` to encapsulate some form that
@@ -30,8 +45,16 @@ enum IfLetOrExpr {
 
 impl<'a> Parser<'a> {
     /// Construct a new parser from the given lexer.
-    pub fn new(lexer: Lexer<'a>) -> Parser<'a> {
-        Parser { lexer }
+    pub fn new(lexer: Lexer<'a>, files: Arc<Files>) -> Parser<'a> {
+        Parser {
+            lexer,
+            files,
+            disable_pos: false,
+        }
+    }
+
+    pub fn disable_pos(&mut self) {
+        self.disable_pos = true;
     }
 
     fn error(&self, pos: Pos, msg: String) -> Error {
@@ -72,9 +95,13 @@ impl<'a> Parser<'a> {
     }
 
     fn pos(&self) -> Pos {
-        self.lexer
-            .peek()
-            .map_or_else(|| self.lexer.pos(), |(pos, _)| *pos)
+        if !self.disable_pos {
+            self.lexer
+                .peek()
+                .map_or_else(|| self.lexer.pos(), |(pos, _)| *pos)
+        } else {
+            Pos::default()
+        }
     }
 
     fn is_lparen(&self) -> bool {
@@ -96,6 +123,20 @@ impl<'a> Parser<'a> {
     fn is_const(&self) -> bool {
         self.is(|tok| match tok {
             Token::Symbol(tok_s) if tok_s.starts_with('$') => true,
+            _ => false,
+        })
+    }
+
+    fn is_spec_bit_vector(&self) -> bool {
+        self.is(|tok| match tok {
+            Token::Symbol(tok_s) if tok_s.starts_with("#x") || tok_s.starts_with("#b") => true,
+            _ => false,
+        })
+    }
+
+    fn is_spec_bool(&self) -> bool {
+        self.is(|tok| match tok {
+            Token::Symbol(tok_s) if tok_s == "true" || tok_s == "false" => true,
             _ => false,
         })
     }
@@ -132,7 +173,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_defs(mut self) -> Result<Vec<Def>> {
+    fn parse_defs(&mut self) -> Result<Vec<Def>> {
         let mut defs = vec![];
         while !self.lexer.eof() {
             defs.push(self.parse_def()?);
@@ -147,6 +188,13 @@ impl<'a> Parser<'a> {
             "pragma" => Def::Pragma(self.parse_pragma()?),
             "type" => Def::Type(self.parse_type()?),
             "decl" => Def::Decl(self.parse_decl()?),
+            "attr" => Def::Attr(self.parse_attr()?),
+            "spec" => Def::Spec(self.parse_spec()?),
+            "macro" => Def::SpecMacro(self.parse_spec_macro()?),
+            "state" => Def::State(self.parse_state()?),
+            "model" => Def::Model(self.parse_model()?),
+            "form" => Def::Form(self.parse_form()?),
+            "instantiate" => Def::Instantiation(self.parse_instantiation()?),
             "rule" => Def::Rule(self.parse_rule()?),
             "extractor" => Def::Extractor(self.parse_etor()?),
             "extern" => Def::Extern(self.parse_extern()?),
@@ -155,6 +203,7 @@ impl<'a> Parser<'a> {
                 return Err(self.error(pos, format!("Unexpected identifier: {s}")));
             }
         };
+        self.count_lines(pos, &def);
         self.expect_rparen()?;
         Ok(def)
     }
@@ -319,6 +368,605 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_attr(&mut self) -> Result<Attr> {
+        let pos = self.pos();
+        let rule = self.eat_sym_str("rule")?;
+        let name = self.parse_ident()?;
+        let target = if rule {
+            AttrTarget::Rule(name)
+        } else {
+            AttrTarget::Term(name)
+        };
+        let mut kinds = Vec::new();
+        while !self.is_rparen() {
+            kinds.push(self.parse_attr_kind()?);
+        }
+        Ok(Attr { target, kinds, pos })
+    }
+
+    fn parse_attr_kind(&mut self) -> Result<AttrKind> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        let kind = match &self.expect_symbol()?[..] {
+            "veri" => self.parse_attr_kind_veri()?,
+            "tag" => AttrKind::Tag(self.parse_ident()?),
+            x => return Err(self.error(pos, format!("Not a valid attribute: {x}"))),
+        };
+        self.expect_rparen()?;
+        Ok(kind)
+    }
+
+    fn parse_attr_kind_veri(&mut self) -> Result<AttrKind> {
+        let pos = self.pos();
+        match &self.expect_symbol()?[..] {
+            "chain" => Ok(AttrKind::Chain),
+            "priority" => Ok(AttrKind::Priority),
+            x => Err(self.error(pos, format!("Not a valid verification attribute: {x}"))),
+        }
+    }
+
+    fn parse_spec(&mut self) -> Result<Spec> {
+        let pos = self.pos();
+        self.expect_lparen()?; // term with args: (spec (<term> <args>) (provide ...) ...)
+        let term = self.parse_ident()?;
+        let mut args = vec![];
+        while !self.is_rparen() {
+            args.push(self.parse_ident()?);
+        }
+        self.expect_rparen()?; // end term with args
+
+        let mut provides = Vec::new();
+        let mut requires = Vec::new();
+        let mut matches = Vec::new();
+        let mut modifies = Vec::new();
+        while self.is_lparen() {
+            self.expect_lparen()?;
+            match &self.expect_symbol()?[..] {
+                "provide" => {
+                    while !self.is_rparen() {
+                        provides.push(self.parse_spec_expr()?);
+                    }
+                }
+                "require" => {
+                    while !self.is_rparen() {
+                        requires.push(self.parse_spec_expr()?);
+                    }
+                }
+                "match" => {
+                    while !self.is_rparen() {
+                        matches.push(self.parse_spec_expr()?);
+                    }
+                }
+                "modifies" => {
+                    let state = self.parse_ident()?;
+                    let cond = if self.is_sym() {
+                        Some(self.parse_ident().map_err(|err| {
+                            self.error(pos, format!("Invalid modifies condition: {err:?}"))
+                        })?)
+                    } else {
+                        None
+                    };
+                    modifies.push(Modifies { state, cond });
+                }
+                field => {
+                    return Err(self.error(
+                        pos,
+                        format!("Invalid spec: unexpected field {field}. Expect (provide ...), (require ...) or (match ...)"),
+                    ));
+                }
+            }
+            self.expect_rparen()?;
+        }
+
+        Ok(Spec {
+            term,
+            args,
+            provides,
+            requires,
+            matches,
+            modifies,
+            pos,
+        })
+    }
+
+    fn parse_spec_macro(&mut self) -> Result<SpecMacro> {
+        let pos = self.pos();
+
+        // Signature.
+        self.expect_lparen()?;
+        let name = self.parse_ident()?;
+        let mut params = vec![];
+        while !self.is_rparen() {
+            params.push(self.parse_ident()?);
+        }
+        self.expect_rparen()?;
+
+        // Body.
+        let body = self.parse_spec_expr()?;
+
+        Ok(SpecMacro {
+            name,
+            params,
+            body,
+            pos,
+        })
+    }
+
+    fn parse_spec_expr(&mut self) -> Result<SpecExpr> {
+        let pos = self.pos();
+        if self.is_spec_bit_vector() {
+            let (val, width) = self.parse_spec_bit_vector()?;
+            Ok(SpecExpr::ConstBitVec { val, width, pos })
+        } else if self.is_int() {
+            Ok(SpecExpr::ConstInt {
+                val: self.expect_int()?,
+                pos,
+            })
+        } else if self.is_spec_bool() {
+            let val = self.parse_spec_bool()?;
+            Ok(SpecExpr::ConstBool { val, pos })
+        } else if self.is_sym() {
+            let var = self.parse_ident()?;
+            Ok(SpecExpr::Var { var, pos })
+        } else if self.is_lparen() {
+            self.expect_lparen()?;
+            if self.eat_sym_str("switch")? {
+                let mut args = vec![];
+                args.push(self.parse_spec_expr()?);
+                while !(self.is_rparen()) {
+                    self.expect_lparen()?;
+                    let pos = self.pos();
+                    let l = Box::new(self.parse_spec_expr()?);
+                    let r = Box::new(self.parse_spec_expr()?);
+                    self.expect_rparen()?;
+                    args.push(SpecExpr::Pair { l, r, pos });
+                }
+                self.expect_rparen()?;
+                Ok(SpecExpr::Op {
+                    op: SpecOp::Switch,
+                    args,
+                    pos,
+                })
+            } else if self.eat_sym_str("let")? {
+                let mut defs = Vec::new();
+                self.expect_lparen()?;
+                while !(self.is_rparen()) {
+                    self.expect_lparen()?;
+                    let ident = self.parse_ident()?;
+                    let x = self.parse_spec_expr()?;
+                    self.expect_rparen()?;
+                    defs.push((ident, x));
+                }
+                self.expect_rparen()?;
+                let body = Box::new(self.parse_spec_expr()?);
+                self.expect_rparen()?;
+                Ok(SpecExpr::Let { defs, body, pos })
+            } else if self.eat_sym_str("with")? {
+                let mut decls = Vec::new();
+                self.expect_lparen()?;
+                while !(self.is_rparen()) {
+                    let ident = self.parse_ident()?;
+                    decls.push(ident);
+                }
+                self.expect_rparen()?;
+                let body = Box::new(self.parse_spec_expr()?);
+                self.expect_rparen()?;
+                Ok(SpecExpr::With { decls, body, pos })
+            } else if self.eat_sym_str("match")? {
+                let x = Box::new(self.parse_spec_expr()?);
+                let mut arms = Vec::new();
+                while !(self.is_rparen()) {
+                    let arm = self.parse_arm()?;
+                    arms.push(arm);
+                }
+                self.expect_rparen()?;
+                Ok(SpecExpr::Match { x, arms, pos })
+            } else if self.eat_sym_str("struct")? {
+                let mut fields = Vec::new();
+                while !(self.is_rparen()) {
+                    let field = self.parse_field_init()?;
+                    fields.push(field);
+                }
+                self.expect_rparen()?;
+                Ok(SpecExpr::Struct { fields, pos })
+            } else if self.eat_sym_str("macro")? {
+                self.expect_lparen()?;
+                let mut params = vec![];
+                while !self.is_rparen() {
+                    params.push(self.parse_ident()?);
+                }
+                self.expect_rparen()?;
+                let body = Box::new(self.parse_spec_expr()?);
+                self.expect_rparen()?;
+                Ok(SpecExpr::Macro { params, body, pos })
+            } else if self.eat_sym_str("as")? {
+                let x = Box::new(self.parse_spec_expr()?);
+                let ty = self.parse_model_type()?;
+                self.expect_rparen()?;
+                Ok(SpecExpr::As { x, ty, pos })
+            } else if self.is_sym() && !self.is_spec_bit_vector() {
+                let sym_pos = self.pos();
+                let sym = self.expect_symbol()?;
+                if let Some(variant) = sym.strip_suffix('?') {
+                    let variant = self.str_to_ident(sym_pos, variant)?;
+                    let x = Box::new(self.parse_spec_expr()?);
+                    self.expect_rparen()?;
+                    Ok(SpecExpr::Discriminator { variant, x, pos })
+                } else if let Some(name) = sym.strip_suffix('!') {
+                    let name = self.str_to_ident(sym_pos, name)?;
+                    let mut args: Vec<SpecExpr> = vec![];
+                    while !self.is_rparen() {
+                        args.push(self.parse_spec_expr()?);
+                    }
+                    self.expect_rparen()?;
+                    Ok(SpecExpr::Expand { name, args, pos })
+                } else if let Ok(op) = self.parse_spec_op(sym.as_str()) {
+                    let mut args: Vec<SpecExpr> = vec![];
+                    while !self.is_rparen() {
+                        args.push(self.parse_spec_expr()?);
+                    }
+                    self.expect_rparen()?;
+                    Ok(SpecExpr::Op { op, args, pos })
+                } else if let Some(field) = sym.strip_prefix(':') {
+                    let field = self.str_to_ident(sym_pos, field)?;
+                    let x = Box::new(self.parse_spec_expr()?);
+                    self.expect_rparen()?;
+                    Ok(SpecExpr::Field { field, x, pos })
+                } else if let Some((name, variant)) = sym.split_once('.') {
+                    let name = self.str_to_ident(pos, &name)?;
+                    let variant = self.str_to_ident(pos, &variant)?;
+                    let mut args: Vec<SpecExpr> = vec![];
+                    while !self.is_rparen() {
+                        args.push(self.parse_spec_expr()?);
+                    }
+                    self.expect_rparen()?;
+                    Ok(SpecExpr::Enum {
+                        name,
+                        variant,
+                        args,
+                        pos,
+                    })
+                } else {
+                    Err(self.error(pos, "Unexpected spec expression".into()))
+                }
+            } else {
+                // TODO(mbm): support Unit
+                Err(self.error(pos, "Unexpected spec expression".into()))
+            }
+        } else {
+            Err(self.error(pos, "Unexpected spec expression".into()))
+        }
+    }
+
+    fn parse_spec_op(&mut self, s: &str) -> Result<SpecOp> {
+        let pos = self.pos();
+        match s {
+            "=" => Ok(SpecOp::Eq),
+            "and" => Ok(SpecOp::And),
+            "not" => Ok(SpecOp::Not),
+            "=>" => Ok(SpecOp::Imp),
+            "or" => Ok(SpecOp::Or),
+            "+" => Ok(SpecOp::Add),
+            "-" => Ok(SpecOp::Sub),
+            "*" => Ok(SpecOp::Mul),
+            "<=" => Ok(SpecOp::Lte),
+            "<" => Ok(SpecOp::Lt),
+            ">=" => Ok(SpecOp::Gte),
+            ">" => Ok(SpecOp::Gt),
+            "bvnot" => Ok(SpecOp::BVNot),
+            "bvand" => Ok(SpecOp::BVAnd),
+            "bvor" => Ok(SpecOp::BVOr),
+            "bvxor" => Ok(SpecOp::BVXor),
+            "bvneg" => Ok(SpecOp::BVNeg),
+            "bvadd" => Ok(SpecOp::BVAdd),
+            "bvsub" => Ok(SpecOp::BVSub),
+            "bvmul" => Ok(SpecOp::BVMul),
+            "bvudiv" => Ok(SpecOp::BVUdiv),
+            "bvurem" => Ok(SpecOp::BVUrem),
+            "bvsdiv" => Ok(SpecOp::BVSdiv),
+            "bvsrem" => Ok(SpecOp::BVSrem),
+            "bvshl" => Ok(SpecOp::BVShl),
+            "bvlshr" => Ok(SpecOp::BVLshr),
+            "bvashr" => Ok(SpecOp::BVAshr),
+            "bvsaddo" => Ok(SpecOp::BVSaddo),
+            "bvule" => Ok(SpecOp::BVUle),
+            "bvult" => Ok(SpecOp::BVUlt),
+            "bvugt" => Ok(SpecOp::BVUgt),
+            "bvuge" => Ok(SpecOp::BVUge),
+            "bvslt" => Ok(SpecOp::BVSlt),
+            "bvsle" => Ok(SpecOp::BVSle),
+            "bvsgt" => Ok(SpecOp::BVSgt),
+            "bvsge" => Ok(SpecOp::BVSge),
+            "rotr" => Ok(SpecOp::Rotr),
+            "rotl" => Ok(SpecOp::Rotl),
+            "extract" => Ok(SpecOp::Extract),
+            "zero_ext" => Ok(SpecOp::ZeroExt),
+            "sign_ext" => Ok(SpecOp::SignExt),
+            "concat" => Ok(SpecOp::Concat),
+            "replicate" => Ok(SpecOp::Replicate),
+            "conv_to" => Ok(SpecOp::ConvTo),
+            "int2bv" => Ok(SpecOp::Int2BV),
+            "bv2nat" => Ok(SpecOp::BV2Nat),
+            "widthof" => Ok(SpecOp::WidthOf),
+            "if" => Ok(SpecOp::If),
+            "switch" => Ok(SpecOp::Switch),
+            "popcnt" => Ok(SpecOp::Popcnt),
+            "rev" => Ok(SpecOp::Rev),
+            "cls" => Ok(SpecOp::Cls),
+            "clz" => Ok(SpecOp::Clz),
+            "to_fp" => Ok(SpecOp::ToFP),
+            "fp.to_ubv" => Ok(SpecOp::FPToUBV),
+            "fp.to_sbv" => Ok(SpecOp::FPToSBV),
+            "to_fp_unsigned" => Ok(SpecOp::ToFPUnsigned),
+            "to_fp_from_fp" => Ok(SpecOp::ToFPFromFP),
+            "fp.+oo" => Ok(SpecOp::FPPositiveInfinity),
+            "fp.-oo" => Ok(SpecOp::FPNegativeInfinity),
+            "fp.+zero" => Ok(SpecOp::FPPositiveZero),
+            "fp.-zero" => Ok(SpecOp::FPNegativeZero),
+            "fp.NaN" => Ok(SpecOp::FPNaN),
+            "fp.eq" => Ok(SpecOp::FPEq),
+            "fp.ne" => Ok(SpecOp::FPNe),
+            "fp.lt" => Ok(SpecOp::FPLt),
+            "fp.gt" => Ok(SpecOp::FPGt),
+            "fp.le" => Ok(SpecOp::FPLe),
+            "fp.ge" => Ok(SpecOp::FPGe),
+            "fp.add" => Ok(SpecOp::FPAdd),
+            "fp.sub" => Ok(SpecOp::FPSub),
+            "fp.mul" => Ok(SpecOp::FPMul),
+            "fp.div" => Ok(SpecOp::FPDiv),
+            "fp.min" => Ok(SpecOp::FPMin),
+            "fp.max" => Ok(SpecOp::FPMax),
+            "fp.neg" => Ok(SpecOp::FPNeg),
+            "fp.ceil" => Ok(SpecOp::FPCeil),
+            "fp.floor" => Ok(SpecOp::FPFloor),
+            "fp.sqrt" => Ok(SpecOp::FPSqrt),
+            "fp.trunc" => Ok(SpecOp::FPTrunc),
+            "fp.nearest" => Ok(SpecOp::FPNearest),
+            "fp.isZero" => Ok(SpecOp::FPIsZero),
+            "fp.isInfinite" => Ok(SpecOp::FPIsInfinite),
+            "fp.isNaN" => Ok(SpecOp::FPIsNaN),
+            "fp.isNegative" => Ok(SpecOp::FPIsNegative),
+            "fp.isPositive" => Ok(SpecOp::FPIsPositive),
+            x => Err(self.error(pos, format!("Not a valid spec operator: {x}"))),
+        }
+    }
+
+    fn parse_arm(&mut self) -> Result<Arm> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        self.expect_lparen()?;
+        let variant = self.parse_ident()?;
+        let mut args = Vec::new();
+        while !self.is_rparen() {
+            args.push(self.parse_ident()?);
+        }
+        self.expect_rparen()?;
+        let body = self.parse_spec_expr()?;
+        self.expect_rparen()?;
+        Ok(Arm {
+            variant,
+            args,
+            body,
+            pos,
+        })
+    }
+
+    fn parse_field_init(&mut self) -> Result<FieldInit> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        let name = self.parse_ident()?;
+        let value = Box::new(self.parse_spec_expr()?);
+        self.expect_rparen()?;
+        Ok(FieldInit { name, value, pos })
+    }
+
+    fn parse_spec_bit_vector(&mut self) -> Result<(u128, usize)> {
+        let pos = self.pos();
+        let s = self.expect_symbol()?;
+        if let Some(s) = s.strip_prefix("#b") {
+            match u128::from_str_radix(s, 2) {
+                Ok(i) => Ok((i, s.len())),
+                Err(_) => Err(self.error(pos, "Not a constant binary bit vector".to_string())),
+            }
+        } else if let Some(s) = s.strip_prefix("#x") {
+            match u128::from_str_radix(s, 16) {
+                Ok(i) => Ok((i, s.len() * 4)),
+                Err(_) => Err(self.error(pos, "Not a constant hex bit vector".to_string())),
+            }
+        } else {
+            Err(self.error(
+                pos,
+                "Not a constant bit vector; must start with `#x` (hex) or `#b` (binary)"
+                    .to_string(),
+            ))
+        }
+    }
+
+    fn parse_spec_bool(&mut self) -> Result<bool> {
+        let pos = self.pos();
+        let s = self.expect_symbol()?;
+        match s.as_str() {
+            "true" => Ok(true),
+            "false" => Ok(false),
+            x => Err(self.error(pos, format!("Not a valid spec boolean: {x}"))),
+        }
+    }
+
+    fn parse_model(&mut self) -> Result<Model> {
+        let pos = self.pos();
+        let name = self.parse_ident()?;
+        self.expect_lparen()?; // body
+        let val = if self.eat_sym_str("type")? {
+            let ty = self.parse_model_type()?;
+            ModelValue::TypeValue(ty)
+        } else if self.eat_sym_str("const")? {
+            let val = self.parse_spec_expr()?;
+            ModelValue::ConstValue(val)
+        } else {
+            return Err(self.error(pos, "Model must be a type, enum or const".to_string()));
+        };
+
+        self.expect_rparen()?; // end body
+        Ok(Model { name, val })
+    }
+
+    fn parse_model_type(&mut self) -> Result<ModelType> {
+        let pos = self.pos();
+        if self.eat_sym_str("!")? {
+            Ok(ModelType::Unspecified)
+        } else if self.eat_sym_str("_")? {
+            Ok(ModelType::Auto)
+        } else if self.eat_sym_str("Bool")? {
+            Ok(ModelType::Bool)
+        } else if self.eat_sym_str("Int")? {
+            Ok(ModelType::Int)
+        } else if self.eat_sym_str("Unit")? {
+            Ok(ModelType::Unit)
+        } else if self.is_lparen() {
+            self.expect_lparen()?;
+            if self.eat_sym_str("bv")? {
+                let width = if self.is_rparen() {
+                    None
+                } else if self.is_int() {
+                    Some(usize::try_from(self.expect_int()?).map_err(|err| {
+                        self.error(pos, format!("Invalid BitVector width: {err}"))
+                    })?)
+                } else {
+                    return Err(self.error(pos, "Badly formed BitVector (bv ...)".to_string()));
+                };
+                self.expect_rparen()?;
+                Ok(ModelType::BitVec(width))
+            } else if self.eat_sym_str("struct")? {
+                let mut fields = Vec::new();
+                while !self.is_rparen() {
+                    self.expect_lparen()?;
+                    let name = self.parse_ident()?;
+                    let ty = self.parse_model_type()?;
+                    self.expect_rparen()?;
+                    fields.push(ModelField { name, ty });
+                }
+                self.expect_rparen()?;
+                Ok(ModelType::Struct(fields))
+            } else if self.eat_sym_str("named")? {
+                let name = self.parse_ident()?;
+                self.expect_rparen()?;
+                Ok(ModelType::Named(name))
+            } else {
+                Err(self.error(
+                    pos,
+                    "Badly formed model: should be BitVector (bv ...) or Struct (struct ...)"
+                        .to_string(),
+                ))
+            }
+        } else {
+            Err(self.error(
+                pos,
+                "Model type be a Bool, Int, BitVector (bv ...) or Struct (struct ...)".to_string(),
+            ))
+        }
+    }
+
+    fn parse_state(&mut self) -> Result<State> {
+        let pos = self.pos();
+        let name = self.parse_ident()?;
+        let ty = self.parse_tagged_type("type")?;
+
+        self.expect_lparen()?;
+        if !self.eat_sym_str("default")? {
+            return Err(self.error(
+                self.pos(),
+                format!("Invalid default: expected (default <expr>)"),
+            ));
+        };
+        let default = self.parse_spec_expr()?;
+        self.expect_rparen()?;
+
+        Ok(State {
+            name,
+            ty,
+            default,
+            pos,
+        })
+    }
+
+    fn parse_form(&mut self) -> Result<Form> {
+        let pos = self.pos();
+        let name = self.parse_ident()?;
+        let signatures = self.parse_signatures()?;
+        Ok(Form {
+            name,
+            signatures,
+            pos,
+        })
+    }
+
+    fn parse_signatures(&mut self) -> Result<Vec<Signature>> {
+        let mut signatures = vec![];
+        while !self.is_rparen() {
+            signatures.push(self.parse_signature()?);
+        }
+        Ok(signatures)
+    }
+
+    fn parse_signature(&mut self) -> Result<Signature> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        let args = self.parse_tagged_types("args")?;
+        let ret = self.parse_tagged_type("ret")?;
+        self.expect_rparen()?;
+        Ok(Signature { args, ret, pos })
+    }
+
+    fn parse_tagged_types(&mut self, tag: &str) -> Result<Vec<ModelType>> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        if !self.eat_sym_str(tag)? {
+            return Err(self.error(pos, format!("Invalid {tag}: expected ({tag} <arg> ...)")));
+        };
+        let mut params = vec![];
+        while !self.is_rparen() {
+            params.push(self.parse_model_type()?);
+        }
+        self.expect_rparen()?;
+        Ok(params)
+    }
+
+    fn parse_tagged_type(&mut self, tag: &str) -> Result<ModelType> {
+        self.expect_lparen()?;
+        let pos = self.pos();
+        if !self.eat_sym_str(tag)? {
+            return Err(self.error(pos, format!("Invalid {tag}: expected ({tag} <arg>)")));
+        };
+        let ty = self.parse_model_type()?;
+        self.expect_rparen()?;
+        Ok(ty)
+    }
+
+    fn parse_instantiation(&mut self) -> Result<Instantiation> {
+        let pos = self.pos();
+        let term = self.parse_ident()?;
+        // Instantiation either has an explicit signatures list, which would
+        // open with a left paren. Or it has an identifier referencing a
+        // predefined set of signatures.
+        if self.is_lparen() {
+            let signatures = self.parse_signatures()?;
+            Ok(Instantiation {
+                term,
+                form: None,
+                signatures,
+                pos,
+            })
+        } else {
+            let form = self.parse_ident()?;
+            Ok(Instantiation {
+                term,
+                form: Some(form),
+                signatures: vec![],
+                pos,
+            })
+        }
+    }
+
     fn parse_extern(&mut self) -> Result<Extern> {
         let pos = self.pos();
         if self.eat_sym_str("constructor")? {
@@ -371,6 +1019,14 @@ impl<'a> Parser<'a> {
 
     fn parse_rule(&mut self) -> Result<Rule> {
         let pos = self.pos();
+        let name = if self.is_sym() {
+            Some(
+                self.parse_ident()
+                    .map_err(|err| self.error(pos, format!("Invalid rule name: {err:?}")))?,
+            )
+        } else {
+            None
+        };
         let prio = if self.is_int() {
             Some(
                 i64::try_from(self.expect_int()?)
@@ -393,6 +1049,7 @@ impl<'a> Parser<'a> {
                         expr,
                         pos,
                         prio,
+                        name,
                     });
                 }
             }
@@ -547,5 +1204,47 @@ impl<'a> Parser<'a> {
             outer_ty,
             pos,
         })
+    }
+
+    fn count_lines(&mut self, start_pos: Pos, def: &Def) {
+        // Compute lines between start and end positions.
+        let end_pos = self.pos();
+        assert_eq!(start_pos.file, end_pos.file);
+        let map = self.files.file_line_map(start_pos.file).unwrap();
+        let file_name = self.files.file_name(start_pos.file).unwrap();
+        let start_line = map.line(start_pos.offset);
+        let end_line = map.line(end_pos.offset);
+        let lines = (end_line - start_line) + 1;
+
+        // Categorize the definition.
+        let category = match def {
+            // Spec
+            Def::Attr(_) => "attr",
+            Def::Spec(spec) => &format!("spec/{}", spec.term.0),
+            Def::SpecMacro(_) => "macro",
+            Def::Model(_) => "model",
+            Def::State(_) => "state",
+            Def::Form(_) => "form",
+            Def::Instantiation(_) => "instantiation",
+
+            // ISLE
+            Def::Rule(rule) => {
+                let root_term = rule.pattern.root_term().unwrap();
+                match &rule.name {
+                    Some(name) => &format!("rule/{}/{}", root_term.0, name.0),
+                    None => &format!("rule/{}", root_term.0),
+                }
+            }
+
+            Def::Extern(_)
+            | Def::Converter(_)
+            | Def::Pragma(_)
+            | Def::Type(_)
+            | Def::Extractor(_)
+            | Def::Decl(_) => "isle",
+        };
+
+        // Report
+        log!(target: "isle_spec_lines", "SPEC_LINES\t{lines}\t{category}\t{file_name}\t{start_line}");
     }
 }
