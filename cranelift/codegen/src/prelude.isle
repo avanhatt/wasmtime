@@ -757,3 +757,5 @@
       (provide (= result (bvneg x))))
 
 (spec (i64_cast_unsigned x) (provide (= result x)))
+
+(spec (little_or_native_endian x) (provide (= result x)))

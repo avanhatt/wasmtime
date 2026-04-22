@@ -1871,9 +1871,6 @@
 (extern constructor is_zero_uimm12 is_zero_uimm12)
 
 ;; Helper to go directly from a `Value`, when it's an `iconst`, to an `Imm12`.
-; REVIEW(mbm): is imm12_from_value spec correct?
-; NOTE(mbm): compare with https://github.com/avanhatt/wasmtime/blob/94ccb9d4d55a479893cb04bc796ec620ed24cee2/cranelift/codegen/src/isa/aarch64/inst.isle#L1867-L1874
-
 (decl imm12_from_value (Imm12) Value)
 (extractor
   (imm12_from_value n)
@@ -4765,7 +4762,6 @@
                   (and (= alu_op (ALUOp.EorNot)) (= size (OperandSize.Size64)))
                   (and (= alu_op (ALUOp.EorNot)) (= size (OperandSize.Size32)))
             )
-            ; REVIEW(mbm): require properties for logical immediates?
       )
 )
 
