@@ -1277,6 +1277,8 @@
 
 (model VCodeConstant (type !))
 
+(model StackSlot (type !))
+
 (spec (emit_side_effect arg) (provide true))
 
 (model ProducesFlags

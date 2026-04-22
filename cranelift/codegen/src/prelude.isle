@@ -759,3 +759,14 @@
 (spec (i64_cast_unsigned x) (provide (= result x)))
 
 (spec (little_or_native_endian x) (provide (= result x)))
+
+(spec (value_type ty) (provide (= (:bits ty) (widthof result))))
+
+(spec (i32_checked_add x y)
+      (provide (= result (bvadd x y)))
+      (match
+          (or
+            (not (= (bvslt x #x00000000) (bvslt y #x00000000))) ; different sign inputs
+            (= (bvslt x #x00000000) (bvslt (bvadd x y) #x00000000)))))  ; same sign sum
+
+(spec (u16_into_u64 x) (provide (= result (sign_ext 64 x))))

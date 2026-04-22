@@ -21,7 +21,7 @@ while getopts "n:t:c" opt; do
 done
 
 [[ -n "${name}" ]]
-[[ -n "${EVAL_DATA_DIR}" ]]
+[[ -n "${EVAL_DATA_DIR-data}" ]]
 
 # Metadata helpers.
 function json_new() {
@@ -41,7 +41,7 @@ tmp_dir=$(mktemp -d)
 
 # Setup results directory.
 timestamp=$(date -u '+%Y-%m-%dT%T')
-output_dir="${EVAL_DATA_DIR}/run/${timestamp}-${name}"
+output_dir="${EVAL_DATA_DIR-data}/run/${timestamp}-${name}"
 mkdir -p "${output_dir}"
 
 # Save metadata
