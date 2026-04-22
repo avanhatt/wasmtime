@@ -1088,12 +1088,21 @@
 (type BoxCallIndInfo (primitive BoxCallIndInfo))
 (type BoxReturnCallInfo (primitive BoxReturnCallInfo))
 (type BoxReturnCallIndInfo (primitive BoxReturnCallIndInfo))
-(type CondBrKind (primitive CondBrKind))
 (type BranchTarget (primitive BranchTarget))
 (type BoxJTSequenceInfo (primitive BoxJTSequenceInfo))
 (type CodeOffset (primitive CodeOffset))
 (type VecMachLabel extern (enum))
 
+(type CondBrKind extern
+  (enum
+    (Zero (r Reg) (s OperandSize))
+    (NotZero (r Reg) (s OperandSize))
+    (Cond (cc Cond))
+))
+
+; Expect that branched on registers will be general-purpose registers.
+(instantiate CondBrKind.Zero ((args (bv 64) (named OperandSize)) (ret (named CondBrKind))))
+(instantiate CondBrKind.NotZero ((args (bv 64) (named OperandSize)) (ret (named CondBrKind))))
 
 
 (type ExtendOp extern
