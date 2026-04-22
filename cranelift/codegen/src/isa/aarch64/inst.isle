@@ -4858,8 +4858,9 @@
             ; Conditions under which this instruction traps.
             (= trap_cond
                   (match kind
-                        ((Zero r) (bv_is_zero! r))
-                        ((NotZero r) (not (bv_is_zero! r)))
+                        ; AVH TODO: need to check s?
+                        ((Zero r s) (bv_is_zero! r))
+                        ((NotZero r s) (not (bv_is_zero! r)))
                         ((Cond cc) (cond_holds! cc (:flags_in result)))
                   )
             )
@@ -5610,3 +5611,6 @@
        (bvand
          (extract 7 0 imm)
          (extract 7 0 (shift_mask! 64 (:bits ty)))))))
+
+(spec (constant_f32 n)
+      (provide (= result (zero_ext 64 n))))
