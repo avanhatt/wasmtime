@@ -764,9 +764,25 @@
 
 (spec (i32_checked_add x y)
       (provide (= result (bvadd x y)))
-      (match
-          (or
+      (match (or
             (not (= (bvslt x #x00000000) (bvslt y #x00000000))) ; different sign inputs
             (= (bvslt x #x00000000) (bvslt (bvadd x y) #x00000000)))))  ; same sign sum
 
-(spec (u16_into_u64 x) (provide (= result (sign_ext 64 x))))
+(spec (u8_into_u16 x) (provide (= result (zero_ext 16 x))))
+(spec (u8_into_u32 x) (provide (= result (zero_ext 32 x))))
+(spec (u8_into_u64 x) (provide (= result (zero_ext 64 x))))
+(spec (u16_into_u32 x) (provide (= result (zero_ext 32 x))))
+(spec (u16_into_u64 x) (provide (= result (zero_ext 64 x))))
+(spec (u32_into_u64 x) (provide (= result (zero_ext 64 x))))
+
+(spec (i8_into_i16 x) (provide (= result (sign_ext 16 x))))
+(spec (i8_into_i32 x) (provide (= result (sign_ext 32 x))))
+(spec (i8_into_i64 x) (provide (= result (sign_ext 64 x))))
+(spec (i16_into_i32 x) (provide (= result (sign_ext 32 x))))
+(spec (i16_into_i64 x) (provide (= result (sign_ext 64 x))))
+(spec (i32_into_i64 x) (provide (= result (sign_ext 64 x))))
+
+(spec (u64_wrapping_shl x y)
+      (provide (= result
+                  (bvshl x
+                         (zero_ext 32 (bvand y #x0000003f)))))) ; shift by y mod 64

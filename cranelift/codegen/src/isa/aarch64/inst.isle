@@ -5343,7 +5343,7 @@
       )
 )
 
-(spec (cond_br_zero r) (provide (= result (CondBrKind.Zero r))))
+(spec (cond_br_zero r s) (provide (= result (CondBrKind.Zero r s))))
 
 (spec (cond_br_cond cc) (provide (= result (CondBrKind.Cond cc))))
 
@@ -5594,3 +5594,10 @@
                         (imm  (extract 7 0 (bvor b0_5 (bvor b6 b7))))
                   )
                   (= value (asimd_fp_mod_imm_value64! imm)))))))
+
+(spec (shift_masked_imm ty imm)
+  (provide
+    (= result
+       (bvand
+         (extract 7 0 imm)
+         (extract 7 0 (shift_mask! 64 (:bits ty)))))))

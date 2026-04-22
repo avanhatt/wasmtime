@@ -1279,6 +1279,8 @@
 
 (model StackSlot (type !))
 
+;; (model CondBrKind (type !))
+
 (spec (emit_side_effect arg) (provide true))
 
 (model ProducesFlags
