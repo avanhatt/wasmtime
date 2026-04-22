@@ -5,7 +5,6 @@
 (model Ieee32 (type (bv 32)))
 (model Ieee64 (type (bv 64)))
 
-; REVIEW(mbm): do we need to model MemFlags?
 (model MemFlags (type
     (struct
         (aligned Bool)
@@ -222,7 +221,6 @@
         ; Else, return the remainder of dividing j1 by j2, with the sign of the dividend j1.
             (and
                 (not clif_trap)
-                ; REVIEW(mbm): does bvsrem have the same semantics as wasm?
                 (= result (bvsrem x y))
 
             )
