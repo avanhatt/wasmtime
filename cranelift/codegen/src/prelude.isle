@@ -651,13 +651,14 @@
       (match (<= (:bits result) 64)))
 
 (spec (ty_int_ref_scalar_64 ty)
-      (provide (= result ty))
-      (match
-            (or
-                  (= (:bits result) 8)
-                  (= (:bits result) 16)
-                  (= (:bits result) 32)
-                  (= (:bits result) 64))))
+;; AVH TODO
+      ;; (match
+      ;;       (or
+      ;;             (= (:bits result) 8)
+      ;;             (= (:bits result) 16)
+      ;;             (= (:bits result) 32)
+      ;;             (= (:bits result) 64)))
+      (provide (= result ty)))
 
 (spec (ty_32_or_64 ty)
       (provide (= result ty))
@@ -769,18 +770,20 @@
 (spec (i32_into_i64 x) (provide (= result (sign_ext 64 x))))
 
 (spec (u32_from_u64 x)
-      (match (bvule x #x00000000ffffffff))
-      (provide (= result (conv_to 32 x))))
+      (match (bvule result #x00000000ffffffff))
+      (provide (= x (conv_to 32 result))))
 
 (spec (u64_wrapping_shl x y)
       (provide (= result
                   (bvshl x
                          (zero_ext 32 (bvand y #x0000003f)))))) ; shift by y mod 64
 
+(spec (u64_wrapping_sub x y) (provide (= result (bvsub x y))))
+
 (spec (ty_64 ty)
-      (match (= 64 (:bits ty)))
+      (match (= 64 (:bits result)))
       (provide (= result ty)))
 
 (spec (ty_32 ty)
-      (match (= 32 (:bits ty)))
+      (match (= 32 (:bits result)))
       (provide (= result ty)))

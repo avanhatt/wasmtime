@@ -3329,3 +3329,8 @@
 (attr extractlane (tag vector))
 
 (attr put_nonzero_in_reg (veri chain))
+
+(attr fmadd (tag vector))
+(attr fnmadd (tag vector))
+(attr fmsub (tag vector))
+(attr fnmsub (tag vector))

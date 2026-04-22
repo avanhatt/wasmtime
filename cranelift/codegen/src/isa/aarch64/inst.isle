@@ -4685,6 +4685,12 @@
 
 (attr MInst.LoadAcquire (tag atomics))
 
+(attr stack_addr (tag wasm_category_stack))
+
+(attr fma (tag vector))
+
+(attr isplit (tag vector))
+
 (model MInst
       (type
             (struct
@@ -4797,7 +4803,7 @@
                   (= rd (zero_ext 64 (bvshl (extract 31 0 rn) (zero_ext 32 immshift))))
             )
 
-            (=> (and (= alu_op (ALUOp.RotR)) (= size (OperandSize.Size32)))
+            (=> (and (= alu_op (ALUOp.Extr)) (= size (OperandSize.Size32)))
                 (with
                             (t1 t3 t4 t5)
                             (and
@@ -4817,7 +4823,7 @@
                                 (= t5 (if t1 t3 t4))
                                 (= rd (zero_ext 64 t5))))
             )
-            (=> (and (= alu_op (ALUOp.RotR)) (= size (OperandSize.Size64)))
+            (=> (and (= alu_op (ALUOp.Extr)) (= size (OperandSize.Size64)))
             (with
                             (t1 t3 t4 t5)
                             (and
@@ -4846,8 +4852,8 @@
                   (and (= alu_op (ALUOp.Lsl)) (= size (OperandSize.Size64)))
                   (and (= alu_op (ALUOp.Lsl)) (= size (OperandSize.Size32)))
 
-                  (and (= alu_op (ALUOp.RotR)) (= size (OperandSize.Size64)))
-                  (and (= alu_op (ALUOp.RotR)) (= size (OperandSize.Size32)))
+                  (and (= alu_op (ALUOp.Extr)) (= size (OperandSize.Size64)))
+                  (and (= alu_op (ALUOp.Extr)) (= size (OperandSize.Size32)))
             )
       )
 )
