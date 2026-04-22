@@ -3327,3 +3327,5 @@
 (attr rule bitcast_i128 (tag i128))
 
 (attr extractlane (tag vector))
+
+(attr put_nonzero_in_reg (veri chain))
