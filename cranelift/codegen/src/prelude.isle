@@ -768,14 +768,19 @@
 (spec (i16_into_i64 x) (provide (= result (sign_ext 64 x))))
 (spec (i32_into_i64 x) (provide (= result (sign_ext 64 x))))
 
-(spec (u32_from_u64 x) (provide (= result (conv_to 32 x)))
-                       (match x (bvule x #x00000000ffffffff)))
+(spec (u32_from_u64 x)
+      (match (bvule x #x00000000ffffffff))
+      (provide (= result (conv_to 32 x))))
 
 (spec (u64_wrapping_shl x y)
       (provide (= result
                   (bvshl x
                          (zero_ext 32 (bvand y #x0000003f)))))) ; shift by y mod 64
 
-(spec (ty_64 x)
-      (provide (= result x))
-      (match (= 64 (:bits ty))))
+(spec (ty_64 ty)
+      (match (= 64 (:bits ty)))
+      (provide (= result ty)))
+
+(spec (ty_32 ty)
+      (match (= 32 (:bits ty)))
+      (provide (= result ty)))

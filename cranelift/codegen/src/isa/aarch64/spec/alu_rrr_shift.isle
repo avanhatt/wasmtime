@@ -13,11 +13,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvadd rn (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -31,11 +31,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvadd rn (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -49,11 +49,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvadd rn (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -72,11 +72,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvadd (bvadd rn (bvnot (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))) #x0000000000000001))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -93,14 +93,14 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (=
                                     rd
                                     (bvadd (bvadd rn (bvnot (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))) #x0000000000000001)
                                 )
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -117,14 +117,14 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (=
                                     rd
                                     (bvadd (bvadd rn (bvnot (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))) #x0000000000000001)
                                 )
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -146,11 +146,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvor rn (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -164,11 +164,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvor rn (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -182,11 +182,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvor rn (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -205,11 +205,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvand rn (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -223,11 +223,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvand rn (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -241,11 +241,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvand rn (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -264,11 +264,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvxor rn (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -282,11 +282,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvxor rn (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -300,11 +300,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvxor rn (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop)))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -323,11 +323,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvor rn (bvnot (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -341,11 +341,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvor rn (bvnot (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -359,11 +359,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvor rn (bvnot (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -382,11 +382,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvxor rn (bvnot (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -400,11 +400,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvxor rn (bvnot (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -418,11 +418,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvxor rn (bvnot (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -441,11 +441,11 @@
                     ((Lsl)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvand rn (bvnot (bvshl rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -459,11 +459,11 @@
                     ((Lsr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvand rn (bvnot (bvlshr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -477,11 +477,11 @@
                     ((Asr)
                         (and
                             (=>
-                                (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
+                                (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
                                 (= rd (bvand rn (bvnot (bvashr rm (zero_ext 64 (extract 5 0 (extract 5 0 (:amt shiftop))))))))
                             )
                             (=>
-                                (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                                (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                                 (=
                                     rd
                                     (zero_ext
@@ -504,20 +504,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -527,20 +527,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -550,20 +550,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -573,20 +573,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -596,20 +596,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -619,20 +619,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -642,20 +642,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )
@@ -665,20 +665,20 @@
                     (:op shiftop)
                     ((Lsl)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Lsr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                     ((Asr)
                         (or
-                            (and (:Size64 size) (= (extract 7 6 (:amt shiftop)) #b00))
-                            (and (:Size32 size) (= (extract 7 5 (:amt shiftop)) #b000))
+                            (and (Size64? size) (= (extract 7 6 (:amt shiftop)) #b00))
+                            (and (Size32? size) (= (extract 7 5 (:amt shiftop)) #b000))
                         )
                     )
                 )

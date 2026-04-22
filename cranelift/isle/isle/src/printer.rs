@@ -502,7 +502,7 @@ impl ToSExpr for SpecExpr {
                 x.to_sexpr(),
             ]),
             SpecExpr::Discriminator { variant, x, pos:_ } => SExpr::List(vec![
-                SExpr::atom(format!(":{}", variant.0)),
+                SExpr::atom(format!("{}?", variant.0)),
                 x.to_sexpr(),
             ]),
             SpecExpr::Match { x, arms, pos:_ } => {
