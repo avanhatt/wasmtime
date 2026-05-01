@@ -3061,7 +3061,7 @@
 (rule (aarch64_fpustore128 amode flags val)
       (SideEffectNoResult.Inst (MInst.FpuStore128 val amode flags)))
 (decl aarch64_storep64 (PairAMode MemFlags Reg Reg) SideEffectNoResult)
-(rule (aarch64_storep64 amode flags val1 val2)
+(rule lower_aarch64_storep64 (aarch64_storep64 amode flags val1 val2)
       (SideEffectNoResult.Inst (MInst.StoreP64 val1 val2 amode flags)))
 
 ;; Helper for generating a `trapif` instruction.
@@ -4954,10 +4954,9 @@
       )
 ))
 
-;; (instantiate CondBrKind.Zero ((args (bv 64)) (ret (named CondBrKind))))
-;; (instantiate CondBrKind.NotZero ((args (bv 64)) (ret (named CondBrKind))))
-
 (model MemLabel (type !))
+
+(model SImm7Scaled (type !))
 
 (model SImm9 (type (bv 9)))
 
@@ -5002,6 +5001,8 @@
 (attr diff_from_32 (veri chain))
 
 (attr size_for_mov_to_fpu (veri chain))
+
+(attr pair_amode (veri chain))
 
 (spec (scalar_size ty)
       (provide (= result
@@ -5529,6 +5530,8 @@
 
 (attr rule lower_icmp_i128_consumer (tag i128))
 
+(attr rule lower_aarch64_storep64 (tag i128))
+
 (spec (asimd_mov_mod_imm_zero size) (provide (= (:imm result) #x00)))
 
 (macro (asimd_fp_mod_imm_value32 imm)
@@ -5620,3 +5623,25 @@
 
 (spec (constant_f32 n)
       (provide (= result (zero_ext 64 n))))
+
+;; AVH TODO REPLACE
+(spec (simm7_scaled_from_i64 x ty)
+      (provide (= result x)))
+
+(spec (a64_extr_imm ty shift)
+      (require
+            ; Type must be either I32 or I64.
+            (or (= (:bits ty) 32) (= (:bits ty) 64))
+      )
+      (provide
+            ; The op field encodes the type: I32 (LSL), I64 (LSR).
+            (= (:op result)
+                  (switch (:bits ty)
+                        (32 (ALUOp.Lsl))
+                        (64 (ALUOp.Lsr))
+                  )
+            )
+            ; The amt field is the shift value, zero-extended from 6 to 8 bits.
+            (= (:amt result) (zero_ext 8 shift))
+      )
+)

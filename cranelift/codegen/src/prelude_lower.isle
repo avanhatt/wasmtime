@@ -1182,6 +1182,10 @@
       )
 )
 
+(spec (value_regs x y)
+      (provide (= x (:lo result))
+               (= y (:hi result))))
+
 (model InstOutput (type (bv)))
 
 (model WritableReg (type (bv)))
@@ -1278,8 +1282,6 @@
 (model VCodeConstant (type !))
 
 (model StackSlot (type !))
-
-;; (model CondBrKind (type !))
 
 (spec (emit_side_effect arg) (provide true))
 
@@ -1393,3 +1395,6 @@
                   (bits (bvand arg minus1))
             )
             (= result bits))))
+
+(spec (u8_from_iconst x)
+      (provide (= result (zero_ext 64 x))))
