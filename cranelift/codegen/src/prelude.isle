@@ -654,10 +654,10 @@
 ;; AVH TODO
       (match
             (or
-                  (= (:bits result) 8)
-                  (= (:bits result) 16)
-                  (= (:bits result) 32)
-                  (= (:bits result) 64)))
+                  (= (:bits ty) 8)
+                  (= (:bits ty) 16)
+                  (= (:bits ty) 32)
+                  (= (:bits ty) 64)))
       (provide (= result ty)))
 
 (spec (ty_32_or_64 ty)
