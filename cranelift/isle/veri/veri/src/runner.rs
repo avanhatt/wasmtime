@@ -4,6 +4,7 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     str::FromStr,
+    sync::Mutex,
     time::{self, Duration},
 };
 
@@ -17,7 +18,7 @@ use serde::Serialize;
 
 use crate::{
     BUILD_PROFILE, GIT_VERSION,
-    debug::print_expansion,
+    debug::{print_expansion, write_expansion},
     expand::{Chaining, Expander, Expansion},
     program::Program,
     solver::{Applicability, Dialect, Solver, Verification},
@@ -230,6 +231,8 @@ pub enum Verdict {
     Inapplicable,
     Success,
     Unknown,
+    Failure,
+    ApplicabilityUnknown,
 }
 
 #[derive(Serialize)]
@@ -374,6 +377,21 @@ impl TermMetadata {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FailureKind {
+    Verification,
+    ApplicabilityUnknown,
+}
+
+#[derive(Debug, Clone)]
+pub struct FailureRecord {
+    pub kind: FailureKind,
+    pub expansion_id: usize,
+    pub description: String,
+    pub instantiation_index: usize,
+    pub failure_path: PathBuf,
+}
+
 #[derive(Serialize)]
 pub struct Report {
     build_profile: String,
@@ -515,6 +533,8 @@ impl Runner {
         let expansions = expander.expansions();
         log::info!("expansions: {n}", n = expansions.len());
 
+        let failures: Mutex<Vec<FailureRecord>> = Mutex::new(Vec::new());
+
         let mut expansion_reports = expansions
             .par_iter()
             .enumerate()
@@ -526,7 +546,8 @@ impl Runner {
 
                 // Verify
                 let expansion_log_dir = self.log_dir.join("expansions").join(format!("{:05}", i));
-                let report = self.verify_expansion(expansion, i, expansion_log_dir.clone())?;
+                let report =
+                    self.verify_expansion(expansion, i, expansion_log_dir.clone(), &failures)?;
 
                 Ok(Some(report))
             })
@@ -537,6 +558,62 @@ impl Runner {
 
         // End timer.
         let duration = start.elapsed();
+
+        // Report failures, partitioned by kind.
+        let failures = failures.into_inner().unwrap();
+        let (verification_failures, applicability_unknowns): (Vec<_>, Vec<_>) = failures
+            .into_iter()
+            .partition(|f| f.kind == FailureKind::Verification);
+
+        let format_line = |failure: &FailureRecord| -> String {
+            format!(
+                "#{id}\t{description}\t(instantiation {inst})\t{path}",
+                id = failure.expansion_id,
+                description = failure.description,
+                inst = failure.instantiation_index,
+                path = failure.failure_path.display(),
+            )
+        };
+
+        if !verification_failures.is_empty() {
+            let mut summary =
+                Self::open_log_file(self.log_dir.clone(), "failures.out").ok();
+            eprintln!(
+                "=== VERIFICATION FAILURES ({n}) ===",
+                n = verification_failures.len()
+            );
+            for failure in &verification_failures {
+                let line = format_line(failure);
+                eprintln!("FAILURE {line}");
+                if let Some(f) = summary.as_mut() {
+                    let _ = writeln!(f, "{line}");
+                }
+            }
+            log::warn!(
+                "verification failures: {n}",
+                n = verification_failures.len()
+            );
+        }
+
+        if !applicability_unknowns.is_empty() {
+            let mut summary =
+                Self::open_log_file(self.log_dir.clone(), "applicability_unknowns.out").ok();
+            eprintln!(
+                "=== APPLICABILITY UNKNOWN ({n}) ===",
+                n = applicability_unknowns.len()
+            );
+            for failure in &applicability_unknowns {
+                let line = format_line(failure);
+                eprintln!("APPLICABILITY UNKNOWN {line}");
+                if let Some(f) = summary.as_mut() {
+                    let _ = writeln!(f, "{line}");
+                }
+            }
+            log::warn!(
+                "applicability unknowns: {n}",
+                n = applicability_unknowns.len()
+            );
+        }
 
         // Prepare report
         expansion_reports.sort_by(|a, b| a.id.cmp(&b.id));
@@ -619,6 +696,7 @@ impl Runner {
         expansion: &Expansion,
         id: usize,
         log_dir: std::path::PathBuf,
+        failures: &Mutex<Vec<FailureRecord>>,
     ) -> Result<ExpansionReport> {
         let description = expansion_description(expansion, &self.prog)?;
         let start = time::Instant::now();
@@ -715,6 +793,11 @@ impl Runner {
                     solver_backend,
                     solution_log_dir,
                     &mut output,
+                    expansion,
+                    id,
+                    &description,
+                    i,
+                    failures,
                 )
                 .context(format!("verify expansion: {id}"))?;
 
@@ -749,13 +832,18 @@ impl Runner {
         solver_backend: SolverBackend,
         log_dir: std::path::PathBuf,
         output: &mut dyn Write,
+        expansion: &Expansion,
+        expansion_id: usize,
+        description: &str,
+        instantiation_index: usize,
+        failures: &Mutex<Vec<FailureRecord>>,
     ) -> Result<VerifyReport> {
         let start = time::Instant::now();
 
         // Solve.
         let binary = solver_backend.prog();
         let args = solver_backend.args(self.timeout);
-        let replay_file = Self::open_log_file(log_dir, "solver.smt2")?;
+        let replay_file = Self::open_log_file(log_dir.clone(), "solver.smt2")?;
         let smt = easy_smt::ContextBuilder::new()
             .solver(binary, &args)
             .replay_file(Some(replay_file))
@@ -782,7 +870,42 @@ impl Runner {
                     verify_time: None,
                 });
             }
-            Applicability::Unknown => bail!("could not prove applicability"),
+            Applicability::Unknown => {
+                let unknown_path = log_dir.join("applicability_unknown.out");
+                let mut unknown_file =
+                    Self::open_log_file(log_dir.clone(), "applicability_unknown.out")?;
+                writeln!(
+                    unknown_file,
+                    "#{expansion_id}\t{description}\tinstantiation={instantiation_index}"
+                )?;
+                writeln!(unknown_file, "expansion:")?;
+                write_expansion(&mut unknown_file, &self.prog, expansion)?;
+
+                writeln!(
+                    output,
+                    "\t\tapplicability unknown, written to {}",
+                    unknown_path.display()
+                )?;
+                log::warn!(
+                    "applicability unknown: #{expansion_id} {description} (expansion written to {})",
+                    unknown_path.display()
+                );
+
+                failures.lock().unwrap().push(FailureRecord {
+                    kind: FailureKind::ApplicabilityUnknown,
+                    expansion_id,
+                    description: description.to_string(),
+                    instantiation_index,
+                    failure_path: unknown_path,
+                });
+
+                return Ok(VerifyReport {
+                    verdict: Verdict::ApplicabilityUnknown,
+                    init_time,
+                    applicable_time,
+                    verify_time: None,
+                });
+            }
         };
 
         // Verify.
@@ -793,9 +916,37 @@ impl Runner {
         writeln!(output, "\t\tverification = {verification}")?;
         Ok(match verification {
             Verification::Failure(model) => {
-                println!("model:");
-                conditions.print_model(&model, &self.prog)?;
-                bail!("verification failed");
+                let failure_path = log_dir.join("failure.out");
+                let mut failure_file = Self::open_log_file(log_dir.clone(), "failure.out")?;
+                writeln!(
+                    failure_file,
+                    "#{expansion_id}\t{description}\tinstantiation={instantiation_index}"
+                )?;
+                writeln!(failure_file, "expansion:")?;
+                write_expansion(&mut failure_file, &self.prog, expansion)?;
+                writeln!(failure_file, "model:")?;
+                conditions.write_model(&mut failure_file, &model, &self.prog)?;
+
+                writeln!(output, "\t\tfailure written to {}", failure_path.display())?;
+                log::warn!(
+                    "verification failure: #{expansion_id} {description} (model written to {})",
+                    failure_path.display()
+                );
+
+                failures.lock().unwrap().push(FailureRecord {
+                    kind: FailureKind::Verification,
+                    expansion_id,
+                    description: description.to_string(),
+                    instantiation_index,
+                    failure_path,
+                });
+
+                VerifyReport {
+                    verdict: Verdict::Failure,
+                    init_time,
+                    applicable_time,
+                    verify_time,
+                }
             }
             Verification::Success => VerifyReport {
                 verdict: Verdict::Success,

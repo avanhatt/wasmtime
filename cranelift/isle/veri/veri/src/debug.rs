@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use crate::{
     expand::{Constrain, Expansion},
     program::Program,
@@ -9,73 +11,83 @@ use cranelift_isle::{
 };
 
 pub fn print_expansion(prog: &Program, expansion: &Expansion) {
-    println!("expansion {{");
+    write_expansion(&mut io::stdout(), prog, expansion).expect("write to stdout failed");
+}
+
+pub fn write_expansion(
+    out: &mut dyn Write,
+    prog: &Program,
+    expansion: &Expansion,
+) -> io::Result<()> {
+    writeln!(out, "expansion {{")?;
 
     // Term.
-    println!("\tterm = {}", prog.term_name(expansion.term));
+    writeln!(out, "\tterm = {}", prog.term_name(expansion.term))?;
 
     // Rules.
-    println!("\trules = [");
+    writeln!(out, "\trules = [")?;
     for rule_id in &expansion.rules {
         let rule = &prog.termenv.rules[rule_id.index()];
-        println!("\t\t{}", rule.identifier(&prog.tyenv, &prog.files));
+        writeln!(out, "\t\t{}", rule.identifier(&prog.tyenv, &prog.files))?;
     }
-    println!("\t]");
+    writeln!(out, "\t]")?;
 
     // Negated rules.
-    println!("\tnegated = [");
+    writeln!(out, "\tnegated = [")?;
     for rule_id in &expansion.negated {
         let rule = &prog.termenv.rules[rule_id.index()];
-        println!("\t\t{}", rule.identifier(&prog.tyenv, &prog.files));
+        writeln!(out, "\t\t{}", rule.identifier(&prog.tyenv, &prog.files))?;
     }
-    println!("\t]");
+    writeln!(out, "\t]")?;
 
     // Bindings.
     let lookup_binding =
         |binding_id: BindingId| expansion.bindings[binding_id.index()].clone().unwrap();
-    println!("\tbindings = [");
+    writeln!(out, "\tbindings = [")?;
     for (i, binding) in expansion.bindings.iter().enumerate() {
         if let Some(binding) = binding {
             let ty = binding_type(binding, expansion.term, prog, lookup_binding);
-            println!(
+            writeln!(
+                out,
                 "\t\t{i}: {}\t{}",
                 ty.display(&prog.tyenv),
                 binding_string(binding, expansion.term, prog, lookup_binding),
-            );
+            )?;
         }
     }
-    println!("\t]");
+    writeln!(out, "\t]")?;
 
     // Constraints.
-    println!("\tconstraints = [");
+    writeln!(out, "\tconstraints = [")?;
     for constrain in &expansion.constraints {
-        println!("\t\t{}", constrain_string(constrain, &prog.tyenv));
+        writeln!(out, "\t\t{}", constrain_string(constrain, &prog.tyenv))?;
     }
-    println!("\t]");
+    writeln!(out, "\t]")?;
 
     // Equals.
     if !expansion.equals.is_empty() {
-        println!("\tequals = [");
+        writeln!(out, "\tequals = [")?;
         for (left, right) in expansion.equalities() {
-            println!("\t\t{} == {}", left.index(), right.index());
+            writeln!(out, "\t\t{} == {}", left.index(), right.index())?;
         }
-        println!("\t]");
+        writeln!(out, "\t]")?;
     }
 
     // Parameters.
-    println!("\tparameters = [");
+    writeln!(out, "\tparameters = [")?;
     for binding_id in &expansion.parameters {
-        println!("\t\t{}", binding_id.index());
+        writeln!(out, "\t\t{}", binding_id.index())?;
     }
-    println!("\t]");
+    writeln!(out, "\t]")?;
 
     // Result.
-    println!("\tresult = {}", expansion.result.index());
+    writeln!(out, "\tresult = {}", expansion.result.index())?;
 
     // Feasibility.
-    println!("\tfeasible = {}", expansion.is_feasible());
+    writeln!(out, "\tfeasible = {}", expansion.is_feasible())?;
 
-    println!("}}");
+    writeln!(out, "}}")?;
+    Ok(())
 }
 
 pub fn print_rule_set(prog: &Program, term_id: &TermId, rule_set: &RuleSet) {
