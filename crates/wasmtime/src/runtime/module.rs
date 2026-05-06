@@ -22,7 +22,7 @@ use wasmparser::{Parser, ValidPayload, Validator};
 use wasmtime_environ::FrameTable;
 use wasmtime_environ::{
     CompiledFunctionsTable, CompiledModuleInfo, EntityIndex, HostPtr, ModuleTypes, ObjectKind,
-    TypeTrace, VMOffsets, VMSharedTypeIndex, WasmChecksum,
+    StaticModuleIndex, TypeTrace, VMOffsets, VMSharedTypeIndex, WasmChecksum,
 };
 #[cfg(feature = "gc")]
 use wasmtime_unwinder::ExceptionTable;
@@ -404,6 +404,12 @@ impl Module {
     /// those defined by any version of wasmtime. (this means that if you cache
     /// blobs across versions of wasmtime you can be safely guaranteed that
     /// future versions of wasmtime will reject old cache entries).
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub unsafe fn deserialize(engine: &Engine, bytes: impl AsRef<[u8]>) -> Result<Module> {
         let code = engine.load_code_bytes(bytes.as_ref(), ObjectKind::Module)?;
         Module::from_parts(engine, code, None)
@@ -1089,10 +1095,12 @@ impl Module {
     /// Results are yielded in a ModuleFunction struct.
     pub fn functions<'a>(&'a self) -> impl ExactSizeIterator<Item = ModuleFunction> + 'a {
         let module = self.compiled_module();
-        self.env_module().defined_func_indices().map(|idx| {
+        let module_index = self.env_module().module_index;
+        self.env_module().defined_func_indices().map(move |idx| {
             let loc = module.func_loc(idx);
             let idx = module.module().func_index(idx);
             ModuleFunction {
+                module: module_index,
                 index: idx,
                 name: module.func_name(idx).map(|n| n.to_string()),
                 offset: loc.start as usize,
@@ -1213,9 +1221,15 @@ impl Module {
 
 /// Describes a function for a given module.
 pub struct ModuleFunction {
+    /// The static module index this function belongs to.
+    pub module: StaticModuleIndex,
+    /// The function index within the module.
     pub index: wasmtime_environ::FuncIndex,
+    /// The display name of the function, if available.
     pub name: Option<String>,
+    /// The byte offset of this function in the text section.
     pub offset: usize,
+    /// The byte length of this function in the text section.
     pub len: usize,
 }
 

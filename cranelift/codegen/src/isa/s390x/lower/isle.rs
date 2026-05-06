@@ -213,75 +213,23 @@ impl generated_code::Context for IsleContext<'_, '_, MInst, S390xBackend> {
     }
 
     #[inline]
-    fn mie3_enabled(&mut self, _: Type) -> Option<()> {
-        if self.backend.isa_flags.has_mie3() {
-            Some(())
-        } else {
-            None
-        }
+    fn has_mie3(&mut self) -> bool {
+        self.backend.isa_flags.has_mie3()
     }
 
     #[inline]
-    fn mie3_disabled(&mut self, _: Type) -> Option<()> {
-        if !self.backend.isa_flags.has_mie3() {
-            Some(())
-        } else {
-            None
-        }
+    fn has_mie4(&mut self) -> bool {
+        self.backend.isa_flags.has_mie4()
     }
 
     #[inline]
-    fn mie4_enabled(&mut self, _: Type) -> Option<()> {
-        if self.backend.isa_flags.has_mie4() {
-            Some(())
-        } else {
-            None
-        }
+    fn has_vxrs_ext2(&mut self) -> bool {
+        self.backend.isa_flags.has_vxrs_ext2()
     }
 
     #[inline]
-    fn mie4_disabled(&mut self, _: Type) -> Option<()> {
-        if !self.backend.isa_flags.has_mie4() {
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn vxrs_ext2_enabled(&mut self, _: Type) -> Option<()> {
-        if self.backend.isa_flags.has_vxrs_ext2() {
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn vxrs_ext2_disabled(&mut self, _: Type) -> Option<()> {
-        if !self.backend.isa_flags.has_vxrs_ext2() {
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn vxrs_ext3_enabled(&mut self, _: Type) -> Option<()> {
-        if self.backend.isa_flags.has_vxrs_ext3() {
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    #[inline]
-    fn vxrs_ext3_disabled(&mut self, _: Type) -> Option<()> {
-        if !self.backend.isa_flags.has_vxrs_ext3() {
-            Some(())
-        } else {
-            None
-        }
+    fn has_vxrs_ext3(&mut self) -> bool {
+        self.backend.isa_flags.has_vxrs_ext3()
     }
 
     #[inline]
@@ -545,6 +493,12 @@ impl generated_code::Context for IsleContext<'_, '_, MInst, S390xBackend> {
     fn uimm16shifted_from_value(&mut self, val: Value) -> Option<UImm16Shifted> {
         let constant = self.u64_from_value(val)?;
         UImm16Shifted::maybe_from_u64(constant)
+    }
+
+    #[inline]
+    fn simm20_from_value(&mut self, val: Value) -> Option<SImm20> {
+        let constant = self.u64_from_signed_value(val)? as i64;
+        SImm20::maybe_from_i64(constant)
     }
 
     #[inline]

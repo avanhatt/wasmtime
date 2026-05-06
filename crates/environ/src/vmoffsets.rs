@@ -39,6 +39,10 @@ use crate::{
 };
 use cranelift_entity::packed_option::ReservedValue;
 
+/// Number of slots in for `component_context` in the `VMStoreContext`. This is
+/// defined by the component model's `context.{get,set}` intrinsics.
+pub const NUM_COMPONENT_CONTEXT_SLOTS: usize = 2;
+
 #[cfg(target_pointer_width = "32")]
 fn cast_to_u32(sz: usize) -> u32 {
     u32::try_from(sz).unwrap()
@@ -248,6 +252,20 @@ pub trait PtrSize {
     /// Return the offset of the `stack_chain` field of `VMStoreContext`.
     fn vmstore_context_store_data(&self) -> u8 {
         self.vmstore_context_stack_chain() + self.size_of_vmstack_chain()
+    }
+
+    /// Return the offset of the `async_guard_range` field of `VMStoreContext`.
+    fn vmstore_context_async_guard_range(&self) -> u8 {
+        self.vmstore_context_store_data() + self.size()
+    }
+
+    /// Return the offset of the `component_context[i]` field of
+    /// `VMStoreContext`.
+    fn vmstore_context_component_context_slot(&self, i: u8) -> u8 {
+        assert!(usize::from(i) < NUM_COMPONENT_CONTEXT_SLOTS);
+        let base = self.vmstore_context_async_guard_range() + 2 * self.size();
+        let slot_size = 4;
+        base + i * slot_size
     }
 
     // Offsets within `VMMemoryDefinition`
@@ -716,28 +734,34 @@ impl<P: PtrSize> From<VMOffsetsFields<P>> for VMOffsets<P> {
 }
 
 impl<P: PtrSize> VMOffsets<P> {
-    /// The offset of the `wasm_call` field.
+    /// The offset of the `VMFunctionImport::array_call` field.
     #[inline]
-    pub fn vmfunction_import_wasm_call(&self) -> u8 {
+    pub fn vmfunction_import_array_call(&self) -> u8 {
         0 * self.pointer_size()
     }
 
-    /// The offset of the `array_call` field.
+    /// The offset of the `VMFunctionImport::wasm_call` field.
     #[inline]
-    pub fn vmfunction_import_array_call(&self) -> u8 {
+    pub fn vmfunction_import_wasm_call(&self) -> u8 {
         1 * self.pointer_size()
     }
 
-    /// The offset of the `vmctx` field.
+    /// The offset of the `VMFunctionImport::type_index` field.
+    #[inline]
+    pub fn vmfunction_import_type_index(&self) -> u8 {
+        2 * self.pointer_size()
+    }
+
+    /// The offset of the `VMFunctionImport::vmctx` field.
     #[inline]
     pub fn vmfunction_import_vmctx(&self) -> u8 {
-        2 * self.pointer_size()
+        3 * self.pointer_size()
     }
 
     /// Return the size of `VMFunctionImport`.
     #[inline]
     pub fn size_of_vmfunction_import(&self) -> u8 {
-        3 * self.pointer_size()
+        4 * self.pointer_size()
     }
 }
 

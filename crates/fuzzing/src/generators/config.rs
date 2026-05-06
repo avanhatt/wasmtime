@@ -3,6 +3,7 @@
 use super::{AsyncConfig, CodegenSettings, InstanceAllocationStrategy, MemoryConfig, ModuleConfig};
 use crate::oracles::{StoreLimits, Timeout};
 use arbitrary::{Arbitrary, Unstructured};
+use std::num::NonZeroU32;
 use std::time::Duration;
 use wasmtime::Result;
 use wasmtime::{Enabled, Engine, Module, Store};
@@ -98,6 +99,8 @@ impl Config {
         // These instructions are explicitly not expected to be exactly the same
         // across engines. Don't fuzz them.
         config.relaxed_simd_enabled = false;
+
+        self.wasmtime.make_internally_consistent();
     }
 
     /// Uses this configuration and the supplied source of data to generate
@@ -136,7 +139,7 @@ impl Config {
             extended_const,
             wide_arithmetic,
             component_model_async,
-            component_model_async_builtins,
+            component_model_more_async_builtins,
             component_model_async_stackful,
             component_model_threading,
             component_model_error_context,
@@ -151,7 +154,7 @@ impl Config {
             hogs_memory: _,
             nan_canonicalization: _,
             gc_types: _,
-            stack_switching: _,
+            stack_switching,
             spec_test: _,
         } = test.config;
 
@@ -160,8 +163,8 @@ impl Config {
         self.module_config.function_references_enabled =
             function_references.or(gc).unwrap_or(false);
         self.module_config.component_model_async = component_model_async.unwrap_or(false);
-        self.module_config.component_model_async_builtins =
-            component_model_async_builtins.unwrap_or(false);
+        self.module_config.component_model_more_async_builtins =
+            component_model_more_async_builtins.unwrap_or(false);
         self.module_config.component_model_async_stackful =
             component_model_async_stackful.unwrap_or(false);
         self.module_config.component_model_threading = component_model_threading.unwrap_or(false);
@@ -171,6 +174,7 @@ impl Config {
         self.module_config.component_model_map = component_model_map.unwrap_or(false);
         self.module_config.component_model_fixed_length_lists =
             component_model_fixed_length_lists.unwrap_or(false);
+        self.module_config.stack_switching = stack_switching.unwrap_or(false);
 
         // Enable/disable proposals that wasm-smith has knobs for which will be
         // read when creating `wasmtime::Config`.
@@ -224,6 +228,9 @@ impl Config {
             pooling.total_tables = pooling.total_tables.max(limits::TABLES);
             pooling.max_tables_per_module =
                 pooling.max_tables_per_module.max(limits::TABLES_PER_MODULE);
+            pooling.max_tables_per_component = pooling
+                .max_tables_per_component
+                .max(limits::TABLES_PER_MODULE);
             pooling.max_memories_per_module = pooling
                 .max_memories_per_module
                 .max(limits::MEMORIES_PER_MODULE);
@@ -240,6 +247,11 @@ impl Config {
             pooling.total_stacks = pooling.total_stacks.max(limits::TOTAL_STACKS);
         }
 
+        // Re-enforce internal consistency after all the adjustments above
+        // (e.g. memory_reservation may have been bumped without a
+        // corresponding bump to gc_heap_reservation).
+        self.wasmtime.make_internally_consistent();
+
         // Return the test configuration that this fuzz configuration represents
         // which is used afterwards to test if the `test` here is expected to
         // fail or not.
@@ -249,6 +261,7 @@ impl Config {
                 Collector::DeferredReferenceCounting => {
                     wasmtime_test_util::wast::Collector::DeferredReferenceCounting
                 }
+                Collector::Copying => wasmtime_test_util::wast::Collector::Copying,
             },
             pooling: matches!(
                 self.wasmtime.strategy,
@@ -285,11 +298,15 @@ impl Config {
             16 << 20,
             self.wasmtime.memory_guaranteed_dense_image_size,
         ));
+        cfg.opts.gc_zeal_alloc_counter = self
+            .wasmtime
+            .gc_zeal_alloc_counter
+            .map(|c| c.clamp(NonZeroU32::new(1).unwrap(), NonZeroU32::new(1024).unwrap()));
         cfg.wasm.async_stack_zeroing = Some(self.wasmtime.async_stack_zeroing);
         cfg.wasm.bulk_memory = Some(self.module_config.config.bulk_memory_enabled);
         cfg.wasm.component_model_async = Some(self.module_config.component_model_async);
-        cfg.wasm.component_model_async_builtins =
-            Some(self.module_config.component_model_async_builtins);
+        cfg.wasm.component_model_more_async_builtins =
+            Some(self.module_config.component_model_more_async_builtins);
         cfg.wasm.component_model_async_stackful =
             Some(self.module_config.component_model_async_stackful);
         cfg.wasm.component_model_threading = Some(self.module_config.component_model_threading);
@@ -317,6 +334,7 @@ impl Config {
             Some(self.module_config.config.shared_everything_threads_enabled);
         cfg.wasm.wide_arithmetic = Some(self.module_config.config.wide_arithmetic_enabled);
         cfg.wasm.exceptions = Some(self.module_config.config.exceptions_enabled);
+        cfg.wasm.stack_switching = Some(self.module_config.stack_switching);
         cfg.wasm.shared_memory = Some(self.module_config.shared_memory);
         if !self.module_config.config.simd_enabled {
             cfg.wasm.relaxed_simd = Some(false);
@@ -332,17 +350,16 @@ impl Config {
 
         self.wasmtime.codegen.configure(&mut cfg);
 
-        cfg.codegen.inlining = self.wasmtime.inlining;
+        cfg.codegen.inlining = self.wasmtime.inlining.map(|i| i.into());
+
+        // If the wasm-smith-generated module use nan canonicalization then we
+        // don't need to enable it, but if it doesn't enable it already then we
+        // enable this codegen option.
+        cfg.wasm.nan_canonicalization = Some(!self.module_config.config.canonicalize_nans);
 
         // Only set cranelift specific flags when the Cranelift strategy is
         // chosen.
         if cranelift_strategy {
-            if let Some(option) = self.wasmtime.inlining_intra_module {
-                cfg.codegen.cranelift.push((
-                    "wasmtime_inlining_intra_module".to_string(),
-                    Some(option.to_string()),
-                ));
-            }
             if let Some(size) = self.wasmtime.inlining_small_callee_size {
                 cfg.codegen.cranelift.push((
                     "wasmtime_inlining_small_callee_size".to_string(),
@@ -357,11 +374,6 @@ impl Config {
                     Some(std::cmp::min(1000, size).to_string()),
                 ));
             }
-
-            // If the wasm-smith-generated module use nan canonicalization then we
-            // don't need to enable it, but if it doesn't enable it already then we
-            // enable this codegen option.
-            cfg.wasm.nan_canonicalization = Some(!self.module_config.config.canonicalize_nans);
 
             // Enabling the verifier will at-least-double compilation time, which
             // with a 20-30x slowdown in fuzzing can cause issues related to
@@ -405,25 +417,6 @@ impl Config {
         if !self.module_config.config.threads_enabled {
             let memory_config = self.wasmtime.memory_config.clone();
             memory_config.configure(&mut cfg);
-        };
-
-        // If malloc-based memory is going to be used, which requires these four
-        // options set to specific values (and Pulley auto-sets two of them)
-        // then be sure to cap `memory_reservation_for_growth` at a smaller
-        // value than the default. For malloc-based memory reservation beyond
-        // the end of memory isn't captured by `StoreLimiter` so we need to be
-        // sure it's small enough to not blow OOM limits while fuzzing.
-        if ((cfg.opts.signals_based_traps == Some(true) && cfg.opts.memory_guard_size == Some(0))
-            || self.wasmtime.compiler_strategy == CompilerStrategy::CraneliftPulley)
-            && cfg.opts.memory_reservation == Some(0)
-            && cfg.opts.memory_init_cow == Some(false)
-        {
-            let growth = &mut cfg.opts.memory_reservation_for_growth;
-            let max = 1 << 20;
-            *growth = match *growth {
-                Some(n) => Some(n.min(max)),
-                None => Some(max),
-            };
         }
 
         log::debug!("creating wasmtime config with CLI options:\n{cfg}");
@@ -580,8 +573,7 @@ pub struct WasmtimeConfig {
     force_jump_veneers: bool,
     memory_init_cow: bool,
     memory_guaranteed_dense_image_size: u64,
-    inlining: Option<bool>,
-    inlining_intra_module: Option<IntraModuleInlining>,
+    inlining: Option<Inlining>,
     inlining_small_callee_size: Option<u32>,
     inlining_sum_size_threshold: Option<u32>,
     use_precompiled_cwasm: bool,
@@ -595,6 +587,7 @@ pub struct WasmtimeConfig {
     /// Configuration for the compiler to use.
     pub compiler_strategy: CompilerStrategy,
     collector: Collector,
+    gc_zeal_alloc_counter: Option<NonZeroU32>,
     table_lazy_init: bool,
 
     /// Configuration for whether wasm is invoked in an async fashion and how
@@ -665,6 +658,7 @@ impl WasmtimeConfig {
                 config.config.reference_types_enabled = false;
                 config.config.exceptions_enabled = false;
                 config.function_references_enabled = false;
+                config.stack_switching = false;
 
                 // Winch's SIMD implementations require AVX and AVX2.
                 if self
@@ -796,28 +790,57 @@ impl WasmtimeConfig {
     /// be considered a "TODO" to go implement more stuff in Wasmtime to accept
     /// these sorts of configurations. For now though it's intended to reflect
     /// the current state of the engine's development.
-    fn make_internally_consistent(&mut self) {
+    pub(crate) fn make_internally_consistent(&mut self) {
         if !self.signals_based_traps {
-            let cfg = &mut self.memory_config;
             // Spectre-based heap mitigations require signal handlers so
             // this must always be disabled if signals-based traps are
             // disabled.
-            cfg.cranelift_enable_heap_access_spectre_mitigations = None;
+            self.memory_config
+                .cranelift_enable_heap_access_spectre_mitigations = None;
+        }
 
-            // With configuration settings that match the use of malloc for
-            // linear memories cap the `memory_reservation_for_growth` value
-            // to something reasonable to avoid OOM in fuzzing.
-            if !cfg.memory_init_cow
-                && cfg.memory_guard_size == Some(0)
-                && cfg.memory_reservation == Some(0)
+        // If malloc-based memory is going to be used, which requires these
+        // options set to specific values (and Pulley auto-sets some of them)
+        // then be sure to cap `memory_reservation_for_growth` and
+        // `gc_heap_reservation_for_growth` at a smaller value than the
+        // default. For malloc-based memory/heaps, reservation beyond the end
+        // isn't captured by `StoreLimiter` so we need to be sure it's small
+        // enough to not blow OOM limits while fuzzing.
+        let is_pulley = self.compiler_strategy == CompilerStrategy::CraneliftPulley;
+        let mcfg = &mut self.memory_config;
+        if !self.signals_based_traps || is_pulley {
+            if (mcfg.memory_guard_size == Some(0) || is_pulley)
+                && mcfg.memory_reservation == Some(0)
+                && !mcfg.memory_init_cow
             {
-                let min = 10 << 20; // 10 MiB
-                if let Some(val) = &mut cfg.memory_reservation_for_growth {
-                    *val = (*val).min(min);
-                } else {
-                    cfg.memory_reservation_for_growth = Some(min);
-                }
+                let growth = &mut mcfg.memory_reservation_for_growth;
+                let max = 1 << 20;
+                *growth = match *growth {
+                    Some(n) => Some(n.min(max)),
+                    None => Some(max),
+                };
             }
+            if (mcfg.gc_heap_guard_size == Some(0) || is_pulley)
+                && mcfg.gc_heap_reservation == Some(0)
+            {
+                let growth = &mut mcfg.gc_heap_reservation_for_growth;
+                let max = 1 << 20;
+                *growth = match *growth {
+                    Some(n) => Some(n.min(max)),
+                    None => Some(max),
+                };
+            }
+        }
+
+        // When using the pooling allocator, GC heap tunables must match memory
+        // tunables.
+        if let InstanceAllocationStrategy::Pooling(_) = &self.strategy {
+            mcfg.gc_heap_reservation = mcfg.memory_reservation;
+            mcfg.gc_heap_guard_size = mcfg.memory_guard_size;
+            mcfg.gc_heap_reservation_for_growth = mcfg.memory_reservation_for_growth;
+            // memory_may_move is not in MemoryConfig, but gc_heap_may_move
+            // must not conflict. Set it to None so the default matches.
+            mcfg.gc_heap_may_move = None;
         }
     }
 }
@@ -850,8 +873,7 @@ impl RegallocAlgorithm {
         match self {
             RegallocAlgorithm::Backtracking => wasmtime::RegallocAlgorithm::Backtracking,
             RegallocAlgorithm::SinglePass => {
-                // FIXME(#11850)
-                const SINGLE_PASS_KNOWN_BUGGY_AT_THIS_TIME: bool = true;
+                const SINGLE_PASS_KNOWN_BUGGY_AT_THIS_TIME: bool = false;
                 if SINGLE_PASS_KNOWN_BUGGY_AT_THIS_TIME {
                     wasmtime::RegallocAlgorithm::Backtracking
                 } else {
@@ -863,18 +885,33 @@ impl RegallocAlgorithm {
 }
 
 #[derive(Arbitrary, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-enum IntraModuleInlining {
+enum Inlining {
     Yes,
+    InterModuleAndIntraGc,
+    InterModule,
+    Intrinsics,
     No,
-    WhenUsingGc,
 }
 
-impl std::fmt::Display for IntraModuleInlining {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            IntraModuleInlining::Yes => write!(f, "yes"),
-            IntraModuleInlining::No => write!(f, "no"),
-            IntraModuleInlining::WhenUsingGc => write!(f, "gc"),
+impl From<Inlining> for wasmtime::Inlining {
+    fn from(i: Inlining) -> Self {
+        let ret = match i {
+            Inlining::Yes => wasmtime::Inlining::Yes,
+            Inlining::InterModuleAndIntraGc => wasmtime::Inlining::InterModuleAndIntraGc,
+            Inlining::InterModule => wasmtime::Inlining::InterModule,
+            Inlining::Intrinsics => wasmtime::Inlining::Intrinsics,
+            Inlining::No => wasmtime::Inlining::No,
+        };
+
+        match ret {
+            wasmtime::Inlining::Yes
+            | wasmtime::Inlining::No
+            | wasmtime::Inlining::InterModuleAndIntraGc
+            | wasmtime::Inlining::InterModule
+            | wasmtime::Inlining::Intrinsics
+            // NOTE: if you add another arm here, be sure to update the
+            // `Inlining` enum above.
+            => ret,
         }
     }
 }
@@ -924,6 +961,7 @@ impl Arbitrary<'_> for CompilerStrategy {
 pub enum Collector {
     DeferredReferenceCounting,
     Null,
+    Copying,
 }
 
 impl Collector {
@@ -931,6 +969,7 @@ impl Collector {
         match self {
             Collector::DeferredReferenceCounting => wasmtime::Collector::DeferredReferenceCounting,
             Collector::Null => wasmtime::Collector::Null,
+            Collector::Copying => wasmtime::Collector::Copying,
         }
     }
 }

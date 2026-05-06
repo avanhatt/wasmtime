@@ -2,10 +2,10 @@
 
 use super::*;
 use crate::runtime::vm::VMGcRef;
+use core::num::NonZeroU32;
 
 impl StoreOpaque {
-    /// Attempt to grow the GC heap by `bytes_needed` or, if that fails, perform
-    /// a garbage collection.
+    /// Perform any growth or GC needed to allocate `bytes_needed` bytes.
     ///
     /// Note that even when this function returns it is not guaranteed
     /// that a GC allocation of size `bytes_needed` will succeed. Growing the GC
@@ -28,7 +28,7 @@ impl StoreOpaque {
         let root = root.map(|r| scope.gc_roots_mut().push_lifo_root(store_id, r));
 
         scope
-            .grow_or_collect_gc_heap(limiter, bytes_needed, asyncness)
+            .collect_and_maybe_grow_gc_heap(limiter, bytes_needed, asyncness)
             .await;
 
         root.map(|r| {
@@ -50,35 +50,58 @@ impl StoreOpaque {
         }
     }
 
-    async fn grow_or_collect_gc_heap(
+    /// Helper invoked as part of `gc`, whose purpose is to GC and
+    /// maybe grow for a pending allocation of a given size.
+    async fn collect_and_maybe_grow_gc_heap(
         &mut self,
         limiter: Option<&mut StoreResourceLimiter<'_>>,
         bytes_needed: Option<u64>,
         asyncness: Asyncness,
     ) {
-        if let Some(n) = bytes_needed
-            // The gc_zeal's allocation counter will pass `bytes_needed == 0` to
-            // signify that we shouldn't grow the GC heap, just do a collection.
-            && n > 0
-        {
-            if self.grow_gc_heap(limiter, n).await.is_ok() {
-                return;
-            }
-        }
-
+        log::trace!("collect_and_maybe_grow_gc_heap(bytes_needed = {bytes_needed:#x?})");
         self.do_gc(asyncness).await;
+        if let Some(n) = bytes_needed
+            && n > u64::try_from(self.gc_heap_capacity())
+                .unwrap()
+                .saturating_sub(self.gc_store.as_ref().map_or(0, |gc| {
+                    u64::try_from(gc.last_post_gc_allocated_bytes.unwrap_or(0)).unwrap()
+                }))
+        {
+            let _ = self.grow_gc_heap(limiter, n, asyncness).await;
+        }
     }
 
     /// Attempt to grow the GC heap by `bytes_needed` bytes.
     ///
     /// Returns an error if growing the GC heap fails.
-    async fn grow_gc_heap(
+    pub(crate) async fn grow_gc_heap(
         &mut self,
         limiter: Option<&mut StoreResourceLimiter<'_>>,
         bytes_needed: u64,
+        asyncness: Asyncness,
     ) -> Result<()> {
-        log::trace!("Attempting to grow the GC heap by {bytes_needed} bytes");
-        assert!(bytes_needed > 0);
+        log::trace!("Attempting to grow the GC heap by at least {bytes_needed:#x} bytes");
+
+        if bytes_needed == 0 {
+            return Ok(());
+        }
+
+        // If the GC heap needs a collection before growth (e.g. the copying
+        // collector's active space is the second half), do a GC first.
+        if self
+            .gc_store
+            .as_ref()
+            .map_or(false, |gc| gc.gc_heap.needs_gc_before_next_growth())
+        {
+            self.do_gc(asyncness).await;
+            debug_assert!(
+                !self
+                    .gc_store
+                    .as_ref()
+                    .map_or(false, |gc| gc.gc_heap.needs_gc_before_next_growth()),
+                "needs_gc_before_next_growth should return false after a GC"
+            );
+        }
 
         let page_size = self.engine().tunables().gc_heap_memory_type().page_size();
 
@@ -135,6 +158,10 @@ impl StoreOpaque {
             "{} should be greater than or equal to {delta_bytes_for_alloc}",
             heap.delta_bytes_grown,
         );
+        log::trace!(
+            "  -> grew GC heap by {:#x} bytes: new size is {new_size_in_bytes:#x} bytes",
+            heap.delta_bytes_grown
+        );
         return Ok(());
 
         struct TakenGcHeap<'a> {
@@ -170,8 +197,25 @@ impl StoreOpaque {
         }
     }
 
-    /// Attempt an allocation, if it fails due to GC OOM, then do a GC and
-    /// retry.
+    fn replace_gc_zeal_alloc_counter(
+        &mut self,
+        new_value: Option<NonZeroU32>,
+    ) -> Option<NonZeroU32> {
+        if let Some(gc_store) = &mut self.gc_store {
+            gc_store.replace_gc_zeal_alloc_counter(new_value)
+        } else {
+            None
+        }
+    }
+
+    /// Attempt an allocation, if it fails due to GC OOM, apply the
+    /// grow-or-collect heuristic and retry.
+    ///
+    /// The heuristic is:
+    /// - If the last post-collection heap usage is less than half the current
+    ///   capacity, collect first, then retry. If that still fails, grow and
+    ///   retry one final time.
+    /// - Otherwise, grow first and retry.
     pub(crate) async fn retry_after_gc_async<T, U>(
         &mut self,
         mut limiter: Option<&mut StoreResourceLimiter<'_>>,
@@ -183,17 +227,205 @@ impl StoreOpaque {
         T: Send + Sync + 'static,
     {
         self.ensure_gc_store(limiter.as_deref_mut()).await?;
+
         match alloc_func(self, value) {
             Ok(x) => Ok(x),
             Err(e) => match e.downcast::<crate::GcHeapOutOfMemory<T>>() {
                 Ok(oom) => {
+                    log::trace!("Got GC heap OOM: {oom}");
+
                     let (value, oom) = oom.take_inner();
-                    self.gc(limiter, None, Some(oom.bytes_needed()), asyncness)
-                        .await;
-                    alloc_func(self, value)
+                    let bytes_needed = oom.bytes_needed();
+
+                    let mut store = WithoutGcZealAllocCounter::new(self);
+
+                    let gc_heap_capacity = store
+                        .gc_store
+                        .as_ref()
+                        .map_or(0, |gc_store| gc_store.gc_heap_capacity());
+                    let last_gc_heap_usage = store.gc_store.as_ref().map_or(0, |gc_store| {
+                        gc_store.last_post_gc_allocated_bytes.unwrap_or(0)
+                    });
+
+                    if should_collect_first(bytes_needed, gc_heap_capacity, last_gc_heap_usage) {
+                        log::trace!(
+                            "Collecting first, then retrying; growing GC heap if collecting didn't \
+                             free up enough space, then retrying again"
+                        );
+                        store
+                            .gc(limiter.as_deref_mut(), None, None, asyncness)
+                            .await;
+
+                        match alloc_func(&mut store, value) {
+                            Ok(x) => Ok(x),
+                            Err(e) => match e.downcast::<crate::GcHeapOutOfMemory<T>>() {
+                                Ok(oom2) => {
+                                    // Collection wasn't enough; grow and try
+                                    // one final time.
+                                    let (value, _) = oom2.take_inner();
+                                    // Ignore error; we'll get one from
+                                    // `alloc_func` below if growth failed and
+                                    // failure to grow was fatal.
+                                    let _ =
+                                        store.grow_gc_heap(limiter, bytes_needed, asyncness).await;
+
+                                    alloc_func(&mut store, value)
+                                }
+                                Err(e) => Err(e),
+                            },
+                        }
+                    } else {
+                        log::trace!(
+                            "Grow GC heap first, collecting if growth failed, then retrying"
+                        );
+
+                        if let Err(e) = store
+                            .grow_gc_heap(limiter.as_deref_mut(), bytes_needed.max(1), asyncness)
+                            .await
+                        {
+                            log::trace!("growing GC heap failed: {e}");
+                            store.gc(limiter, None, None, asyncness).await;
+                        }
+
+                        alloc_func(&mut store, value)
+                    }
                 }
                 Err(e) => Err(e),
             },
         }
+    }
+}
+
+/// RAII type to temporarily disable the GC zeal allocation counter.
+struct WithoutGcZealAllocCounter<'a> {
+    store: &'a mut StoreOpaque,
+    counter: Option<NonZeroU32>,
+}
+
+impl Deref for WithoutGcZealAllocCounter<'_> {
+    type Target = StoreOpaque;
+
+    fn deref(&self) -> &Self::Target {
+        &self.store
+    }
+}
+
+impl DerefMut for WithoutGcZealAllocCounter<'_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.store
+    }
+}
+
+impl Drop for WithoutGcZealAllocCounter<'_> {
+    fn drop(&mut self) {
+        self.store.replace_gc_zeal_alloc_counter(self.counter);
+    }
+}
+
+impl<'a> WithoutGcZealAllocCounter<'a> {
+    pub fn new(store: &'a mut StoreOpaque) -> Self {
+        let counter = store.replace_gc_zeal_alloc_counter(None);
+        WithoutGcZealAllocCounter { store, counter }
+    }
+}
+
+/// Given that we've hit a `GcHeapOutOfMemory` error, should we try freeing up
+/// space by collecting first or by growing the GC heap first?
+///
+/// * `bytes_needed`: the number of bytes the mutator wants to allocate
+///
+/// * `gc_heap_capacity`: The current size of the GC heap.
+///
+/// * `last_gc_heap_usage`: The precise GC heap usage after the last collection.
+#[track_caller]
+fn should_collect_first(
+    bytes_needed: u64,
+    gc_heap_capacity: usize,
+    last_gc_heap_usage: usize,
+) -> bool {
+    debug_assert!(last_gc_heap_usage <= gc_heap_capacity);
+
+    // If we haven't allocated the GC heap yet, there's nothing to collect.
+    //
+    // Make sure to grow in this scenario even when the GC zeal infrastructure
+    // passes `bytes_needed = 0`. This way our retry-after-gc logic doesn't
+    // auto-fail on its second attempt, which would be bad because it doesn't
+    // necessarily retry more than once.
+    if gc_heap_capacity == 0 {
+        return false;
+    }
+
+    // The GC zeal infrastructure will use `bytes_needed = 0` to trigger extra
+    // collections.
+    if bytes_needed == 0 {
+        return true;
+    }
+
+    let Ok(bytes_needed) = usize::try_from(bytes_needed) else {
+        // No point wasting time on collection if we will never be able to
+        // satisfy the allocation.
+        return false;
+    };
+
+    if bytes_needed > isize::MAX.cast_unsigned() {
+        // Similarly, no allocation can be larger than `isize::MAX` in Rust (or
+        // LLVM), so don't bother wasting time on collection if we will never be
+        // able to satisfy the allocation.
+        return false;
+    }
+
+    let Some(predicted_usage) = last_gc_heap_usage.checked_add(bytes_needed) else {
+        // If we can't represent our predicted usage as a `usize`, we won't be
+        // able to grow the GC heap to that size, so try collecting first to
+        // free up space.
+        return true;
+    };
+
+    // Common case: to balance collection frequency (and its time overhead) with
+    // GC heap growth (and its space overhead), only prefer growing first if the
+    // predicted GC heap utilization is greater than half the GC heap's
+    // capacity.
+    predicted_usage < gc_heap_capacity / 2
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_collect_first;
+
+    #[test]
+    fn test_should_collect_first() {
+        // No GC heap yet special case.
+        for bytes_needed in 0..256 {
+            assert_eq!(should_collect_first(bytes_needed, 0, 0), false);
+        }
+
+        // GC zeal special case.
+        for cap in 1..256 {
+            for usage in 0..=cap {
+                assert_eq!(should_collect_first(0, cap, usage), true);
+            }
+        }
+
+        let max_alloc_usize = isize::MAX.cast_unsigned();
+        let max_alloc_u64 = u64::try_from(max_alloc_usize).unwrap();
+
+        // Allocation size larger than `isize::MAX` --> will never succeed, do
+        // not bother collecting.
+        assert_eq!(
+            should_collect_first(max_alloc_u64 + 1, max_alloc_usize, 0),
+            false,
+        );
+
+        // Predicted usage overflow --> growth will likely fail, collect first.
+        assert_eq!(should_collect_first(1, usize::MAX, usize::MAX), true);
+
+        // Common case: predicted usage is low --> we likely have more than
+        // enough space already, so collect first.
+        assert_eq!(should_collect_first(16, 1024, 64), true);
+
+        // Common case: predicted usage is high --> plausible we may not have
+        // enough space, and we want to amortize the cost of collections, so
+        // grow first.
+        assert_eq!(should_collect_first(16, 1024, 512), false);
     }
 }

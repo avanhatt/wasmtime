@@ -381,6 +381,12 @@ impl Func {
 
     /// Same as [`Func::new`] but returns an error instead of panicking on
     /// allocation failure.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn try_new<T: 'static>(
         store: impl AsContextMut<Data = T>,
         ty: FuncType,
@@ -814,6 +820,12 @@ impl Func {
 
     /// Fallible version of [`Func::wrap`] that returns an error on
     /// out-of-memory instead of panicking.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn try_wrap<T, Params, Results>(
         mut store: impl AsContextMut<Data = T>,
         func: impl IntoFunc<T, Params, Results>,
@@ -942,6 +954,10 @@ impl Func {
     /// Panics if `store` does not own this function.
     ///
     /// [`WasmBacktrace`]: crate::WasmBacktrace
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn call(
         &self,
         mut store: impl AsContextMut,
@@ -1064,10 +1080,6 @@ impl Func {
         self.vm_func_ref(store).as_ptr().cast()
     }
 
-    pub(crate) fn to_val_raw(&self, store: &mut StoreOpaque) -> ValRaw {
-        ValRaw::funcref(self.to_raw_(store))
-    }
-
     /// Invokes this function with the `params` given, returning the results
     /// asynchronously.
     ///
@@ -1093,6 +1105,10 @@ impl Func {
     /// Panics if this is called on a function in a synchronous store. This
     /// only works with functions defined within an asynchronous store. Also
     /// panics if `store` does not own this function.
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     #[cfg(feature = "async")]
     pub async fn call_async(
         &self,
@@ -1197,38 +1213,35 @@ impl Func {
     }
 
     pub(crate) fn vmimport(&self, store: &StoreOpaque) -> VMFunctionImport {
-        unsafe {
-            let f = self.vm_func_ref(store);
-            VMFunctionImport {
-                // Note that this is a load-bearing `unwrap` here, but is
-                // never expected to trip at runtime. The general problem is
-                // that host functions do not have a `wasm_call` function so
-                // the `VMFuncRef` type has an optional pointer there. This is
-                // only able to be filled out when a function is "paired" with
-                // a module where trampolines are present to fill out
-                // `wasm_call` pointers.
-                //
-                // This pairing of modules doesn't happen explicitly but is
-                // instead managed lazily throughout Wasmtime. Specifically the
-                // way this works is one of:
-                //
-                // * When a host function is created the store's list of
-                //   modules are searched for a wasm trampoline. If not found
-                //   the `wasm_call` field is left blank.
-                //
-                // * When a module instantiation happens, which uses this
-                //   function, the module will be used to fill any outstanding
-                //   holes that it has trampolines for.
-                //
-                // This means that by the time we get to this point any
-                // relevant holes should be filled out. Thus if this panic
-                // actually triggers then it's indicative of a missing `fill`
-                // call somewhere else.
-                wasm_call: f.as_ref().wasm_call.unwrap(),
-                array_call: f.as_ref().array_call,
-                vmctx: f.as_ref().vmctx,
-            }
-        }
+        // Safety: it should be fine to dereference the funcref pointer while we
+        // borrow the store.
+        let func_ref = unsafe { self.vm_func_ref(store).as_ref() };
+
+        // Note that this is a load-bearing `unwrap` here, but is never expected
+        // to trip at runtime. The general problem is that host functions do not
+        // have a `wasm_call` function so the `VMFuncRef` type has an optional
+        // pointer there. This is only able to be filled out when a function is
+        // "paired" with a module where trampolines are present to fill out
+        // `wasm_call` pointers.
+        //
+        // This pairing of modules doesn't happen explicitly but is instead
+        // managed lazily throughout Wasmtime. Specifically the way this works
+        // is one of:
+        //
+        // * When a host function is created the store's list of modules are
+        //   searched for a wasm trampoline. If not found the `wasm_call` field
+        //   is left blank.
+        //
+        // * When a module instantiation happens, which uses this function, the
+        //   module will be used to fill any outstanding holes that it has
+        //   trampolines for.
+        //
+        // This means that by the time we get to this point any relevant holes
+        // should be filled out. Thus if this panic actually triggers then it's
+        // indicative of a missing `fill` call somewhere else.
+        let func_import = func_ref.as_vm_function_import().unwrap();
+
+        func_import.clone()
     }
 
     pub(crate) fn comes_from_same_store(&self, store: &StoreOpaque) -> bool {
@@ -2130,6 +2143,14 @@ impl<T> Caller<'_, T> {
     #[cfg(feature = "gc")]
     pub fn gc(&mut self, why: Option<&crate::GcHeapOutOfMemory<()>>) -> Result<()> {
         self.store.gc(why)
+    }
+
+    /// Returns the current capacity of the GC heap in bytes.
+    ///
+    /// Same as [`Store::gc_heap_capacity`](crate::Store::gc_heap_capacity).
+    #[cfg(feature = "gc")]
+    pub fn gc_heap_capacity(&self) -> usize {
+        self.store.0.gc_heap_capacity()
     }
 
     /// Perform garbage collection asynchronously.

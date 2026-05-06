@@ -5,7 +5,7 @@ use crate::generators::gc_ops::{
 };
 use mutatis;
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use wasmparser;
 use wasmprinter;
 
@@ -35,14 +35,14 @@ fn is_subtype_index(
     }
 
     let sub = match encoding_order
-        .get(usize::try_from(sub_index).expect("sub_index is out of bounds"))
+        .get(usize::try_from(sub_index).unwrap())
         .copied()
     {
         Some(t) => t,
         None => return false,
     };
     let sup = match encoding_order
-        .get(usize::try_from(sup_index).expect("sup_index is out of bounds"))
+        .get(usize::try_from(sup_index).unwrap())
         .copied()
     {
         Some(t) => t,
@@ -61,6 +61,7 @@ fn empty_test_ops() -> GcOps {
             table_size: 5,
             max_rec_groups: 5,
             max_types: 5,
+            max_fields: 10,
         },
         ops: vec![],
         types: Types::new(),
@@ -80,6 +81,7 @@ fn test_ops(num_params: u32, num_globals: u32, table_size: u32) -> GcOps {
             table_size,
             max_rec_groups: 7,
             max_types: 10,
+            max_fields: 10,
         },
         ops: vec![
             GcOp::NullExtern,
@@ -101,56 +103,51 @@ fn test_ops(num_params: u32, num_globals: u32, table_size: u32) -> GcOps {
     let mut rng = StdRng::seed_from_u64(0xC0FFEE);
     if t.limits.max_rec_groups > 0 {
         for i in 0..t.limits.max_types {
-            let gid = RecGroupId(rng.gen_range(0..t.limits.max_rec_groups));
+            let gid = RecGroupId(rng.random_range(0..t.limits.max_rec_groups));
             let is_final = false;
             let supertype = None;
             t.types
-                .insert_empty_struct(TypeId(i), gid, is_final, supertype);
+                .insert_struct(TypeId(i), gid, is_final, supertype, Vec::new());
         }
     }
 
     t
 }
 
+/// Validate that a GcOps produces a valid Wasm binary.
+fn assert_valid_wasm(ops: &mut GcOps) {
+    let wasm = ops.to_wasm_binary();
+    let feats = wasmparser::WasmFeatures::default();
+    eprintln!("wat: {}", wasmprinter::print_bytes(&wasm).unwrap());
+    feats.reference_types();
+    feats.gc();
+    let mut validator = wasmparser::Validator::new_with_features(feats);
+
+    if let Err(e) = validator.validate_all(&wasm) {
+        let wat =
+            wasmprinter::print_bytes(&wasm).unwrap_or_else(|e| format!("<disasm failed: {e}>"));
+        panic!(
+            "Emitted Wasm binary is not valid!\n\n\
+             === Validation Error ===\n\n\
+             {e}\n\n\
+             === GcOps ===\n\n\
+             {ops:#?}\n\n\
+             === Wat ===\n\n\
+             {wat}"
+        );
+    }
+}
+
 #[test]
 fn mutate_gc_ops_with_default_mutator() -> mutatis::Result<()> {
     let _ = env_logger::try_init();
-
-    let mut features = wasmparser::WasmFeatures::default();
-    features.insert(wasmparser::WasmFeatures::REFERENCE_TYPES);
-    features.insert(wasmparser::WasmFeatures::FUNCTION_REFERENCES);
-    features.insert(wasmparser::WasmFeatures::GC_TYPES);
-    features.insert(wasmparser::WasmFeatures::GC);
 
     let mut ops = test_ops(5, 5, 5);
 
     let mut session = mutatis::Session::new();
     for _ in 0..2048 {
         session.mutate(&mut ops)?;
-
-        let wasm = ops.to_wasm_binary();
-        crate::oracles::log_wasm(&wasm);
-
-        let mut validator = wasmparser::Validator::new_with_features(features);
-        if let Err(e) = validator.validate_all(&wasm) {
-            let mut config = wasmprinter::Config::new();
-            config.print_offsets(true);
-            config.print_operand_stack(true);
-            let mut wat = String::new();
-            let wat = match config.print(&wasm, &mut wasmprinter::PrintFmtWrite(&mut wat)) {
-                Ok(()) => wat,
-                Err(e) => format!("<failed to disassemble Wasm binary to WAT: {e}>"),
-            };
-            panic!(
-                "Emitted Wasm binary is not valid!\n\n\
-                 === Validation Error ===\n\n\
-                 {e}\n\n\
-                 === GcOps ===\n\n\
-                 {ops:#?}\n\n\
-                 === Wat ===\n\n\
-                 {wat}"
-            );
-        }
+        assert_valid_wasm(&mut ops);
     }
     Ok(())
 }
@@ -242,18 +239,9 @@ fn emits_rec_groups_and_validates() -> mutatis::Result<()> {
     let _ = env_logger::try_init();
 
     let mut ops = test_ops(5, 5, 5);
+    assert_valid_wasm(&mut ops);
 
     let wasm = ops.to_wasm_binary();
-
-    let feats = wasmparser::WasmFeatures::default();
-    feats.reference_types();
-    feats.gc();
-    let mut validator = wasmparser::Validator::new_with_features(feats);
-    assert!(
-        validator.validate_all(&wasm).is_ok(),
-        "GC validation failed"
-    );
-
     let wat = wasmprinter::print_bytes(&wasm).expect("to WAT");
     let recs = wat.matches("(rec").count();
     let structs = wat.matches("(struct)").count();
@@ -327,17 +315,7 @@ fn fixup_check_types_and_indexes() -> mutatis::Result<()> {
     );
 
     // Verify that we generate a valid Wasm binary after calling `fixup`.
-    let wasm = ops.to_wasm_binary();
-    let wat = wasmprinter::print_bytes(&wasm).unwrap();
-    log::debug!("{wat}");
-    let feats = wasmparser::WasmFeatures::default();
-    feats.reference_types();
-    feats.gc();
-    let mut validator = wasmparser::Validator::new_with_features(feats);
-    assert!(
-        validator.validate_all(&wasm).is_ok(),
-        "GC validation should pass after fixup"
-    );
+    assert_valid_wasm(&mut ops);
 
     Ok(())
 }
@@ -360,10 +338,10 @@ fn sort_types_by_supertype_orders_supertype_before_subtype_across_rec_groups() {
     let d = TypeId(3);
 
     // Cross-rec-group chain: C <: A <: B <: D.
-    types.insert_empty_struct(a, ga, false, Some(b)); // A <: B
-    types.insert_empty_struct(b, gb, false, Some(d)); // B <: D
-    types.insert_empty_struct(c, gc, false, Some(a)); // C <: A
-    types.insert_empty_struct(d, gd, false, None); // D
+    types.insert_struct(a, ga, false, Some(b), Vec::new()); // A <: B
+    types.insert_struct(b, gb, false, Some(d), Vec::new()); // B <: D
+    types.insert_struct(c, gc, false, Some(a), Vec::new()); // C <: A
+    types.insert_struct(d, gd, false, None, Vec::new()); // D
 
     let mut sorted = Vec::new();
     types.sort_types_topo(&mut sorted);
@@ -389,8 +367,8 @@ fn fixup_preserves_subtyping_within_same_rec_group() {
 
     // Both types are in the same rec group.
     // The second subtypes the first.
-    types.insert_empty_struct(super_ty, g, false, None);
-    types.insert_empty_struct(sub_ty, g, false, Some(super_ty));
+    types.insert_struct(super_ty, g, false, None, Vec::new());
+    types.insert_struct(sub_ty, g, false, Some(super_ty), Vec::new());
 
     let limits = GcOpsLimits {
         num_params: 0,
@@ -398,6 +376,7 @@ fn fixup_preserves_subtyping_within_same_rec_group() {
         table_size: 0,
         max_rec_groups: 10,
         max_types: 10,
+        max_fields: 10,
     };
 
     types.fixup(&limits, &mut Vec::new());
@@ -430,14 +409,14 @@ fn fixup_breaks_one_edge_in_multi_rec_group_type_cycle() {
     let d = TypeId(3);
 
     // Rec(a)
-    types.insert_empty_struct(a, g_a, false, Some(d));
+    types.insert_struct(a, g_a, false, Some(d), Vec::new());
 
     // Rec(b, c)
-    types.insert_empty_struct(b, g_bc, false, None);
-    types.insert_empty_struct(c, g_bc, false, Some(a));
+    types.insert_struct(b, g_bc, false, None, Vec::new());
+    types.insert_struct(c, g_bc, false, Some(a), Vec::new());
 
     // Rec(d)
-    types.insert_empty_struct(d, g_d, false, Some(c));
+    types.insert_struct(d, g_d, false, Some(c), Vec::new());
 
     let limits = GcOpsLimits {
         num_params: 0,
@@ -445,6 +424,7 @@ fn fixup_breaks_one_edge_in_multi_rec_group_type_cycle() {
         table_size: 0,
         max_rec_groups: 10,
         max_types: 10,
+        max_fields: 10,
     };
 
     types.fixup(&limits, &mut Vec::new());
@@ -487,12 +467,12 @@ fn sort_rec_groups_topo_orders_dependencies_first() {
     let e = TypeId(4);
     let f = TypeId(5);
 
-    types.insert_empty_struct(a, g0, false, Some(b)); // g0 -> g1
-    types.insert_empty_struct(b, g1, false, Some(c)); // g1 -> g2
-    types.insert_empty_struct(c, g2, false, Some(d)); // g2 ->g3
-    types.insert_empty_struct(d, g3, false, None);
-    types.insert_empty_struct(e, g0, false, None);
-    types.insert_empty_struct(f, g2, false, None);
+    types.insert_struct(a, g0, false, Some(b), Vec::new()); // g0 -> g1
+    types.insert_struct(b, g1, false, Some(c), Vec::new()); // g1 -> g2
+    types.insert_struct(c, g2, false, Some(d), Vec::new()); // g2 ->g3
+    types.insert_struct(d, g3, false, None, Vec::new());
+    types.insert_struct(e, g0, false, None, Vec::new());
+    types.insert_struct(f, g2, false, None, Vec::new());
 
     let type_to_group = types.type_to_group_map();
     let mut sorted = Vec::new();
@@ -553,18 +533,18 @@ fn break_rec_group_cycles() {
     //  | g0 |------>| g1 |------>| g2 |------>| g3 |
     //  +----+       +----+       +----+       +----+
 
-    types.insert_empty_struct(a0, g0, false, Some(b0)); // g0 -> g1
-    types.insert_empty_struct(a1, g0, false, None);
+    types.insert_struct(a0, g0, false, Some(b0), Vec::new()); // g0 -> g1
+    types.insert_struct(a1, g0, false, None, Vec::new());
 
-    types.insert_empty_struct(b0, g1, false, None);
-    types.insert_empty_struct(b1, g1, false, Some(c0)); // g1 -> g2
+    types.insert_struct(b0, g1, false, None, Vec::new());
+    types.insert_struct(b1, g1, false, Some(c0), Vec::new()); // g1 -> g2
 
-    types.insert_empty_struct(c0, g2, false, None);
-    types.insert_empty_struct(c1, g2, false, Some(a1)); // g2 -> g0 (outer back edge)
-    types.insert_empty_struct(c2, g2, false, Some(d0)); // g2 -> g3
+    types.insert_struct(c0, g2, false, None, Vec::new());
+    types.insert_struct(c1, g2, false, Some(a1), Vec::new()); // g2 -> g0 (outer back edge)
+    types.insert_struct(c2, g2, false, Some(d0), Vec::new()); // g2 -> g3
 
-    types.insert_empty_struct(d0, g3, false, None);
-    types.insert_empty_struct(d1, g3, false, Some(b0)); // g3 -> g1 (inner back edge)
+    types.insert_struct(d0, g3, false, None, Vec::new());
+    types.insert_struct(d1, g3, false, Some(b0), Vec::new()); // g3 -> g1 (inner back edge)
 
     // Type graph is acyclic — breaking supertype cycles changes nothing.
     types.break_supertype_cycles();
@@ -633,10 +613,10 @@ fn is_subtype_index_accepts_chain() {
     //   0 -> TypeId(1)
     //   1 -> TypeId(2)
     //   2 -> TypeId(3)
-    types.insert_empty_struct(TypeId(1), g0, false, None);
-    types.insert_empty_struct(TypeId(2), g1, false, Some(TypeId(1)));
-    types.insert_empty_struct(TypeId(3), g2, false, Some(TypeId(2)));
-    types.insert_empty_struct(TypeId(4), g3, false, Some(TypeId(3)));
+    types.insert_struct(TypeId(1), g0, false, None, Vec::new());
+    types.insert_struct(TypeId(2), g1, false, Some(TypeId(1)), Vec::new());
+    types.insert_struct(TypeId(3), g2, false, Some(TypeId(2)), Vec::new());
+    types.insert_struct(TypeId(4), g3, false, Some(TypeId(3)), Vec::new());
 
     let order = encoding_order(&types);
 
@@ -686,8 +666,8 @@ fn is_subtype_index_encoding_order_differs_from_key_order() {
     // BTreeMap key order:  [TypeId(1), TypeId(10)]  -> dense 0=TypeId(1), 1=TypeId(10)
     // Encoding order:      [TypeId(10), TypeId(1)]  -> dense 0=TypeId(10), 1=TypeId(1)
     //   (g0 must come before g1 because g1's type has a supertype in g0)
-    types.insert_empty_struct(TypeId(10), g0, false, None);
-    types.insert_empty_struct(TypeId(1), g1, false, Some(TypeId(10)));
+    types.insert_struct(TypeId(10), g0, false, None, Vec::new());
+    types.insert_struct(TypeId(1), g1, false, Some(TypeId(10)), Vec::new());
 
     let order = encoding_order(&types);
 
@@ -718,9 +698,9 @@ fn stacktype_fixup_accepts_subtype_for_supertype_requirement() {
     //   0 -> TypeId(1)
     //   1 -> TypeId(2)
     //   2 -> TypeId(3)
-    types.insert_empty_struct(TypeId(1), g, false, None);
-    types.insert_empty_struct(TypeId(2), g, false, Some(TypeId(1)));
-    types.insert_empty_struct(TypeId(3), g, false, Some(TypeId(2)));
+    types.insert_struct(TypeId(1), g, false, None, Vec::new());
+    types.insert_struct(TypeId(2), g, false, Some(TypeId(1)), Vec::new());
+    types.insert_struct(TypeId(3), g, false, Some(TypeId(2)), Vec::new());
 
     let num_types = u32::try_from(types.type_defs.len()).unwrap();
     let order = encoding_order(&types);
@@ -781,4 +761,269 @@ fn stacktype_fixup_accepts_subtype_for_supertype_requirement() {
     // Not accepted. Fixup should synthesize the requested concrete type.
     assert_eq!(out, vec![GcOp::StructNew { type_index: 1 }]);
     assert_eq!(stack, vec![StackType::Struct(Some(0))]);
+}
+
+/// Helper: creates GcOps with a 3-type chain: TypeId(1) <- TypeId(2) <- TypeId(3).
+///
+/// Dense encoding indices:
+///   0 -> TypeId(1)  (root, no supertype)
+///   1 -> TypeId(2)  (supertype = TypeId(1))
+///   2 -> TypeId(3)  (supertype = TypeId(2))
+fn cast_test_ops(ops: Vec<GcOp>) -> GcOps {
+    let mut t = GcOps {
+        limits: GcOpsLimits {
+            num_params: 0,
+            num_globals: 0,
+            table_size: 0,
+            max_rec_groups: 5,
+            max_types: 10,
+            max_fields: 10,
+        },
+        ops,
+        types: Types::new(),
+    };
+    let g = RecGroupId(0);
+    t.types.insert_rec_group(g);
+    t.types.insert_struct(TypeId(1), g, false, None, Vec::new());
+    t.types
+        .insert_struct(TypeId(2), g, false, Some(TypeId(1)), Vec::new());
+    t.types
+        .insert_struct(TypeId(3), g, false, Some(TypeId(2)), Vec::new());
+    t
+}
+
+/// Helper: creates GcOps with two unrelated types (flat hierarchy, no supertypes).
+///
+/// Dense encoding indices:
+///   0 -> TypeId(1)  (no supertype)
+///   1 -> TypeId(2)  (no supertype)
+fn flat_cast_test_ops(ops: Vec<GcOp>) -> GcOps {
+    let mut t = GcOps {
+        limits: GcOpsLimits {
+            num_params: 0,
+            num_globals: 0,
+            table_size: 0,
+            max_rec_groups: 5,
+            max_types: 10,
+            max_fields: 10,
+        },
+        ops,
+        types: Types::new(),
+    };
+    let g = RecGroupId(0);
+    t.types.insert_rec_group(g);
+    t.types.insert_struct(TypeId(1), g, false, None, Vec::new());
+    t.types.insert_struct(TypeId(2), g, false, None, Vec::new());
+    t
+}
+
+// ---- RefCastUpward tests ----
+
+/// Case 1: valid pair (sub <: super) — kept as-is.
+#[test]
+fn upcast_valid_pair() {
+    let _ = env_logger::try_init();
+    // index 2 (TypeId(3)) <: index 0 (TypeId(1)) via chain 3 <: 2 <: 1
+    let mut ops = cast_test_ops(vec![GcOp::RefCastUpward {
+        sub_type_index: 2,
+        super_type_index: 0,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastUpward {
+                sub_type_index: 2,
+                super_type_index: 0,
+            }
+        )),
+        "valid upcast pair should be preserved: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+/// Case 2: wrong pair — repaired to sub's direct supertype.
+#[test]
+fn upcast_wrong_pair_repaired_via_supertype() {
+    let _ = env_logger::try_init();
+    // index 1 (TypeId(2)) is NOT a subtype of index 2 (TypeId(3)).
+    // TypeId(2)'s supertype is TypeId(1) at index 0.
+    // Should repair to { sub: 1, super: 0 }.
+    let mut ops = cast_test_ops(vec![GcOp::RefCastUpward {
+        sub_type_index: 1,
+        super_type_index: 2,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastUpward {
+                sub_type_index: 1,
+                super_type_index: 0,
+            }
+        )),
+        "upcast should be repaired to sub's direct supertype: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+/// Case 3: sub has no supertype — falls back to self-cast.
+#[test]
+fn upcast_no_supertype_self_cast() {
+    let _ = env_logger::try_init();
+    // index 0 (TypeId(1)) has no supertype, so no valid super can be found.
+    // Falls back to self-cast { sub: 0, super: 0 }.
+    let mut ops = cast_test_ops(vec![GcOp::RefCastUpward {
+        sub_type_index: 0,
+        super_type_index: 2,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastUpward {
+                sub_type_index: 0,
+                super_type_index: 0,
+            }
+        )),
+        "upcast with no supertype should become self-cast: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+/// Case 4: flat hierarchy (no supertypes at all) — self-cast.
+#[test]
+fn upcast_flat_hierarchy_self_cast() {
+    let _ = env_logger::try_init();
+    let mut ops = flat_cast_test_ops(vec![GcOp::RefCastUpward {
+        sub_type_index: 0,
+        super_type_index: 1,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastUpward {
+                sub_type_index,
+                super_type_index,
+            } if sub_type_index == super_type_index
+        )),
+        "upcast in flat hierarchy should become self-cast: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+// ---- RefCastDownward tests ----
+
+/// Case 1: valid pair — kept as-is.
+#[test]
+fn downcast_valid_pair() {
+    let _ = env_logger::try_init();
+    // index 2 (TypeId(3)) <: index 0 (TypeId(1)) — valid.
+    let mut ops = cast_test_ops(vec![GcOp::RefCastDownward {
+        sub_type_index: 2,
+        super_type_index: 0,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastDownward {
+                sub_type_index: 2,
+                super_type_index: 0,
+            }
+        )),
+        "valid downcast pair should be preserved: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+/// Case 2: wrong pair — super (operand) is kept, sub (result) is
+/// repaired by finding a direct subtype of the super.
+#[test]
+fn downcast_wrong_pair_repaired_finds_subtype() {
+    let _ = env_logger::try_init();
+    // sub=0 (TypeId(1)) is NOT a subtype of super=1 (TypeId(2)).
+    // super stays at 1 (it's the stack operand).
+    // Scan finds TypeId(3) at index 2 as a direct subtype of TypeId(2).
+    // Repaired to { sub: 2, super: 1 }.
+    let mut ops = cast_test_ops(vec![GcOp::RefCastDownward {
+        sub_type_index: 0,
+        super_type_index: 1,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastDownward {
+                sub_type_index: 2,
+                super_type_index: 1,
+            }
+        )),
+        "downcast should keep super and find a valid sub: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+/// Case 3: super has no subtypes — falls back to self-cast keeping
+/// the super (operand) fixed.
+#[test]
+fn downcast_no_subtype_self_cast() {
+    let _ = env_logger::try_init();
+    // super=2 (TypeId(3)) is the leaf — no type has it as a supertype.
+    // Self-cast: { sub: 2, super: 2 }.
+    let mut ops = cast_test_ops(vec![GcOp::RefCastDownward {
+        sub_type_index: 1,
+        super_type_index: 2,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastDownward {
+                sub_type_index: 2,
+                super_type_index: 2,
+            }
+        )),
+        "downcast with no subtypes should self-cast keeping super: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
+}
+
+/// Case 4: flat hierarchy — self-cast.
+#[test]
+fn downcast_flat_hierarchy_self_cast() {
+    let _ = env_logger::try_init();
+    let mut ops = flat_cast_test_ops(vec![GcOp::RefCastDownward {
+        sub_type_index: 0,
+        super_type_index: 1,
+    }]);
+    ops.fixup(&mut Vec::new());
+
+    assert!(
+        ops.ops.iter().any(|op| matches!(
+            op,
+            GcOp::RefCastDownward {
+                sub_type_index,
+                super_type_index,
+            } if sub_type_index == super_type_index
+        )),
+        "downcast in flat hierarchy should become self-cast: {:#?}",
+        ops.ops
+    );
+    assert_valid_wasm(&mut ops);
 }

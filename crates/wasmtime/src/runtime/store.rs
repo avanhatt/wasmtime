@@ -106,12 +106,16 @@ use crate::{ExnRef, Rooted};
 use crate::{Global, Instance, Table};
 use core::convert::Infallible;
 use core::fmt;
+#[cfg(any(feature = "async", feature = "gc"))]
+use core::future;
 use core::marker;
 use core::mem::{self, ManuallyDrop, MaybeUninit};
 use core::num::NonZeroU64;
 use core::ops::{Deref, DerefMut};
 use core::pin::Pin;
 use core::ptr::NonNull;
+#[cfg(any(feature = "async", feature = "gc"))]
+use core::task::Poll;
 use wasmtime_environ::{DefinedGlobalIndex, DefinedTableIndex, EntityRef, TripleExt};
 
 mod context;
@@ -732,6 +736,12 @@ impl<T> Store<T> {
     }
 
     /// Like `Store::new` but returns an error on allocation failure.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn try_new(engine: &Engine, data: T) -> Result<Self> {
         let store_data = StoreData::new(engine);
         log::trace!("creating new store {:?}", store_data.id());
@@ -1016,6 +1026,13 @@ impl<T> Store<T> {
         StoreContextMut(&mut self.inner).gc(why)
     }
 
+    /// Returns the current capacity of the GC heap in bytes, or 0 if the GC
+    /// heap has not been initialized yet.
+    #[cfg(feature = "gc")]
+    pub fn gc_heap_capacity(&self) -> usize {
+        self.inner.gc_heap_capacity()
+    }
+
     /// Returns the amount fuel in this [`Store`]. When fuel is enabled, it must
     /// be configured via [`Store::set_fuel`].
     ///
@@ -1023,6 +1040,10 @@ impl<T> Store<T> {
     ///
     /// This function will return an error if fuel consumption is not enabled
     /// via [`Config::consume_fuel`](crate::Config::consume_fuel).
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn get_fuel(&self) -> Result<u64> {
         self.inner.get_fuel()
     }
@@ -1046,6 +1067,10 @@ impl<T> Store<T> {
     ///
     /// This function will return an error if fuel consumption is not enabled via
     /// [`Config::consume_fuel`](crate::Config::consume_fuel).
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn set_fuel(&mut self, fuel: u64) -> Result<()> {
         self.inner.set_fuel(fuel)
     }
@@ -1958,7 +1983,12 @@ impl StoreOpaque {
 
             let (mem_alloc_index, mem) = engine
                 .allocator()
-                .allocate_memory(&mut request, &mem_ty, None)
+                .allocate_memory(
+                    &mut request,
+                    &mem_ty,
+                    None,
+                    wasmtime_environ::MemoryKind::GcHeap,
+                )
                 .await?;
 
             // Then, allocate the actual GC heap, passing in that memory
@@ -1971,7 +2001,11 @@ impl StoreOpaque {
                     .allocator()
                     .allocate_gc_heap(engine, &**gc_runtime, mem_alloc_index, mem)?;
 
-            Ok(GcStore::new(index, heap))
+            Ok(GcStore::new(
+                index,
+                heap,
+                engine.tunables().gc_zeal_alloc_counter,
+            ))
         }
 
         #[cfg(not(feature = "gc"))]
@@ -2032,6 +2066,16 @@ impl StoreOpaque {
         }
     }
 
+    /// Returns the current capacity of the GC heap in bytes, or 0 if the GC
+    /// heap has not been initialized yet.
+    #[cfg(feature = "gc")]
+    pub(crate) fn gc_heap_capacity(&self) -> usize {
+        match self.gc_store.as_ref() {
+            Some(gc_store) => gc_store.gc_heap_capacity(),
+            None => 0,
+        }
+    }
+
     /// Helper to assert that a GC store was previously allocated and is
     /// present.
     ///
@@ -2055,6 +2099,13 @@ impl StoreOpaque {
         self.gc_store
             .as_mut()
             .expect("attempted to access the store's GC heap before it has been allocated")
+    }
+
+    /// Returns a mutable reference to the GC store if it has been allocated.
+    #[inline]
+    #[cfg(any(feature = "gc-drc", feature = "gc-copying"))]
+    pub(crate) fn try_gc_store_mut(&mut self) -> Option<&mut GcStore> {
+        self.gc_store.as_mut()
     }
 
     #[inline]
@@ -2088,7 +2139,15 @@ impl StoreOpaque {
 
         self.trace_roots(&mut roots, asyncness).await;
         self.unwrap_gc_store_mut()
-            .gc(asyncness, unsafe { roots.iter() })
+            .gc(
+                asyncness,
+                unsafe { roots.iter() },
+                // TODO: Once `Config` has an optional `AsyncFn` field for
+                // yielding to the current async runtime
+                // (e.g. `tokio::task::yield_now`), use that if set; otherwise
+                // fall back to the runtime-agnostic code.
+                yield_now,
+            )
             .await;
 
         // Restore the GC roots for the next GC.
@@ -2107,30 +2166,30 @@ impl StoreOpaque {
 
         self.trace_wasm_stack_roots(gc_roots_list);
         if asyncness != Asyncness::No {
-            vm::Yield::new().await;
+            self.yield_now().await;
         }
 
         #[cfg(feature = "stack-switching")]
         {
             self.trace_wasm_continuation_roots(gc_roots_list);
             if asyncness != Asyncness::No {
-                vm::Yield::new().await;
+                self.yield_now().await;
             }
         }
 
         self.trace_vmctx_roots(gc_roots_list);
         if asyncness != Asyncness::No {
-            vm::Yield::new().await;
+            self.yield_now().await;
         }
 
         self.trace_instance_roots(gc_roots_list);
         if asyncness != Asyncness::No {
-            vm::Yield::new().await;
+            self.yield_now().await;
         }
 
         self.trace_user_roots(gc_roots_list);
         if asyncness != Asyncness::No {
-            vm::Yield::new().await;
+            self.yield_now().await;
         }
 
         self.trace_pending_exception_roots(gc_roots_list);
@@ -2269,7 +2328,10 @@ impl StoreOpaque {
             // SAFETY: the instance's GC roots will remain valid for the
             // duration of this GC cycle.
             unsafe {
-                instance.handle.get_mut().trace_roots(gc_roots_list);
+                instance
+                    .handle
+                    .get_mut()
+                    .trace_element_segment_roots(gc_roots_list);
             }
         }
         log::trace!("End trace GC roots :: instance");
@@ -2288,7 +2350,7 @@ impl StoreOpaque {
         if let Some(pending_exception) = self.pending_exception.as_mut() {
             unsafe {
                 let root = pending_exception.as_gc_ref_mut();
-                gc_roots_list.add_root(root.into(), "Pending exception");
+                gc_roots_list.add_vmgcref_root(root.into(), "Pending exception");
             }
         }
         log::trace!("End trace GC roots :: pending exception");
@@ -2779,6 +2841,29 @@ at https://bytecodealliance.org/security.
             Asyncness::No => {}
         }
     }
+
+    #[cfg(any(feature = "async", feature = "gc"))]
+    pub(crate) async fn yield_now(&self) {
+        // TODO: Once `Config` has an optional `AsyncFn` field for yielding to the
+        // current async runtime (e.g. `tokio::task::yield_now`), use that if set;
+        // otherwise fall back to the runtime-agnostic code.
+        yield_now().await
+    }
+}
+
+#[cfg(any(feature = "async", feature = "gc"))]
+async fn yield_now() {
+    let mut yielded = false;
+    future::poll_fn(move |cx| {
+        if yielded {
+            Poll::Ready(())
+        } else {
+            yielded = true;
+            cx.waker().wake_by_ref();
+            Poll::Pending
+        }
+    })
+    .await;
 }
 
 /// Helper parameter to [`StoreOpaque::allocate_instance`].

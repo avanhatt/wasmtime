@@ -28,21 +28,17 @@ tempfile = "3.3.0"
 wasmparser = { workspace = true }
 wasmprinter = { workspace = true }
 wasmtime-wast = { workspace = true, features = ['component-model'] }
-wasmtime = { workspace = true, features = ['default', 'winch'] }
+wasmtime = { workspace = true, features = ['default', 'winch', 'gc-copying'] }
 wasmtime-core = { workspace = true, features = ['backtrace', 'serde'] }
 wasm-encoder = { workspace = true }
 wasm-smith = { workspace = true, features = ['serde'] }
 wasm-mutate = { workspace = true }
-wasm-compose = { workspace = true }
 wasm-spec-interpreter = { path = "./wasm-spec-interpreter", optional = true }
 wasmi = { version = "1.0.8", default-features = false, features = ["std", "simd"] }
-futures = { workspace = true, features = ['async-await'] }
+futures = { workspace = true }
 wasmtime-test-util = { workspace = true, features = ['wast', 'component-fuzz', 'component'] }
 serde_json = { workspace = true }
 serde = { workspace = true }
-test-programs-artifacts = { workspace = true }
-wasmtime-wasi = { workspace = true }
-indexmap = { workspace = true }
 
 [dependencies.wasmtime-cli-flags]
 workspace = true
@@ -59,6 +55,7 @@ features = [
   'pulley',
   'threads',
   'parallel-compilation',
+  'stack-switching',
 ]
 
 # We rely on precompiled v8 binaries, but rusty-v8 doesn't have a precompiled
@@ -70,7 +67,7 @@ v8 = "139.0.0"
 
 [dev-dependencies]
 wat = { workspace = true }
-rand = { version = "0.8.0", features = ["small_rng"] }
+rand = { workspace = true }
 wasmtime-environ = { workspace = true }
 cranelift-bforest = { workspace = true }
 cranelift-bitset = { workspace = true }

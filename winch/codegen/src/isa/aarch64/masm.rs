@@ -17,7 +17,7 @@ use crate::{
         reg::{Reg, WritableReg, writable},
     },
     masm::{
-        CalleeKind, DivKind, Extend, ExtendKind, ExtractLaneKind, FloatCmpKind, FloatScratch,
+        CalleeKind, DivKind, Extend, ExtendKind, ExtractLaneKind, FloatCmpKind, FloatScratch, Imm,
         Imm as I, IntCmpKind, IntScratch, LoadKind, MacroAssembler as Masm, MulWideKind,
         OperandSize, RegImm, RemKind, ReplaceLaneKind, RmwOp, RoundingMode, SPOffset, Scratch,
         ScratchType, ShiftKind, SplatKind, StackSlot, StoreKind, TRUSTED_FLAGS, TrapCode,
@@ -25,14 +25,16 @@ use crate::{
         V128ExtMulKind, V128ExtendKind, V128MaxKind, V128MinKind, V128MulKind, V128NarrowKind,
         V128NegKind, V128SubKind, V128TruncKind, VectorCompareKind, VectorEqualityKind, Zero,
     },
-    stack::TypedReg,
+    stack::{TypedReg, Val},
 };
 use cranelift_codegen::{
     Final, MachBufferFinalized, MachLabel,
     binemit::CodeOffset,
     ir::{MemFlags, RelSourceLoc, SourceLoc, types},
     isa::aarch64,
-    isa::aarch64::inst::{self, Cond, Imm12, ImmLogic, ImmShift, SImm7Scaled, SImm9, VectorSize},
+    isa::aarch64::inst::{
+        self, Cond, ExtendOp, Imm12, ImmLogic, ImmShift, SImm7Scaled, SImm9, VectorSize,
+    },
     settings,
 };
 use regalloc2::RegClass;
@@ -560,11 +562,34 @@ impl Masm for MacroAssembler {
         }
     }
 
+    fn add_uextend(
+        &mut self,
+        dst: WritableReg,
+        lhs: Reg,
+        rhs: Reg,
+        from_size: OperandSize,
+        size: OperandSize,
+    ) -> Result<()> {
+        assert!(from_size.num_bits() <= size.num_bits());
+        let extendop = match from_size {
+            OperandSize::S8 => ExtendOp::UXTB,
+            OperandSize::S16 => ExtendOp::UXTH,
+            OperandSize::S32 => ExtendOp::UXTW,
+            OperandSize::S64 => ExtendOp::UXTX,
+            OperandSize::S128 => {
+                return Err(format_err!(CodeGenError::invalid_operand_combination()));
+            }
+        };
+
+        self.asm.add_rrr_with_extend(rhs, lhs, dst, size, extendop);
+        Ok(())
+    }
+
     fn checked_uadd(
         &mut self,
         dst: WritableReg,
         lhs: Reg,
-        rhs: RegImm,
+        rhs: Imm,
         size: OperandSize,
         trap: TrapCode,
     ) -> Result<()> {
@@ -572,25 +597,17 @@ impl Masm for MacroAssembler {
         // ensure that the real SP is 16-byte aligned in case control flow is
         // transferred to a signal handler.
         self.with_aligned_sp(|masm| {
-            match (rhs, lhs, dst) {
-                // NB: we don't use `Self::add_ir` since we explicitly
-                // want to emit the add variant which sets overflow
-                // flags.
-                (RegImm::Imm(i), rn, rd) => {
-                    let imm = i.unwrap_as_u64();
-                    match Imm12::maybe_from_u64(imm) {
-                        Some(imm12) => masm.asm.adds_ir(imm12, rn, rd, size),
-                        None => {
-                            masm.with_scratch::<IntScratch, _>(|masm, scratch| {
-                                masm.asm.mov_ir(scratch.writable(), i, i.size());
-                                masm.asm.adds_rrr(scratch.inner(), rn, rd, size);
-                            });
-                        }
-                    }
-                }
-
-                (RegImm::Reg(rm), rn, rd) => {
-                    masm.asm.adds_rrr(rm, rn, rd, size);
+            // NB: we don't use `Self::add_ir` since we explicitly
+            // want to emit the add variant which sets overflow
+            // flags.
+            let imm = rhs.unwrap_as_u64();
+            match Imm12::maybe_from_u64(imm) {
+                Some(imm12) => masm.asm.adds_ir(imm12, lhs, dst, size),
+                None => {
+                    masm.with_scratch::<IntScratch, _>(|masm, scratch| {
+                        masm.asm.mov_ir(scratch.writable(), rhs, rhs.size());
+                        masm.asm.adds_rrr(scratch.inner(), lhs, dst, size);
+                    });
                 }
             }
             masm.asm.trapif(Cond::Hs, trap);
@@ -1076,7 +1093,7 @@ impl Masm for MacroAssembler {
     fn cmp(&mut self, src1: Reg, src2: RegImm, size: OperandSize) -> Result<()> {
         match src2 {
             RegImm::Reg(src2) => {
-                self.asm.subs_rrr(src2, src1, size);
+                self.asm.subs_rrr(src2, src1, writable!(regs::zero()), size);
                 Ok(())
             }
             RegImm::Imm(v) => {
@@ -1086,7 +1103,8 @@ impl Masm for MacroAssembler {
                     None => {
                         self.with_scratch::<IntScratch, _>(|masm, scratch| {
                             masm.asm.mov_ir(scratch.writable(), v, v.size());
-                            masm.asm.subs_rrr(scratch.inner(), src1, size);
+                            masm.asm
+                                .subs_rrr(scratch.inner(), src1, writable!(regs::zero()), size);
                         });
                     }
                 };
@@ -1194,7 +1212,8 @@ impl Masm for MacroAssembler {
         // `Assembler::jmp_table` (and the underlying Cranelift
         // instruction) will emit spectre mitigation and bounds
         // checks.
-        self.asm.subs_rrr(tmp, index, OperandSize::S32);
+        self.asm
+            .subs_rrr(tmp, index, writable!(regs::zero()), OperandSize::S32);
         let default = targets[default_index];
         let rest = &targets[0..default_index];
         self.with_scratch::<IntScratch, _>(|masm, scratch| {
@@ -1247,8 +1266,9 @@ impl Masm for MacroAssembler {
         rhs_lo: Reg,
         rhs_hi: Reg,
     ) -> Result<()> {
-        let _ = (dst_lo, dst_hi, lhs_lo, lhs_hi, rhs_lo, rhs_hi);
-        Err(format_err!(CodeGenError::unimplemented_masm_instruction()))
+        self.asm.adds_rrr(rhs_lo, lhs_lo, dst_lo, OperandSize::S64);
+        self.asm.adc_rrr(rhs_hi, lhs_hi, dst_hi, OperandSize::S64);
+        Ok(())
     }
 
     fn sub128(
@@ -1260,8 +1280,9 @@ impl Masm for MacroAssembler {
         rhs_lo: Reg,
         rhs_hi: Reg,
     ) -> Result<()> {
-        let _ = (dst_lo, dst_hi, lhs_lo, lhs_hi, rhs_lo, rhs_hi);
-        Err(format_err!(CodeGenError::unimplemented_masm_instruction()))
+        self.asm.subs_rrr(rhs_lo, lhs_lo, dst_lo, OperandSize::S64);
+        self.asm.sbc_rrr(rhs_hi, lhs_hi, dst_hi, OperandSize::S64);
+        Ok(())
     }
 
     fn mul_wide(
@@ -1269,8 +1290,23 @@ impl Masm for MacroAssembler {
         context: &mut CodeGenContext<Emission>,
         kind: MulWideKind,
     ) -> Result<()> {
-        let _ = (context, kind);
-        Err(format_err!(CodeGenError::unimplemented_masm_instruction()))
+        let rhs = context.pop_to_reg(self, None)?;
+        let lhs = context.pop_to_reg(self, None)?;
+        let dst_hi = context.any_gpr(self)?;
+
+        // Emit the high-half multiply first since the low-half multiply may
+        // alias `lhs` or `rhs` as its destination.
+        match kind {
+            MulWideKind::Signed => self.asm.smulh_rrr(rhs.reg, lhs.reg, writable!(dst_hi)),
+            MulWideKind::Unsigned => self.asm.umulh_rrr(rhs.reg, lhs.reg, writable!(dst_hi)),
+        }
+        self.asm
+            .mul_rrr(rhs.reg, lhs.reg, writable!(lhs.reg), OperandSize::S64);
+
+        context.free_reg(rhs);
+        context.stack.push(lhs.into());
+        context.stack.push(Val::Reg(TypedReg::i64(dst_hi)));
+        Ok(())
     }
 
     fn splat(&mut self, _context: &mut CodeGenContext<Emission>, _size: SplatKind) -> Result<()> {

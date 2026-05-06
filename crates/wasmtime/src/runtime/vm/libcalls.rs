@@ -528,7 +528,8 @@ fn table_init(
 // Implementation of `elem.drop`.
 fn elem_drop(store: &mut dyn VMStore, instance: InstanceId, elem_index: u32) -> Result<()> {
     let elem_index = ElemIndex::from_u32(elem_index);
-    store.instance_mut(instance).elem_drop(elem_index)?;
+    let (gc_store, instance) = store.optional_gc_store_and_instance_mut(instance);
+    instance.elem_drop(gc_store, elem_index)?;
     Ok(())
 }
 
@@ -643,8 +644,10 @@ fn grow_gc_heap(store: &mut dyn VMStore, _instance: InstanceId, bytes_needed: u6
 
     let (mut limiter, store) = store.resource_limiter_and_store_opaque();
     block_on!(store, async |store, asyncness| {
-        store
-            .gc(limiter.as_mut(), None, Some(bytes_needed), asyncness)
+        // We error below if there's still not enough space; swallow
+        // any growth failures here.
+        let _ = store
+            .grow_gc_heap(limiter.as_mut(), bytes_needed, asyncness)
             .await;
     })?;
 
@@ -671,33 +674,23 @@ fn grow_gc_heap(store: &mut dyn VMStore, _instance: InstanceId, bytes_needed: u6
 /// Allocate a raw, unininitialized GC object for Wasm code.
 ///
 /// The Wasm code is responsible for initializing the object.
-#[cfg(feature = "gc-drc")]
+#[cfg(any(feature = "gc-drc", feature = "gc-copying"))]
 fn gc_alloc_raw(
     store: &mut dyn VMStore,
-    instance: InstanceId,
+    _instance: InstanceId,
     kind_and_reserved: u32,
-    module_interned_type_index: u32,
+    shared_type_index: u32,
     size: u32,
     align: u32,
 ) -> Result<core::num::NonZeroU32> {
     use crate::vm::VMGcHeader;
     use core::alloc::Layout;
-    use wasmtime_environ::{ModuleInternedTypeIndex, VMGcKind};
+    use wasmtime_environ::{VMGcKind, VMSharedTypeIndex};
 
     let kind = VMGcKind::from_high_bits_of_u32(kind_and_reserved);
     log::trace!("gc_alloc_raw(kind={kind:?}, size={size}, align={align})");
 
-    let module = store
-        .instance(instance)
-        .runtime_module()
-        .expect("should never allocate GC types defined in a dummy module");
-
-    let module_interned_type_index = ModuleInternedTypeIndex::from_u32(module_interned_type_index);
-    let shared_type_index = module
-        .signatures()
-        .shared_type(module_interned_type_index)
-        .expect("should have engine type index for module type index");
-
+    let shared_type_index = VMSharedTypeIndex::from_u32(shared_type_index);
     let mut header = VMGcHeader::from_kind_and_index(kind, shared_type_index);
     header.set_reserved_u26(kind_and_reserved & VMGcKind::UNUSED_MASK);
 
@@ -708,6 +701,16 @@ fn gc_alloc_raw(
         let err = Error::from(crate::Trap::AllocationTooLarge);
         err.context(e)
     })?;
+
+    // Fast path: when the GC store already exists, try to allocate directly to
+    // skip the async/fiber machinery.
+    let opaque = store.store_opaque_mut();
+    if let Some(gc_store) = opaque.try_gc_store_mut() {
+        if let Ok(gc_ref) = gc_store.alloc_raw(header, layout)? {
+            let raw = gc_store.expose_gc_ref_to_wasm(gc_ref);
+            return Ok(raw);
+        }
+    }
 
     let (mut limiter, store) = store.resource_limiter_and_store_opaque();
     block_on!(store, async |store, asyncness| {
@@ -1243,7 +1246,7 @@ fn out_of_gas(store: &mut dyn VMStore, _instance: InstanceId) -> Result<()> {
         }
         #[cfg(feature = "async")]
         if store.fuel_yield_interval.is_some() {
-            crate::runtime::vm::Yield::new().await;
+            store.yield_now().await;
         }
         Ok(())
     })?
@@ -1279,7 +1282,7 @@ fn new_epoch(store: &mut dyn VMStore, _instance: InstanceId) -> Result<NextEpoch
                          an async wasm entrypoint",
                     );
                 }
-                crate::runtime::vm::Yield::new().await;
+                store.yield_now().await;
                 delta
             }
             #[cfg(feature = "async")]

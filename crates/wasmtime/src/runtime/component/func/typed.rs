@@ -140,6 +140,10 @@ where
     /// information to understand which part of the canonical ABI went wrong
     /// and what to inspect.
     ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
+    ///
     /// # Panics
     ///
     /// Panics if `store` does not own this function.
@@ -151,6 +155,12 @@ where
 
     /// Exactly like [`Self::call`], except for invoking WebAssembly
     /// [asynchronously](crate#async).
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     ///
     /// # Panics
     ///
@@ -204,9 +214,7 @@ where
 
             impl<'a, T> Drop for SignalOnDrop<'a, T> {
                 fn drop(&mut self) {
-                    self.task
-                        .host_future_dropped(self.store.as_context_mut())
-                        .unwrap();
+                    self.task.host_future_dropped(self.store.0).unwrap();
                 }
             }
 
@@ -959,6 +967,7 @@ macro_rules! forward_type_impls {
             type Lower = <$b as ComponentType>::Lower;
 
             const ABI: CanonicalAbiInfo = <$b as ComponentType>::ABI;
+            const MAY_REQUIRE_REALLOC: bool = <$b as ComponentType>::MAY_REQUIRE_REALLOC;
 
             #[inline]
             fn typecheck(ty: &InterfaceType, types: &InstanceType<'_>) -> Result<()> {
@@ -1156,7 +1165,7 @@ macro_rules! integers {
             fn linear_lift_from_memory(_cx: &mut LiftContext<'_>, ty: InterfaceType, bytes: &[u8]) -> Result<Self> {
                 debug_assert!(matches!(ty, InterfaceType::$ty));
                 debug_assert!((bytes.as_ptr() as usize) % Self::SIZE32 == 0);
-                Ok($primitive::from_le_bytes(bytes.try_into().unwrap()))
+                Ok($primitive::from_le_bytes(*bytes.as_array().unwrap()))
             }
 
             fn linear_lift_into_from_memory(
@@ -1193,6 +1202,7 @@ macro_rules! floats {
             type Lower = ValRaw;
 
             const ABI: CanonicalAbiInfo = CanonicalAbiInfo::$abi;
+            const MAY_REQUIRE_REALLOC: bool = false;
 
             fn typecheck(ty: &InterfaceType, _types: &InstanceType<'_>) -> Result<()> {
                 match ty {
@@ -1255,8 +1265,9 @@ macro_rules! floats {
                 // into a memcpy on little-endian platforms.
                 // TODO use `as_chunks` when https://github.com/rust-lang/rust/issues/74985
                 // is stabilized
-                for (dst, src) in iter::zip(dst.chunks_exact_mut(Self::SIZE32), items) {
-                    let dst: &mut [u8; Self::SIZE32] = dst.try_into().unwrap();
+                let (dst, rest) = dst.as_chunks_mut::<{Self::SIZE32}>();
+                debug_assert!(rest.is_empty());
+                for (dst, src) in iter::zip(dst, items) {
                     *dst = src.to_le_bytes();
                 }
                 Ok(())
@@ -1274,7 +1285,7 @@ macro_rules! floats {
             fn linear_lift_from_memory(_cx: &mut LiftContext<'_>, ty: InterfaceType, bytes: &[u8]) -> Result<Self> {
                 debug_assert!(matches!(ty, InterfaceType::$ty));
                 debug_assert!((bytes.as_ptr() as usize) % Self::SIZE32 == 0);
-                Ok($float::from_le_bytes(bytes.try_into().unwrap()))
+                Ok($float::from_le_bytes(*bytes.as_array().unwrap()))
             }
 
             fn linear_lift_list_from_memory(cx: &mut LiftContext<'_>, list: &WasmList<Self>) -> Result<Vec<Self>> where Self: Sized {
@@ -1293,7 +1304,7 @@ macro_rules! floats {
                 Ok(
                     bytes
                         .chunks_exact(Self::SIZE32)
-                        .map(|i| $float::from_le_bytes(i.try_into().unwrap()))
+                        .map(|i| $float::from_le_bytes(*i.as_array().unwrap()))
                         .collect()
                 )
             }
@@ -1310,6 +1321,7 @@ unsafe impl ComponentType for bool {
     type Lower = ValRaw;
 
     const ABI: CanonicalAbiInfo = CanonicalAbiInfo::SCALAR1;
+    const MAY_REQUIRE_REALLOC: bool = false;
 
     fn typecheck(ty: &InterfaceType, _types: &InstanceType<'_>) -> Result<()> {
         match ty {
@@ -1376,6 +1388,7 @@ unsafe impl ComponentType for char {
     type Lower = ValRaw;
 
     const ABI: CanonicalAbiInfo = CanonicalAbiInfo::SCALAR4;
+    const MAY_REQUIRE_REALLOC: bool = false;
 
     fn typecheck(ty: &InterfaceType, _types: &InstanceType<'_>) -> Result<()> {
         match ty {
@@ -1431,7 +1444,7 @@ unsafe impl Lift for char {
     ) -> Result<Self> {
         debug_assert!(matches!(ty, InterfaceType::Char));
         debug_assert!((bytes.as_ptr() as usize) % Self::SIZE32 == 0);
-        let bits = u32::from_le_bytes(bytes.try_into().unwrap());
+        let bits = u32::from_le_bytes(*bytes.as_array().unwrap());
         Ok(char::try_from(bits)?)
     }
 }
@@ -1450,8 +1463,8 @@ fn lift_pointer_pair_from_flat(
 fn lift_pointer_pair_from_memory(cx: &mut LiftContext<'_>, bytes: &[u8]) -> Result<(usize, usize)> {
     // FIXME(#4311): needs memory64 treatment
     let _ = cx; // this will be needed for memory64 in the future
-    let ptr = u32::from_le_bytes(bytes[..4].try_into().unwrap());
-    let len = u32::from_le_bytes(bytes[4..].try_into().unwrap());
+    let ptr = u32::from_le_bytes(*bytes[..4].as_array().unwrap());
+    let len = u32::from_le_bytes(*bytes[4..].as_array().unwrap());
     Ok((usize::try_from(ptr)?, usize::try_from(len)?))
 }
 
@@ -1765,14 +1778,13 @@ impl WasmStr {
 
     fn decode_utf16<'a>(&self, memory: &'a [u8], len: usize) -> Result<Cow<'a, str>> {
         // See notes in `decode_utf8` for why this is panicking indexing.
-        let memory = &memory[self.ptr..][..len * 2];
-        Ok(core::char::decode_utf16(
-            memory
-                .chunks(2)
-                .map(|chunk| u16::from_le_bytes(chunk.try_into().unwrap())),
+        let (chunks, rest) = &memory[self.ptr..][..len * 2].as_chunks::<2>();
+        debug_assert!(rest.is_empty());
+        Ok(
+            core::char::decode_utf16(chunks.iter().map(|chunk| u16::from_le_bytes(*chunk)))
+                .collect::<Result<String, _>>()?
+                .into(),
         )
-        .collect::<Result<String, _>>()?
-        .into())
     }
 
     fn decode_latin1<'a>(&self, memory: &'a [u8]) -> Result<Cow<'a, str>> {
@@ -2534,6 +2546,7 @@ where
     type Lower = TupleLower<<u32 as ComponentType>::Lower, T::Lower>;
 
     const ABI: CanonicalAbiInfo = CanonicalAbiInfo::variant_static(&[None, Some(T::ABI)]);
+    const MAY_REQUIRE_REALLOC: bool = T::MAY_REQUIRE_REALLOC;
 
     fn typecheck(ty: &InterfaceType, types: &InstanceType<'_>) -> Result<()> {
         match ty {
@@ -2675,6 +2688,7 @@ where
     type Lower = ResultLower<T::Lower, E::Lower>;
 
     const ABI: CanonicalAbiInfo = CanonicalAbiInfo::variant_static(&[Some(T::ABI), Some(E::ABI)]);
+    const MAY_REQUIRE_REALLOC: bool = T::MAY_REQUIRE_REALLOC || E::MAY_REQUIRE_REALLOC;
 
     fn typecheck(ty: &InterfaceType, types: &InstanceType<'_>) -> Result<()> {
         match ty {
@@ -3032,6 +3046,7 @@ macro_rules! impl_component_ty_for_tuples {
             const ABI: CanonicalAbiInfo = CanonicalAbiInfo::record_static(&[
                 $($t::ABI),*
             ]);
+            const MAY_REQUIRE_REALLOC: bool = false $(|| $t::MAY_REQUIRE_REALLOC)*;
 
             const IS_RUST_UNIT_TYPE: bool = {
                 let mut _is_unit = true;

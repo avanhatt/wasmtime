@@ -49,47 +49,45 @@ pub struct GcStore {
     /// The function-references table for this GC heap.
     pub func_ref_table: FuncRefTable,
 
+    /// The total allocated bytes recorded after the last GC collection.
+    /// `None` if no collection has been performed yet. Used by the
+    /// grow-or-collect heuristic.
+    pub last_post_gc_allocated_bytes: Option<usize>,
+
     /// An allocation counter that triggers GC when it reaches zero.
     ///
-    /// Initialized from the `WASMTIME_GC_ZEAL_ALLOC_COUNTER` environment
-    /// variable. Decremented on every allocation and when it hits zero, a GC is
+    /// Decremented on every allocation and when it hits zero, a GC is
     /// forced and the counter is reset.
-    #[cfg(all(gc_zeal, feature = "std"))]
+    #[cfg(gc_zeal)]
     gc_zeal_alloc_counter: Option<NonZeroU32>,
 
     /// The initial value to reset the counter to after it triggers.
-    #[cfg(all(gc_zeal, feature = "std"))]
+    #[cfg(gc_zeal)]
     gc_zeal_alloc_counter_init: Option<NonZeroU32>,
 }
 
 impl GcStore {
     /// Create a new `GcStore`.
-    pub fn new(allocation_index: GcHeapAllocationIndex, gc_heap: Box<dyn GcHeap>) -> Self {
+    pub fn new(
+        allocation_index: GcHeapAllocationIndex,
+        gc_heap: Box<dyn GcHeap>,
+        gc_zeal_alloc_counter: Option<NonZeroU32>,
+    ) -> Self {
         let host_data_table = ExternRefHostDataTable::default();
         let func_ref_table = FuncRefTable::default();
 
-        #[cfg(all(gc_zeal, feature = "std"))]
-        let gc_zeal_alloc_counter_init =
-            std::env::var("WASMTIME_GC_ZEAL_ALLOC_COUNTER")
-                .ok()
-                .map(|v| {
-                    v.parse::<NonZeroU32>().unwrap_or_else(|_| {
-                        panic!(
-                            "`WASMTIME_GC_ZEAL_ALLOC_COUNTER` must be a non-zero \
-                             `u32` value, got: {v}"
-                        )
-                    })
-                });
+        let _ = &gc_zeal_alloc_counter;
 
         Self {
             allocation_index,
             gc_heap,
             host_data_table,
             func_ref_table,
-            #[cfg(all(gc_zeal, feature = "std"))]
-            gc_zeal_alloc_counter: gc_zeal_alloc_counter_init,
-            #[cfg(all(gc_zeal, feature = "std"))]
-            gc_zeal_alloc_counter_init,
+            last_post_gc_allocated_bytes: None,
+            #[cfg(gc_zeal)]
+            gc_zeal_alloc_counter,
+            #[cfg(gc_zeal)]
+            gc_zeal_alloc_counter_init: gc_zeal_alloc_counter,
         }
     }
 
@@ -98,10 +96,25 @@ impl GcStore {
         self.gc_heap.vmmemory()
     }
 
+    /// Get the current capacity (in bytes) of this GC heap.
+    pub fn gc_heap_capacity(&self) -> usize {
+        self.gc_heap.heap_slice().len()
+    }
+
     /// Asynchronously perform garbage collection within this heap.
-    pub async fn gc(&mut self, asyncness: Asyncness, roots: GcRootsIter<'_>) {
+    pub async fn gc(
+        &mut self,
+        asyncness: Asyncness,
+        roots: GcRootsIter<'_>,
+        yield_fn: impl AsyncFn(),
+    ) {
         let collection = self.gc_heap.gc(roots, &mut self.host_data_table);
-        collect_async(collection, asyncness).await;
+        collect_async(collection, asyncness, yield_fn).await;
+        self.last_post_gc_allocated_bytes = Some({
+            let size = self.gc_heap.allocated_bytes();
+            log::trace!("After collection, GC heap's allocated bytes = {size:#x} bytes");
+            size
+        });
     }
 
     /// Get the kind of the given GC reference.
@@ -263,7 +276,7 @@ impl GcStore {
     ) -> Result<Result<VMGcRef, u64>> {
         // When gc_zeal is enabled with an allocation counter, decrement it and
         // force a GC cycle when it reaches zero by returning a fake OOM.
-        #[cfg(all(gc_zeal, feature = "std"))]
+        #[cfg(gc_zeal)]
         if let Some(counter) = self.gc_zeal_alloc_counter.take() {
             match NonZeroU32::new(counter.get() - 1) {
                 Some(c) => self.gc_zeal_alloc_counter = Some(c),
@@ -363,5 +376,20 @@ impl GcStore {
     /// Deallocate an uninitialized exception object.
     pub fn dealloc_uninit_exn(&mut self, exnref: VMExnRef) {
         self.gc_heap.dealloc_uninit_struct_or_exn(exnref.into());
+    }
+
+    #[cfg(feature = "gc")]
+    pub(crate) fn replace_gc_zeal_alloc_counter(
+        &mut self,
+        new_value: Option<NonZeroU32>,
+    ) -> Option<NonZeroU32> {
+        #[cfg(gc_zeal)]
+        return core::mem::replace(&mut self.gc_zeal_alloc_counter, new_value);
+
+        #[cfg(not(gc_zeal))]
+        {
+            let _ = new_value;
+            return None;
+        }
     }
 }

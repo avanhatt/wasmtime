@@ -310,7 +310,6 @@ impl Metadata<'_> {
             signals_based_traps,
             memory_init_cow,
             inlining,
-            inlining_intra_module,
             inlining_small_callee_size,
             inlining_sum_size_threshold,
             concurrency_support,
@@ -327,6 +326,16 @@ impl Metadata<'_> {
 
             // Just a debugging aid, doesn't affect functionality at all.
             debug_adapter_modules: _,
+
+            // This is a runtime GC debugging setting, doesn't affect compilation.
+            gc_zeal_alloc_counter: _,
+
+            gc_heap_reservation,
+            gc_heap_guard_size,
+            gc_heap_may_move,
+
+            // This doesn't affect compilation, it's just a runtime setting.
+            gc_heap_reservation_for_growth: _,
         } = self.tunables;
 
         Self::check_collector(collector, other.collector)?;
@@ -385,7 +394,6 @@ impl Metadata<'_> {
             other.memory_init_cow,
             "memory initialization with CoW",
         )?;
-        Self::check_bool(inlining, other.inlining, "function inlining")?;
         Self::check_int(
             inlining_small_callee_size,
             other.inlining_small_callee_size,
@@ -402,7 +410,18 @@ impl Metadata<'_> {
             "concurrency support",
         )?;
         Self::check_bool(recording, other.recording, "RR recording support")?;
-        Self::check_intra_module_inlining(inlining_intra_module, other.inlining_intra_module)?;
+        Self::check_inlining(inlining, other.inlining)?;
+        Self::check_int(
+            gc_heap_reservation,
+            other.gc_heap_reservation,
+            "GC heap reservation",
+        )?;
+        Self::check_int(
+            gc_heap_guard_size,
+            other.gc_heap_guard_size,
+            "GC heap guard size",
+        )?;
+        Self::check_bool(gc_heap_may_move, other.gc_heap_may_move, "GC heap may move")?;
 
         Ok(())
     }
@@ -443,20 +462,22 @@ impl Metadata<'_> {
         }
     }
 
-    fn check_intra_module_inlining(
-        module: wasmtime_environ::IntraModuleInlining,
-        host: wasmtime_environ::IntraModuleInlining,
+    fn check_inlining(
+        module: wasmtime_environ::Inlining,
+        host: wasmtime_environ::Inlining,
     ) -> Result<()> {
         if module == host {
             return Ok(());
         }
 
         let desc = |cfg| match cfg {
-            wasmtime_environ::IntraModuleInlining::No => "without intra-module inlining",
-            wasmtime_environ::IntraModuleInlining::Yes => "with intra-module inlining",
-            wasmtime_environ::IntraModuleInlining::WhenUsingGc => {
+            wasmtime_environ::Inlining::No => "without intra-module inlining",
+            wasmtime_environ::Inlining::Yes => "with intra-module inlining",
+            wasmtime_environ::Inlining::InterModuleAndIntraGc => {
                 "with intra-module inlining only when using GC"
             }
+            wasmtime_environ::Inlining::Intrinsics => "with intrinsic inlining",
+            wasmtime_environ::Inlining::InterModule => "with inter-module inlining",
         };
 
         let module = desc(module);

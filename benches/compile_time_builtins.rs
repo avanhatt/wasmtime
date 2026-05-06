@@ -88,11 +88,8 @@ impl ExposedBuf {
 
 fn make_engine() -> Result<Engine, Error> {
     let mut config = Config::new();
-    config.compiler_inlining(true);
+    config.compiler_inlining(wasmtime::Inlining::Yes);
     config.concurrency_support(false);
-    unsafe {
-        config.cranelift_flag_set("wasmtime_inlining_intra_module", "yes");
-    }
     let engine = Engine::new(&config)?;
     Ok(engine)
 }
@@ -474,7 +471,7 @@ mod inc_list {
 
 mod inc_random {
     use super::*;
-    use rand::{Rng, SeedableRng as _};
+    use rand::{RngExt, SeedableRng as _};
 
     pub fn bench(c: &mut Criterion) {
         let mut g = c.benchmark_group("increment-random-byte-in-buf");

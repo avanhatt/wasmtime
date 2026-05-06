@@ -82,11 +82,11 @@ macro_rules! foreach_builtin_function {
 
             // Allocate a new, uninitialized GC object and return a reference to
             // it.
-            #[cfg(feature = "gc-drc")]
+            #[cfg(any(feature = "gc-drc", feature = "gc-copying"))]
             gc_alloc_raw(
                 vmctx: vmctx,
                 kind: u32,
-                module_interned_type_index: u32,
+                shared_type_index: u32,
                 size: u32,
                 align: u32
             ) -> u32;

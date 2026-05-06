@@ -322,7 +322,7 @@ async fn task_deletion() -> Result<()> {
     config.wasm_component_model_async(true);
     config.wasm_component_model_threading(true);
     config.wasm_component_model_async_stackful(true);
-    config.wasm_component_model_async_builtins(true);
+    config.wasm_component_model_more_async_builtins(true);
     let engine = Engine::new(&config)?;
     let component = Component::new(
         &engine,
@@ -1054,7 +1054,7 @@ async fn stream_cancel_read_async_does_not_corrupt_state() -> Result<()> {
 
     let mut config = Config::new();
     config.wasm_component_model_async(true);
-    config.wasm_component_model_async_builtins(true);
+    config.wasm_component_model_more_async_builtins(true);
     config.wasm_component_model_async_stackful(true);
     let engine = Engine::new(&config)?;
 
@@ -1190,7 +1190,7 @@ async fn concurrent_sync_calls_to_async_host() -> Result<()> {
 
     let mut config = Config::new();
     config.wasm_component_model_async(true);
-    config.wasm_component_model_async_builtins(true);
+    config.wasm_component_model_more_async_builtins(true);
     config.wasm_component_model_async_stackful(true);
     config.wasm_component_model_threading(true);
     let engine = Engine::new(&config)?;
@@ -1321,6 +1321,63 @@ async fn bytes_stream_producer() -> Result<()> {
         func.call_async(&mut store, (reader, 100)).await?,
         ((5 << 4) | 1,),
     );
+
+    Ok(())
+}
+
+#[tokio::test]
+#[cfg_attr(miri, ignore)]
+async fn drop_deadlocked_typed_future() -> Result<()> {
+    let mut config = Config::new();
+    config.wasm_component_model_async(true);
+
+    let engine = Engine::new(&config)?;
+    let component = Component::new(
+        &engine,
+        r#"
+            (component
+              (core func $backpressure_inc (canon backpressure.inc))
+
+              (core module $m
+                (import "" "backpressure.inc" (func $backpressure_inc))
+                (func (export "set-backpressure") (call $backpressure_inc))
+                (func (export "target") (result i32) unreachable)
+                (func (export "callback") (param i32 i32 i32) (result i32) unreachable)
+              )
+
+              (core instance $i (instantiate $m
+                (with "" (instance (export "backpressure.inc" (func $backpressure_inc))))
+              ))
+
+              (func (export "set-backpressure")
+                (canon lift (core func $i "set-backpressure")))
+
+              (func (export "target")
+                (canon lift (core func $i "target") async (callback (func $i "callback"))))
+            )
+        "#,
+    )?;
+    let mut store = Store::new(&engine, ());
+    let linker = Linker::<()>::new(&engine);
+    let instance = linker.instantiate_async(&mut store, &component).await?;
+
+    // Force the instance to deadlock the next call by turning on backpressure
+    // meaning it can't enter the instance.
+    instance
+        .get_typed_func::<(), ()>(&mut store, "set-backpressure")?
+        .call_async(&mut store, ())
+        .await?;
+
+    // This call should fail due to deadlock since no progress is possible. When
+    // the future is dropped that shouldn't cause anything to go awry...
+    let result = instance
+        .get_typed_func::<(), ()>(&mut store, "target")?
+        .call_async(&mut store, ())
+        .await;
+
+    assert!(result.is_err(), "expected an error, got Ok");
+    let trap = result.unwrap_err().downcast::<Trap>()?;
+    assert_eq!(trap, Trap::AsyncDeadlock);
 
     Ok(())
 }

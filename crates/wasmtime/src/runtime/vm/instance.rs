@@ -13,7 +13,7 @@ use crate::runtime::vm::vmcontext::{
     VMTableDefinition, VMTableImport, VMTagDefinition, VMTagImport,
 };
 use crate::runtime::vm::{
-    GcStore, HostResult, Imports, ModuleRuntimeInfo, SendSyncPtr, VMGlobalKind, VMStore,
+    GcStore, HostResult, Imports, ModuleRuntimeInfo, SendSyncPtr, VMGcRef, VMGlobalKind, VMStore,
     VMStoreRawPtr, VmPtr, VmSafe, WasmFault, catch_unwind_and_record_trap,
 };
 use crate::store::{
@@ -36,9 +36,9 @@ use wasmtime_environ::ModuleInternedTypeIndex;
 use wasmtime_environ::error::OutOfMemory;
 use wasmtime_environ::{
     DataIndex, DefinedGlobalIndex, DefinedMemoryIndex, DefinedTableIndex, DefinedTagIndex,
-    ElemIndex, EntityIndex, EntityRef, FuncIndex, GlobalIndex, HostPtr, MemoryIndex,
-    NeedsGcRooting, PtrSize, TableIndex, TableInitialValue, TagIndex, Trap, VMCONTEXT_MAGIC,
-    VMOffsets, VMSharedTypeIndex, packed_option::ReservedValue,
+    ElemIndex, EntityIndex, EntityRef, FuncIndex, GlobalIndex, HostPtr, MemoryIndex, PtrSize,
+    TableIndex, TableInitialValue, TagIndex, Trap, VMCONTEXT_MAGIC, VMOffsets, VMSharedTypeIndex,
+    WasmRefType, packed_option::ReservedValue,
 };
 #[cfg(feature = "wmemcheck")]
 use wasmtime_wmemcheck::Wmemcheck;
@@ -133,7 +133,7 @@ pub struct Instance {
     //
     // TODO(#12621): This should be a `TrySecondaryMap<PassiveElemIndex, _>`
     // but that type is currently footgun-y / isn't actually OOM-safe yet.
-    passive_elements: TryVec<Option<(NeedsGcRooting, TryVec<ValRaw>)>>,
+    passive_elements: TryVec<PassiveElementSegment>,
 
     /// Stores the dropped passive data segments in this instantiation by index.
     /// If the index is present in the set, the segment has been dropped.
@@ -214,29 +214,29 @@ impl Instance {
         Ok(ret)
     }
 
-    /// Trace GC roots inside this `Instance`.
-    ///
-    /// NB: This instance's `vmctx` roots are traced separately in
-    /// `Store::trace_vmctx_roots`.
+    /// Trace element segment GC roots inside this `Instance`.
     ///
     /// # Safety
     ///
     /// This instance must live for the duration of the associated GC cycle.
     #[cfg(feature = "gc")]
-    pub(crate) unsafe fn trace_roots(self: Pin<&mut Self>, gc_roots: &mut crate::vm::GcRootsList) {
-        // SAFETY: not moving data out of `self`.
-        let passive_elements = &mut unsafe { self.get_unchecked_mut() }.passive_elements;
+    pub(crate) unsafe fn trace_element_segment_roots(
+        self: Pin<&mut Self>,
+        gc_roots: &mut crate::vm::GcRootsList,
+    ) {
+        for segment in self.passive_elements_mut().iter_mut() {
+            if segment.needs_gc_rooting {
+                for e in segment.elements() {
+                    if e.get_vmgcref().is_none() {
+                        continue;
+                    }
 
-        for segment in passive_elements {
-            if let Some((wasmtime_environ::NeedsGcRooting::Yes, elems)) = segment {
-                for e in elems {
-                    let root: SendSyncPtr<ValRaw> = SendSyncPtr::from(e);
-                    let root: SendSyncPtr<super::VMGcRef> = root.cast();
+                    let root: SendSyncPtr<ValRaw> = e.into();
 
                     // Safety: We know this is a type that needs GC rooting and
                     // the lifetime is implied by our safety contract.
                     unsafe {
-                        gc_roots.add_root(root, "passive element segment");
+                        gc_roots.add_val_raw_root(root, "passive element segment");
                     }
                 }
             }
@@ -809,73 +809,6 @@ impl Instance {
         unsafe { self.vmctx_plus_offset_raw(self.offsets().ptr.vmctx_type_ids_array()) }
     }
 
-    /// Construct a new VMFuncRef for the given function
-    /// (imported or defined in this module) and store into the given
-    /// location. Used during lazy initialization.
-    ///
-    /// Note that our current lazy-init scheme actually calls this every
-    /// time the funcref pointer is fetched; this turns out to be better
-    /// than tracking state related to whether it's been initialized
-    /// before, because resetting that state on (re)instantiation is
-    /// very expensive if there are many funcrefs.
-    ///
-    /// # Safety
-    ///
-    /// This functions requires that `into` is a valid pointer.
-    unsafe fn construct_func_ref(
-        self: Pin<&mut Self>,
-        registry: &ModuleRegistry,
-        index: FuncIndex,
-        type_index: VMSharedTypeIndex,
-        into: *mut VMFuncRef,
-    ) {
-        let module_with_code = ModuleWithCode::in_store(
-            registry,
-            self.runtime_module()
-                .expect("funcref impossible in fake module"),
-        )
-        .expect("module not in store");
-
-        let func_ref = if let Some(def_index) = self.env_module().defined_func_index(index) {
-            VMFuncRef {
-                array_call: NonNull::from(
-                    module_with_code
-                        .array_to_wasm_trampoline(def_index)
-                        .expect("should have array-to-Wasm trampoline for escaping function"),
-                )
-                .cast()
-                .into(),
-                wasm_call: Some(
-                    NonNull::new(
-                        module_with_code
-                            .finished_function(def_index)
-                            .as_ptr()
-                            .cast::<VMWasmCallFunction>()
-                            .cast_mut(),
-                    )
-                    .unwrap()
-                    .into(),
-                ),
-                vmctx: VMOpaqueContext::from_vmcontext(self.vmctx()).into(),
-                type_index,
-            }
-        } else {
-            let import = self.imported_function(index);
-            VMFuncRef {
-                array_call: import.array_call,
-                wasm_call: Some(import.wasm_call),
-                vmctx: import.vmctx,
-                type_index,
-            }
-        };
-
-        // SAFETY: the unsafe contract here is forwarded to callers of this
-        // function.
-        unsafe {
-            ptr::write(into, func_ref);
-        }
-    }
-
     /// Get a `&VMFuncRef` for the given `FuncIndex`.
     ///
     /// Returns `None` if the index is the reserved index value.
@@ -891,46 +824,82 @@ impl Instance {
             return None;
         }
 
-        // For now, we eagerly initialize an funcref struct in-place
-        // whenever asked for a reference to it. This is mostly
-        // fine, because in practice each funcref is unlikely to be
-        // requested more than a few times: once-ish for funcref
-        // tables used for call_indirect (the usual compilation
-        // strategy places each function in the table at most once),
-        // and once or a few times when fetching exports via API.
-        // Note that for any case driven by table accesses, the lazy
-        // table init behaves like a higher-level cache layer that
-        // protects this initialization from happening multiple
-        // times, via that particular table at least.
+        let Some(def_index) = self.env_module().defined_func_index(index) else {
+            debug_assert!(self.env_module().is_imported_function(index));
+            return Some(self.imported_function(index).as_func_ref().into());
+        };
+
+        // For now, we eagerly initialize an funcref struct in-place whenever
+        // asked for a reference to it. This is mostly fine, because in practice
+        // each funcref is unlikely to be requested more than a few times:
+        // once-ish for funcref tables used for call_indirect (the usual
+        // compilation strategy places each function in the table at most once),
+        // and once or a few times when fetching exports via API.  Note that for
+        // any case driven by table accesses, the lazy table init behaves like a
+        // higher-level cache layer that protects this initialization from
+        // happening multiple times, via that particular table at least.
         //
-        // When `ref.func` becomes more commonly used or if we
-        // otherwise see a use-case where this becomes a hotpath,
-        // we can reconsider by using some state to track
-        // "uninitialized" explicitly, for example by zeroing the
-        // funcrefs (perhaps together with other
-        // zeroed-at-instantiate-time state) or using a separate
-        // is-initialized bitmap.
+        // When `ref.func` becomes more commonly used or if we otherwise see a
+        // use-case where this becomes a hotpath, we can reconsider by using
+        // some state to track "uninitialized" explicitly, for example by
+        // zeroing the funcrefs (perhaps together with other
+        // zeroed-at-instantiate-time state) or using a separate is-initialized
+        // bitmap.
         //
-        // We arrived at this design because zeroing memory is
-        // expensive, so it's better for instantiation performance
-        // if we don't have to track "is-initialized" state at
-        // all!
+        // We arrived at this design because zeroing memory is expensive, so
+        // it's better for instantiation performance if we don't have to track
+        // "is-initialized" state at all!
+
         let func = &self.env_module().functions[index];
-        let sig = func.signature.unwrap_engine_type_index();
+        let type_index = func.signature.unwrap_engine_type_index();
+
+        let module_with_code = ModuleWithCode::in_store(
+            registry,
+            self.runtime_module()
+                .expect("funcref impossible in fake module"),
+        )
+        .expect("module not in store");
+
+        let array_call = VmPtr::from(
+            NonNull::from(
+                module_with_code
+                    .array_to_wasm_trampoline(def_index)
+                    .expect("should have array-to-Wasm trampoline for escaping function"),
+            )
+            .cast(),
+        );
+
+        let wasm_call = Some(VmPtr::from(
+            NonNull::new(
+                module_with_code
+                    .finished_function(def_index)
+                    .as_ptr()
+                    .cast::<VMWasmCallFunction>()
+                    .cast_mut(),
+            )
+            .unwrap(),
+        ));
+
+        let vmctx = VMOpaqueContext::from_vmcontext(self.vmctx()).into();
 
         // SAFETY: the offset calculated here should be correct with
         // `self.offsets`
-        let func_ref = unsafe {
+        let func_ref_ptr = unsafe {
             self.vmctx_plus_offset_raw::<VMFuncRef>(self.offsets().vmctx_func_ref(func.func_ref))
         };
 
-        // SAFETY: the `func_ref` ptr should be valid as it's within our
+        // SAFETY: the `func_ref_ptr` should be valid as it's within our
         // `VMContext` area.
         unsafe {
-            self.construct_func_ref(registry, index, sig, func_ref.as_ptr());
+            func_ref_ptr.write(VMFuncRef {
+                array_call,
+                wasm_call,
+                vmctx,
+                type_index,
+            });
         }
 
-        Some(func_ref)
+        Some(func_ref_ptr)
     }
 
     /// Get the passive elements segment at the given index.
@@ -944,16 +913,12 @@ impl Instance {
             return &[];
         };
 
-        let Some((_, seg)) = &self.passive_elements[passive.index()] else {
-            return &[];
-        };
-
-        &**seg
+        self.passive_elements[passive.index()].elements()
     }
 
     pub(crate) fn passive_elements_mut(
         self: Pin<&mut Self>,
-    ) -> Pin<&mut TryVec<Option<(NeedsGcRooting, TryVec<ValRaw>)>>> {
+    ) -> Pin<&mut TryVec<PassiveElementSegment>> {
         // SAFETY: Not moving data out of `self`.
         Pin::new(&mut unsafe { self.get_unchecked_mut() }.passive_elements)
     }
@@ -1028,6 +993,7 @@ impl Instance {
     /// Drop an element.
     pub(crate) fn elem_drop(
         self: Pin<&mut Self>,
+        gc_store: Option<&mut GcStore>,
         elem_index: ElemIndex,
     ) -> Result<(), OutOfMemory> {
         // https://webassembly.github.io/reference-types/core/exec/instructions.html#exec-elem-drop
@@ -1042,7 +1008,7 @@ impl Instance {
             return Ok(());
         };
 
-        self.passive_elements_mut()[passive_index.index()] = None;
+        self.passive_elements_mut()[passive_index.index()].clear(gc_store);
         Ok(())
     }
 
@@ -1952,5 +1918,74 @@ impl<T: InstanceLayout> Drop for OwnedInstance<T> {
             ptr::drop_in_place(self.instance.as_ptr());
             alloc::alloc::dealloc(self.instance.as_ptr().cast(), layout);
         }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct PassiveElementSegment {
+    needs_gc_rooting: bool,
+    elements: TryVec<ValRaw>,
+}
+
+impl PassiveElementSegment {
+    /// Create a new passive element segment with the given capacity.
+    pub(crate) fn new(ty: WasmRefType, capacity: usize) -> Result<Self, OutOfMemory> {
+        Ok(Self {
+            needs_gc_rooting: ty.is_vmgcref_type_and_not_i31(),
+            elements: TryVec::with_capacity(capacity)?,
+        })
+    }
+
+    /// Push a value onto this passive element segment.
+    ///
+    /// NB: Does not type check the value, relies on callers to ensure the
+    /// value is of the correct type (generally, due to validation).
+    pub(crate) fn push(&mut self, store: &mut StoreOpaque, val: Val) -> Result<()> {
+        let mut val = {
+            let mut store = AutoAssertNoGc::new(store);
+            val.to_raw_(&mut store)?
+        };
+        if self.needs_gc_rooting {
+            // Note that `anyref` accessors and constructors are used here
+            // without actually checking the type of this segment or value. The
+            // representation and handling of all three is the same which means
+            // that this should work out.
+            let gc_ref = val.get_anyref();
+            debug_assert_eq!(gc_ref, val.get_exnref());
+            debug_assert_eq!(gc_ref, val.get_externref());
+            if let Some(gc_ref) = VMGcRef::from_raw_u32(gc_ref) {
+                if let Some(gc_store) = store.optional_gc_store_mut() {
+                    val = ValRaw::anyref(gc_store.clone_gc_ref(&gc_ref).as_raw_u32());
+                }
+            }
+        }
+        self.elements.push(val)?;
+        Ok(())
+    }
+
+    /// Clear this segment's elements.
+    pub(crate) fn clear(&mut self, mut gc_store: Option<&mut GcStore>) {
+        let elements = mem::take(&mut self.elements);
+        if !self.needs_gc_rooting {
+            return;
+        }
+        for val in elements {
+            // Like above, `anyref` accessors are used here even if this
+            // element segment has a different type because all of the vmgcref
+            // types are treated the same way.
+            let gc_ref = val.get_anyref();
+            debug_assert_eq!(gc_ref, val.get_exnref());
+            debug_assert_eq!(gc_ref, val.get_externref());
+            if let Some(gc_ref) = VMGcRef::from_raw_u32(gc_ref) {
+                if let Some(gc_store) = gc_store.as_deref_mut() {
+                    let _ = gc_store.drop_gc_ref(gc_ref);
+                }
+            }
+        }
+    }
+
+    /// The elements of this segment.
+    pub(crate) fn elements(&self) -> &[ValRaw] {
+        &self.elements
     }
 }

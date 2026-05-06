@@ -83,7 +83,6 @@ use std::ptr::{self, NonNull};
 use std::task::{Context, Poll, Waker};
 use std::vec::Vec;
 use table::{TableDebug, TableId};
-use wasmtime_environ::Trap;
 use wasmtime_environ::component::{
     CanonicalAbiInfo, CanonicalOptions, CanonicalOptionsDataModel, MAX_FLAT_PARAMS,
     MAX_FLAT_RESULTS, OptionsIndex, PREPARE_ASYNC_NO_RESULT, PREPARE_ASYNC_WITH_RESULT,
@@ -92,6 +91,7 @@ use wasmtime_environ::component::{
     TypeFuncIndex, TypeFutureTableIndex, TypeStreamTableIndex, TypeTupleIndex,
 };
 use wasmtime_environ::packed_option::ReservedValue;
+use wasmtime_environ::{NUM_COMPONENT_CONTEXT_SLOTS, Trap};
 
 pub use abort::JoinHandle;
 pub use future_stream_any::{FutureAny, StreamAny};
@@ -523,6 +523,54 @@ where
             token: self.token,
             get_data: self.get_data,
         }
+    }
+
+    /// Polls to see if this store contains any "interesting" tasks still within
+    /// it.
+    ///
+    /// Returns `Poll::Ready(())` if there are no more interesting tasks, and
+    /// otherwise returns `Poll::Pending`. If pending is returned then whenever
+    /// the last remaining "interesting" task has exited the provided context's
+    /// waker will be notified. Note that only the waker passed to the last call
+    /// to `poll_no_interesting_tasks` will be notified, so this is only
+    /// appropriate to use one-at-a-time.
+    ///
+    /// The component model specification, as of this current date, does not
+    /// have a distinction between "interesting" tasks and not. The current
+    /// intention is that in a future revision of the component model this will
+    /// be distinguished at the component ABI level where tasks will be able to
+    /// flag themselves as "interesting" optionally. Additionally extra work can
+    /// be opted-in to being "interesting".
+    ///
+    /// For now what this means is that all component model tasks within this
+    /// store are considered interesting. This specifically includes the entire
+    /// duration of a task, so even all of the time after a task has returned
+    /// but before it has exited. This means that this function is, today,
+    /// effectively a proxy for "are there any more tasks still running in this
+    /// store". This can be used by embedders to determine whether there's any
+    /// more work going on, even in the background, for a particular guest.
+    /// Hosts can use this as a signal that the guest wants to stay alive a
+    /// little longer, even after a task has returned.
+    ///
+    /// In the future this predicate won't include all tasks in this store. Some
+    /// tasks will be able to flag themselves as not interesting, meaning that
+    /// when this returns ready it'd be possible that there are still tasks
+    /// remaining in the store.
+    ///
+    /// Note that at this time spawned threads within a task are always
+    /// considered uninteresting. If this function returns ready, then spawned
+    /// threads may still be in the store.
+    pub fn poll_no_interesting_tasks(&self, cx: &mut Context<'_>) -> Poll<()> {
+        self.with(|mut access| {
+            let store = access.as_context_mut().0;
+            let state = store.concurrent_state_mut();
+            if state.interesting_tasks == 0 {
+                Poll::Ready(())
+            } else {
+                state.interesting_tasks_empty_waker = Some(cx.waker().clone());
+                Poll::Pending
+            }
+        })
     }
 }
 
@@ -1196,8 +1244,12 @@ impl<T> StoreContextMut<'_, T> {
 
             enum PollResult<R> {
                 Complete(R),
-                ProcessWork(Vec<WorkItem>),
+                ProcessWork {
+                    ready: Vec<WorkItem>,
+                    low_priority: bool,
+                },
             }
+
             let result = future::poll_fn(|cx| {
                 // First, poll the future we were passed as an argument and
                 // return immediately if it's ready.
@@ -1220,13 +1272,23 @@ impl<T> StoreContextMut<'_, T> {
                     Poll::Pending => Poll::Pending,
                 };
 
-                // Next, collect the next batch of work items to process, if any.
-                // This will be either all of the high-priority work items, or if
-                // there are none, a single low-priority work item.
+                // Next, collect the next batch of work items to process, if
+                // any.  This will be either all of the high-priority work
+                // items, or if there are none, a single low-priority work item.
                 let state = reset.store.0.concurrent_state_mut();
-                let ready = state.collect_work_items_to_run();
+                let mut ready = mem::take(&mut state.high_priority);
+                let mut low_priority = false;
+                if ready.is_empty() {
+                    if let Some(item) = state.low_priority.pop_back() {
+                        ready.push(item);
+                        low_priority = true;
+                    }
+                }
                 if !ready.is_empty() {
-                    return Poll::Ready(Ok(PollResult::ProcessWork(ready)));
+                    return Poll::Ready(Ok(PollResult::ProcessWork {
+                        ready,
+                        low_priority,
+                    }));
                 }
 
                 // Finally, if we have nothing else to do right now, determine what to do
@@ -1239,7 +1301,10 @@ impl<T> StoreContextMut<'_, T> {
                         // successfully, so we return now and continue
                         // the outer loop in case there is another one
                         // ready to complete.
-                        Poll::Ready(Ok(PollResult::ProcessWork(Vec::new())))
+                        Poll::Ready(Ok(PollResult::ProcessWork {
+                            ready: Vec::new(),
+                            low_priority: false,
+                        }))
                     }
                     Poll::Ready(false) => {
                         // Poll the future we were passed one last time
@@ -1287,7 +1352,10 @@ impl<T> StoreContextMut<'_, T> {
                 PollResult::Complete(value) => break Ok(value),
                 // The future we were passed has not yet completed, so handle
                 // any work items and then loop again.
-                PollResult::ProcessWork(ready) => {
+                PollResult::ProcessWork {
+                    ready,
+                    low_priority,
+                } => {
                     struct Dispose<'a, T: 'static, I: Iterator<Item = WorkItem>> {
                         store: StoreContextMut<'a, T>,
                         ready: I,
@@ -1311,6 +1379,31 @@ impl<T> StoreContextMut<'_, T> {
                         store: self.as_context_mut(),
                         ready: ready.into_iter(),
                     };
+
+                    // If we're about to run a low-priority task, first yield to
+                    // the executor.  This ensures that it won't be starved of
+                    // the ability to e.g. update the readiness of sockets,
+                    // etc. which the guest may be using `thread.yield` along
+                    // with `waitable-set.poll` to monitor in a CPU-heavy loop.
+                    //
+                    // This works for e.g. `thread.yield` and callbacks which
+                    // return `CALLBACK_CODE_YIELD` because we queue a low
+                    // priority item to resume the task (i.e. resume the thread
+                    // or call the callback, respectively) just prior to
+                    // suspending it.  Indeed, as of this writing those are the
+                    // _only_ situations we queue low-priority tasks.
+                    // Therefore, we interpret the guest's request to yield as
+                    // meaning "yield to other guest tasks _and_/_or_ host
+                    // operations such as updating socket readiness", the latter
+                    // being the async runtime's responsibility.
+                    //
+                    // In the future, if this ends up causing measurable
+                    // performance issues, this could be optimized such that we
+                    // only yield periodically (e.g. for batches of low priority
+                    // items) and not for each and every idividual item.
+                    if low_priority {
+                        dispose.store.0.yield_now().await
+                    }
 
                     while let Some(item) = dispose.ready.next() {
                         dispose
@@ -1450,7 +1543,7 @@ impl StoreOpaque {
     ) -> Result<()> {
         log::trace!("enter sync call {callee:?}");
         if !self.concurrency_support() {
-            return Ok(self.enter_call_not_concurrent());
+            return self.enter_call_not_concurrent();
         }
 
         let state = self.concurrent_state_mut();
@@ -1463,7 +1556,8 @@ impl StoreOpaque {
         if guest_caller.is_some() {
             debug_assert_eq!(instance, guest_caller);
         }
-        let task = GuestTask::new(
+        let guest_thread = GuestTask::new(
+            state,
             Box::new(move |_, _| bail_bug!("cannot lower params in sync call")),
             LiftResult {
                 lift: Box::new(move |_, _| bail_bug!("cannot lift result in sync call")),
@@ -1485,22 +1579,12 @@ impl StoreOpaque {
             callee_async,
         )?;
 
-        let guest_task = state.push(task)?;
-        let new_thread = GuestThread::new_implicit(state, guest_task)?;
-        let guest_thread = state.push(new_thread)?;
         Instance::from_wasmtime(self, callee.instance).add_guest_thread_to_instance_table(
-            guest_thread,
+            guest_thread.thread,
             self,
             callee.index,
         )?;
-
-        let state = self.concurrent_state_mut();
-        state.get_mut(guest_task)?.threads.insert(guest_thread);
-
-        self.set_thread(QualifiedThreadId {
-            task: guest_task,
-            thread: guest_thread,
-        })?;
+        self.set_thread(guest_thread)?;
 
         Ok(())
     }
@@ -1514,27 +1598,18 @@ impl StoreOpaque {
             Some(t) => *t,
             None => bail_bug!("expected task when exiting"),
         };
-        let instance = self.concurrent_state_mut().get_mut(thread.task)?.instance;
-        log::trace!("exit sync call {instance:?}");
-        Instance::from_wasmtime(self, instance.instance).cleanup_thread(
-            self,
-            thread,
-            instance.index,
-        )?;
-
-        let state = self.concurrent_state_mut();
-        let task = state.get_mut(thread.task)?;
+        let task = self.concurrent_state_mut().get_mut(thread.task)?;
+        let instance = task.instance;
         let caller = match &task.caller {
             &Caller::Guest { thread } => thread.into(),
             &Caller::Host { caller, .. } => caller,
         };
+        task.lift_result = None;
+        task.exited = true;
         self.set_thread(caller)?;
 
-        let state = self.concurrent_state_mut();
-        let task = state.get_mut(thread.task)?;
-        if task.ready_to_delete() {
-            state.delete(thread.task)?.dispose(state)?;
-        }
+        log::trace!("exit sync call {instance:?}");
+        self.cleanup_thread(thread, instance, CleanupTask::Yes)?;
 
         Ok(())
     }
@@ -1548,7 +1623,7 @@ impl StoreOpaque {
     /// situations.
     pub(crate) fn host_task_create(&mut self) -> Result<Option<TableId<HostTask>>> {
         if !self.concurrency_support() {
-            self.enter_call_not_concurrent();
+            self.enter_call_not_concurrent()?;
             return Ok(None);
         }
         let state = self.concurrent_state_mut();
@@ -1643,22 +1718,56 @@ impl StoreOpaque {
             .instance_state(instance.index)
     }
 
+    /// Configure the currently running `thread`.
+    ///
+    /// This will save off any state necessary for the previous thread, if
+    /// applicable, and then it'll additionally update state for `thread` if
+    /// needed too.
     fn set_thread(&mut self, thread: impl Into<CurrentThread>) -> Result<CurrentThread> {
+        let thread = thread.into();
+        let state = self.concurrent_state_mut();
+        let old_thread = mem::replace(&mut state.current_thread, thread);
+
+        // First thing to do after swapping threads is updating the context
+        // slots for this thread within the store. This restores the behavior of
+        // `context.{get,set}`. This involves taking the old state out of the
+        // store, saving it in the thread that's being swapped from, and doing
+        // the inverse for the new thread. When debug assertions are enabled
+        // this also leaves behind sentinel values to try to uncover bugs where
+        // this may be forgotten.
+        if let Some(old_thread) = old_thread.guest() {
+            let old_context = self.vm_store_context().component_context;
+            self.concurrent_state_mut()
+                .get_mut(old_thread.thread)?
+                .context = old_context;
+        }
+        if cfg!(debug_assertions) {
+            self.vm_store_context_mut().component_context = [u32::MAX; NUM_COMPONENT_CONTEXT_SLOTS];
+        }
+        if let Some(thread) = thread.guest() {
+            let thread = self.concurrent_state_mut().get_mut(thread.thread)?;
+            let context = thread.context;
+            if cfg!(debug_assertions) {
+                thread.context = [u32::MAX; NUM_COMPONENT_CONTEXT_SLOTS];
+            }
+            self.vm_store_context_mut().component_context = context;
+        }
+
         // Each time we switch threads, we conservatively set `task_may_block`
         // to `false` for the component instance we're switching away from (if
         // any), meaning it will be `false` for any new thread created for that
         // instance unless explicitly set otherwise.
+        //
+        // Additionally if we're switching to a new thread, set its component
+        // instance's `task_may_block` according to where it left off.
         let state = self.concurrent_state_mut();
-        let old_thread = mem::replace(&mut state.current_thread, thread.into());
         if let Some(old_thread) = old_thread.guest() {
             let instance = state.get_mut(old_thread.task)?.instance.instance;
             self.component_instance_mut(instance)
                 .set_task_may_block(false)
         }
 
-        // If we're switching to a new thread, set its component instance's
-        // `task_may_block` according to where it left off.
-        if self.concurrent_state_mut().current_thread.guest().is_some() {
+        if thread.guest().is_some() {
             self.set_task_may_block()?;
         }
 
@@ -1888,6 +1997,144 @@ impl StoreOpaque {
         let state = self.concurrent_state_mut();
         waitable.join(state, old_set)
     }
+
+    /// Cleans up the data structures backing the `guest_thread` specified,
+    /// removing it from the internal tables of `runtime_instance` as well.
+    ///
+    /// This function is used whenever a guest thread has fully exited and
+    /// completed. This'll clean up the associated `GuestThread` structure and
+    /// related resources it contains.
+    ///
+    /// Other functionality that this implements is:
+    ///
+    /// * This will perform conditional cleanup of the `GuestTask` that owns
+    ///   this thread if `cleanup_task` is `CleanupTask::Yes`.
+    /// * If there are no more threads in the `GuestTask` that this thread is
+    ///   associated with, and if the task hasn't produced a result (e.g. it's not
+    ///   returned or cancelled), then a trap will be raised that a result
+    ///   wasn't ever produced.
+    /// * If this task is finished, meaning the top-level thread exited and
+    ///   additionally it's been returned or cancelled, then this will handle
+    ///   management of the store's "active interesting tasks" counter.
+    ///
+    /// Effectively this is intended to be a "narrow waist" through which many
+    /// destruction operations are funneled through.
+    fn cleanup_thread(
+        &mut self,
+        guest_thread: QualifiedThreadId,
+        runtime_instance: RuntimeInstance,
+        cleanup_task: CleanupTask,
+    ) -> Result<()> {
+        let state = self.concurrent_state_mut();
+        let thread_data = state.get_mut(guest_thread.thread)?;
+        let sync_call_set = thread_data.sync_call_set;
+        if let Some(guest_id) = thread_data.instance_rep {
+            self.instance_state(runtime_instance)
+                .thread_handle_table()
+                .guest_thread_remove(guest_id)?;
+        }
+        let state = self.concurrent_state_mut();
+
+        // Clean up any pending subtasks in the sync_call_set
+        for waitable in mem::take(&mut state.get_mut(sync_call_set)?.ready) {
+            if let Some(Event::Subtask {
+                status: Status::Returned | Status::ReturnCancelled,
+            }) = waitable.common(state)?.event
+            {
+                waitable.delete_from(state)?;
+            }
+        }
+
+        state.delete(guest_thread.thread)?;
+        state.delete(sync_call_set)?;
+        let task = state.get_mut(guest_thread.task)?;
+        task.threads.remove(&guest_thread.thread);
+
+        if task.threads.is_empty() && !task.returned_or_cancelled() {
+            bail!(Trap::NoAsyncResult);
+        }
+        let ready_to_delete = task.ready_to_delete();
+
+        if !task.decremented_interesting_task_count && task.exited && task.returned_or_cancelled() {
+            task.decremented_interesting_task_count = true;
+
+            debug_assert!(state.interesting_tasks > 0);
+            state.interesting_tasks -= 1;
+            if state.interesting_tasks == 0
+                && let Some(waker) = state.interesting_tasks_empty_waker.take()
+            {
+                waker.wake();
+            }
+        }
+
+        match cleanup_task {
+            CleanupTask::Yes => {
+                if ready_to_delete {
+                    Waitable::Guest(guest_thread.task).delete_from(state)?;
+                }
+            }
+            CleanupTask::No => {}
+        }
+
+        Ok(())
+    }
+
+    /// Performs cancellation of the `guest_task` specified with the
+    /// precondition that the task hasn't lowered its parameters.
+    ///
+    /// In this situation the task hasn't ever been started meaning it hasn't
+    /// actually run any wasm code yet. This requires cleaning up metadata such
+    /// as thread information attached to the task.
+    ///
+    /// The main two entrypoints for this function are:
+    ///
+    /// * Task cancellation via `subtask.cancel`, the intrinsic.
+    /// * Dropping a host `call_async` future which needs to cancel the task
+    ///   because it cannot reference its parameters any more.
+    fn cancel_guest_subtask_without_lowered_parameters(
+        &mut self,
+        caller_instance: RuntimeInstance,
+        guest_task: TableId<GuestTask>,
+    ) -> Result<()> {
+        let concurrent_state = self.concurrent_state_mut();
+        let task = concurrent_state.get_mut(guest_task)?;
+        assert!(!task.already_lowered_parameters());
+        // The task is in a `starting` state, meaning it hasn't run at
+        // all yet.  Here we update its fields to indicate that it is
+        // ready to delete immediately once `subtask.drop` is called.
+        task.lower_params = None;
+        task.lift_result = None;
+        task.exited = true;
+        let instance = task.instance;
+
+        // Clean up the thread within this task as it's now never going
+        // to run.
+        assert_eq!(1, task.threads.len());
+        let thread = *task.threads.iter().next().unwrap();
+        self.cleanup_thread(
+            QualifiedThreadId {
+                task: guest_task,
+                thread,
+            },
+            caller_instance,
+            CleanupTask::No,
+        )?;
+
+        // Not yet started; cancel and remove from pending
+        let pending = &mut self.instance_state(instance).concurrent_state().pending;
+        let pending_count = pending.len();
+        pending.retain(|thread, _| thread.task != guest_task);
+        // If there were no pending threads for this task, we're in an error state
+        if pending.len() == pending_count {
+            bail!(Trap::SubtaskCancelAfterTerminal);
+        }
+        Ok(())
+    }
+}
+
+enum CleanupTask {
+    Yes,
+    No,
 }
 
 impl Instance {
@@ -1960,10 +2207,7 @@ impl Instance {
 
         let get_set = |store: &mut StoreOpaque, handle| -> Result<_> {
             let set = store
-                .instance_state(RuntimeInstance {
-                    instance: self.id().instance(),
-                    index: runtime_instance,
-                })
+                .instance_state(self.runtime_instance(runtime_instance))
                 .handle_table()
                 .waitable_set_rep(handle)?;
 
@@ -1973,18 +2217,14 @@ impl Instance {
         Ok(match code {
             callback_code::EXIT => {
                 log::trace!("implicit thread {guest_thread:?} completed");
-                self.cleanup_thread(store, guest_thread, runtime_instance)?;
                 let task = store.concurrent_state_mut().get_mut(guest_thread.task)?;
-                if task.threads.is_empty() && !task.returned_or_cancelled() {
-                    bail!(Trap::NoAsyncResult);
-                }
-                if let Caller::Guest { .. } = task.caller {
-                    task.exited = true;
-                    task.callback = None;
-                }
-                if task.ready_to_delete() {
-                    Waitable::Guest(guest_thread.task).delete_from(store.concurrent_state_mut())?;
-                }
+                task.exited = true;
+                task.callback = None;
+                store.cleanup_thread(
+                    guest_thread,
+                    self.runtime_instance(runtime_instance),
+                    CleanupTask::Yes,
+                )?;
                 None
             }
             callback_code::YIELD => {
@@ -2066,45 +2306,6 @@ impl Instance {
             }
             _ => bail!(Trap::UnsupportedCallbackCode),
         })
-    }
-
-    fn cleanup_thread(
-        self,
-        store: &mut StoreOpaque,
-        guest_thread: QualifiedThreadId,
-        runtime_instance: RuntimeComponentInstanceIndex,
-    ) -> Result<()> {
-        let state = store.concurrent_state_mut();
-        let thread_data = state.get_mut(guest_thread.thread)?;
-        let guest_id = match thread_data.instance_rep {
-            Some(id) => id,
-            None => bail_bug!("thread must have instance_rep set by now"),
-        };
-        let sync_call_set = thread_data.sync_call_set;
-
-        // Clean up any pending subtasks in the sync_call_set
-        for waitable in mem::take(&mut state.get_mut(sync_call_set)?.ready) {
-            if let Some(Event::Subtask {
-                status: Status::Returned | Status::ReturnCancelled,
-            }) = waitable.common(state)?.event
-            {
-                waitable.delete_from(state)?;
-            }
-        }
-
-        store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: runtime_instance,
-            })
-            .thread_handle_table()
-            .guest_thread_remove(guest_id)?;
-
-        store.concurrent_state_mut().delete(guest_thread.thread)?;
-        store.concurrent_state_mut().delete(sync_call_set)?;
-        let task = store.concurrent_state_mut().get_mut(guest_thread.task)?;
-        task.threads.remove(&guest_thread.thread);
-        Ok(())
     }
 
     /// Add the specified guest call to the "high priority" work item queue, to
@@ -2273,12 +2474,7 @@ impl Instance {
                 // over must be valid.
                 let storage = call(store)?;
 
-                if async_ {
-                    let task = store.concurrent_state_mut().get_mut(guest_thread.task)?;
-                    if task.threads.len() == 1 && !task.returned_or_cancelled() {
-                        bail!(Trap::NoAsyncResult);
-                    }
-                } else {
+                if !async_ {
                     // This is a sync-lifted export, so now is when we lift the
                     // result, optionally call the post-return function, if any,
                     // and finally notify any current or future waiters that the
@@ -2326,25 +2522,15 @@ impl Instance {
                     self.task_complete(store, guest_thread.task, result, Status::Returned)?;
                 }
 
-                // This is a callback-less call, so the implicit thread has now completed
-                self.cleanup_thread(store, guest_thread, callee_instance.index)?;
-
                 store.set_thread(old_thread)?;
 
-                let state = store.concurrent_state_mut();
-                let task = state.get_mut(guest_thread.task)?;
+                store
+                    .concurrent_state_mut()
+                    .get_mut(guest_thread.task)?
+                    .exited = true;
 
-                match &task.caller {
-                    Caller::Host { .. } => {
-                        if task.ready_to_delete() {
-                            Waitable::Guest(guest_thread.task).delete_from(state)?;
-                        }
-                    }
-                    Caller::Guest { .. } => {
-                        task.exited = true;
-                    }
-                }
-
+                // This is a callback-less call, so the implicit thread has now completed
+                store.cleanup_thread(guest_thread, callee_instance, CleanupTask::Yes)?;
                 Ok(None)
             })
         };
@@ -2440,13 +2626,11 @@ impl Instance {
 
         debug_assert_eq!(
             state.get_mut(old_thread.task)?.instance,
-            RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            }
+            self.runtime_instance(caller_instance)
         );
 
-        let new_task = GuestTask::new(
+        let guest_thread = GuestTask::new(
+            state,
             Box::new(move |store, dst| {
                 let mut store = token.as_context_mut(store);
                 assert!(dst.len() <= MAX_FLAT_PARAMS);
@@ -2556,27 +2740,14 @@ impl Instance {
             },
             Caller::Guest { thread: old_thread },
             None,
-            RuntimeInstance {
-                instance: self.id().instance(),
-                index: callee_instance,
-            },
+            self.runtime_instance(callee_instance),
             callee_async,
         )?;
 
-        let guest_task = state.push(new_task)?;
-        let new_thread = GuestThread::new_implicit(state, guest_task)?;
-        let guest_thread = state.push(new_thread)?;
-        state.get_mut(guest_task)?.threads.insert(guest_thread);
-
         // Make the new thread the current one so that `Self::start_call` knows
         // which one to start.
-        store.0.set_thread(QualifiedThreadId {
-            task: guest_task,
-            thread: guest_thread,
-        })?;
-        log::trace!(
-            "pushed {guest_task:?}:{guest_thread:?} as current thread; old thread was {old_thread:?}"
-        );
+        store.0.set_thread(guest_thread)?;
+        log::trace!("pushed {guest_thread:?} as current thread; old thread was {old_thread:?}");
 
         Ok(())
     }
@@ -2688,6 +2859,8 @@ impl Instance {
         let old_set = guest_waitable.common(state)?.set;
         let set = state.get_mut(caller.thread)?.sync_call_set;
         guest_waitable.join(state, Some(set))?;
+
+        store.0.set_thread(CurrentThread::None)?;
 
         // ... and suspend this fiber temporarily while we wait for it to start.
         //
@@ -3031,10 +3204,7 @@ impl Instance {
     ) -> Result<u32> {
         let set = store.concurrent_state_mut().push(WaitableSet::default())?;
         let handle = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            })
+            .instance_state(self.runtime_instance(caller_instance))
             .handle_table()
             .waitable_set_insert(set.rep())?;
         log::trace!("new waitable set {set:?} (handle {handle})");
@@ -3049,10 +3219,7 @@ impl Instance {
         set: u32,
     ) -> Result<()> {
         let rep = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            })
+            .instance_state(self.runtime_instance(caller_instance))
             .handle_table()
             .waitable_set_remove(set)?;
 
@@ -3116,15 +3283,12 @@ impl Instance {
         self.waitable_join(store, caller_instance, task_id, 0)?;
 
         let (rep, is_host) = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            })
+            .instance_state(self.runtime_instance(caller_instance))
             .handle_table()
             .subtask_remove(task_id)?;
 
         let concurrent_state = store.concurrent_state_mut();
-        let (waitable, expected_caller, delete) = if is_host {
+        let (waitable, delete) = if is_host {
             let id = TableId::<HostTask>::new(rep);
             let task = concurrent_state.get_mut(id)?;
             match &task.state {
@@ -3134,22 +3298,17 @@ impl Instance {
                     bail_bug!("invalid state for callee in `subtask.drop`")
                 }
             }
-            (Waitable::Host(id), task.caller, true)
+            (Waitable::Host(id), true)
         } else {
             let id = TableId::<GuestTask>::new(rep);
             let task = concurrent_state.get_mut(id)?;
             if task.lift_result.is_some() {
                 bail!(Trap::SubtaskDropNotResolved);
             }
-            if let Caller::Guest { thread } = task.caller {
-                (
-                    Waitable::Guest(id),
-                    thread,
-                    concurrent_state.get_mut(id)?.ready_to_delete(),
-                )
-            } else {
-                bail_bug!("expected guest caller for `subtask.drop`")
-            }
+            (
+                Waitable::Guest(id),
+                concurrent_state.get_mut(id)?.ready_to_delete(),
+            )
         };
 
         waitable.common(concurrent_state)?.handle = None;
@@ -3164,10 +3323,6 @@ impl Instance {
             waitable.delete_from(concurrent_state)?;
         }
 
-        // Since waitables can neither be passed between instances nor forged,
-        // this should never fail unless there's a bug in Wasmtime, but we check
-        // here to be sure:
-        debug_assert_eq!(expected_caller, concurrent_state.current_guest_thread()?);
         log::trace!("subtask_drop {waitable:?} (handle {task_id})");
         Ok(())
     }
@@ -3193,10 +3348,7 @@ impl Instance {
             ..
         } = &self.id().get(store).component().env_component().options[options];
         let rep = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            })
+            .instance_state(self.runtime_instance(caller_instance))
             .handle_table()
             .waitable_set_rep(set)?;
 
@@ -3226,10 +3378,7 @@ impl Instance {
             ..
         } = &self.id().get(store).component().env_component().options[options];
         let rep = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            })
+            .instance_state(self.runtime_instance(caller_instance))
             .handle_table()
             .waitable_set_rep(set)?;
 
@@ -3293,20 +3442,17 @@ impl Instance {
                 // on a separate fiber if we're running in an async store.
                 unsafe { callee.call_unchecked(store.as_context_mut(), &mut params)? };
 
-                self.cleanup_thread(store.0, guest_thread, runtime_instance)?;
-                log::trace!("explicit thread {guest_thread:?} completed");
-                let state = store.0.concurrent_state_mut();
-                let task = state.get_mut(guest_thread.task)?;
-                if task.threads.is_empty() && !task.returned_or_cancelled() {
-                    bail!(Trap::NoAsyncResult);
-                }
                 store.0.set_thread(old_thread)?;
+
+                store.0.cleanup_thread(
+                    guest_thread,
+                    self.runtime_instance(runtime_instance),
+                    CleanupTask::Yes,
+                )?;
+                log::trace!("explicit thread {guest_thread:?} completed");
                 let state = store.0.concurrent_state_mut();
                 if let Some(t) = old_thread.guest() {
                     state.get_mut(t.thread)?.state = GuestThreadState::Running;
-                }
-                if state.get_mut(guest_thread.task)?.ready_to_delete() {
-                    Waitable::Guest(guest_thread.task).delete_from(state)?;
                 }
                 log::trace!("thread start: restored {old_thread:?} as current thread");
 
@@ -3385,10 +3531,7 @@ impl Instance {
         runtime_instance: RuntimeComponentInstanceIndex,
     ) -> Result<u32> {
         let guest_id = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: runtime_instance,
-            })
+            .instance_state(self.runtime_instance(runtime_instance))
             .thread_handle_table()
             .guest_thread_insert(thread_id.rep())?;
         store
@@ -3577,31 +3720,15 @@ impl Instance {
         }
 
         let (rep, is_host) = store
-            .instance_state(RuntimeInstance {
-                instance: self.id().instance(),
-                index: caller_instance,
-            })
+            .instance_state(self.runtime_instance(caller_instance))
             .handle_table()
             .subtask_rep(task_id)?;
-        let (waitable, expected_caller) = if is_host {
-            let id = TableId::<HostTask>::new(rep);
-            (
-                Waitable::Host(id),
-                store.concurrent_state_mut().get_mut(id)?.caller,
-            )
+        let waitable = if is_host {
+            Waitable::Host(TableId::<HostTask>::new(rep))
         } else {
-            let id = TableId::<GuestTask>::new(rep);
-            if let Caller::Guest { thread } = store.concurrent_state_mut().get_mut(id)?.caller {
-                (Waitable::Guest(id), thread)
-            } else {
-                bail_bug!("expected guest caller for `subtask.cancel`")
-            }
+            Waitable::Guest(TableId::<GuestTask>::new(rep))
         };
-        // Since waitables can neither be passed between instances nor forged,
-        // this should never fail unless there's a bug in Wasmtime, but we check
-        // here to be sure:
         let concurrent_state = store.concurrent_state_mut();
-        debug_assert_eq!(expected_caller, concurrent_state.current_guest_thread()?);
 
         log::trace!("subtask_cancel {waitable:?} (handle {task_id})");
 
@@ -3639,33 +3766,13 @@ impl Instance {
                 }
             }
         } else {
-            let caller = concurrent_state.current_guest_thread()?;
             let guest_task = TableId::<GuestTask>::new(rep);
             let task = concurrent_state.get_mut(guest_task)?;
             if !task.already_lowered_parameters() {
-                // The task is in a `starting` state, meaning it hasn't run at
-                // all yet.  Here we update its fields to indicate that it is
-                // ready to delete immediately once `subtask.drop` is called.
-                task.lower_params = None;
-                task.lift_result = None;
-                task.exited = true;
-
-                let instance = task.instance;
-
-                assert_eq!(1, task.threads.len());
-                let thread = mem::take(&mut task.threads).into_iter().next().unwrap();
-                let concurrent_state = store.concurrent_state_mut();
-                concurrent_state.delete(thread)?;
-                assert!(concurrent_state.get_mut(guest_task)?.ready_to_delete());
-
-                // Not yet started; cancel and remove from pending
-                let pending = &mut store.instance_state(instance).concurrent_state().pending;
-                let pending_count = pending.len();
-                pending.retain(|thread, _| thread.task != guest_task);
-                // If there were no pending threads for this task, we're in an error state
-                if pending.len() == pending_count {
-                    bail!(Trap::SubtaskCancelAfterTerminal);
-                }
+                store.cancel_guest_subtask_without_lowered_parameters(
+                    self.runtime_instance(caller_instance),
+                    guest_task,
+                )?;
                 return Ok(Status::StartCancelled as u32);
             } else if !task.returned_or_cancelled() {
                 // Started, but not yet returned or cancelled; send the
@@ -3703,6 +3810,7 @@ impl Instance {
                         };
                         concurrent_state.push_high_priority(item);
 
+                        let caller = concurrent_state.current_guest_thread()?;
                         store.suspend(SuspendReason::Yielding {
                             thread: caller,
                             // `subtask.cancel` is not allowed to be called in a
@@ -3749,14 +3857,6 @@ impl Instance {
         } else {
             bail!(Trap::SubtaskCancelAfterTerminal);
         }
-    }
-
-    pub(crate) fn context_get(self, store: &mut StoreOpaque, slot: u32) -> Result<u32> {
-        store.concurrent_state_mut().context_get(slot)
-    }
-
-    pub(crate) fn context_set(self, store: &mut StoreOpaque, slot: u32, value: u32) -> Result<()> {
-        store.concurrent_state_mut().context_set(slot, value)
     }
 }
 
@@ -4372,7 +4472,7 @@ enum GuestThreadState {
 pub struct GuestThread {
     /// Context-local state used to implement the `context.{get,set}`
     /// intrinsics.
-    context: [u32; 2],
+    context: [u32; NUM_COMPONENT_CONTEXT_SLOTS],
     /// The owning guest task.
     parent_task: TableId<GuestTask>,
     /// If present, indicates that the thread is currently waiting on the
@@ -4404,7 +4504,7 @@ impl GuestThread {
     fn new_implicit(state: &mut ConcurrentState, parent_task: TableId<GuestTask>) -> Result<Self> {
         let sync_call_set = state.push(WaitableSet::default())?;
         Ok(Self {
-            context: [0; 2],
+            context: [0; NUM_COMPONENT_CONTEXT_SLOTS],
             parent_task,
             wake_on_cancel: None,
             state: GuestThreadState::NotStartedImplicit,
@@ -4422,7 +4522,7 @@ impl GuestThread {
     ) -> Result<Self> {
         let sync_call_set = state.push(WaitableSet::default())?;
         Ok(Self {
-            context: [0; 2],
+            context: [0; NUM_COMPONENT_CONTEXT_SLOTS],
             parent_task,
             wake_on_cancel: None,
             state: GuestThreadState::NotStartedExplicit(start_func),
@@ -4513,6 +4613,8 @@ pub(crate) struct GuestTask {
     /// Indicates whether this task was created for a call to an async-lifted
     /// export.
     async_function: bool,
+
+    decremented_interesting_task_count: bool,
 }
 
 impl GuestTask {
@@ -4550,13 +4652,14 @@ impl GuestTask {
     }
 
     fn new(
+        state: &mut ConcurrentState,
         lower_params: RawLower,
         lift_result: LiftResult,
         caller: Caller,
         callback: Option<CallbackFn>,
         instance: RuntimeInstance,
         async_function: bool,
-    ) -> Result<Self> {
+    ) -> Result<QualifiedThreadId> {
         let host_future_state = match &caller {
             Caller::Guest { .. } => HostFutureState::NotApplicable,
             Caller::Host {
@@ -4570,7 +4673,7 @@ impl GuestTask {
                 }
             }
         };
-        Ok(Self {
+        let task = state.push(Self {
             common: WaitableCommon::default(),
             lower_params: Some(lower_params),
             lift_result: Some(lift_result),
@@ -4587,13 +4690,13 @@ impl GuestTask {
             threads: HashSet::new(),
             host_future_state,
             async_function,
-        })
-    }
-
-    /// Dispose of this guest task.
-    fn dispose(self, _state: &mut ConcurrentState) -> Result<()> {
-        assert!(self.threads.is_empty());
-        Ok(())
+            decremented_interesting_task_count: false,
+        })?;
+        let new_thread = GuestThread::new_implicit(state, task)?;
+        let thread = state.push(new_thread)?;
+        state.get_mut(task)?.threads.insert(thread);
+        state.interesting_tasks += 1;
+        Ok(QualifiedThreadId { task, thread })
     }
 }
 
@@ -4755,7 +4858,15 @@ impl Waitable {
             }
             Self::Guest(task) => {
                 log::trace!("delete guest task {task:?}");
-                state.delete(*task)?.dispose(state)?;
+                let task = state.delete(*task)?;
+
+                // When a guest task is created it increments the
+                // `ConcurrentState::interesting_tasks` counter, and that needs
+                // to be paired with a decrement. There are a few situations in
+                // which the decrement needs to happen which don't all funnel
+                // through here, so in lieu of that at least try to catch issues
+                // where we forgot to do a decrement.
+                debug_assert!(task.decremented_interesting_task_count);
             }
             Self::Transmit(task) => {
                 state.delete(*task)?;
@@ -4907,6 +5018,25 @@ pub struct ConcurrentState {
     /// as a `TableId<ErrorContextState>`.
     global_error_context_ref_counts:
         BTreeMap<TypeComponentGlobalErrorContextTableIndex, GlobalErrorContextRefCount>,
+
+    /// The number of "interesting tasks" currently executing in the store.
+    ///
+    /// This tracks the concept of a component instance lifetime as defined in
+    /// https://github.com/WebAssembly/component-model/pull/643. Specifically
+    /// all tasks currently increment this counter which then gets decremented
+    /// when they exit. In the future some tasks might not increment this
+    /// counter, but for now all do.
+    ///
+    /// This is used to implement `Accessor::poll_no_interesting_tasks` to
+    /// inform the embedder when all tasks have completed. This is then
+    /// used in wasmtime-wasi-http, for example, to know when an instance is
+    /// idle.
+    interesting_tasks: usize,
+
+    /// Single waker to notify when `interesting_tasks` reaches 0.
+    ///
+    /// Used in the implementation of `Accessor::poll_no_interesting_tasks`.
+    interesting_tasks_empty_waker: Option<Waker>,
 }
 
 impl Default for ConcurrentState {
@@ -4921,6 +5051,8 @@ impl Default for ConcurrentState {
             worker: None,
             worker_item: None,
             global_error_context_ref_counts: BTreeMap::new(),
+            interesting_tasks: 0,
+            interesting_tasks_empty_waker: None,
         }
     }
 }
@@ -4992,19 +5124,6 @@ impl ConcurrentState {
         if let Some(them) = self.futures.get_mut().take() {
             futures.push(them);
         }
-    }
-
-    /// Collect the next set of work items to run. This will be either all
-    /// high-priority items, or a single low-priority item if there are no
-    /// high-priority items.
-    fn collect_work_items_to_run(&mut self) -> Vec<WorkItem> {
-        let mut ready = mem::take(&mut self.high_priority);
-        if ready.is_empty() {
-            if let Some(item) = self.low_priority.pop_back() {
-                ready.push(item);
-            }
-        }
-        ready
     }
 
     fn push<V: Send + Sync + 'static>(
@@ -5110,22 +5229,6 @@ impl ConcurrentState {
         } else {
             false
         }
-    }
-
-    /// Implements the `context.get` intrinsic.
-    pub(crate) fn context_get(&mut self, slot: u32) -> Result<u32> {
-        let thread = self.current_guest_thread()?;
-        let val = self.get_mut(thread.thread)?.context[usize::try_from(slot)?];
-        log::trace!("context_get {thread:?} slot {slot} val {val:#x}");
-        Ok(val)
-    }
-
-    /// Implements the `context.set` intrinsic.
-    pub(crate) fn context_set(&mut self, slot: u32, val: u32) -> Result<()> {
-        let thread = self.current_guest_thread()?;
-        log::trace!("context_set {thread:?} slot {slot} val {val:#x}");
-        self.get_mut(thread.thread)?.context[usize::try_from(slot)?] = val;
-        Ok(())
     }
 
     /// Returns whether there's a pending cancellation on the current guest thread,
@@ -5300,6 +5403,8 @@ pub(crate) struct PreparedCall<R> {
     /// The `oneshot::Receiver` to which the result of the call will be
     /// delivered when it is available.
     rx: oneshot::Receiver<LiftedResult>,
+    /// The instance that this call is prepared for.
+    runtime_instance: RuntimeInstance,
     _phantom: PhantomData<R>,
 }
 
@@ -5308,6 +5413,7 @@ impl<R> PreparedCall<R> {
     pub(crate) fn task_id(&self) -> TaskId {
         TaskId {
             task: self.thread.task,
+            runtime_instance: self.runtime_instance,
         }
     }
 }
@@ -5315,6 +5421,7 @@ impl<R> PreparedCall<R> {
 /// Represents a task created by `prepare_call`.
 pub(crate) struct TaskId {
     task: TableId<GuestTask>,
+    runtime_instance: RuntimeInstance,
 }
 
 impl TaskId {
@@ -5323,15 +5430,20 @@ impl TaskId {
     /// we delete the task eagerly. Otherwise, there may be running threads, or ones that are suspended
     /// and can be resumed by other tasks for this component, so we mark the future as dropped
     /// and delete the task when all threads are done.
-    pub(crate) fn host_future_dropped<T>(&self, store: StoreContextMut<T>) -> Result<()> {
-        let task = store.0.concurrent_state_mut().get_mut(self.task)?;
-        if !task.already_lowered_parameters() {
-            Waitable::Guest(self.task).delete_from(store.0.concurrent_state_mut())?
+    pub(crate) fn host_future_dropped(&self, store: &mut StoreOpaque) -> Result<()> {
+        let task = store.concurrent_state_mut().get_mut(self.task)?;
+        let delete = if !task.already_lowered_parameters() {
+            store.cancel_guest_subtask_without_lowered_parameters(
+                self.runtime_instance,
+                self.task,
+            )?;
+            true
         } else {
             task.host_future_state = HostFutureState::Dropped;
-            if task.ready_to_delete() {
-                Waitable::Guest(self.task).delete_from(store.0.concurrent_state_mut())?
-            }
+            task.ready_to_delete()
+        };
+        if delete {
+            Waitable::Guest(self.task).delete_from(store.concurrent_state_mut())?
         }
         Ok(())
     }
@@ -5375,12 +5487,10 @@ pub(crate) fn prepare_call<T, R>(
 
     let (tx, rx) = oneshot::channel();
 
-    let instance = RuntimeInstance {
-        instance: handle.instance().id().instance(),
-        index: component_instance,
-    };
+    let instance = handle.instance().runtime_instance(component_instance);
     let caller = state.current_thread;
-    let task = GuestTask::new(
+    let thread = GuestTask::new(
+        state,
         Box::new(for_any_lower(move |store, params| {
             lower_params(handle, token.as_context_mut(store), params)
         })),
@@ -5411,19 +5521,15 @@ pub(crate) fn prepare_call<T, R>(
         async_function,
     )?;
 
-    let task = state.push(task)?;
-    let new_thread = GuestThread::new_implicit(state, task)?;
-    let thread = state.push(new_thread)?;
-    state.get_mut(task)?.threads.insert(thread);
-
     if !store.0.may_enter(instance)? {
         bail!(Trap::CannotEnterComponent);
     }
 
     Ok(PreparedCall {
         handle,
-        thread: QualifiedThreadId { task, thread },
+        thread,
         param_count,
+        runtime_instance: instance,
         rx,
         _phantom: PhantomData,
     })

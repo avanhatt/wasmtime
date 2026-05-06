@@ -947,8 +947,8 @@ fn lift_flat_pointer_pair(
 }
 
 fn load_flat_pointer_pair(bytes: &[u8]) -> (usize, usize) {
-    let ptr = u32::from_le_bytes(bytes[..4].try_into().unwrap()) as usize;
-    let len = u32::from_le_bytes(bytes[4..].try_into().unwrap()) as usize;
+    let ptr = u32::from_le_bytes(*bytes[..4].as_array().unwrap()) as usize;
+    let len = u32::from_le_bytes(*bytes[4..].as_array().unwrap()) as usize;
     (ptr, len)
 }
 
@@ -1142,7 +1142,7 @@ fn lower_map<T>(
 }
 
 fn push_flags(ty: &TypeFlags, flags: &mut Vec<String>, mut offset: u32, mut bits: u32) {
-    while bits > 0 {
+    while bits > 0 && usize::try_from(offset).unwrap() < ty.names.len() {
         if bits & 1 != 0 {
             flags.push(ty.names[offset as usize].clone());
         }

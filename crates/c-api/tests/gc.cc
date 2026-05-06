@@ -1,5 +1,3 @@
-#include <wasmtime/gc.hh>
-
 #include <gtest/gtest.h>
 #include <wasmtime.hh>
 
@@ -29,11 +27,15 @@ TEST(EqRef, CopyAndMove) {
   // Move assignment
   EqRef eq5 = std::move(eq4);
 
+  EXPECT_TRUE(eq.ty(cx).is_i31());
+
   // Upcast to anyref and check value
   AnyRef upcast = eq.to_anyref();
   auto val = upcast.u31(cx);
   ASSERT_TRUE(val.has_value());
   EXPECT_EQ(*val, 42u);
+
+  EXPECT_TRUE(upcast.ty(cx).is_i31());
 }
 
 TEST(EqRef, NullEqRef) {
@@ -99,10 +101,10 @@ TEST(StructRef, CreateAndReadFields) {
   auto cx = store.context();
 
   // Create a struct type with two mutable i32 fields.
-  auto ty = StructType::create(engine, {
-                                           FieldType::mut_(WASMTIME_I32),
-                                           FieldType::mut_(WASMTIME_I32),
-                                       });
+  auto ty = StructType(engine, {
+                                   FieldType::mut_(ValType::i32()),
+                                   FieldType::mut_(ValType::i32()),
+                               });
   auto pre = StructRefPre::create(cx, ty);
 
   // Allocate a struct with field values 10 and 20.
@@ -110,6 +112,7 @@ TEST(StructRef, CreateAndReadFields) {
       StructRef::create(cx, pre, {Val(int32_t(10)), Val(int32_t(20))});
   ASSERT_TRUE(result);
   StructRef s = result.ok();
+  EXPECT_EQ(s.ty(cx).num_fields(), 2);
 
   // Read fields back.
   auto v0 = s.field(cx, 0);
@@ -136,22 +139,30 @@ TEST(StructRef, UpcastAndDowncast) {
   Store store(engine);
   auto cx = store.context();
 
-  auto ty = StructType::create(engine, {
-                                           FieldType::const_(WASMTIME_I32),
-                                       });
+  auto ty = StructType(engine, {
+                                   FieldType::const_(ValType::i32()),
+                               });
   auto pre = StructRefPre::create(cx, ty);
 
   auto result = StructRef::create(cx, pre, {Val(int32_t(99))});
   ASSERT_TRUE(result);
   StructRef s = result.ok();
+  EXPECT_EQ(s.ty(cx).num_fields(), 1);
 
   // Upcast to eqref.
   EqRef eq = s.to_eqref();
   EXPECT_TRUE(eq.is_struct(cx));
   EXPECT_FALSE(eq.is_i31(cx));
 
+  auto eqty = eq.ty(cx);
+  auto *sty = eqty.as_concrete_struct();
+  ASSERT_TRUE(sty);
+  EXPECT_EQ(sty->num_fields(), 1);
+
   // Downcast back to structref.
-  StructRef s2 = eq.as_struct(cx);
+  auto s2_opt = eq.as_struct(cx);
+  ASSERT_TRUE(s2_opt.has_value());
+  StructRef s2 = *s2_opt;
   auto v = s2.field(cx, 0);
   ASSERT_TRUE(v);
   EXPECT_EQ(v.ok().i32(), 99);
@@ -159,6 +170,11 @@ TEST(StructRef, UpcastAndDowncast) {
   // Upcast to anyref.
   AnyRef any = s.to_anyref();
   EXPECT_FALSE(any.is_i31(cx));
+
+  auto anyty = any.ty(cx);
+  sty = anyty.as_concrete_struct();
+  ASSERT_TRUE(sty);
+  EXPECT_EQ(sty->num_fields(), 1);
 }
 
 TEST(ArrayRef, CreateAndReadElements) {
@@ -169,13 +185,14 @@ TEST(ArrayRef, CreateAndReadElements) {
   auto cx = store.context();
 
   // Create an array type with mutable i32 elements.
-  auto ty = ArrayType::create(engine, FieldType::mut_(WASMTIME_I32));
+  ArrayType ty(engine, FieldType::mut_(ValType::i32()));
   auto pre = ArrayRefPre::create(cx, ty);
 
   // Allocate an array of 5 elements, all initialized to 7.
   auto result = ArrayRef::create(cx, pre, Val(int32_t(7)), 5);
   ASSERT_TRUE(result);
   ArrayRef arr = result.ok();
+  EXPECT_TRUE(arr.ty(cx).element_type().is_mutable());
 
   // Check length.
   auto len_result = arr.len(cx);
@@ -205,12 +222,13 @@ TEST(ArrayRef, UpcastAndDowncast) {
   Store store(engine);
   auto cx = store.context();
 
-  auto ty = ArrayType::create(engine, FieldType::const_(WASMTIME_I32));
+  ArrayType ty(engine, FieldType::const_(ValType::i32()));
   auto pre = ArrayRefPre::create(cx, ty);
 
   auto result = ArrayRef::create(cx, pre, Val(int32_t(99)), 3);
   ASSERT_TRUE(result);
   ArrayRef arr = result.ok();
+  EXPECT_FALSE(arr.ty(cx).element_type().is_mutable());
 
   // Upcast to eqref.
   EqRef eq = arr.to_eqref();
@@ -218,8 +236,15 @@ TEST(ArrayRef, UpcastAndDowncast) {
   EXPECT_FALSE(eq.is_struct(cx));
   EXPECT_FALSE(eq.is_i31(cx));
 
+  auto eqty = eq.ty(cx);
+  auto *aty = eqty.as_concrete_array();
+  ASSERT_TRUE(aty);
+  EXPECT_FALSE(aty->element_type().is_mutable());
+
   // Downcast back to arrayref.
-  ArrayRef arr2 = eq.as_array(cx);
+  auto arr2_opt = eq.as_array(cx);
+  ASSERT_TRUE(arr2_opt.has_value());
+  ArrayRef arr2 = *arr2_opt;
   auto len = arr2.len(cx);
   ASSERT_TRUE(len);
   EXPECT_EQ(len.ok(), 3u);
@@ -231,6 +256,11 @@ TEST(ArrayRef, UpcastAndDowncast) {
   // Upcast to anyref.
   AnyRef any = arr.to_anyref();
   EXPECT_FALSE(any.is_i31(cx));
+
+  auto anyty = any.ty(cx);
+  aty = anyty.as_concrete_array();
+  ASSERT_TRUE(aty);
+  EXPECT_FALSE(aty->element_type().is_mutable());
 }
 
 TEST(AnyRef, DowncastI31) {
@@ -245,6 +275,7 @@ TEST(AnyRef, DowncastI31) {
   EXPECT_TRUE(any.is_eqref(cx));
   EXPECT_FALSE(any.is_struct(cx));
   EXPECT_FALSE(any.is_array(cx));
+  EXPECT_TRUE(any.ty(cx).is_i31());
 
   // Downcast to eqref.
   auto opt_eq = any.as_eqref(cx);
@@ -254,6 +285,7 @@ TEST(AnyRef, DowncastI31) {
   auto val = eq.i31_get_u(cx);
   ASSERT_TRUE(val.has_value());
   EXPECT_EQ(*val, 42u);
+  EXPECT_TRUE(eq.ty(cx).is_i31());
 }
 
 TEST(AnyRef, DowncastStruct) {
@@ -263,7 +295,7 @@ TEST(AnyRef, DowncastStruct) {
   Store store(engine);
   auto cx = store.context();
 
-  auto ty = StructType::create(engine, {FieldType::const_(WASMTIME_I32)});
+  auto ty = StructType(engine, {FieldType::const_(ValType::i32())});
   auto pre = StructRefPre::create(cx, ty);
   auto result = StructRef::create(cx, pre, {Val(int32_t(77))});
   ASSERT_TRUE(result);
@@ -291,7 +323,7 @@ TEST(AnyRef, DowncastArray) {
   Store store(engine);
   auto cx = store.context();
 
-  auto ty = ArrayType::create(engine, FieldType::const_(WASMTIME_I32));
+  auto ty = ArrayType(engine, FieldType::const_(ValType::i32()));
   auto pre = ArrayRefPre::create(cx, ty);
   auto result = ArrayRef::create(cx, pre, Val(int32_t(55)), 2);
   ASSERT_TRUE(result);

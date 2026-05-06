@@ -24,8 +24,8 @@ use wasmparser::{
 };
 use wasmtime_cranelift::{TRAP_BAD_SIGNATURE, TRAP_HEAP_MISALIGNED, TRAP_TABLE_OUT_OF_BOUNDS};
 use wasmtime_environ::{
-    FUNCREF_MASK, GlobalIndex, MemoryIndex, PtrSize, TableIndex, Tunables, TypeIndex, WasmHeapType,
-    WasmValType,
+    FUNCREF_MASK, GlobalIndex, MemoryIndex, MemoryKind, MemoryTunables, PtrSize, TableIndex,
+    Tunables, TypeIndex, WasmHeapType, WasmValType,
 };
 
 mod context;
@@ -681,6 +681,7 @@ where
         let memory_index = MemoryIndex::from_u32(memarg.memory);
         let heap = self.env.resolve_heap(memory_index);
         let index = Index::from_typed_reg(self.context.pop_to_reg(self.masm, None)?);
+
         let offset = bounds::ensure_index_and_offset(
             self.masm,
             index,
@@ -689,9 +690,10 @@ where
         )?;
         let offset_with_access_size = add_offset_and_access_size(offset, access_size);
 
+        let memory_tunables = MemoryTunables::new(self.tunables, MemoryKind::LinearMemory);
         let can_elide_bounds_check = heap
             .memory
-            .can_elide_bounds_check(self.tunables, self.env.page_size_log2);
+            .can_elide_bounds_check(&memory_tunables, self.env.page_size_log2);
 
         let addr = if offset_with_access_size > heap.memory.maximum_byte_size().unwrap_or(u64::MAX)
             || (!self.tunables.memory_may_move
@@ -828,7 +830,7 @@ where
             self.masm.checked_uadd(
                 writable!(index_offset_and_access_size),
                 index_offset_and_access_size,
-                RegImm::i64(offset_with_access_size as i64),
+                Imm::i64(offset_with_access_size as i64),
                 ptr_size,
                 TrapCode::HEAP_OUT_OF_BOUNDS,
             )?;
@@ -1073,7 +1075,8 @@ where
             masm.load(size_addr, writable!(size), table_data.current_elements_size)
         })?;
 
-        self.context.stack.push(TypedReg::i32(size).into());
+        let dst = TypedReg::new(table_data.index_type(), size);
+        self.context.stack.push(dst.into());
         Ok(())
     }
 
@@ -1414,21 +1417,27 @@ where
         size: OperandSize,
         extend: Option<Extend<Zero>>,
     ) -> Result<()> {
-        // Emission for this instruction is a bit trickier. The address for the CAS is the 3rd from
-        // the top of the stack, and we must emit instruction to compute the actual address with
-        // `emit_compute_heap_address_align_checked`, while we still have access to self. However,
-        // some ISAs have requirements with regard to the registers used for some arguments, so we
-        // need to pass the context to the masm. To solve this issue, we pop the two first
-        // arguments from the stack, compute the address, push back the arguments, and hand over
-        // the control to masm. The implementer of `atomic_cas` can expect to find `expected` and
-        // `replacement` at the top the context's stack.
+        // At this point in the stack we have:
+        //    [ address, expected, replacement ]
+        //
+        // Therefore, emission for this instruction is a bit
+        // trickier. The address for the CAS is the 3rd from the top
+        // of the stack, and we must emit instruction to compute the
+        // actual address with
+        // `emit_compute_heap_address_align_checked`, while we still
+        // have access to self. However, some ISAs have requirements
+        // with regard to the registers used for some arguments, so we
+        // need to pass the context to the masm. To solve this issue,
+        // we pop the two first arguments from the stack, compute the
+        // address, push back the arguments, and hand over the control
+        // to masm. The implementer of `atomic_cas` can expect to find
+        // `expected` and `replacement` at the top the context's
+        // stack.
 
-        // pop the args
         let replacement = self.context.pop_to_reg(self.masm, None)?;
         let expected = self.context.pop_to_reg(self.masm, None)?;
 
         if let Some(addr) = self.emit_compute_heap_address_align_checked(arg, size)? {
-            // push back the args
             self.context.stack.push(expected.into());
             self.context.stack.push(replacement.into());
 
@@ -1481,7 +1490,7 @@ where
             self.masm.checked_uadd(
                 writable!(addr.reg),
                 addr.reg,
-                RegImm::i64(arg.offset as i64),
+                Imm::i64(arg.offset as i64),
                 OperandSize::S64,
                 TrapCode::HEAP_OUT_OF_BOUNDS,
             )?;
@@ -1532,7 +1541,7 @@ where
             self.masm.checked_uadd(
                 writable!(addr.reg),
                 addr.reg,
-                RegImm::i64(arg.offset as i64),
+                Imm::i64(arg.offset as i64),
                 OperandSize::S64,
                 TrapCode::HEAP_OUT_OF_BOUNDS,
             )?;

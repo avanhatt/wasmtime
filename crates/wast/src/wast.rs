@@ -19,7 +19,7 @@ pub struct WastContext {
     /// recently defined.
     current: Option<InstanceKind>,
     core_linker: Linker<()>,
-    modules: HashMap<String, ModuleKind>,
+    modules: HashMap<Option<String>, ModuleKind>,
     #[cfg(feature = "component-model")]
     component_linker: component::Linker<()>,
 
@@ -244,6 +244,21 @@ impl WastContext {
                 caller.gc(None)?;
                 Ok(())
             })?;
+        #[cfg(feature = "component-model")]
+        {
+            let mut i = self.component_linker.instance("wasmtime")?;
+            i.func_wrap(
+                "set-max-table-capacity",
+                |mut store, (capacity,): (u32,)| {
+                    store
+                        .as_context_mut()
+                        .concurrent_resource_table()
+                        .expect("table must be present")
+                        .set_max_capacity(capacity.try_into().unwrap());
+                    Ok(())
+                },
+            )?;
+        }
         Ok(())
     }
 
@@ -523,6 +538,10 @@ impl WastContext {
             || (expected.contains("null function") && (actual.contains("uninitialized element") || actual.contains("null reference")))
             // GC tests say "null $kind reference" but we just say "null reference".
             || (expected.contains("null") && expected.contains("reference") && actual.contains("null reference"))
+            // upstream component model tests expect slightly different error
+            // messages than we generate.
+            || (expected.contains("cannot write") && actual.contains("cannot write"))
+            || (expected.contains("cannot read") && actual.contains("cannot read"))
         {
             return Ok(());
         }
@@ -645,18 +664,16 @@ impl WastContext {
                 line: _,
             } => {
                 let module = self.module_definition(&file)?;
-                if let Some(name) = name {
-                    self.modules.insert(name.to_string(), module);
-                }
+                self.modules.insert(name.map(|s| s.to_string()), module);
             }
             ModuleInstance {
                 instance,
                 module,
                 line: _,
             } => {
-                let module = module
-                    .as_deref()
-                    .and_then(|n| self.modules.get(n))
+                let module = self
+                    .modules
+                    .get(&module.as_ref().map(|s| s.to_string()))
                     .cloned()
                     .ok_or_else(|| format_err!("no module named {module:?}"))?;
                 self.module(instance.as_deref(), &module)?;
@@ -803,6 +820,17 @@ impl WastContext {
             AssertSuspension { .. } => {
                 bail!("unimplemented wast directive");
             }
+
+            AssertMalformedCustom {
+                file: _,
+                text: _,
+                line: _,
+            }
+            | AssertInvalidCustom {
+                file: _,
+                text: _,
+                line: _,
+            } => bail!("unimplemented wast directives"),
         }
 
         Ok(())

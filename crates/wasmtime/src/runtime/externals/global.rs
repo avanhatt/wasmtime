@@ -59,6 +59,10 @@ impl Global {
     /// Returns an error if the `ty` provided does not match the type of the
     /// value `val`, or if `val` comes from a different store than `store`.
     ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
+    ///
     /// # Examples
     ///
     /// ```
@@ -216,6 +220,10 @@ impl Global {
     /// it's not a mutable global, or if `val` comes from a different store than
     /// the one provided.
     ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
+    ///
     /// # Panics
     ///
     /// Panics if `store` does not own this global.
@@ -304,7 +312,7 @@ impl Global {
 
             if let Some(gc_ref) = unsafe { self.definition(store).as_ref().as_gc_ref() } {
                 unsafe {
-                    gc_roots_list.add_root(gc_ref.into(), "Wasm global");
+                    gc_roots_list.add_vmgcref_root(gc_ref.into(), "Wasm global");
                 }
             }
         }

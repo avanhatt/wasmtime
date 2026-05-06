@@ -6,15 +6,16 @@ use crate::runtime::vm::memory::Memory;
 use crate::runtime::vm::mpk::ProtectionKey;
 use crate::runtime::vm::table::Table;
 use crate::runtime::vm::{CompiledModuleId, ModuleRuntimeInfo};
-use crate::store::{Asyncness, AutoAssertNoGc, InstanceId, StoreOpaque, StoreResourceLimiter};
+use crate::store::{Asyncness, InstanceId, StoreOpaque, StoreResourceLimiter};
+use crate::vm::instance::PassiveElementSegment;
 use crate::{OpaqueRootScope, Val};
 use core::future::Future;
 use core::pin::Pin;
 use core::{mem, ptr};
 use wasmtime_environ::{
     DefinedMemoryIndex, DefinedTableIndex, EntityRef, HostPtr, InitMemory, MemoryInitialization,
-    MemoryInitializer, Module, NeedsGcRooting, SizeOverflow, TableInitialValue,
-    TableSegmentElements, Trap, VMOffsets,
+    MemoryInitializer, MemoryKind, Module, SizeOverflow, TableInitialValue, TableSegmentElements,
+    Trap, VMOffsets, WasmRefType,
 };
 
 #[cfg(feature = "gc")]
@@ -194,6 +195,7 @@ pub unsafe trait InstanceAllocator: Send + Sync {
         request: &'a mut InstanceAllocationRequest<'b, 'c>,
         ty: &'a wasmtime_environ::Memory,
         memory_index: Option<DefinedMemoryIndex>,
+        memory_kind: MemoryKind,
     ) -> Pin<Box<dyn Future<Output = Result<(MemoryAllocationIndex, Memory)>> + Send + 'a>>;
 
     /// Deallocate an instance's previously allocated memory.
@@ -417,7 +419,7 @@ impl dyn InstanceAllocator + '_ {
                 .expect("should be a defined memory since we skipped imported ones");
 
             let memory = self
-                .allocate_memory(request, ty, Some(memory_index))
+                .allocate_memory(request, ty, Some(memory_index), MemoryKind::LinearMemory)
                 .await?;
             memories.push(memory)?;
         }
@@ -596,10 +598,7 @@ async fn initialize_tables(
                     table.set_(&mut store, i, func.into())?;
                 }
             }
-            TableSegmentElements::Expressions {
-                exprs,
-                needs_gc_rooting: _,
-            } => {
+            TableSegmentElements::Expressions { exprs, ty: _ } => {
                 for (i, expr) in positions.zip(exprs) {
                     let val = const_evaluator
                         .eval(&mut store, limiter.as_deref_mut(), context, expr)
@@ -859,40 +858,31 @@ async fn initialize_passive_elements(
     for (idx, segment) in &module.passive_elements {
         match segment {
             TableSegmentElements::Functions(func_indices) => {
-                let mut vals = TryVec::with_capacity(func_indices.len())?;
+                let mut segment =
+                    PassiveElementSegment::new(WasmRefType::FUNCREF, func_indices.len())?;
                 for func_idx in func_indices {
                     let (instance, registry) =
                         store.instance_and_module_registry_mut(context.instance);
                     // SAFETY: `store_id` is for the store that owns this instance.
                     let func = unsafe { instance.get_exported_func(registry, store_id, *func_idx) };
-                    vals.push(func.to_val_raw(store))?;
+                    segment.push(store, func.into())?;
                 }
                 let instance = store.instance_mut(context.instance);
                 debug_assert_eq!(instance.passive_elements.len(), idx.index());
-                instance
-                    .passive_elements_mut()
-                    .push(Some((NeedsGcRooting::No, vals)))?;
+                instance.passive_elements_mut().push(segment)?;
             }
-            TableSegmentElements::Expressions {
-                needs_gc_rooting,
-                exprs,
-            } => {
-                let mut vals = TryVec::with_capacity(exprs.len())?;
+            TableSegmentElements::Expressions { ty, exprs } => {
+                let mut segment = PassiveElementSegment::new(*ty, exprs.len())?;
                 for expr in exprs {
                     let mut store = OpaqueRootScope::new(&mut *store);
-
                     let val = const_evaluator
                         .eval(&mut store, limiter.as_deref_mut(), context, expr)
                         .await?;
-
-                    let mut store = AutoAssertNoGc::new(&mut store);
-                    vals.push(val.to_raw_(&mut store)?)?;
+                    segment.push(&mut store, *val)?;
                 }
                 let instance = store.instance_mut(context.instance);
                 debug_assert_eq!(instance.passive_elements.len(), idx.index());
-                instance
-                    .passive_elements_mut()
-                    .push(Some((*needs_gc_rooting, vals)))?;
+                instance.passive_elements_mut().push(segment)?;
             }
         }
     }

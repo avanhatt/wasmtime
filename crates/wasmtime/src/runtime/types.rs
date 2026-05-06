@@ -1567,7 +1567,7 @@ impl From<TagType> for ExternType {
 ///
 /// This is either a packed 8- or -16 bit integer, or else it is some unpacked
 /// Wasm value type.
-#[derive(Clone, Hash)]
+#[derive(Debug, Clone, Hash)]
 pub enum StorageType {
     /// `i8`, an 8-bit integer.
     I8,
@@ -2413,6 +2413,12 @@ impl FuncType {
 
     /// Like [`FuncType::new`] but returns an
     /// [`OutOfMemory`][crate::error::OutOfMemory] error on allocation failure.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an [`OutOfMemory`][crate::OutOfMemory] error when
+    /// memory allocation fails. See the `OutOfMemory` type's documentation for
+    /// details on Wasmtime's out-of-memory handling.
     pub fn try_new(
         engine: &Engine,
         params: impl IntoIterator<Item = ValType>,

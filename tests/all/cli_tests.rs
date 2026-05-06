@@ -1044,7 +1044,10 @@ fn preview2_stdin() -> Result<()> {
     // helper thread depends on how much the OS buffers for us. For now give
     // some some slop and assume that OSes are unlikely to buffer more than
     // that.
-    let slop = 256 * 1024;
+    //
+    // Note that 256 * 1024 is _one_ byte too small on Asahi Linux (possibly
+    // related to 16K page sizes?), hence the `+ 1` here:
+    let slop = 256 * 1024 + 1;
     for amt in [0, 100, 100_000] {
         let written = count_up_to(amt)?;
         assert!(written < slop + amt, "wrote too much {written}");
@@ -2878,6 +2881,32 @@ start a print 1234
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn p3_cli_serve_post_return() -> Result<()> {
+        let server = WasmtimeServe::new(P3_CLI_SERVE_POST_RETURN_COMPONENT, move |cmd| {
+            cmd.arg("-Wcomponent-model-async");
+            cmd.arg("-Sp3,cli");
+            cmd.arg("--max-instance-reuse-count=1");
+        })?;
+        let resp = server
+            .send_request(
+                hyper::Request::builder()
+                    .uri("http://localhost/")
+                    .body(String::new())
+                    .context("failed to make request")?,
+            )
+            .await?;
+        assert!(resp.status().is_success());
+        assert!(resp.body().is_empty());
+
+        let (stdout, stderr) = server.finish()?;
+        println!("stdout: {stdout}");
+        println!("stderr: {stderr}");
+
+        assert!(stdout.contains("please see me"));
+        Ok(())
+    }
 }
 
 #[test]
@@ -3323,6 +3352,66 @@ fn wizer_components() -> Result<()> {
     assert!(!result.status.success());
     let result = wizen(&["-Scli"], component_with_wasi)?;
     assert!(result.status.success());
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(not(target_os = "linux"), ignore)]
+fn hot_blocks_fib() -> Result<()> {
+    // This test requires `perf` to be available and usable on the system. Skip
+    // if it is not installed or we do not have permissions to `perf record`.
+    let perf_check = Command::new("perf").args(&["record", "--", "ls"]).output();
+    if perf_check.is_err() || !perf_check.unwrap().status.success() {
+        eprintln!("skipping hot_blocks_fib: perf not available");
+        return Ok(());
+    }
+
+    let wasm = build_wasm("tests/all/cli_tests/fib.wat")?;
+    let output = run_wasmtime_for_output(
+        &[
+            "hot-blocks",
+            "-Ccache=n",
+            "--event",
+            "instructions",
+            "--percent",
+            "90",
+            wasm.path().to_str().unwrap(),
+        ],
+        None,
+    )?;
+
+    // The command should succeed.
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        // perf may fail due to permissions (perf_event_paranoid), which is OK
+        // in CI. Just skip in that case.
+        if stderr.contains("perf_event_open")
+            || stderr.contains("permission")
+            || stderr.contains("not permitted")
+        {
+            eprintln!("skipping hot_blocks_fib: perf permission denied");
+            return Ok(());
+        }
+        bail!(
+            "hot-blocks failed:\nstdout: {}\nstderr: {}",
+            String::from_utf8_lossy(&output.stdout),
+            stderr
+        );
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // The output should mention the function and basic block info.
+    // We don't assert exact percentages since they vary by run.
+    assert!(
+        stdout.contains("block") || stdout.contains("function"),
+        "expected hot-blocks output to contain block/function info, got:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("[Assembly]") || stdout.contains("total samples"),
+        "expected hot-blocks output to contain column headers or sample info, got:\n{stdout}"
+    );
 
     Ok(())
 }

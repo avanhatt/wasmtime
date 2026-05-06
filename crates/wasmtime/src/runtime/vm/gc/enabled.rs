@@ -7,6 +7,8 @@ mod externref;
 #[cfg(feature = "gc-drc")]
 mod free_list;
 mod structref;
+#[cfg(any(feature = "gc-drc", feature = "gc-copying"))]
+mod trace_info;
 
 pub use arrayref::*;
 pub use data::*;
@@ -23,6 +25,11 @@ pub use drc::*;
 mod null;
 #[cfg(feature = "gc-null")]
 pub use null::*;
+
+#[cfg(feature = "gc-copying")]
+mod copying;
+#[cfg(feature = "gc-copying")]
+pub use copying::*;
 
 // Explicit methods to clearly indicate that truncation is desired when used.
 #[expect(

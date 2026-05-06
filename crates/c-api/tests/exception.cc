@@ -15,7 +15,7 @@ TEST(Exception, ConstructAndExamine) {
   auto cx = store.context();
 
   // Create a tag type with (i32, i64) payload.
-  FuncType ft({ValKind::I32, ValKind::I64}, {});
+  FuncType ft({ValType::i32(), ValType::i64()}, {});
   TagType tt(ft);
 
   // Create a tag instance.
@@ -23,7 +23,7 @@ TEST(Exception, ConstructAndExamine) {
 
   // Create an exception with payload (42, 100).
   std::vector<Val> fields = {Val(int32_t(42)), Val(int64_t(100))};
-  auto exn = Exn::create(cx, tag, fields).unwrap();
+  auto exn = ExnRef::create(cx, tag, fields).unwrap();
 
   // Read back the tag and verify identity.
   auto exn_tag = exn.tag(cx).unwrap();
@@ -40,6 +40,12 @@ TEST(Exception, ConstructAndExamine) {
   auto f1 = exn.field(cx, 1).unwrap();
   EXPECT_EQ(f1.kind(), ValKind::I64);
   EXPECT_EQ(f1.i64(), 100);
+
+  auto fty = exn.ty(cx).tag_type()->functype();
+  EXPECT_EQ(fty->params().size(), 2);
+  EXPECT_EQ(*fty->params().begin(), ValType::i32());
+  EXPECT_EQ(*(fty->params().begin() + 1), ValType::i64());
+  EXPECT_EQ(fty->results().size(), 0);
 }
 
 TEST(Exception, TagFromModule) {
@@ -61,7 +67,7 @@ TEST(Exception, TagFromModule) {
   auto tt = tag.type(cx);
   auto func = tt->functype();
   EXPECT_EQ(func->params().size(), 1u);
-  EXPECT_EQ(func->params().begin()->kind(), ValKind::I32);
+  EXPECT_EQ(*func->params().begin(), ValType::i32());
 }
 
 TEST(Exception, HostThrowWasmCatch) {
@@ -69,7 +75,7 @@ TEST(Exception, HostThrowWasmCatch) {
   Store store(engine);
   auto cx = store.context();
 
-  FuncType tag_ft({ValKind::I32}, {});
+  FuncType tag_ft({ValType::i32()}, {});
   TagType tt(tag_ft);
   auto tag = Tag::create(cx, tt).unwrap();
 
@@ -97,8 +103,8 @@ TEST(Exception, HostThrowWasmCatch) {
                   auto cx2 = caller.context();
 
                   std::vector<Val> fields = {Val(int32_t(99))};
-                  auto exn = Exn::create(cx2, tag, fields).unwrap();
-                  return cx2.throw_exception(std::move(exn));
+                  auto exn = ExnRef::create(cx2, tag, fields).unwrap();
+                  return cx2.throw_exception(exn);
                 });
 
   std::vector<Extern> imports = {throw_fn, tag};
@@ -148,6 +154,13 @@ TEST(Exception, ExnRefRoundTripThroughVal) {
   // The returned value should be an exnref.
   auto &exnref_val = result.ok()[0];
   EXPECT_EQ(exnref_val.kind(), ValKind::ExnRef);
+
+  auto exnref = exnref_val.exnref();
+  ASSERT_TRUE(exnref);
+  auto fty = exnref->ty(cx).tag_type()->functype();
+  EXPECT_EQ(fty->params().size(), 1);
+  EXPECT_EQ(*fty->params().begin(), ValType::i32());
+  EXPECT_EQ(fty->results().size(), 0);
 
   // Pass the exnref back into a wasm function that extracts the i32 payload.
   Module module2 =

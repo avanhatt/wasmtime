@@ -6,13 +6,13 @@ use super::{
     regs::{self, rbp, rsp, scratch_fpr_bitset, scratch_gpr_bitset},
 };
 use crate::masm::{
-    DivKind, Extend, ExtendKind, ExtractLaneKind, FloatCmpKind, FloatScratch, Imm as I, IntCmpKind,
-    IntScratch, LaneSelector, LoadKind, MacroAssembler as Masm, MulWideKind, OperandSize, RegImm,
-    RemKind, ReplaceLaneKind, RmwOp, RoundingMode, Scratch, ScratchType, ShiftKind, SplatKind,
-    StoreKind, TRUSTED_FLAGS, TrapCode, TruncKind, UNTRUSTED_FLAGS, V128AbsKind, V128AddKind,
-    V128ConvertKind, V128ExtAddKind, V128ExtMulKind, V128ExtendKind, V128MaxKind, V128MinKind,
-    V128MulKind, V128NarrowKind, V128NegKind, V128SubKind, V128TruncKind, VectorCompareKind,
-    VectorEqualityKind, Zero,
+    DivKind, Extend, ExtendKind, ExtractLaneKind, FloatCmpKind, FloatScratch, Imm, Imm as I,
+    IntCmpKind, IntScratch, LaneSelector, LoadKind, MacroAssembler as Masm, MulWideKind,
+    OperandSize, RegImm, RemKind, ReplaceLaneKind, RmwOp, RoundingMode, Scratch, ScratchType,
+    ShiftKind, SplatKind, StoreKind, TRUSTED_FLAGS, TrapCode, TruncKind, UNTRUSTED_FLAGS,
+    V128AbsKind, V128AddKind, V128ConvertKind, V128ExtAddKind, V128ExtMulKind, V128ExtendKind,
+    V128MaxKind, V128MinKind, V128MulKind, V128NarrowKind, V128NegKind, V128SubKind, V128TruncKind,
+    VectorCompareKind, VectorEqualityKind, Zero,
 };
 use crate::{
     Result,
@@ -484,15 +484,40 @@ impl Masm for MacroAssembler {
         Ok(())
     }
 
+    fn add_uextend(
+        &mut self,
+        dst: WritableReg,
+        lhs: Reg,
+        rhs: Reg,
+        from_size: OperandSize,
+        size: OperandSize,
+    ) -> Result<()> {
+        assert!(size == OperandSize::S64);
+        assert!(from_size == OperandSize::S32 || from_size == OperandSize::S64);
+
+        Self::ensure_two_argument_form(&dst.to_reg(), &lhs)?;
+        if from_size == OperandSize::S32 && size == OperandSize::S64 {
+            self.extend(
+                writable!(rhs),
+                rhs,
+                ExtendKind::Unsigned(Extend::I64Extend32),
+            )?;
+        }
+
+        self.asm.add_rr(rhs, dst, size);
+
+        Ok(())
+    }
+
     fn checked_uadd(
         &mut self,
         dst: WritableReg,
         lhs: Reg,
-        rhs: RegImm,
+        rhs: Imm,
         size: OperandSize,
         trap: TrapCode,
     ) -> Result<()> {
-        self.add(dst, lhs, rhs, size)?;
+        self.add(dst, lhs, RegImm::Imm(rhs), size)?;
         self.asm.trapif(CC::B, trap);
         Ok(())
     }
@@ -1756,23 +1781,20 @@ impl Masm for MacroAssembler {
     ) -> Result<()> {
         // `cmpxchg` expects `expected` to be in the `*a*` register.
         // reserve rax for the expected argument.
-        let rax = context.reg(regs::rax(), self)?;
 
-        let replacement = context.pop_to_reg(self, None)?;
+        let replacement =
+            context.without::<Result<TypedReg>, _, _>(&[regs::rax()], self, |cx, masm| {
+                cx.pop_to_reg(masm, None)
+            })??;
 
-        // mark `rax` as allocatable again.
-        context.free_reg(rax);
         let expected = context.pop_to_reg(self, Some(regs::rax()))?;
 
         self.asm
             .cmpxchg(addr, replacement.reg, writable!(expected.reg), size, flags);
 
         if let Some(extend) = extend {
-            // We don't need to zero-extend from 32 to 64bits.
-            if !(extend.from_bits() == 32 && extend.to_bits() == 64) {
-                self.asm
-                    .movzx_rr(expected.reg, writable!(expected.reg), extend);
-            }
+            self.asm
+                .movzx_rr(expected.reg, writable!(expected.reg), extend);
         }
 
         context.stack.push(expected.into());

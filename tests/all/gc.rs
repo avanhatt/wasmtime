@@ -1,5 +1,7 @@
 use super::ref_types_module;
+use std::num::NonZeroU32;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 use wasmtime::*;
 
@@ -1355,6 +1357,10 @@ fn gc_heap_oom() -> Result<()> {
             config.memory_reservation_for_growth(0);
             config.memory_guard_size(0);
             config.memory_may_move(false);
+            config.gc_heap_reservation(heap_size);
+            config.gc_heap_reservation_for_growth(0);
+            config.gc_heap_guard_size(0);
+            config.gc_heap_may_move(false);
 
             if pooling {
                 let mut pooling = crate::small_pool_config();
@@ -1576,6 +1582,9 @@ fn instantiate_global_init_oom() -> Result<()> {
     config.memory_may_move(false);
     config.memory_reservation(64 << 10);
     config.memory_reservation_for_growth(0);
+    config.gc_heap_may_move(false);
+    config.gc_heap_reservation(64 << 10);
+    config.gc_heap_reservation_for_growth(0);
     let engine = Engine::new(&config)?;
     let mut store = Store::new(&engine, ());
 
@@ -1606,6 +1615,9 @@ fn elem_const_eval_oom() -> Result<()> {
     config.memory_may_move(false);
     config.memory_reservation(64 << 10);
     config.memory_reservation_for_growth(0);
+    config.gc_heap_may_move(false);
+    config.gc_heap_reservation(64 << 10);
+    config.gc_heap_reservation_for_growth(0);
     let engine = Engine::new(&config)?;
     let mut store = Store::new(&engine, ());
 
@@ -1656,18 +1668,7 @@ fn select_gc_ref_stack_map() -> Result<()> {
                 (type $pair (struct (field (mut i32))))
                 (type $arr (array (mut i8)))
 
-                ;; Allocate many objects to fill the GC heap and trigger
-                ;; collection. After GC frees everything, subsequent
-                ;; allocations reuse the freed memory.
-                (func $force_gc
-                    (local i32)
-                    (local.set 0 (i32.const 64))
-                    (loop $l
-                        (drop (array.new $arr (i32.const 0) (i32.const 1024)))
-                        (local.set 0 (i32.sub (local.get 0) (i32.const 1)))
-                        (br_if $l (local.get 0))
-                    )
-                )
+                (import "" "" (func $force_gc))
 
                 (func (export "test") (param $cond i32) (result i32)
                     ;; The select result stays on the Wasm operand stack (never
@@ -1687,6 +1688,8 @@ fn select_gc_ref_stack_map() -> Result<()> {
                     ;; overwrite the freed memory.
                     (call $force_gc)
 
+                    (drop (struct.new $pair (i32.const 222)))
+
                     ;; Use the select result. If it was incorrectly freed, then
                     ;; this will have the wrong value.
                     (struct.get $pair 0)
@@ -1696,14 +1699,612 @@ fn select_gc_ref_stack_map() -> Result<()> {
     )?;
 
     let mut store = Store::new(&engine, ());
-    let instance = Instance::new(&mut store, &module, &[])?;
+    let force_gc = Func::wrap(&mut store, |mut caller: Caller<'_, _>| {
+        caller.gc(None)?;
+        Ok(())
+    });
+    let instance = Instance::new(&mut store, &module, &[force_gc.into()])?;
     let test = instance.get_typed_func::<(i32,), i32>(&mut store, "test")?;
 
-    // Run multiple times to increase chance of triggering GC at the right
-    // moment.
-    for _ in 0..30 {
-        let result = test.call(&mut store, (1,))?;
-        assert_eq!(result, 111);
+    let result = test.call(&mut store, (1,))?;
+    assert_eq!(result, 111);
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn dropped_passive_elems_do_not_leak() -> Result<()> {
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_function_references(true);
+    config.wasm_gc(true);
+    config.collector(Collector::DeferredReferenceCounting);
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+            (module
+                (type $a (array (mut externref)))
+                (type $aa (array (ref $a)))
+
+                (elem $e (ref $a) (array.new_default $a (i32.const 1)))
+
+                (func (export "run") (param $x externref)
+                    (local $l (ref null $aa))
+
+                    ;; Create an array from the passive element segment.
+                    (local.set $l (array.new_elem $aa $e (i32.const 0) (i32.const 1)))
+
+                    ;; Put our externref into the passive element segment's array:
+                    ;; `l[0][0] = x`.
+                    (array.set $a
+                               (array.get $aa (local.get $l) (i32.const 0))
+                               (i32.const 0)
+                               (local.get $x))
+
+                    ;; Drop the passive element segment. This should make `x`
+                    ;; unreachable upon return, since we aren't keeping our
+                    ;; array live nor the passive element segment.
+                    (elem.drop $e)
+                )
+            )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+    let dropped = Arc::new(AtomicBool::new(false));
+
+    {
+        let mut store = RootScope::new(&mut store);
+        let e = ExternRef::new(&mut store, SetFlagOnDrop(dropped.clone()))?;
+
+        let instance = Instance::new(&mut store, &module, &[])?;
+        let run = instance.get_typed_func::<Rooted<ExternRef>, ()>(&mut store, "run")?;
+        run.call(&mut store, e)?;
+    }
+
+    store.gc(None)?;
+    assert!(dropped.load(SeqCst));
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn gc_heap_does_not_grow_unboundedly() -> Result<()> {
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_function_references(true);
+    config.wasm_gc(true);
+    config.collector(Collector::DeferredReferenceCounting);
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+            (module
+                (type $small (struct (field i32)))
+                (import "" "check" (func $check))
+
+                (func (export "run") (param i32)
+                    (local $i i32)
+                    (local $tmp (ref null $small))
+                    (loop $loop
+                        (local.set $tmp (struct.new $small (i32.const 42)))
+
+                        ;; Call the host to check heap size.
+                        (call $check)
+
+                        ;; Loop counter.
+                        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+                        (br_if $loop (i32.lt_u (local.get $i) (local.get 0)))
+                    )
+                )
+            )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+
+    let check = Func::wrap(&mut store, |caller: Caller<'_, _>| {
+        let heap_size = caller.gc_heap_capacity();
+        assert!(
+            heap_size <= 65536,
+            "GC heap grew too large: {heap_size} bytes (limit: 64KiB)"
+        );
+    });
+
+    let instance = Instance::new(&mut store, &module, &[check.into()])?;
+    let run = instance.get_typed_func::<(i32,), ()>(&mut store, "run")?;
+    run.call(&mut store, (100_000,))?;
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn pooling_gc_different_configs_rejected() -> Result<()> {
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_function_references(true);
+    config.wasm_gc(true);
+    config.collector(Collector::Null);
+    config.allocation_strategy(crate::small_pool_config());
+
+    // Set GC heap reservation to a different value than memory reservation.
+    config.gc_heap_reservation(0);
+
+    assert!(Engine::new(&config).is_err());
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn issue_13141_gc_heap_may_not_move() -> Result<()> {
+    let mut config = Config::new();
+    config.wasm_gc(true);
+    config.gc_heap_may_move(false);
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+            (module
+                (type $a (array (mut i8)))
+
+                (global $g (mut (ref $a)) (array.new_default $a (i32.const 12)))
+
+                (func (export "array_get_nth") (param $p i32) (result i32)
+                    (array.get_u $a (global.get $g) (local.get $p))
+                )
+            )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+    let instance = Instance::new(&mut store, &module, &[])?;
+    let array_get_nth = instance.get_typed_func::<i32, i32>(&mut store, "array_get_nth")?;
+    let result = array_get_nth.call(&mut store, 0)?;
+    assert_eq!(result, 0);
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn memory_guard_pages_but_no_gc_heap_guard_pages() -> Result<()> {
+    if std::mem::size_of::<usize>() < std::mem::size_of::<u64>()
+        || std::env::var("WASMTIME_TEST_NO_HOG_MEMORY").is_ok()
+    {
+        return Ok(());
+    }
+
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_function_references(true);
+    config.wasm_gc(true);
+    config.collector(Collector::Null);
+
+    // Memories get large guard pages (bounds checks elided for i32), but the
+    // GC heap does not (bounds checks required).
+    config.memory_reservation(1 << 32);
+    config.memory_guard_size(1 << 32);
+    config.gc_heap_reservation(0);
+    config.gc_heap_guard_size(0);
+    config.gc_heap_reservation_for_growth(1 << 20);
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+        (module
+            (type $ty (struct (field (mut f32))))
+            (func (export "roundtrip") (param (ref null $ty)) (result f32)
+                (struct.get $ty 0 (local.get 0))
+            )
+            (func (export "alloc") (result (ref $ty))
+                (struct.new $ty (f32.const 3.14))
+            )
+        )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+    let instance = Instance::new(&mut store, &module, &[])?;
+
+    let alloc = instance.get_typed_func::<(), Rooted<StructRef>>(&mut store, "alloc")?;
+    let roundtrip =
+        instance.get_typed_func::<(Option<Rooted<StructRef>>,), f32>(&mut store, "roundtrip")?;
+
+    let s = alloc.call(&mut store, ())?;
+    let val = roundtrip.call(&mut store, (Some(s),))?;
+    assert_eq!(val, 3.14_f32);
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn gc_heap_guard_pages_but_no_memory_guard_pages() -> Result<()> {
+    if std::mem::size_of::<usize>() < std::mem::size_of::<u64>()
+        || std::env::var("WASMTIME_TEST_NO_HOG_MEMORY").is_ok()
+    {
+        return Ok(());
+    }
+
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_function_references(true);
+    config.wasm_gc(true);
+    config.collector(Collector::Null);
+
+    // GC heap gets large guard pages (bounds checks elided), but memories do
+    // not (bounds checks required for memories).
+    config.gc_heap_reservation(1 << 32);
+    config.gc_heap_guard_size(1 << 32);
+    config.memory_reservation(0);
+    config.memory_guard_size(0);
+    config.memory_reservation_for_growth(1 << 20);
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+        (module
+            (type $ty (struct (field (mut f32))))
+            (memory (export "memory") 1)
+            (func (export "roundtrip") (param (ref null $ty)) (result f32)
+                (struct.get $ty 0 (local.get 0))
+            )
+            (func (export "alloc") (result (ref $ty))
+                (struct.new $ty (f32.const 2.72))
+            )
+            (func (export "load") (param i32) (result i32)
+                (i32.load (local.get 0))
+            )
+        )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+    let instance = Instance::new(&mut store, &module, &[])?;
+
+    let alloc = instance.get_typed_func::<(), Rooted<StructRef>>(&mut store, "alloc")?;
+    let roundtrip =
+        instance.get_typed_func::<(Option<Rooted<StructRef>>,), f32>(&mut store, "roundtrip")?;
+    let load = instance.get_typed_func::<(i32,), i32>(&mut store, "load")?;
+
+    let s = alloc.call(&mut store, ())?;
+    let val = roundtrip.call(&mut store, (Some(s),))?;
+    assert_eq!(val, 2.72_f32);
+
+    // Also exercise the memory access to make sure it works with bounds checks.
+    let result = load.call(&mut store, (0,))?;
+    assert_eq!(result, 0);
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn issue_13037_drc_leak_passing_objects_already_in_over_approx_stack_roots_list() -> Result<()> {
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.collector(Collector::DeferredReferenceCounting);
+    let engine = Engine::new(&config)?;
+    let mut store = Store::new(&engine, ());
+
+    let module = Module::new(
+        &engine,
+        r#"(module (func (export "nop") (param externref)))"#,
+    )?;
+
+    let instance = Instance::new(&mut store, &module, &[])?;
+    let nop = instance.get_typed_func::<Option<Rooted<ExternRef>>, ()>(&mut store, "nop")?;
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    {
+        let mut scope = RootScope::new(&mut store);
+        let ext = ExternRef::new(&mut scope, SetFlagOnDrop(dropped.clone()))?;
+
+        nop.call(&mut scope, Some(ext))?;
+        nop.call(&mut scope, Some(ext))?;
+    }
+
+    store.gc(None)?;
+
+    assert!(dropped.load(Ordering::SeqCst));
+    Ok(())
+}
+
+fn copying_store_with_gc_zeal(counter: u32) -> Result<(Store<()>, Engine)> {
+    let _ = env_logger::try_init();
+    let mut config = Config::new();
+    config.wasm_gc(true);
+    config.wasm_function_references(true);
+    config.collector(Collector::Copying);
+    let _ = config.gc_zeal_alloc_counter(NonZeroU32::new(counter));
+    let engine = Engine::new(&config)?;
+    let store = Store::new(&engine, ());
+    Ok((store, engine))
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn copying_collector_externref_survives_gc() -> Result<()> {
+    let (mut store, engine) = copying_store_with_gc_zeal(1)?;
+    let module = Module::new(
+        &engine,
+        r#"
+        (module
+            (import "" "gc" (func $gc))
+            (func (export "roundtrip") (param externref) (result externref)
+                (call $gc)
+                (local.get 0)
+            )
+        )
+        "#,
+    )?;
+    let gc_func = Func::wrap(&mut store, |mut caller: Caller<'_, ()>| -> Result<()> {
+        caller.gc(None)
+    });
+    let instance = Instance::new(&mut store, &module, &[gc_func.into()])?;
+    let roundtrip = instance
+        .get_typed_func::<Option<Rooted<ExternRef>>, Option<Rooted<ExternRef>>>(
+            &mut store,
+            "roundtrip",
+        )?;
+
+    {
+        let val = ExternRef::new(&mut store, 42u32)?;
+        let result = roundtrip.call(&mut store, Some(val))?;
+        let result = result.unwrap();
+        let data = result
+            .data(&store)?
+            .expect("should have data")
+            .downcast_ref::<u32>()
+            .copied()
+            .unwrap();
+        assert_eq!(data, 42u32);
+    }
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn issue_13173_gc_heap_uses_gc_tunables_no_signals() -> Result<()> {
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_gc(true);
+    config.wasm_function_references(true);
+    config.collector(Collector::DeferredReferenceCounting);
+    // Set `memory_reservation=0` while leaving `gc_heap_reservation` at its
+    // default (4GB on 64-bit). Before the fix, the GC heap would incorrectly
+    // use `memory_reservation=0`, giving it 0 capacity and causing segfaults
+    // as the heap base pointer changed on every growth.
+    config.memory_reservation(0);
+    config.signals_based_traps(false);
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+        (module
+            (type $arr (array (mut i32)))
+            (func (export "run") (result i32)
+                (local $i i32)
+                (local $a (ref $arr))
+                (local.set $a (array.new_default $arr (i32.const 64)))
+                (block $break
+                    (loop $loop
+                        (br_if $break (i32.ge_u (local.get $i) (i32.const 1000)))
+                        (array.set $arr
+                            (local.get $a)
+                            (i32.const 0)
+                            (i32.add
+                                (array.get $arr (local.get $a) (i32.const 0))
+                                (i32.const 1)))
+                        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+                        (br $loop)
+                    )
+                )
+                (array.get $arr (local.get $a) (i32.const 0))
+            )
+        )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+    let instance = Instance::new(&mut store, &module, &[])?;
+    let run = instance.get_typed_func::<(), i32>(&mut store, "run")?;
+    let result = run.call(&mut store, ())?;
+    assert_eq!(result, 1000);
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn copying_collector_many_externrefs() -> Result<()> {
+    let (mut store, engine) = copying_store_with_gc_zeal(2)?;
+    let module = Module::new(
+        &engine,
+        r#"
+        (module
+            (import "" "gc" (func $gc))
+            (import "" "make" (func $make (param i32) (result externref)))
+            (import "" "check" (func $check (param externref i32)))
+
+            (func (export "test")
+                (local $a externref)
+                (local $b externref)
+                (local $c externref)
+
+                (local.set $a (call $make (i32.const 100)))
+                (local.set $b (call $make (i32.const 200)))
+                (local.set $c (call $make (i32.const 300)))
+
+                (call $gc)
+
+                (call $check (local.get $a) (i32.const 100))
+                (call $check (local.get $b) (i32.const 200))
+                (call $check (local.get $c) (i32.const 300))
+            )
+        )
+        "#,
+    )?;
+
+    let gc_func = Func::wrap(&mut store, |mut caller: Caller<'_, ()>| -> Result<()> {
+        caller.gc(None)
+    });
+    let make = Func::wrap(
+        &mut store,
+        |mut caller: Caller<'_, ()>, val: i32| -> Result<Option<Rooted<ExternRef>>> {
+            Ok(Some(ExternRef::new(&mut caller, val)?))
+        },
+    );
+    let check = Func::wrap(
+        &mut store,
+        |caller: Caller<'_, ()>, ext: Option<Rooted<ExternRef>>, expected: i32| -> Result<()> {
+            let ext = ext.unwrap();
+            let val = *ext
+                .data(&caller)?
+                .expect("data")
+                .downcast_ref::<i32>()
+                .unwrap();
+            assert_eq!(val, expected, "externref value mismatch after GC");
+            Ok(())
+        },
+    );
+
+    let instance = Instance::new(
+        &mut store,
+        &module,
+        &[gc_func.into(), make.into(), check.into()],
+    )?;
+    let test = instance.get_typed_func::<(), ()>(&mut store, "test")?;
+    test.call(&mut store, ())?;
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn issue_13173_gc_heap_uses_gc_tunables_guard_size_mismatch() -> Result<()> {
+    if std::mem::size_of::<usize>() < std::mem::size_of::<u64>()
+        || std::env::var("WASMTIME_TEST_NO_HOG_MEMORY").is_ok()
+    {
+        return Ok(());
+    }
+
+    let _ = env_logger::try_init();
+
+    let mut config = Config::new();
+    config.wasm_gc(true);
+    config.wasm_function_references(true);
+    config.collector(Collector::DeferredReferenceCounting);
+    // Set `memory_reservation=0` and a large `gc_heap_guard_size` while leaving
+    // `memory_guard_size` at its default. Before the fix, the GC heap would use
+    // `memory_guard_size` (small) instead of `gc_heap_guard_size` (large), causing
+    // Cranelift-generated code that relies on virtual memory protection for
+    // accesses within the gc_heap_guard_size to segfault.
+    config.memory_reservation(0);
+    config.gc_heap_guard_size(1 << 29); // 512MB GC heap guard
+    config.memory_guard_size(32 * 1024 * 1024); // 32MB linear memory guard
+
+    let engine = Engine::new(&config)?;
+
+    let module = Module::new(
+        &engine,
+        r#"
+        (module
+            (type $arr (array (mut i32)))
+            (func (export "run") (result i32)
+                (local $i i32)
+                (local $a (ref $arr))
+                (local.set $a (array.new_default $arr (i32.const 64)))
+                (block $break
+                    (loop $loop
+                        (br_if $break (i32.ge_u (local.get $i) (i32.const 1000)))
+                        (array.set $arr
+                            (local.get $a)
+                            (i32.const 0)
+                            (i32.add
+                                (array.get $arr (local.get $a) (i32.const 0))
+                                (i32.const 1)))
+                        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+                        (br $loop)
+                    )
+                )
+                (array.get $arr (local.get $a) (i32.const 0))
+            )
+        )
+        "#,
+    )?;
+
+    let mut store = Store::new(&engine, ());
+    let instance = Instance::new(&mut store, &module, &[])?;
+    let run = instance.get_typed_func::<(), i32>(&mut store, "run")?;
+    let result = run.call(&mut store, ())?;
+    assert_eq!(result, 1000);
+
+    Ok(())
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn copying_collector_gc_zeal_counter_stress() -> Result<()> {
+    // Many allocations with different `gc_zeal_alloc_counter` values to stress
+    // GC timing.
+    for counter in [2, 3, 5, 7, 10] {
+        let (mut store, engine) = copying_store_with_gc_zeal(counter)?;
+        log::debug!("Testing with gc_zeal_alloc_counter = {counter}");
+
+        let module = Module::new(
+            &engine,
+            r#"
+            (module
+                (type $box (struct (field i32)))
+
+                (func (export "test") (result i32)
+                    (local $keep (ref null $box))
+                    (local $i i32)
+
+                    (local.set $keep (struct.new $box (i32.const 12345)))
+
+                    (local.set $i (i32.const 0))
+                    (block $done
+                        (loop $loop
+                            (br_if $done (i32.ge_u (local.get $i) (i32.const 30)))
+                            (drop (struct.new $box (local.get $i)))
+                            (local.set $i (i32.add (local.get $i) (i32.const 1)))
+                            (br $loop)
+                        )
+                    )
+
+                    (struct.get $box 0 (local.get $keep))
+                )
+            )
+            "#,
+        )?;
+        let instance = Instance::new(&mut store, &module, &[])?;
+        let test = instance.get_typed_func::<(), i32>(&mut store, "test")?;
+        let result = test.call(&mut store, ())?;
+        assert_eq!(result, 12345, "failed with gc_zeal_counter={counter}");
     }
 
     Ok(())
