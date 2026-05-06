@@ -1630,40 +1630,10 @@
 (rule (x64_mov addr) (x64_movq_rm addr))
 
 (decl x64_movzx (ExtMode GprMem) Gpr)
-<<<<<<< HEAD
-
-(rule (x64_movzx (ExtMode.BL) src) (x64_movzbl_rm src))
-(rule (x64_movzx (ExtMode.BQ) src) (x64_movzbq_rm src))
-(rule (x64_movzx (ExtMode.WL) src) (x64_movzwl_rm src))
-(rule (x64_movzx (ExtMode.WQ) src) (x64_movzwq_rm src))
-=======
-(spec (x64_movzx mode src)
-      (provide
-            (= result
-                  (conv_to
-                        64
-                        (zero_ext
-                              32
-                              (load_effect
-                                    (extract 79 64 src)
-                                    (switch mode
-                                          ((ExtMode.BL) 8)
-                                          ((ExtMode.BQ) 8)
-                                          ((ExtMode.WL) 16)
-                                          ((ExtMode.WQ) 16)
-                                          ((ExtMode.LQ) 32))
-                                    (extract 63 0 src))))))
-      (require (or (= mode (ExtMode.BL))
-                  (= mode (ExtMode.BQ))
-                  (= mode (ExtMode.WL))
-                  (= mode (ExtMode.WQ))
-                  (= mode (ExtMode.LQ)))))
-
 (rule (x64_movzx (ExtMode.BL) src) (x64_movzbl_rm (gpr_mem_as_gpr_mem_8  src)))
 (rule (x64_movzx (ExtMode.BQ) src) (x64_movzbq_rm (gpr_mem_as_gpr_mem_8  src)))
 (rule (x64_movzx (ExtMode.WL) src) (x64_movzwl_rm (gpr_mem_as_gpr_mem_16 src)))
 (rule (x64_movzx (ExtMode.WQ) src) (x64_movzwq_rm (gpr_mem_as_gpr_mem_16 src)))
->>>>>>> main
 ;; This instruction selection may seem strange but is correct in 64-bit mode:
 ;; section 3.4.1.1 of the Intel manual says that "32-bit operands generate a
 ;; 32-bit result, zero-extended to a 64-bit result in the destination

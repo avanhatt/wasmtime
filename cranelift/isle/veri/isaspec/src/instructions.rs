@@ -194,7 +194,7 @@ fn define_alu_rrr() -> SpecConfig {
 
 fn is_alu_op_size_supported(alu_op: ALUOp, size: OperandSize) -> bool {
     match alu_op {
-        ALUOp::SMulH | ALUOp::UMulH | ALUOp::SDiv | ALUOp::UDiv => size == OperandSize::Size64,
+        ALUOp::SMulH | ALUOp::UMulH => size == OperandSize::Size64,
         _ => true,
     }
 }
@@ -373,6 +373,7 @@ fn define_alu_rrr_shift() -> Result<SpecConfig> {
         ALUOp::OrrNot,
         ALUOp::EorNot,
         ALUOp::AndNot,
+        ALUOp::Extr,
         // Flags:
         // ALUOp::AddS,
         // ALUOp::SubS,

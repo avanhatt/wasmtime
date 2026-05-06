@@ -194,6 +194,48 @@
                             )
                         )
                     )
+                    ((SDiv)
+                        (with
+                            (t1 t2 t4)
+                            (and
+                                (= t1 (= (extract 31 0 rm) #x00000000))
+                                (if
+                                    t1
+                                    (= t2 #x0000000000000000)
+                                    (=
+                                        t4
+                                        (zero_ext
+                                            64
+                                            (extract
+                                                31
+                                                0
+                                                (if
+                                                    (and (= (extract 31 0 rn) #x80000000) (= (extract 31 0 rm) #xffffffff))
+                                                    #x0000000080000000
+                                                    (sign_ext 64 (bvsdiv (extract 31 0 rn) (extract 31 0 rm)))
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                                (= rd (if t1 t2 t4))
+                            )
+                        )
+                    )
+                    ((UDiv)
+                        (with
+                            (t1 t2 t4)
+                            (and
+                                (= t1 (= (extract 31 0 rm) #x00000000))
+                                (if
+                                    t1
+                                    (= t2 #x0000000000000000)
+                                    (= t4 (zero_ext 64 (extract 31 0 (bvsdiv (zero_ext 64 (extract 31 0 rn)) (zero_ext 64 (extract 31 0 rm))))))
+                                )
+                                (= rd (if t1 t2 t4))
+                            )
+                        )
+                    )
                     ((Extr)
                         (with
                             (t1 t3 t4 t5)
@@ -271,6 +313,8 @@
                     ((EorNot) true)
                     ((AddS) true)
                     ((SubS) true)
+                    ((SDiv) true)
+                    ((UDiv) true)
                     ((Extr) true)
                     ((Lsr) true)
                     ((Asr) true)

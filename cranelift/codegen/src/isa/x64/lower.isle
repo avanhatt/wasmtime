@@ -1564,7 +1564,7 @@
             (b ValueRegs (and_i128 (not_i128 c) f)))
         (or_i128 a b)))
 
-(rule 4 (lower (has_type (ty_int_ref_scalar_64 ty) (bitselect _ c t f)))
+(rule 4 (lower (has_type (ty_int_ref_scalar_64_extract ty) (bitselect _ c t f)))
       (let ((a Gpr (x64_and ty c t))
             (b Gpr (x64_and ty (x64_not ty c) f)))
         (x64_or ty a b)))

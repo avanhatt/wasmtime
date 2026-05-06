@@ -628,7 +628,7 @@
 (rule 1 (lower (has_type $I64 (fcvt_to_sint _ x @ (value_type $F32))))
       (fpu_to_int_cvt (FpuToIntOp.F32ToI64) x true $F32 $I64))
 
-(rule (lower (has_type (fits_in_32 out_ty) (fcvt_to_sint _ x @ (value_type $F64))))
+(rule fcvt_to_sint (lower (has_type (fits_in_32 out_ty) (fcvt_to_sint _ x @ (value_type $F64))))
       (fpu_to_int_cvt (FpuToIntOp.F64ToI32) x true $F64 out_ty))
 
 (rule 1 (lower (has_type $I64 (fcvt_to_sint _ x @ (value_type $F64))))
@@ -1437,13 +1437,13 @@
 ;; they sum to the type width then it means that the shifts don't actually do
 ;; anything CLIF-wise and this should compile down to a `bor` operation. Leave
 ;; that edge case to the mid-end and only lower to `extr` here.
-(rule 5 (lower (has_type (ty_32_or_64 ty)
+(rule extr_32_or_64 5 (lower (has_type (ty_32_or_64 ty)
   (bor _ (ishl _ x (u8_from_iconst xs)) (ushr _ y (u8_from_iconst ys)))))
   (if-let true (u64_eq (ty_bits ty) (u64_wrapping_add xs ys)))
   (if-let true (u64_gt xs 0))
   (if-let true (u64_gt ys 0))
   (a64_extr ty x y (imm_shift_from_u8 ys)))
-(rule 5 (lower (has_type (ty_32_or_64 ty)
+(rule extr_32_or_64_2 5 (lower (has_type (ty_32_or_64 ty)
   (bor _ (ushr _ y (u8_from_iconst ys)) (ishl _ x (u8_from_iconst xs)))))
   (if-let true (u64_eq (ty_bits ty) (u64_wrapping_add xs ys)))
   (if-let true (u64_gt xs 0))
