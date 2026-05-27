@@ -109,3 +109,337 @@ block0(v0: i64, v1: i64):
 ;   extr x0, x0, x1, #0xc
 ;   ret
 
+;; Minimum non-zero ys (=1) for i32: ishl by 31, ushr by 1.
+function %a64_extr_i32_1(i32, i32) -> i32 {
+block0(v0: i32, v1: i32):
+    v2 = ushr_imm v0, 1
+    v3 = ishl_imm v1, 31
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr w0, w1, w0, LSL 1
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr w0, w1, w0, #1
+;   ret
+
+function %a64_extr_i32_1_swap(i32, i32) -> i32 {
+block0(v0: i32, v1: i32):
+    v2 = ishl_imm v0, 31
+    v3 = ushr_imm v1, 1
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr w0, w0, w1, LSL 1
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr w0, w0, w1, #1
+;   ret
+
+;; Middle ys (=16) for i32.
+function %a64_extr_i32_16(i32, i32) -> i32 {
+block0(v0: i32, v1: i32):
+    v2 = ushr_imm v0, 16
+    v3 = ishl_imm v1, 16
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr w0, w1, w0, LSL 16
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr w0, w1, w0, #0x10
+;   ret
+
+function %a64_extr_i32_16_swap(i32, i32) -> i32 {
+block0(v0: i32, v1: i32):
+    v2 = ishl_imm v0, 16
+    v3 = ushr_imm v1, 16
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr w0, w0, w1, LSL 16
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr w0, w0, w1, #0x10
+;   ret
+
+;; Maximum ys (=31) for i32: ishl by 1, ushr by 31.
+function %a64_extr_i32_31(i32, i32) -> i32 {
+block0(v0: i32, v1: i32):
+    v2 = ushr_imm v0, 31
+    v3 = ishl_imm v1, 1
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr w0, w1, w0, LSL 31
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr w0, w1, w0, #0x1f
+;   ret
+
+function %a64_extr_i32_31_swap(i32, i32) -> i32 {
+block0(v0: i32, v1: i32):
+    v2 = ishl_imm v0, 1
+    v3 = ushr_imm v1, 31
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr w0, w0, w1, LSL 31
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr w0, w0, w1, #0x1f
+;   ret
+
+;; Same-register rotation pattern for i32 (becomes a self-extr / rotation).
+function %a64_extr_i32_same_8(i32) -> i32 {
+block0(v0: i32):
+    v1 = ushr_imm v0, 8
+    v2 = ishl_imm v0, 24
+    v3 = bor v1, v2
+    return v3
+}
+
+; VCode:
+; block0:
+;   extr w0, w0, w0, LSL 8
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   ror w0, w0, #8
+;   ret
+
+function %a64_extr_i32_same_8_swap(i32) -> i32 {
+block0(v0: i32):
+    v1 = ishl_imm v0, 24
+    v2 = ushr_imm v0, 8
+    v3 = bor v1, v2
+    return v3
+}
+
+; VCode:
+; block0:
+;   extr w0, w0, w0, LSL 8
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   ror w0, w0, #8
+;   ret
+
+;; Minimum non-zero ys (=1) for i64.
+function %a64_extr_i64_1(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ushr_imm v0, 1
+    v3 = ishl_imm v1, 63
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x1, x0, LSR 1
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x1, x0, #1
+;   ret
+
+function %a64_extr_i64_1_swap(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ishl_imm v0, 63
+    v3 = ushr_imm v1, 1
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x0, x1, LSR 1
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x0, x1, #1
+;   ret
+
+;; Middle ys (=32) for i64. This is the case the VeriISLE verifier flagged
+;; (because of an unrelated spec gap) so it is worth pinning down concretely.
+function %a64_extr_i64_32(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ushr_imm v0, 32
+    v3 = ishl_imm v1, 32
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x1, x0, LSR 32
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x1, x0, #0x20
+;   ret
+
+function %a64_extr_i64_32_swap(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ishl_imm v0, 32
+    v3 = ushr_imm v1, 32
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x0, x1, LSR 32
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x0, x1, #0x20
+;   ret
+
+;; Byte-aligned ys for i64.
+function %a64_extr_i64_8(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ushr_imm v0, 8
+    v3 = ishl_imm v1, 56
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x1, x0, LSR 8
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x1, x0, #8
+;   ret
+
+function %a64_extr_i64_56(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ushr_imm v0, 56
+    v3 = ishl_imm v1, 8
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x1, x0, LSR 56
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x1, x0, #0x38
+;   ret
+
+;; Maximum ys (=63) for i64.
+function %a64_extr_i64_63(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ushr_imm v0, 63
+    v3 = ishl_imm v1, 1
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x1, x0, LSR 63
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x1, x0, #0x3f
+;   ret
+
+function %a64_extr_i64_63_swap(i64, i64) -> i64 {
+block0(v0: i64, v1: i64):
+    v2 = ishl_imm v0, 1
+    v3 = ushr_imm v1, 63
+    v4 = bor v2, v3
+    return v4
+}
+
+; VCode:
+; block0:
+;   extr x0, x0, x1, LSR 63
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   extr x0, x0, x1, #0x3f
+;   ret
+
+;; Same-register rotation pattern for i64.
+function %a64_extr_i64_same_16(i64) -> i64 {
+block0(v0: i64):
+    v1 = ushr_imm v0, 16
+    v2 = ishl_imm v0, 48
+    v3 = bor v1, v2
+    return v3
+}
+
+; VCode:
+; block0:
+;   extr x0, x0, x0, LSR 16
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   ror x0, x0, #0x10
+;   ret
+
+function %a64_extr_i64_same_16_swap(i64) -> i64 {
+block0(v0: i64):
+    v1 = ishl_imm v0, 48
+    v2 = ushr_imm v0, 16
+    v3 = bor v1, v2
+    return v3
+}
+
+; VCode:
+; block0:
+;   extr x0, x0, x0, LSR 16
+;   ret
+;
+; Disassembled:
+; block0: ; offset 0x0
+;   ror x0, x0, #0x10
+;   ret
+

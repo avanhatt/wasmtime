@@ -3143,8 +3143,32 @@
 
 (decl load_constant_full (Type ImmExtend OperandSize u64) Reg)
 (extern constructor load_constant_full load_constant_full)
+;; The implementation extracts the low `(:bits ty)` bits of `const` and
+;; extends them (sign- or zero-, per `imm`) into the destination register.
+;; For Size32 destinations the upper 32 bits are zero-padded as usual on
+;; AArch64; for Size64 the value occupies the full 64-bit register.
 (spec (load_constant_full ty imm size const)
-      (provide (= result const)))
+      (provide
+            (=> (and (Size32? size) (= (:bits ty) 8))
+                (= result
+                   (match imm
+                         ((Sign) (zero_ext 64 (sign_ext 32 (extract 7 0 const))))
+                         ((Zero) (zero_ext 64 (extract 7 0 const))))))
+            (=> (and (Size32? size) (= (:bits ty) 16))
+                (= result
+                   (match imm
+                         ((Sign) (zero_ext 64 (sign_ext 32 (extract 15 0 const))))
+                         ((Zero) (zero_ext 64 (extract 15 0 const))))))
+            (=> (and (Size32? size) (= (:bits ty) 32))
+                (= result (zero_ext 64 (extract 31 0 const))))
+            (=> (and (Size64? size) (= (:bits ty) 64))
+                (= result const)))
+      (require
+            (or
+                  (and (Size32? size) (= (:bits ty) 8))
+                  (and (Size32? size) (= (:bits ty) 16))
+                  (and (Size32? size) (= (:bits ty) 32))
+                  (and (Size64? size) (= (:bits ty) 64)))))
 
 ;; Fallback for integral 32-bit constants
 (rule (imm (fits_in_32 (integral_ty ty)) extend n)
@@ -3854,7 +3878,7 @@
 ;; accepting a boolean (whether the type is signed), input type,
 ;; output type, and registers containing the source and minimum bound.
 (decl fpu_to_int_underflow_check (bool Type Type Reg Reg) Reg)
-(rule fpu_to_int_underflow_check_signed_f64_fits_in_32 (fpu_to_int_underflow_check true $F32 (fits_in_16 out_ty) src min)
+(rule fpu_to_int_underflow_check_signed_f32_fits_in_16 (fpu_to_int_underflow_check true $F32 (fits_in_16 out_ty) src min)
       (let ((r ValueRegs
                   (with_flags (fpu_cmp (ScalarSize.Size32) src min)
                    (ConsumesFlags.ConsumesFlagsReturnsReg
@@ -3862,7 +3886,7 @@
                         (trap_code_integer_overflow))
                     src))))
        (value_regs_get r 0)))
-(rule (fpu_to_int_underflow_check true $F64 (fits_in_32 out_ty) src min)
+(rule fpu_to_int_underflow_check_signed_f64_fits_in_32 (fpu_to_int_underflow_check true $F64 (fits_in_32 out_ty) src min)
       (let ((r ValueRegs
                   (with_flags (fpu_cmp (ScalarSize.Size64) src min)
                    (ConsumesFlags.ConsumesFlagsReturnsReg
@@ -4862,11 +4886,22 @@
       (modifies exec_trap trap_cond)
       (provide
             ; Conditions under which this instruction traps.
+            ;
+            ; The Zero / NotZero kinds use a cbz/cbnz instruction whose operand
+            ; size selects whether the 32-bit or 64-bit view of `r` is tested.
+            ; Registers are modeled at 64 bits with arbitrary padding above the
+            ; significant bits (see `put_in_reg`), so we must mask to the low
+            ; `s` bits before checking for zero.
             (= trap_cond
                   (match kind
-                        ; AVH TODO: need to check s?
-                        ((Zero r s) (bv_is_zero! r))
-                        ((NotZero r s) (not (bv_is_zero! r)))
+                        ((Zero r s)
+                              (if (Size32? s)
+                                  (bv_is_zero! (extract 31 0 r))
+                                  (bv_is_zero! r)))
+                        ((NotZero r s)
+                              (if (Size32? s)
+                                  (not (bv_is_zero! (extract 31 0 r)))
+                                  (not (bv_is_zero! r))))
                         ((Cond cc) (cond_holds! cc (:flags_in result)))
                   )
             )
@@ -5502,6 +5537,7 @@
 
 (attr fpu_to_int_underflow_check (veri chain))
 
+(attr rule fpu_to_int_underflow_check_signed_f32_fits_in_16 (veri priority))
 (attr rule fpu_to_int_underflow_check_signed_f64_fits_in_32 (veri priority))
 
 (attr vec_cmp (tag vector))
