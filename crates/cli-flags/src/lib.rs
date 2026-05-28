@@ -267,6 +267,13 @@ wasmtime_option_group! {
         #[serde(deserialize_with = "crate::opt::cli_parse_wrapper")]
         pub inlining: Option<wasmtime::Inlining>,
 
+        /// Whether or not trap metadata is present for wasm internal assertions
+        /// in compiled code.
+        pub metadata_for_internal_asserts: Option<bool>,
+        /// Whether or not trap metadata is present for detection of gc
+        /// corruption in compiled code.
+        pub metadata_for_gc_heap_corruption: Option<bool>,
+
         #[prefixed = "cranelift"]
         #[serde(default)]
         /// Set a cranelift-specific option. Use `wasmtime settings` to see
@@ -456,6 +463,9 @@ wasmtime_option_group! {
         /// Component model support for fixed-length lists: this corresponds
         /// to the 🔧 emoji in the component model specification
         pub component_model_fixed_length_lists: Option<bool>,
+        /// Component model support for `(implements ...)`, corresponds to the
+        /// 🏷️ emoji in the upstream spec.
+        pub component_model_implements: Option<bool>,
         /// Whether or not any concurrency infrastructure in Wasmtime is
         /// enabled or not.
         pub concurrency_support: Option<bool>,
@@ -539,6 +549,8 @@ wasmtime_option_group! {
         pub inherit_stdout: Option<bool>,
         /// Inherit stderr from the parent process. On by default.
         pub inherit_stderr: Option<bool>,
+        /// Initial current working directory reported through `wasi:cli/environment`.
+        pub cwd: Option<String>,
         /// Pass a wasi config variable to the program.
         #[serde(skip)]
         pub config_var: Vec<KeyValuePair>,
@@ -983,6 +995,12 @@ impl CommonOptions {
         if let Some(enable) = self.codegen.inlining {
             config.compiler_inlining(enable);
         }
+        if let Some(enable) = self.codegen.metadata_for_internal_asserts {
+            config.metadata_for_internal_asserts(enable);
+        }
+        if let Some(enable) = self.codegen.metadata_for_gc_heap_corruption {
+            config.metadata_for_gc_heap_corruption(enable);
+        }
 
         // async_stack_size enabled by either async or stack-switching, so
         // cannot directly use match_feature!
@@ -1218,6 +1236,7 @@ impl CommonOptions {
             ("component-model", component_model_error_context, wasm_component_model_error_context)
             ("component-model", component_model_map, wasm_component_model_map)
             ("component-model", component_model_fixed_length_lists, wasm_component_model_fixed_length_lists)
+            ("component-model", component_model_implements, wasm_component_model_implements)
             ("threads", threads, wasm_threads)
             ("gc", gc, wasm_gc)
             ("gc", reference_types, wasm_reference_types)

@@ -17,7 +17,7 @@ use crate::{
         reg::{Reg, WritableReg, writable},
     },
     masm::{
-        CalleeKind, DivKind, Extend, ExtendKind, ExtractLaneKind, FloatCmpKind, FloatScratch, Imm,
+        CalleeKind, DivKind, Extend, ExtendKind, ExtractLaneKind, FloatCmpKind, FloatScratch,
         Imm as I, IntCmpKind, IntScratch, LoadKind, MacroAssembler as Masm, MulWideKind,
         OperandSize, RegImm, RemKind, ReplaceLaneKind, RmwOp, RoundingMode, SPOffset, Scratch,
         ScratchType, ShiftKind, SplatKind, StackSlot, StoreKind, TRUSTED_FLAGS, TrapCode,
@@ -30,7 +30,7 @@ use crate::{
 use cranelift_codegen::{
     Final, MachBufferFinalized, MachLabel,
     binemit::CodeOffset,
-    ir::{MemFlags, RelSourceLoc, SourceLoc, types},
+    ir::{MemFlagsData, RelSourceLoc, SourceLoc, types},
     isa::aarch64,
     isa::aarch64::inst::{
         self, Cond, ExtendOp, Imm12, ImmLogic, ImmShift, SImm7Scaled, SImm9, VectorSize,
@@ -589,7 +589,7 @@ impl Masm for MacroAssembler {
         &mut self,
         dst: WritableReg,
         lhs: Reg,
-        rhs: Imm,
+        rhs: RegImm,
         size: OperandSize,
         trap: TrapCode,
     ) -> Result<()> {
@@ -600,14 +600,21 @@ impl Masm for MacroAssembler {
             // NB: we don't use `Self::add_ir` since we explicitly
             // want to emit the add variant which sets overflow
             // flags.
-            let imm = rhs.unwrap_as_u64();
-            match Imm12::maybe_from_u64(imm) {
-                Some(imm12) => masm.asm.adds_ir(imm12, lhs, dst, size),
-                None => {
-                    masm.with_scratch::<IntScratch, _>(|masm, scratch| {
-                        masm.asm.mov_ir(scratch.writable(), rhs, rhs.size());
-                        masm.asm.adds_rrr(scratch.inner(), lhs, dst, size);
-                    });
+            match rhs {
+                RegImm::Reg(rm) => {
+                    masm.asm.adds_rrr(rm, lhs, dst, size);
+                }
+                RegImm::Imm(rhs) => {
+                    let imm = rhs.unwrap_as_u64();
+                    match Imm12::maybe_from_u64(imm) {
+                        Some(imm12) => masm.asm.adds_ir(imm12, lhs, dst, size),
+                        None => {
+                            masm.with_scratch::<IntScratch, _>(|masm, scratch| {
+                                masm.asm.mov_ir(scratch.writable(), rhs, rhs.size());
+                                masm.asm.adds_rrr(scratch.inner(), lhs, dst, size);
+                            });
+                        }
+                    }
                 }
             }
             masm.asm.trapif(Cond::Hs, trap);
@@ -1327,7 +1334,7 @@ impl Masm for MacroAssembler {
         _addr: Self::Address,
         _size: OperandSize,
         _op: RmwOp,
-        _flags: MemFlags,
+        _flags: MemFlagsData,
         _extend: Option<Extend<Zero>>,
     ) -> Result<()> {
         Err(format_err!(CodeGenError::unimplemented_masm_instruction()))
@@ -1358,7 +1365,7 @@ impl Masm for MacroAssembler {
         _context: &mut CodeGenContext<Emission>,
         _addr: Self::Address,
         _size: OperandSize,
-        _flags: MemFlags,
+        _flags: MemFlagsData,
         _extend: Option<Extend<Zero>>,
     ) -> Result<()> {
         Err(format_err!(CodeGenError::unimplemented_masm_instruction()))

@@ -31,11 +31,14 @@
 //      globals: [VMGlobalDefinition; module.num_defined_globals],
 //      tags: [VMTagDefinition; module.num_defined_tags],
 //      func_refs: [VMFuncRef; module.num_escaped_funcs],
+//      passive_data_bases: [*const u8; module.num_passive_data],
+//      passive_data_lengths: [u32; module.num_passive_data],
 // }
 
 use crate::{
     DefinedGlobalIndex, DefinedMemoryIndex, DefinedTableIndex, DefinedTagIndex, FuncIndex,
-    FuncRefIndex, GlobalIndex, MemoryIndex, Module, OwnedMemoryIndex, TableIndex, TagIndex,
+    FuncRefIndex, GlobalIndex, MemoryIndex, Module, OwnedMemoryIndex, PassiveDataIndex, TableIndex,
+    TagIndex,
 };
 use cranelift_entity::packed_option::ReservedValue;
 
@@ -87,6 +90,8 @@ pub struct VMOffsets<P> {
     /// The number of escaped functions in the module, the size of the func_refs
     /// array.
     pub num_escaped_funcs: u32,
+    /// The number of passive data segments in the module.
+    pub num_passive_data: u32,
 
     // precalculated offsets of various member fields
     imported_functions: u32,
@@ -100,6 +105,8 @@ pub struct VMOffsets<P> {
     defined_globals: u32,
     defined_tags: u32,
     defined_func_refs: u32,
+    passive_data_bases: u32,
+    passive_data_lengths: u32,
     size: u32,
 }
 
@@ -480,6 +487,65 @@ pub trait PtrSize {
         self.vmctx_epoch_ptr() + self.size()
     }
 
+    /// Return the offset of the `over_approximated_stack_roots` field within
+    /// `VMDrcHeapData`.
+    #[inline]
+    fn vmdrc_heap_data_over_approximated_stack_roots(&self) -> u8 {
+        0
+    }
+
+    /// Return the offset of the `current_over_approximated_stack_roots_len`
+    /// field within `VMDrcHeapData`.
+    #[inline]
+    fn vmdrc_heap_data_current_over_approximated_stack_roots_len(&self) -> u8 {
+        4
+    }
+
+    /// Return the offset of the
+    /// `over_approximated_stack_roots_len_after_last_gc` field within
+    /// `VMDrcHeapData`.
+    #[inline]
+    fn vmdrc_heap_data_over_approximated_stack_roots_len_after_last_gc(&self) -> u8 {
+        8
+    }
+
+    /// Return the size of `VMDrcHeapData`.
+    #[inline]
+    fn size_of_vmdrc_heap_data(&self) -> u8 {
+        12
+    }
+
+    /// Return the alignment of `VMDrcHeapData`.
+    #[inline]
+    fn align_of_vmdrc_heap_data(&self) -> u8 {
+        4
+    }
+
+    /// Return the offset of the `bump_ptr` field within `VMCopyingHeapData`.
+    #[inline]
+    fn vmcopying_heap_data_bump_ptr(&self) -> u8 {
+        0
+    }
+
+    /// Return the offset of the `active_space_end` field within
+    /// `VMCopyingHeapData`.
+    #[inline]
+    fn vmcopying_heap_data_active_space_end(&self) -> u8 {
+        4
+    }
+
+    /// Return the size of `VMCopyingHeapData`.
+    #[inline]
+    fn size_of_vmcopying_heap_data(&self) -> u8 {
+        8
+    }
+
+    /// Return the alignment of `VMCopyingHeapData`.
+    #[inline]
+    fn align_of_vmcopying_heap_data(&self) -> u8 {
+        4
+    }
+
     /// The offset of the `type_ids` array pointer.
     #[inline]
     fn vmctx_type_ids_array(&self) -> u8 {
@@ -541,6 +607,8 @@ pub struct VMOffsetsFields<P> {
     /// The number of escaped functions in the module, the size of the function
     /// references array.
     pub num_escaped_funcs: u32,
+    /// The number of passive data segments in the module.
+    pub num_passive_data: u32,
 }
 
 impl<P: PtrSize> VMOffsets<P> {
@@ -567,6 +635,7 @@ impl<P: PtrSize> VMOffsets<P> {
             num_defined_globals: cast_to_u32(module.globals.len() - module.num_imported_globals),
             num_defined_tags: cast_to_u32(module.tags.len() - module.num_imported_tags),
             num_escaped_funcs: cast_to_u32(module.num_escaped_funcs),
+            num_passive_data: cast_to_u32(module.passive_data.len()),
         })
     }
 
@@ -598,6 +667,7 @@ impl<P: PtrSize> VMOffsets<P> {
                     num_defined_tags: _,
                     num_owned_memories: _,
                     num_escaped_funcs: _,
+                    num_passive_data: _,
 
                     // used as the initial size below
                     size,
@@ -626,6 +696,8 @@ impl<P: PtrSize> VMOffsets<P> {
         }
 
         calculate_sizes! {
+            passive_data_lengths: "passive data lengths",
+            passive_data_bases: "passive data base pointers",
             defined_func_refs: "module functions",
             defined_tags: "defined tags",
             defined_globals: "defined globals",
@@ -656,6 +728,7 @@ impl<P: PtrSize> From<VMOffsetsFields<P>> for VMOffsets<P> {
             num_defined_globals: fields.num_defined_globals,
             num_defined_tags: fields.num_defined_tags,
             num_escaped_funcs: fields.num_escaped_funcs,
+            num_passive_data: fields.num_passive_data,
             imported_functions: 0,
             imported_tables: 0,
             imported_memories: 0,
@@ -667,6 +740,8 @@ impl<P: PtrSize> From<VMOffsetsFields<P>> for VMOffsets<P> {
             defined_globals: 0,
             defined_tags: 0,
             defined_func_refs: 0,
+            passive_data_bases: 0,
+            passive_data_lengths: 0,
             size: 0,
         };
 
@@ -725,6 +800,8 @@ impl<P: PtrSize> From<VMOffsetsFields<P>> for VMOffsets<P> {
                 ret.num_escaped_funcs,
                 ret.ptr.size_of_vm_func_ref(),
             ),
+            size(passive_data_bases) = cmul(ret.num_passive_data, ret.ptr.size()),
+            size(passive_data_lengths) = cmul(ret.num_passive_data, 4),
         }
 
         ret.size = next_field_offset;
@@ -973,6 +1050,18 @@ impl<P: PtrSize> VMOffsets<P> {
         self.defined_func_refs
     }
 
+    /// The offset of the `passive_data_bases` array.
+    #[inline]
+    pub fn vmctx_passive_data_bases_begin(&self) -> u32 {
+        self.passive_data_bases
+    }
+
+    /// The offset of the `passive_data_lengths` array.
+    #[inline]
+    pub fn vmctx_passive_data_lengths_begin(&self) -> u32 {
+        self.passive_data_lengths
+    }
+
     /// Return the size of the `VMContext` allocation.
     #[inline]
     pub fn size_of_vmctx(&self) -> u32 {
@@ -1063,6 +1152,22 @@ impl<P: PtrSize> VMOffsets<P> {
         assert!(!index.is_reserved_value());
         assert!(index.as_u32() < self.num_escaped_funcs);
         self.vmctx_func_refs_begin() + index.as_u32() * u32::from(self.ptr.size_of_vm_func_ref())
+    }
+
+    /// Return the offset to the base of the passive data segment at `index`.
+    #[inline]
+    pub fn vmctx_passive_data_base(&self, index: PassiveDataIndex) -> u32 {
+        assert!(!index.is_reserved_value());
+        assert!(index.as_u32() < self.num_passive_data);
+        self.vmctx_passive_data_bases_begin() + index.as_u32() * u32::from(self.ptr.size())
+    }
+
+    /// Return the offset to the length of the passive data segment at `index`.
+    #[inline]
+    pub fn vmctx_passive_data_length(&self, index: PassiveDataIndex) -> u32 {
+        assert!(!index.is_reserved_value());
+        assert!(index.as_u32() < self.num_passive_data);
+        self.vmctx_passive_data_lengths_begin() + index.as_u32() * 4
     }
 
     /// Return the offset to the `wasm_call` field in `*const VMFunctionBody` index `index`.

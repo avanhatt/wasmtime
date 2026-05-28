@@ -18,6 +18,7 @@ use wasmtime_environ::prelude::*;
 pub mod limits {
     pub const MEMORY_SIZE: usize = 805 << 16;
     pub const MEMORIES: u32 = 450;
+    pub const GC_HEAP_SIZE: usize = 10 << 16;
     pub const TABLES: u32 = 200;
     pub const MEMORIES_PER_MODULE: u32 = 9;
     pub const TABLES_PER_MODULE: u32 = 5;
@@ -25,7 +26,7 @@ pub mod limits {
     pub const CORE_INSTANCES: u32 = 900;
     pub const TABLE_ELEMENTS: usize = 1000;
     pub const CORE_INSTANCE_SIZE: usize = 64 * 1024;
-    pub const TOTAL_STACKS: u32 = 10;
+    pub const TOTAL_STACKS: u32 = 20;
 }
 
 /// Local all `*.wast` tests under `root` which should be the path to the root
@@ -282,6 +283,7 @@ macro_rules! foreach_config_option {
             component_model_gc
             component_model_map
             component_model_fixed_length_lists
+            component_model_implements
             simd
             gc_types
             exceptions
@@ -468,13 +470,11 @@ impl WastTest {
         let unsupported = [
             // These tests in the `component-model` submodule have not yet been
             // updated to account for the recent threading-related intrinsic
-            // changes
-            "test/async/same-component-stream-future.wast",
+            // changes.
             "test/async/trap-if-block-and-sync.wast",
-            // These tests assert different errors and aren't updated for
-            // memory64.
+            // Wasmtime doesn't expose the component-model `cm64` feature toggle
+            // yet, so this parser-only test can't be enabled here.
             "test/wasm-tools/memory64.wast",
-            "test/wasm-tools/resources.wast",
         ];
         if unsupported.iter().any(|part| self.path.ends_with(part)) {
             return true;
@@ -655,6 +655,7 @@ impl WastTest {
                         "misc_testsuite/winch/issue-10331.wast",
                         "misc_testsuite/winch/replace_lane.wast",
                         "misc_testsuite/simd/riscv64-replicated-imm5-works.wast",
+                        "misc_testsuite/simd/v128-equal.wast",
                         "spec_testsuite/simd_align.wast",
                         "spec_testsuite/simd_boolean.wast",
                         "spec_testsuite/simd_conversions.wast",

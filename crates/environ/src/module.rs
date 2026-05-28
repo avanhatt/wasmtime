@@ -2,7 +2,6 @@
 
 use crate::prelude::*;
 use crate::*;
-use alloc::collections::BTreeMap;
 use core::ops::Range;
 use cranelift_entity::{EntityRef, packed_option::ReservedValue};
 use serde_derive::{Deserialize, Serialize};
@@ -272,12 +271,15 @@ pub struct TableSegment {
 pub enum TableSegmentElements {
     /// A sequential list of functions where `FuncIndex::reserved_value()`
     /// indicates a null function.
-    Functions(Box<[FuncIndex]>),
+    Functions(
+        #[serde(deserialize_with = "crate::types::deserialize_boxed_slice")] Box<[FuncIndex]>,
+    ),
     /// Arbitrary expressions, aka either functions, null or a load of a global.
     Expressions {
         /// The type of each element in `exprs`.
         ty: WasmRefType,
         /// The const expressions for this segment's elements.
+        #[serde(deserialize_with = "crate::types::deserialize_boxed_slice")]
         exprs: Box<[ConstExpr]>,
     },
 }
@@ -323,12 +325,8 @@ pub struct Module {
     /// WebAssembly passive elements.
     pub passive_elements: TryPrimaryMap<PassiveElemIndex, TableSegmentElements>,
 
-    /// The map from passive element index (element segment index space) to
-    /// index in `passive_elements`.
-    pub passive_elements_map: BTreeMap<ElemIndex, PassiveElemIndex>,
-
-    /// The map from passive data index (data segment index space) to index in `passive_data`.
-    pub passive_data_map: BTreeMap<DataIndex, Range<u32>>,
+    /// Where passive data segments are located in the module's image.
+    pub passive_data: TryPrimaryMap<PassiveDataIndex, Range<u32>>,
 
     /// Types declared in the wasm module.
     pub types: TryPrimaryMap<TypeIndex, EngineOrModuleTypeIndex>,
@@ -406,8 +404,7 @@ impl Module {
             table_initialization: Default::default(),
             memory_initialization: Default::default(),
             passive_elements: Default::default(),
-            passive_elements_map: Default::default(),
-            passive_data_map: Default::default(),
+            passive_data: Default::default(),
             types: Default::default(),
             num_imported_funcs: Default::default(),
             num_imported_tables: Default::default(),
@@ -697,8 +694,7 @@ impl TypeTrace for Module {
             table_initialization: _,
             memory_initialization: _,
             passive_elements: _,
-            passive_elements_map: _,
-            passive_data_map: _,
+            passive_data: _,
             types,
             num_imported_funcs: _,
             num_imported_tables: _,
@@ -749,8 +745,7 @@ impl TypeTrace for Module {
             table_initialization: _,
             memory_initialization: _,
             passive_elements: _,
-            passive_elements_map: _,
-            passive_data_map: _,
+            passive_data: _,
             types,
             num_imported_funcs: _,
             num_imported_tables: _,

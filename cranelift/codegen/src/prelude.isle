@@ -349,13 +349,25 @@
 ;; Provide model for the MemFlags type (declared in generated clif_lower.isle).
 
 
-;; `MemFlags::trusted`
-
-(decl pure mem_flags_trusted () MemFlags)
+;; Insert or reuse the trusted `MemFlagsData` value in the DFG's `MemFlagsSet`.
+(decl mem_flags_trusted () MemFlags)
 (extern constructor mem_flags_trusted mem_flags_trusted)
 
+;; Resolve a MemFlags entity to its MemFlagsData.
+(decl mem_flags_data (MemFlagsData) MemFlags)
+(extern extractor mem_flags_data mem_flags_data)
+
+;; Convert MemFlagsData back to a MemFlags entity index, inserting it if needed.
+(decl mem_flags_intern (MemFlagsData) MemFlags)
+(extern constructor mem_flags_intern mem_flags_intern)
+
+;; Returns the trusted MemFlagsData value directly (for helpers that still take MemFlagsData).
+(decl pure mem_flags_trusted_data () MemFlagsData)
+(extern constructor mem_flags_trusted_data mem_flags_trusted_data)
+
 ;; Determine if flags specify little- or native-endian.
-(decl little_or_native_endian (MemFlags) MemFlags)
+;; Takes a MemFlags entity and returns the resolved MemFlagsData.
+(decl little_or_native_endian (MemFlagsData) MemFlags)
 (extern extractor little_or_native_endian little_or_native_endian)
 
 ;;;; Helpers for Working with Flags ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -609,6 +621,8 @@
 
 (decl pure partial signed_cond_code (IntCC) IntCC)
 (extern constructor signed_cond_code signed_cond_code)
+(decl pure partial unsigned_cond_code (IntCC) IntCC)
+(extern constructor unsigned_cond_code unsigned_cond_code)
 
 ;;;; Helpers for Working with TrapCode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

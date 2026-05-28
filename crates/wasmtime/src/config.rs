@@ -1314,6 +1314,16 @@ impl Config {
         self
     }
 
+    /// This corresponds to the 🏷️ emoji in the component model specification.
+    ///
+    /// Please note that Wasmtime's support for this feature is a work in
+    /// progress.
+    #[cfg(feature = "component-model")]
+    pub fn wasm_component_model_implements(&mut self, enable: bool) -> &mut Self {
+        self.wasm_features(WasmFeatures::CM_IMPLEMENTS, enable);
+        self
+    }
+
     /// Configures whether the [Exception-handling proposal][proposal] is enabled or not.
     ///
     /// [proposal]: https://github.com/WebAssembly/exception-handling
@@ -2326,7 +2336,8 @@ impl Config {
             | WasmFeatures::CM_ERROR_CONTEXT
             | WasmFeatures::CM_GC
             | WasmFeatures::CM_MAP
-            | WasmFeatures::CM_FIXED_LENGTH_LISTS;
+            | WasmFeatures::CM_FIXED_LENGTH_LISTS
+            | WasmFeatures::CM_IMPLEMENTS;
 
         #[allow(unused_mut, reason = "easier to avoid #[cfg]")]
         let mut unsupported = !features_known_to_wasmtime;
@@ -3255,6 +3266,44 @@ impl Config {
         self.rr_config = cfg;
         self
     }
+
+    /// Whether or not trap metadata is generated in compiled wasms for internal
+    /// asserts in the compiled code itself.
+    ///
+    /// Wasmtime inserts metadata within compiled artifacts which contain a
+    /// table of known trap codes for all instructions. If a trap via a signal
+    /// happens, and it's not listed in these tables, then that's considered a
+    /// fatal bug that crashes the process. This option controls whether trap
+    /// codes are inserted into metadata for internal asserts as part of
+    /// Wasmtime's translation process. These internal asserts should never be
+    /// triggered, but if they are then the process dies with a signal.
+    ///
+    /// Inserting trap metadata into compiled artifacts can take extra space in
+    /// the final artifact. The trap tables for the artifact will be larger as
+    /// they contain more trap codes to contain.
+    ///
+    /// This is intended as a debugging option and is set to `false` by
+    /// default.
+    pub fn metadata_for_internal_asserts(&mut self, enable: bool) -> &mut Self {
+        self.tunables.metadata_for_internal_asserts = Some(enable);
+        self
+    }
+
+    /// Whether or not trap metadata is generated in compiled wasms for
+    /// detection of corruption in the GC heap.
+    ///
+    /// For more information about what metadata is in this scenario, see
+    /// [`Config::metadata_for_internal_asserts`]. Note, though, that this
+    /// option is enabled by default unlike internal asserts. This is intended
+    /// as a defense-in-depth option for generated code in the face of GC heap
+    /// corruption. If the GC heap is corrupted and is detected then the
+    /// trapping instruction will be gracefully handled and delivered to the
+    /// embedder. Otherwise if this option were set to `false` then the process
+    /// would be aborted due to a signal.
+    pub fn metadata_for_gc_heap_corruption(&mut self, enable: bool) -> &mut Self {
+        self.tunables.metadata_for_gc_heap_corruption = Some(enable);
+        self
+    }
 }
 
 impl Default for Config {
@@ -3345,9 +3394,9 @@ impl Strategy {
 ///
 /// | Collector                   | Collects Garbage[^1]  | Latency[^2] | Throughput[^3] | Allocation Speed[^4] | Heap Utilization[^5] |
 /// |-----------------------------|-----------------------|-------------|----------------|----------------------|----------------------|
+/// | `Copying`                   | Yes, including cycles | 🙁         | 🙂             | 🙂                   | 🙁                  |
 /// | `DeferredReferenceCounting` | Yes, but not cycles   | 🙂         | 🙁             | 😐                   | 😐                  |
 /// | `Null`                      | No                    | 🙂         | 🙂             | 🙂                   | 🙂                  |
-/// | `Copying`[^copying]         | Yes, including cycles | 🙁         | 🙂             | 🙂                   | 🙁                  |
 ///
 /// [^1]: Whether or not the collector is capable of collecting garbage and cyclic garbage.
 ///
@@ -3367,9 +3416,6 @@ impl Strategy {
 ///       require? Less space taken up by metadata means more space for
 ///       additional objects. Reference counts are larger than mark bits and
 ///       free lists are larger than bump pointers, for example.
-///
-/// [^copying]: The copying collector is still under construction and is not yet
-///             functional.
 #[non_exhaustive]
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum Collector {
@@ -3378,10 +3424,10 @@ pub enum Collector {
     ///
     /// This is generally what you want for most projects and indicates that the
     /// `wasmtime` crate itself should make the decision about what the best
-    /// collector for a wasm module is.
+    /// collector to use is.
     ///
-    /// Currently this always defaults to the deferred reference-counting
-    /// collector, but the default value may change over time.
+    /// Currently this always defaults to the copying collector, but the default
+    /// value may change over time.
     Auto,
 
     /// The deferred reference-counting collector.
@@ -3442,7 +3488,9 @@ impl Collector {
     fn not_auto(&self) -> Option<Collector> {
         match self {
             Collector::Auto => {
-                if cfg!(feature = "gc-drc") {
+                if cfg!(feature = "gc-copying") {
+                    Some(Collector::Copying)
+                } else if cfg!(feature = "gc-drc") {
                     Some(Collector::DeferredReferenceCounting)
                 } else if cfg!(feature = "gc-null") {
                     Some(Collector::Null)

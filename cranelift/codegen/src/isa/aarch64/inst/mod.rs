@@ -2,7 +2,7 @@
 
 use crate::binemit::{Addend, CodeOffset, Reloc};
 use crate::ir::types::{F16, F32, F64, F128, I8, I8X16, I16, I32, I64, I128};
-use crate::ir::{MemFlags, Type, types};
+use crate::ir::{MemFlagsData, Type, types};
 use crate::isa::{CallConv, FunctionAlignment};
 use crate::machinst::*;
 use crate::{CodegenError, CodegenResult, settings};
@@ -206,7 +206,7 @@ impl Inst {
     }
 
     /// Generic constructor for a load (zero-extending where appropriate).
-    pub fn gen_load(into_reg: Writable<Reg>, mem: AMode, ty: Type, flags: MemFlags) -> Inst {
+    pub fn gen_load(into_reg: Writable<Reg>, mem: AMode, ty: Type, flags: MemFlagsData) -> Inst {
         match ty {
             I8 => Inst::ULoad8 {
                 rd: into_reg,
@@ -248,7 +248,7 @@ impl Inst {
     }
 
     /// Generic constructor for a store.
-    pub fn gen_store(mem: AMode, from_reg: Reg, ty: Type, flags: MemFlags) -> Inst {
+    pub fn gen_store(mem: AMode, from_reg: Reg, ty: Type, flags: MemFlagsData) -> Inst {
         match ty {
             I8 => Inst::Store8 {
                 rd: from_reg,
@@ -1164,6 +1164,19 @@ impl MachInst for Inst {
         // to account for them here (otherwise the worst case would be 2^31 * 4, clearly not
         // feasible for other reasons).
         44
+    }
+
+    fn worst_case_island_growth() -> CodeOffset {
+        // A single `Inst` may add to the buffer's pending-island state:
+        //
+        // - Up to three 8-byte constants (the saturating int-to-float sequence
+        //   noted above); count alignment padding into each.
+        // - Up to one deferred trap (TrapIf and similar), 4 bytes.
+        // - Up to one fixup per emitted instruction word, each contributing at
+        //   most `worst_case_veneer_size()` (= 20) bytes of veneer.
+        //
+        // We pick a conservative bound that comfortably covers these.
+        128
     }
 
     fn ref_type_regclass(_: &settings::Flags) -> RegClass {
@@ -3107,11 +3120,6 @@ mod tests {
     fn inst_size_test() {
         // This test will help with unintentionally growing the size
         // of the Inst enum.
-        let expected = if cfg!(target_pointer_width = "32") && !cfg!(target_arch = "arm") {
-            28
-        } else {
-            32
-        };
-        assert_eq!(expected, core::mem::size_of::<Inst>());
+        assert_eq!(32, core::mem::size_of::<Inst>());
     }
 }

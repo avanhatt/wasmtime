@@ -77,7 +77,6 @@ impl StructRefPre {
     pub(crate) fn _new(store: &mut StoreOpaque, ty: StructType) -> Self {
         store.insert_gc_host_alloc_type(ty.registered_type().clone());
         let store_id = store.id();
-
         StructRefPre { store_id, ty }
     }
 
@@ -364,7 +363,7 @@ impl StructRef {
             Err(e) => {
                 store
                     .require_gc_store_mut()?
-                    .dealloc_uninit_struct(structref);
+                    .dealloc_uninit_struct(structref)?;
                 Err(e)
             }
         }
@@ -454,7 +453,7 @@ impl StructRef {
         let store = AutoAssertNoGc::new(store);
 
         let gc_ref = self.inner.try_gc_ref(&store)?;
-        let header = store.require_gc_store()?.header(gc_ref);
+        let header = store.require_gc_store()?.header(gc_ref)?;
         debug_assert!(header.kind().matches(VMGcKind::StructRef));
 
         let index = header.ty().expect("structrefs should have concrete types");
@@ -486,7 +485,7 @@ impl StructRef {
                     return None;
                 }
                 self.index += 1;
-                Some(self.structref._field(&mut self.store, i).unwrap())
+                self.structref._field(&mut self.store, i).ok()
             }
 
             #[inline]
@@ -507,7 +506,7 @@ impl StructRef {
     fn header<'a>(&self, store: &'a AutoAssertNoGc<'_>) -> Result<&'a VMGcHeader> {
         assert!(self.comes_from_same_store(&store));
         let gc_ref = self.inner.try_gc_ref(store)?;
-        Ok(store.require_gc_store()?.header(gc_ref))
+        Ok(store.require_gc_store()?.header(gc_ref)?)
     }
 
     fn structref<'a>(&self, store: &'a AutoAssertNoGc<'_>) -> Result<&'a VMStructRef> {
@@ -565,7 +564,7 @@ impl StructRef {
         let structref = self.structref(store)?.unchecked_copy();
         let field_ty = self.field_ty(store, index)?;
         let layout = self.layout(store)?;
-        Ok(structref.read_field(store, &layout, field_ty.element_type(), index))
+        structref.read_field(store, &layout, field_ty.element_type(), index)
     }
 
     /// Set this struct's `index`th field.
@@ -618,7 +617,7 @@ impl StructRef {
 
     pub(crate) fn type_index(&self, store: &StoreOpaque) -> Result<VMSharedTypeIndex> {
         let gc_ref = self.inner.try_gc_ref(store)?;
-        let header = store.require_gc_store()?.header(gc_ref);
+        let header = store.require_gc_store()?.header(gc_ref)?;
         debug_assert!(header.kind().matches(VMGcKind::StructRef));
         Ok(header.ty().expect("structrefs should have concrete types"))
     }

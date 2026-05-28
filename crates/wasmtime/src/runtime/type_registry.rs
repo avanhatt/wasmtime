@@ -143,6 +143,18 @@ impl Engine {
             .write()
             .register_module_types(gc_runtime, module_types)?;
 
+        // Wrap rec_groups in an Undo guard so that if any of the
+        // following fallible operations fail before we construct the
+        // TypeCollection, we properly decref the registered types.
+        let rec_groups = Undo::new(rec_groups, |rec_groups| {
+            let mut inner = registry.0.write();
+            for entry in &rec_groups {
+                if entry.decref("register_and_canonicalize_types cleanup") {
+                    inner.unregister_entry(entry.clone());
+                }
+            }
+        });
+
         // Then build our map from each function type's engine index to the
         // module-index of its trampoline. Trampoline functions are queried by
         // module-index in a compiled module, and doing this engine-to-module
@@ -169,6 +181,7 @@ impl Engine {
             module.canonicalize_for_runtime_usage(&mut |idx| types[idx]);
         }
 
+        let rec_groups = Undo::commit(rec_groups);
         Ok(TypeCollection {
             engine,
             rec_groups,
@@ -689,18 +702,40 @@ impl TypeRegistryInner {
         log::trace!("Start registering module types");
 
         // The engine's type registry entries for these module types.
-        let mut entries = TryVec::with_capacity(types.rec_groups().len())?;
+        let mut entries = TryVec::new();
 
         // The map from a module type index to an engine type index for these
         // module types.
-        let mut map = TryPrimaryMap::<ModuleInternedTypeIndex, VMSharedTypeIndex>::with_capacity(
-            types.wasm_types().len(),
-        )?;
+        let mut map = TryPrimaryMap::<ModuleInternedTypeIndex, VMSharedTypeIndex>::new();
+
+        if let Err(e) = self.register_module_types_impl(gc_runtime, types, &mut entries, &mut map) {
+            for entry in entries {
+                if entry.decref("register_module_types cleanup") {
+                    self.unregister_entry(entry);
+                }
+            }
+            return Err(e);
+        }
+
+        log::trace!("End registering module types");
+
+        Ok((entries, map))
+    }
+
+    fn register_module_types_impl(
+        &mut self,
+        gc_runtime: Option<&dyn GcRuntime>,
+        types: &ModuleTypes,
+        entries: &mut TryVec<RecGroupEntry>,
+        map: &mut TryPrimaryMap<ModuleInternedTypeIndex, VMSharedTypeIndex>,
+    ) -> Result<(), OutOfMemory> {
+        entries.reserve(types.rec_groups().len())?;
+        map.reserve(types.wasm_types().len())?;
 
         for (_rec_group_index, module_group) in types.rec_groups() {
             let entry = self.register_rec_group(
                 gc_runtime,
-                &map,
+                map,
                 module_group.clone(),
                 iter_entity_range(module_group.clone()).map(|ty| types[ty].try_clone()),
             )?;
@@ -717,9 +752,7 @@ impl TypeRegistryInner {
             entries.push(entry).expect("reserved capacity");
         }
 
-        log::trace!("End registering module types");
-
-        Ok((entries, map))
+        Ok(())
     }
 
     /// Register a rec group in this registry.
@@ -1119,10 +1152,10 @@ impl TypeRegistryInner {
                     gc_runtime.layouts().array_layout(a).into()
                 }
                 wasmtime_environ::WasmCompositeInnerType::Struct(s) => {
-                    try_new::<Arc<_>>(gc_runtime.layouts().struct_layout(s))?.into()
+                    try_new::<Arc<_>>(gc_runtime.layouts().struct_layout(s)?)?.into()
                 }
                 wasmtime_environ::WasmCompositeInnerType::Exn(e) => {
-                    try_new::<Arc<_>>(gc_runtime.layouts().exn_layout(e))?.into()
+                    try_new::<Arc<_>>(gc_runtime.layouts().exn_layout(e)?)?.into()
                 }
                 wasmtime_environ::WasmCompositeInnerType::Cont(_) => continue, // FIXME: #10248 stack switching support.
             };

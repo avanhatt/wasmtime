@@ -421,14 +421,14 @@
              ;; Immediate sign-extended and a register
              (ImmReg (simm32 i32)
                      (base Reg)
-                     (flags MemFlags))
+                     (flags MemFlagsData))
 
              ;; Sign-extend-32-to-64(simm32) + base + (index << shift)
              (ImmRegRegShift (simm32 i32)
                              (base Gpr)
                              (index Gpr)
                              (shift u8)
-                             (flags MemFlags))
+                             (flags MemFlagsData))
 
              ;; Sign-extend-32-to-64(immediate) + RIP (instruction
              ;; pointer). The appropriate relocation is emitted so
@@ -485,8 +485,7 @@
 ;; In the future if mid-end optimizations fold constants into `Offset32` then
 ;; this in theory can "simply" delegate to the `amode_imm_reg` helper, and
 ;; below can delegate to `amode_imm_reg_reg_shift`, or something like that.
-
-(decl to_amode (MemFlags Value Offset32) SyntheticAmode)
+(decl to_amode (MemFlagsData Value Offset32) SyntheticAmode)
 (rule 0 (to_amode flags base offset)
         (amode_imm_reg flags base offset))
 (rule 1 (to_amode flags (iadd _ x y) offset)
@@ -508,9 +507,7 @@
 ;; In other words this function's job is to find constants and then defer to
 ;; `amode_imm_reg*`.
 ;;
-
-
-(decl to_amode_add (MemFlags Value Value Offset32) Amode)
+(decl to_amode_add (MemFlagsData Value Value Offset32) Amode)
 
 (rule to_amode_add_base_case 0 (to_amode_add flags x y offset)
         (amode_imm_reg_reg_shift flags x y offset))
@@ -536,17 +533,13 @@
 ;; Final cases of amode lowering. Does not hunt for constants and only attempts
 ;; to pattern match add-of-shifts to generate fancier `ImmRegRegShift` modes,
 ;; otherwise falls back on `ImmReg`.
-
-
-(decl amode_imm_reg (MemFlags Value Offset32) Amode)
+(decl amode_imm_reg (MemFlagsData Value Offset32) Amode)
 (rule amode_imm_reg_base 0 (amode_imm_reg flags base offset)
         (Amode.ImmReg offset base flags))
 (rule amode_imm_reg_iadd 1 (amode_imm_reg flags (iadd _ x y) offset)
         (amode_imm_reg_reg_shift flags x y offset))
 
-
-
-(decl amode_imm_reg_reg_shift (MemFlags Value Value Offset32) Amode)
+(decl amode_imm_reg_reg_shift (MemFlagsData Value Value Offset32) Amode)
 (rule amode_imm_reg_reg_shift_no_shift 0 (amode_imm_reg_reg_shift flags x y offset)
         (Amode.ImmRegRegShift offset x y 0 flags)) ;; 0 == y<<0 == "no shift"
 (rule amode_imm_reg_reg_shift_shl_rhs 1 (amode_imm_reg_reg_shift flags x (ishl _ y (iconst _ (uimm8 shift))) offset)
@@ -562,7 +555,7 @@
 ;; Note that the input `Amode` might have a static offset that's too large to
 ;; add the specified `i32` to so in the case of overflow a new `Amode` is
 ;; generated entirely using `lea`
-(decl amode_offset (SyntheticAmode MemFlags i32) SyntheticAmode)
+(decl amode_offset (SyntheticAmode MemFlagsData i32) SyntheticAmode)
 (rule 1 (amode_offset base _flags offset)
   (if-let new (amode_try_offset base offset))
   new)
@@ -3998,7 +3991,7 @@
             (_ Unit (emit (MInst.AtomicRmwSeq ty op mem input tmp dst))))
         dst))
 
-(decl x64_atomic_128_rmw_seq (AtomicRmwOp SyntheticAmode MemFlags ValueRegs) ValueRegs)
+(decl x64_atomic_128_rmw_seq (AtomicRmwOp SyntheticAmode MemFlagsData ValueRegs) ValueRegs)
 (rule (x64_atomic_128_rmw_seq op mem_low flags input)
       (let ((dst_low WritableGpr (temp_writable_gpr))
             (dst_high WritableGpr (temp_writable_gpr))
@@ -4021,7 +4014,7 @@
               (_ Unit (emit (MInst.Atomic128XchgSeq args))))
           (value_regs dst_low dst_high)))
 
-(decl x64_atomic_128_store_seq (SyntheticAmode MemFlags ValueRegs) SideEffectNoResult)
+(decl x64_atomic_128_store_seq (SyntheticAmode MemFlagsData ValueRegs) SideEffectNoResult)
 (rule (x64_atomic_128_store_seq mem_low flags input)
         (let ((dst_low WritableGpr (temp_writable_gpr))
               (dst_high WritableGpr (temp_writable_gpr))

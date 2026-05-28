@@ -146,6 +146,7 @@ impl Config {
             component_model_gc,
             component_model_map,
             component_model_fixed_length_lists,
+            component_model_implements,
             simd,
             exceptions,
             legacy_exceptions: _,
@@ -174,6 +175,7 @@ impl Config {
         self.module_config.component_model_map = component_model_map.unwrap_or(false);
         self.module_config.component_model_fixed_length_lists =
             component_model_fixed_length_lists.unwrap_or(false);
+        self.module_config.component_model_implements = component_model_implements.unwrap_or(false);
         self.module_config.stack_switching = stack_switching.unwrap_or(false);
 
         // Enable/disable proposals that wasm-smith has knobs for which will be
@@ -201,8 +203,15 @@ impl Config {
             config.max_memories = 1;
         }
 
+        if self.module_config.stack_switching {
+            self.wasmtime.inlining = Some(Inlining::No);
+        }
+
         if let Some(n) = &mut self.wasmtime.memory_config.memory_reservation {
             *n = (*n).max(limits::MEMORY_SIZE as u64);
+        }
+        if let Some(n) = &mut self.wasmtime.memory_config.gc_heap_reservation {
+            *n = (*n).max(limits::GC_HEAP_SIZE as u64);
         }
 
         // FIXME: it might be more ideal to avoid the need for this entirely
@@ -238,7 +247,10 @@ impl Config {
                 .max_memories_per_component
                 .max(limits::MEMORIES_PER_MODULE);
             pooling.total_core_instances = pooling.total_core_instances.max(limits::CORE_INSTANCES);
-            pooling.max_memory_size = pooling.max_memory_size.max(limits::MEMORY_SIZE);
+            pooling.max_memory_size = pooling
+                .max_memory_size
+                .max(limits::MEMORY_SIZE)
+                .max(limits::GC_HEAP_SIZE);
             pooling.table_elements = pooling.table_elements.max(limits::TABLE_ELEMENTS);
             pooling.core_instance_size = pooling.core_instance_size.max(limits::CORE_INSTANCE_SIZE);
             pooling.component_instance_size = pooling
@@ -316,6 +328,7 @@ impl Config {
         cfg.wasm.component_model_map = Some(self.module_config.component_model_map);
         cfg.wasm.component_model_fixed_length_lists =
             Some(self.module_config.component_model_fixed_length_lists);
+        cfg.wasm.component_model_implements = Some(self.module_config.component_model_implements);
         cfg.wasm.custom_page_sizes = Some(self.module_config.config.custom_page_sizes_enabled);
         cfg.wasm.epoch_interruption = Some(self.wasmtime.epoch_interruption);
         cfg.wasm.extended_const = Some(self.module_config.config.extended_const_enabled);
@@ -340,6 +353,10 @@ impl Config {
             cfg.wasm.relaxed_simd = Some(false);
         }
         cfg.codegen.collector = Some(self.wasmtime.collector.to_wasmtime());
+        cfg.codegen.metadata_for_internal_asserts =
+            Some(self.wasmtime.metadata_for_internal_asserts);
+        cfg.codegen.metadata_for_gc_heap_corruption =
+            Some(self.wasmtime.metadata_for_gc_heap_corruption);
 
         let compiler_strategy = &self.wasmtime.compiler_strategy;
         let cranelift_strategy = match compiler_strategy {
@@ -589,6 +606,8 @@ pub struct WasmtimeConfig {
     collector: Collector,
     gc_zeal_alloc_counter: Option<NonZeroU32>,
     table_lazy_init: bool,
+    metadata_for_internal_asserts: bool,
+    metadata_for_gc_heap_corruption: bool,
 
     /// Configuration for whether wasm is invoked in an async fashion and how
     /// it's cooperatively time-sliced.
@@ -835,9 +854,20 @@ impl WasmtimeConfig {
         // When using the pooling allocator, GC heap tunables must match memory
         // tunables.
         if let InstanceAllocationStrategy::Pooling(_) = &self.strategy {
-            mcfg.gc_heap_reservation = mcfg.memory_reservation;
-            mcfg.gc_heap_guard_size = mcfg.memory_guard_size;
-            mcfg.gc_heap_reservation_for_growth = mcfg.memory_reservation_for_growth;
+            let reservation = mcfg.gc_heap_reservation.max(mcfg.memory_reservation);
+            mcfg.gc_heap_reservation = reservation;
+            mcfg.memory_reservation = reservation;
+
+            let guard_size = mcfg.gc_heap_guard_size.max(mcfg.memory_guard_size);
+            mcfg.gc_heap_guard_size = guard_size;
+            mcfg.memory_guard_size = guard_size;
+
+            let res_for_growth = mcfg
+                .gc_heap_reservation_for_growth
+                .max(mcfg.memory_reservation_for_growth);
+            mcfg.gc_heap_reservation_for_growth = res_for_growth;
+            mcfg.memory_reservation_for_growth = res_for_growth;
+
             // memory_may_move is not in MemoryConfig, but gc_heap_may_move
             // must not conflict. Set it to None so the default matches.
             mcfg.gc_heap_may_move = None;
