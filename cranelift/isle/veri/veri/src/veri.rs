@@ -3,13 +3,13 @@ use crate::{
     program::Program,
     spec::{self, Arm, Constructor, Signature, State},
     trie::{BindingType, binding_type},
-    types::{Compound, Const, Type, Variant, Width},
+    types::{Compound, Const, Type, Variant, Width, field_name_by_index},
 };
 use anyhow::{Context, Error, Result, bail, format_err};
 use cranelift_isle::{
     ast::Ident,
     lexer::Pos,
-    sema::{Sym, TermId, TypeId, VariantId},
+    sema::{self, Sym, TermId, TypeId, VariantId},
     trie_again::{Binding, BindingId, Constraint, TupleIndex},
 };
 use std::{
@@ -1132,6 +1132,10 @@ impl<'a> ConditionsBuilder<'a> {
                 field,
             } => self.match_variant(id, *source, *variant, *field),
 
+            Binding::MakeStruct { ty, fields } => self.make_struct(id, *ty, fields),
+
+            Binding::ExtractStruct { source, field } => self.extract_struct(id, *source, *field),
+
             Binding::MakeSome { inner } => self.make_some(id, *inner),
 
             Binding::MatchSome { source } => self.match_some(id, *source),
@@ -1461,8 +1465,8 @@ impl<'a> ConditionsBuilder<'a> {
         let variant_type = self.prog.tyenv.get_variant(*ty, variant);
         let variant_name = self.prog.tyenv.syms[variant_type.name.index()].as_str();
 
-        let field_sym = variant_type.fields[field.index()].name;
-        let field_name = &self.prog.tyenv.syms[field_sym.index()];
+        let field_name =
+            field_name_by_index(&variant_type.fields, field.index(), &self.prog.tyenv);
 
         // Destination binding.
         let v = self.binding_value[&id].clone();
@@ -1470,12 +1474,94 @@ impl<'a> ConditionsBuilder<'a> {
         // Assumption: if the variant matches then the destination binding
         // equals the projected field.
         let variant = e.try_variant_by_name(variant_name)?;
-        let field = variant.try_field_by_name(field_name)?;
+        let field = variant.try_field_by_name(&field_name)?;
 
         let discriminator = self.discriminator(&e, variant);
         let eq = self.values_equal(v, field.value.clone())?;
         let constraint = self.dedup_expr(Expr::Imp(discriminator, eq));
         self.conditions.assumptions.push(constraint);
+
+        Ok(())
+    }
+
+    fn make_struct(&mut self, id: BindingId, ty: TypeId, fields: &[BindingId]) -> Result<()> {
+        // Destination binding should already be allocated as a struct.
+        let dest_fields = self.binding_value[&id]
+            .as_struct()
+            .ok_or(self.error("target of make_struct should be a struct"))?
+            .clone();
+
+        // Lookup the struct type's field list for naming.
+        let struct_ty = &self.prog.tyenv.types[ty.index()];
+        let struct_fields = match struct_ty {
+            sema::Type::Struct { fields, .. } => fields,
+            _ => bail!("MakeStruct target type should be Type::Struct"),
+        };
+
+        if dest_fields.len() != fields.len() {
+            bail!("make_struct: destination field count does not match binding count");
+        }
+
+        // Each input field binding's value equals the corresponding destination field's value.
+        for (i, &field_binding_id) in fields.iter().enumerate() {
+            let field_name = field_name_by_index(struct_fields, i, &self.prog.tyenv);
+            let dest_field = dest_fields
+                .iter()
+                .find(|f| f.name == field_name)
+                .ok_or(format_err!("no field with name {field_name}"))?;
+            let input_value = self.binding_value[&field_binding_id].clone();
+            let eq = self.values_equal(dest_field.value.clone(), input_value)?;
+            self.conditions.assumptions.push(eq);
+        }
+
+        Ok(())
+    }
+
+    fn extract_struct(
+        &mut self,
+        id: BindingId,
+        source: BindingId,
+        field: TupleIndex,
+    ) -> Result<()> {
+        // Source binding should be a struct.
+        let s = self.binding_value[&source]
+            .as_struct()
+            .ok_or(self.error("source of extract_struct should be a struct"))?
+            .clone();
+
+        // Lookup the struct type via the corresponding constraint on the source.
+        let tys: Vec<_> = self
+            .expansion
+            .constraints
+            .iter()
+            .flat_map(|c| match c {
+                Constrain::Match(cid, Constraint::Struct { ty, .. }) if *cid == source => Some(ty),
+                _ => None,
+            })
+            .collect();
+        if tys.len() != 1 {
+            bail!("expected exactly one struct constraint for extract_struct binding");
+        }
+        let ty = tys[0];
+
+        // Lookup field name from the struct type.
+        let struct_ty = &self.prog.tyenv.types[ty.index()];
+        let struct_fields = match struct_ty {
+            sema::Type::Struct { fields, .. } => fields,
+            _ => bail!("source of extract_struct should be Type::Struct"),
+        };
+        let field_name = field_name_by_index(struct_fields, field.index(), &self.prog.tyenv);
+
+        // Locate the matching field in the source struct value.
+        let symbolic_field = s
+            .iter()
+            .find(|f| f.name == field_name)
+            .ok_or(format_err!("no field with name {field_name}"))?;
+
+        // Assumption: destination binding equals the projected field value.
+        let v = self.binding_value[&id].clone();
+        let eq = self.values_equal(v, symbolic_field.value.clone())?;
+        self.conditions.assumptions.push(eq);
 
         Ok(())
     }
@@ -1562,6 +1648,7 @@ impl<'a> ConditionsBuilder<'a> {
                 variant,
                 fields: _,
             } => self.constraint_variant(binding_id, *ty, *variant),
+            Constraint::Struct { ty, fields: _ } => self.constraint_struct(binding_id, *ty),
         }
     }
 
@@ -1598,6 +1685,17 @@ impl<'a> ConditionsBuilder<'a> {
         let variant = e.try_variant_by_name(variant_name)?;
         let discriminator = self.discriminator(&e, variant);
         Ok(discriminator)
+    }
+
+    fn constraint_struct(&mut self, binding_id: BindingId, _ty: TypeId) -> Result<ExprId> {
+        // Target binding should be a struct.
+        self.binding_value[&binding_id]
+            .as_struct()
+            .ok_or(self.error("target of struct constraint should be a struct"))?;
+
+        // A struct constraint is irrefutable: a value of the given struct type
+        // always matches.
+        Ok(self.boolean(true))
     }
 
     fn spec_expr(&mut self, expr: &spec::Expr, vars: &Variables) -> Result<Symbolic> {

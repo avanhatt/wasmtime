@@ -808,6 +808,24 @@
       (provide (= result cc))
 )
 
+(spec (unsigned_cond_code cc)
+      (match
+            (match cc
+                  ((Equal) true)
+                  ((NotEqual) true)
+                  ((SignedGreaterThanOrEqual) false)
+                  ((SignedGreaterThan) false)
+                  ((SignedLessThanOrEqual) false)
+                  ((SignedLessThan) false)
+                  ((UnsignedGreaterThanOrEqual) true)
+                  ((UnsignedGreaterThan) true)
+                  ((UnsignedLessThanOrEqual) true)
+                  ((UnsignedLessThan) true)
+            )
+      )
+      (provide (= result cc))
+)
+
 (spec (trap_code_division_by_zero) (provide (= result (TrapCode.INTEGER_DIVISION_BY_ZERO))))
 
 (spec (trap_code_integer_overflow) (provide (= result (TrapCode.INTEGER_OVERFLOW))))

@@ -2961,15 +2961,7 @@
 
 ;; Helpers for generating various load instructions, with varying
 ;; widths and sign/zero-extending properties.
-<<<<<<< HEAD
-(decl aarch64_uload8 (AMode MemFlags) Reg)
-
-=======
 (decl aarch64_uload8 (AMode MemFlagsData) Reg)
-(spec (aarch64_uload8 amode flags)
-      (provide (= result (zero_ext 32 (load_effect flags 8 amode))))
-      (require (= 32 (widthof result))))
->>>>>>> main
 (rule (aarch64_uload8 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.ULoad8 dst amode flags))))
@@ -2979,15 +2971,7 @@
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.SLoad8 dst amode flags))))
         dst))
-<<<<<<< HEAD
-(decl aarch64_uload16 (AMode MemFlags) Reg)
-
-=======
 (decl aarch64_uload16 (AMode MemFlagsData) Reg)
-(spec (aarch64_uload16 amode flags)
-      (provide (= result (zero_ext 32 (load_effect flags 16 amode))))
-      (require (= 32 (widthof result))))
->>>>>>> main
 (rule (aarch64_uload16 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.ULoad16 dst amode flags))))
@@ -2997,15 +2981,8 @@
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.SLoad16 dst amode flags))))
         dst))
-<<<<<<< HEAD
-(decl aarch64_uload32 (AMode MemFlags) Reg)
-
-=======
 (decl aarch64_uload32 (AMode MemFlagsData) Reg)
-(spec (aarch64_uload32 amode flags)
-      (provide (= result (load_effect flags 32 amode)))
-      (require (= 32 (widthof result))))
->>>>>>> main
+
 (rule (aarch64_uload32 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.ULoad32 dst amode flags))))
@@ -3015,15 +2992,8 @@
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.SLoad32 dst amode flags))))
         dst))
-<<<<<<< HEAD
-(decl aarch64_uload64 (AMode MemFlags) Reg)
-
-=======
 (decl aarch64_uload64 (AMode MemFlagsData) Reg)
-(spec (aarch64_uload64 amode flags)
-      (provide (= result (load_effect flags 64 amode)))
-      (require (= 64 (widthof result))))
->>>>>>> main
+
 (rule (aarch64_uload64 amode flags)
       (let ((dst WritableReg (temp_writable_reg $I64))
             (_ Unit (emit (MInst.ULoad64 dst amode flags))))
@@ -3057,41 +3027,20 @@
 
 ;; Helpers for generating various store instructions with varying
 ;; widths.
-<<<<<<< HEAD
-(decl aarch64_store8 (AMode MemFlags Reg) SideEffectNoResult)
-
-(rule (aarch64_store8 amode flags val)
-      (SideEffectNoResult.Inst (MInst.Store8 val amode flags)))
-(decl aarch64_store16 (AMode MemFlags Reg) SideEffectNoResult)
-
-(rule (aarch64_store16 amode flags val)
-      (SideEffectNoResult.Inst (MInst.Store16 val amode flags)))
-(decl aarch64_store32 (AMode MemFlags Reg) SideEffectNoResult)
-
-(rule (aarch64_store32 amode flags val)
-      (SideEffectNoResult.Inst (MInst.Store32 val amode flags)))
-(decl aarch64_store64 (AMode MemFlags Reg) SideEffectNoResult)
-
-=======
 (decl aarch64_store8 (AMode MemFlagsData Reg) SideEffectNoResult)
-(spec (aarch64_store8 amode flags val)
-      (provide (= result (store_effect flags 8 (extract 7 0 val) amode))))
+
 (rule (aarch64_store8 amode flags val)
       (SideEffectNoResult.Inst (MInst.Store8 val amode flags)))
 (decl aarch64_store16 (AMode MemFlagsData Reg) SideEffectNoResult)
-(spec (aarch64_store16 amode flags val)
-      (provide (= result (store_effect flags 16 (extract 15 0 val) amode))))
+
 (rule (aarch64_store16 amode flags val)
       (SideEffectNoResult.Inst (MInst.Store16 val amode flags)))
 (decl aarch64_store32 (AMode MemFlagsData Reg) SideEffectNoResult)
-(spec (aarch64_store32 amode flags val)
-      (provide (= result (store_effect flags 32 (extract 31 0 val) amode))))
+
 (rule (aarch64_store32 amode flags val)
       (SideEffectNoResult.Inst (MInst.Store32 val amode flags)))
 (decl aarch64_store64 (AMode MemFlagsData Reg) SideEffectNoResult)
-(spec (aarch64_store64 amode flags val)
-      (provide (= result (store_effect flags 64 val amode))))
->>>>>>> main
+
 (rule (aarch64_store64 amode flags val)
       (SideEffectNoResult.Inst (MInst.Store64 val amode flags)))
 (decl aarch64_fpustore16 (AMode MemFlagsData Reg) SideEffectNoResult)
@@ -3106,13 +3055,8 @@
 (decl aarch64_fpustore128 (AMode MemFlagsData Reg) SideEffectNoResult)
 (rule (aarch64_fpustore128 amode flags val)
       (SideEffectNoResult.Inst (MInst.FpuStore128 val amode flags)))
-<<<<<<< HEAD
-(decl aarch64_storep64 (PairAMode MemFlags Reg Reg) SideEffectNoResult)
-(rule lower_aarch64_storep64 (aarch64_storep64 amode flags val1 val2)
-=======
 (decl aarch64_storep64 (PairAMode MemFlagsData Reg Reg) SideEffectNoResult)
-(rule (aarch64_storep64 amode flags val1 val2)
->>>>>>> main
+(rule lower_aarch64_storep64 (aarch64_storep64 amode flags val1 val2)
       (SideEffectNoResult.Inst (MInst.StoreP64 val1 val2 amode flags)))
 
 ;; Helper for generating a `trapif` instruction.
@@ -3700,6 +3644,30 @@
 (decl invert_cond (Cond) Cond)
 ;; TODO: Port cond.invert() to ISLE.
 (extern constructor invert_cond invert_cond)
+(spec (invert_cond cond)
+      (provide
+            (= result
+                  (match cond
+                        ((Eq) (Cond.Ne))
+                        ((Ne) (Cond.Eq))
+                        ((Hs) (Cond.Lo))
+                        ((Lo) (Cond.Hs))
+                        ((Mi) (Cond.Pl))
+                        ((Pl) (Cond.Mi))
+                        ((Vs) (Cond.Vc))
+                        ((Vc) (Cond.Vs))
+                        ((Hi) (Cond.Ls))
+                        ((Ls) (Cond.Hi))
+                        ((Ge) (Cond.Lt))
+                        ((Lt) (Cond.Ge))
+                        ((Gt) (Cond.Le))
+                        ((Le) (Cond.Gt))
+                        ((Al) (Cond.Nv))
+                        ((Nv) (Cond.Al))
+                  )
+            )
+      )
+)
 
 ;; Generate comparison to zero operator from input condition code
 (decl float_cc_cmp_zero_to_vec_misc_op (FloatCC) VecMisc2)
@@ -4222,7 +4190,7 @@
   (CondResult.NotZero (put_in_reg_zext32 val) (OperandSize.Size32)))
 (rule 1 (is_nonzero val @ (value_type $I64))
   (CondResult.NotZero val (OperandSize.Size64)))
-(rule 2 (is_nonzero val @ (value_type $I128))
+(rule is_nonzero_i128 2 (is_nonzero val @ (value_type $I128))
       (let ((c ValueRegs (put_in_regs val))
             (lo Reg (value_regs_get c 0))
             (hi Reg (value_regs_get c 1)))
@@ -4266,7 +4234,7 @@
     (cond_code cc)))
 
 ;; 128-bit base case
-(rule 4 (emit_icmp cc a @ (value_type $I128) b)
+(rule emit_icmp_i128 4 (emit_icmp cc a @ (value_type $I128) b)
       (let ((a_lo Reg (value_regs_get a 0))
             (a_hi Reg (value_regs_get a 1))
             (b_lo Reg (value_regs_get b 0))
@@ -4402,36 +4370,6 @@
 (decl flags_and_cc_cc (FlagsAndCC) IntCC)
 (rule (flags_and_cc_cc (FlagsAndCC.FlagsAndCC _flags cc)) cc)
 
-<<<<<<< HEAD
-;; Helpers for lowering `icmp` sequences.
-;; `lower_icmp` contains shared functionality for lowering `icmp`
-;; sequences, which `lower_icmp_into_{reg,flags}` extend from.
-
-
-(decl lower_icmp (IntCC Value Value Type) FlagsAndCC)
-
-
-
-(decl lower_icmp_into_reg (IntCC Value Value Type Type) ValueRegs)
-(decl lower_icmp_into_flags (IntCC Value Value Type) FlagsAndCC)
-
-
-
-(decl lower_icmp_const (IntCC Value u64 Type) FlagsAndCC)
-;; For most cases, `lower_icmp_into_flags` is the same as `lower_icmp`,
-;; except for some I128 cases (see below).
-(rule -1 (lower_icmp_into_flags cond x y ty) (lower_icmp cond x y ty))
-
-;; Vectors.
-;; `icmp` into flags for vectors is invalid.
-(rule 1 (lower_icmp_into_reg cond x y in_ty @ (multi_lane _ _) _out_ty)
-      (let ((cond Cond (cond_code cond))
-            (rn Reg (put_in_reg x))
-            (rm Reg (put_in_reg y)))
-       (vec_cmp rn rm in_ty cond)))
-
-=======
->>>>>>> main
 ;; Determines the appropriate extend op given the value type and the given ArgumentExtension.
 
 (decl lower_extend_op (Type ArgumentExtension) ExtendOp)
@@ -4440,114 +4378,6 @@
 (rule (lower_extend_op $I8 (ArgumentExtension.Uext)) (ExtendOp.UXTB))
 (rule (lower_extend_op $I16 (ArgumentExtension.Uext)) (ExtendOp.UXTH))
 
-<<<<<<< HEAD
-;; Integers <= 64-bits.
-(rule lower_icmp_into_reg_8_16_32_64 -2 (lower_icmp_into_reg cond rn rm in_ty out_ty)
-      (if (ty_int_ref_scalar_64 in_ty))
-      (let ((cc Cond (cond_code cond)))
-        (flags_and_cc_to_bool (lower_icmp cond rn rm in_ty))))
-
-(rule lower_icmp_16_signed 1 (lower_icmp cond rn rm (fits_in_16 ty))
-      (if (signed_cond_code cond))
-      (let ((rn Reg (put_in_reg_sext32 rn)))
-      (flags_and_cc (cmp_extend (operand_size ty) rn rm (lower_extend_op ty (ArgumentExtension.Sext))) cond)))
-(rule lower_icmp_16_imm12 -1 (lower_icmp cond rn (imm12_from_value rm) (fits_in_16 ty))
-      (let ((rn Reg (put_in_reg_zext32 rn)))
-      (flags_and_cc (cmp_imm (operand_size ty) rn rm) cond)))
-(rule lower_icmp_16_extend -2 (lower_icmp cond rn rm (fits_in_16 ty))
-      (let ((rn Reg (put_in_reg_zext32 rn)))
-      (flags_and_cc (cmp_extend (operand_size ty) rn rm (lower_extend_op ty (ArgumentExtension.Uext))) cond)))
-(rule lower_icmp_const -3 (lower_icmp cond rn (u64_from_iconst c) ty)
-      (if (ty_int_ref_scalar_64 ty))
-      (lower_icmp_const cond rn c ty))
-(rule lower_icmp_base -4 (lower_icmp cond rn rm ty)
-      (if (ty_int_ref_scalar_64 ty))
-      (flags_and_cc (cmp (operand_size ty) rn rm) cond))
-
-;; We get better encodings when testing against an immediate that's even instead
-;; of odd, so rewrite comparisons to use even immediates:
-;;
-;;         A >= B + 1
-;;     ==> A - 1 >= B
-;;     ==> A > B
-(rule lower_icmp_const_32_64_ugte (lower_icmp_const (IntCC.UnsignedGreaterThanOrEqual) a b ty)
-      (if (ty_int_ref_scalar_64 ty))
-      (if-let true (u64_is_odd b))
-      (if-let (imm12_from_u64 imm) (u64_wrapping_sub b 1))
-  (flags_and_cc (cmp_imm (operand_size ty) a imm) (IntCC.UnsignedGreaterThan)))
-
-(rule lower_icmp_const_32_64_sgte (lower_icmp_const (IntCC.SignedGreaterThanOrEqual) a b ty)
-      (if (ty_int_ref_scalar_64 ty))
-      (if-let true (u64_is_odd b))
-      (if-let (imm12_from_u64 imm) (u64_wrapping_sub b 1))
-  (flags_and_cc (cmp_imm (operand_size ty) a imm) (IntCC.SignedGreaterThan)))
-
-(rule lower_icmp_const_32_64_imm -1 (lower_icmp_const cond rn (imm12_from_u64 c) ty)
-      (if (ty_int_ref_scalar_64 ty))
-  (flags_and_cc (cmp_imm (operand_size ty) rn c) cond))
-(rule lower_icmp_const_32_64 -2 (lower_icmp_const cond rn c ty)
-      (if (ty_int_ref_scalar_64 ty))
-  (flags_and_cc (cmp (operand_size ty) rn (imm ty (ImmExtend.Zero) c)) cond))
-
-
-;; 128-bit integers.
-(rule (lower_icmp_into_reg cond @ (IntCC.Equal) rn rm $I128 $I8)
-      (let ((cc Cond (cond_code cond)))
-       (flags_and_cc_to_bool
-        (lower_icmp cond rn rm $I128))))
-(rule (lower_icmp_into_reg cond @ (IntCC.NotEqual) rn rm $I128 $I8)
-      (let ((cc Cond (cond_code cond)))
-       (flags_and_cc_to_bool
-        (lower_icmp cond rn rm $I128))))
-
-;; cmp lhs_lo, rhs_lo
-;; ccmp lhs_hi, rhs_hi, #0, eq
-(decl lower_icmp_i128_eq_ne (Value Value) ProducesFlags)
-(rule (lower_icmp_i128_eq_ne lhs rhs)
-      (let ((lhs ValueRegs (put_in_regs lhs))
-            (rhs ValueRegs (put_in_regs rhs))
-            (lhs_lo Reg (value_regs_get lhs 0))
-            (lhs_hi Reg (value_regs_get lhs 1))
-            (rhs_lo Reg (value_regs_get rhs 0))
-            (rhs_hi Reg (value_regs_get rhs 1))
-            (cmp_inst ProducesFlags (cmp (OperandSize.Size64) lhs_lo rhs_lo)))
-       (ccmp (OperandSize.Size64) lhs_hi rhs_hi
-        (nzcv false false false false) (Cond.Eq) cmp_inst)))
-
-(rule lower_icmp_eq_i128 (lower_icmp (IntCC.Equal) lhs rhs $I128)
-      (flags_and_cc (lower_icmp_i128_eq_ne lhs rhs) (IntCC.Equal)))
-(rule lower_icmp_ne_i128 (lower_icmp (IntCC.NotEqual) lhs rhs $I128)
-      (flags_and_cc (lower_icmp_i128_eq_ne lhs rhs) (IntCC.NotEqual)))
-
-;; cmp      lhs_lo, rhs_lo
-;; cset     tmp1, unsigned_cond
-;; cmp      lhs_hi, rhs_hi
-;; cset     tmp2, cond
-;; csel     dst, tmp1, tmp2, eq
-(rule -1 (lower_icmp_into_reg cond lhs rhs $I128 $I8)
-      (let ((unsigned_cond Cond (cond_code (intcc_unsigned cond)))
-            (cond Cond (cond_code cond))
-            (lhs ValueRegs (put_in_regs lhs))
-            (rhs ValueRegs (put_in_regs rhs))
-            (lhs_lo Reg (value_regs_get lhs 0))
-            (lhs_hi Reg (value_regs_get lhs 1))
-            (rhs_lo Reg (value_regs_get rhs 0))
-            (rhs_hi Reg (value_regs_get rhs 1))
-            (tmp1 Reg (with_flags_reg (cmp (OperandSize.Size64) lhs_lo rhs_lo)
-                                      (materialize_bool_result unsigned_cond))))
-        (with_flags (cmp (OperandSize.Size64) lhs_hi rhs_hi)
-                    (lower_icmp_i128_consumer cond tmp1))))
-
-(decl lower_icmp_i128_consumer (Cond Reg) ConsumesFlags)
-(rule (lower_icmp_i128_consumer cond tmp1)
-      (let ((tmp2 WritableReg (temp_writable_reg $I64))
-            (dst WritableReg (temp_writable_reg $I64)))
-       (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs
-        (MInst.CSet tmp2 cond)
-        (MInst.CSel dst (Cond.Eq) tmp1 tmp2)
-        (value_reg dst))))
-=======
->>>>>>> main
 
 ; Recursion: bounded since recursive calls reduce type width (128-bit to 64-bit).
 (decl rec lower_bmask (Type Type ValueRegs) ValueRegs)
@@ -5132,7 +4962,7 @@
       )
 )
 
-(model Reg (type (bv)))
+(model Reg (type (bv 64)))
 
 (model UImm5 (type (bv 5)))
 
@@ -5259,6 +5089,18 @@
 (attr size_for_mov_to_fpu (veri chain))
 
 (attr pair_amode (veri chain))
+
+(attr emit_fcmp (veri chain))
+
+(attr emit_icmp (veri chain))
+
+(attr is_nonzero (veri chain))
+
+(attr is_nonzero_cmp (veri chain))
+
+(attr cond_result_invert (veri chain))
+
+(attr lower_cond_result_bool (veri chain))
 
 (spec (scalar_size ty)
       (provide (= result
@@ -5670,6 +5512,14 @@
 
 (attr rule i128_alu_bitop (tag i128))
 
+(attr rule emit_icmp_i128 (tag i128))
+
+(attr rule is_nonzero_i128 (tag i128))
+
+(attr rule lower_trapz  (tag wasm_category_stack))
+(attr rule lower_trapnz (tag wasm_category_stack))
+(attr rule lower_brif   (tag wasm_category_stack))
+
 (attr amode (veri chain))
 
 (attr amode_no_more_iconst (veri chain))
@@ -5769,23 +5619,7 @@
 
 (attr flags_and_cc_cc (veri chain))
 
-(attr lower_icmp (veri chain))
-
-(attr lower_icmp_into_reg (veri chain))
-
-(attr lower_icmp_const (veri chain))
-
 (attr lower_extend_op (veri chain))
-
-(attr rule lower_icmp_16_signed (veri priority))
-
-(attr rule lower_icmp_16_extend (veri priority))
-
-(attr rule lower_icmp_eq_i128 (tag i128))
-
-(attr rule lower_icmp_ne_i128 (tag i128))
-
-(attr rule lower_icmp_i128_consumer (tag i128))
 
 (attr rule lower_aarch64_storep64 (tag i128))
 

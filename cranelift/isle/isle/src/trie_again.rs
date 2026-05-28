@@ -323,6 +323,8 @@ impl Binding {
                 Some(termenv.get_variant_term(tyenv, *ty, *variant))
             }
             Binding::MatchVariant { .. } => None,
+            Binding::MakeStruct { .. } => None,
+            Binding::ExtractStruct { .. } => None,
             Binding::MakeSome { .. } => None,
             Binding::MatchSome { .. } => None,
             Binding::MatchTuple { .. } => None,

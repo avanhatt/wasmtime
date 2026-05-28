@@ -12,6 +12,13 @@
     )
 ))
 
+(model MemFlagsData (type
+    (struct
+        (aligned Bool)
+        (trapcode (bv 4))
+    )
+))
+
 (model Offset32 (type (bv 32)))
 
 ;;;; State Definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -459,10 +466,10 @@
     )
 )
 (instantiate load
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv  8)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 16)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 32)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv  8)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 16)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 32)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Unsigned N-bit load
@@ -483,9 +490,9 @@
     (provide (uloadN! clif_load 8 p offset loaded_value result))
 )
 (instantiate uload8
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 16)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 32)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 16)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 32)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Unsigned 16-bit load
@@ -495,8 +502,8 @@
     (provide (uloadN! clif_load 16 p offset loaded_value result))
 )
 (instantiate uload16
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 32)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 32)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Unsigned 32-bit load
@@ -506,7 +513,7 @@
     (provide (uloadN! clif_load 32 p offset loaded_value result))
 )
 (instantiate uload32
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Signed N-bit load
@@ -527,9 +534,9 @@
     (provide (sloadN! clif_load 8 p offset loaded_value result))
 )
 (instantiate sload8
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 16)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 32)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 16)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 32)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Signed 16-bit load
@@ -539,8 +546,8 @@
     (provide (sloadN! clif_load 16 p offset loaded_value result))
 )
 (instantiate sload16
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 32)))
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 32)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Signed 32-bit load
@@ -550,7 +557,7 @@
     (provide (sloadN! clif_load 32 p offset loaded_value result))
 )
 (instantiate sload32
-    ((args (named Type) (named MemFlags) (named Value) (named Offset32)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (named Value) (named Offset32)) (ret (bv 64)))
 )
 
 ; Loads have a large number of expansions and instantiations.
@@ -598,10 +605,10 @@
     (provide (store! clif_store flags value p offset result))
 )
 (instantiate store
-    ((args (named MemFlags) (bv  8) (named Value) (named Offset32)) (ret (bv 1)))
-    ((args (named MemFlags) (bv 16) (named Value) (named Offset32)) (ret (bv 1)))
-    ((args (named MemFlags) (bv 32) (named Value) (named Offset32)) (ret (bv 1)))
-    ((args (named MemFlags) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv  8) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 16) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 32) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
 )
 
 ; 8-bit store
@@ -610,9 +617,9 @@
     (provide (store! clif_store flags (extract 7 0 value) p offset result))
 )
 (instantiate istore8
-    ((args (named MemFlags) (bv 16) (named Value) (named Offset32)) (ret (bv 1)))
-    ((args (named MemFlags) (bv 32) (named Value) (named Offset32)) (ret (bv 1)))
-    ((args (named MemFlags) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 16) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 32) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
 )
 
 ; 16-bit store
@@ -621,8 +628,8 @@
     (provide (store! clif_store flags (extract 15 0 value) p offset result))
 )
 (instantiate istore16
-    ((args (named MemFlags) (bv 32) (named Value) (named Offset32)) (ret (bv 1)))
-    ((args (named MemFlags) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 32) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
 )
 
 ; 32-bit store
@@ -631,7 +638,7 @@
     (provide (store! clif_store flags (extract 31 0 value) p offset result))
 )
 (instantiate istore32
-    ((args (named MemFlags) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
+    ((args (named MemFlagsData) (bv 64) (named Value) (named Offset32)) (ret (bv 1)))
 )
 
 ; Stores have a large number of expansions and instantiations.
@@ -1214,8 +1221,8 @@
 ; F32ReinterpretI32
 ; F64ReinterpretI64
 (instantiate bitcast
-    ((args (named Type) (named MemFlags) (bv 32)) (ret (bv 32)))
-    ((args (named Type) (named MemFlags) (bv 64)) (ret (bv 64)))
+    ((args (named Type) (named MemFlagsData) (bv 32)) (ret (bv 32)))
+    ((args (named Type) (named MemFlagsData) (bv 64)) (ret (bv 64)))
 )
 
 (form fcvt

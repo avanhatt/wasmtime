@@ -4965,7 +4965,7 @@
 (model Amode (type
       (struct
             (addr  (bv 64))
-            (flags (named MemFlags))
+            (flags (named MemFlagsData))
       )
 ))
 

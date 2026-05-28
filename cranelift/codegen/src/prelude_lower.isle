@@ -522,6 +522,20 @@
 ;; single Reg, giving a ConsumesFlags that returns both values in a
 ;; ValueRegs.
 (decl consumes_flags_concat (ConsumesFlags ConsumesFlags) ConsumesFlags)
+;; ConsumesFlags is modeled as a struct with a single `result` Reg. The
+;; concatenated form actually carries two registers (a ValueRegs), but
+;; downstream verification currently only reasons about the first result
+;; produced by `with_flags`, so we record arg `a`'s result as the canonical
+;; `result` field. Both inputs share the same incoming flag state, which we
+;; propagate to the result.
+(spec (consumes_flags_concat a b)
+      (provide
+            (= (:flags result) (:flags a))
+            (= (:flags a) (:flags b))
+            (= (:result result) (:result a))
+            (= (:has_result result) (:has_result a))
+      )
+)
 (rule (consumes_flags_concat (ConsumesFlags.ConsumesFlagsReturnsReg inst1 reg1)
                              (ConsumesFlags.ConsumesFlagsReturnsReg inst2 reg2))
       (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs

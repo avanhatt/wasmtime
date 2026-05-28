@@ -4,6 +4,7 @@ use crate::{
     expand::{Constrain, Expansion},
     program::Program,
     trie::{BindingType, binding_type},
+    types::field_name_by_index,
 };
 use cranelift_isle::{
     sema::{TermId, Type, TypeEnv},
@@ -216,8 +217,7 @@ pub fn binding_string(
             let variant_name = &prog.tyenv.syms[variant.name.index()];
 
             // Field.
-            let field = &variant.fields[field.index()];
-            let field_name = &prog.tyenv.syms[field.name.index()];
+            let field_name = field_name_by_index(&variant.fields, field.index(), &prog.tyenv);
 
             format!(
                 "match_variant({source}, {enum_name}::{variant_name}, {field_name})",
@@ -243,6 +243,39 @@ pub fn binding_string(
                     .copied()
                     .map(BindingId::index)
                     .collect::<Vec<_>>()
+            )
+        }
+        Binding::MakeStruct { ty, fields } => {
+            let ty = &prog.tyenv.types[ty.index()];
+            let Type::Struct { .. } = ty else {
+                unreachable!("MakeStruct target should be a struct type")
+            };
+            format!(
+                "make_struct({ty}, {fields:?})",
+                ty = ty.name(&prog.tyenv),
+                fields = fields
+                    .iter()
+                    .copied()
+                    .map(BindingId::index)
+                    .collect::<Vec<_>>()
+            )
+        }
+        Binding::ExtractStruct { source, field } => {
+            let source_binding = lookup_binding(*source);
+            let source_type = binding_type(&source_binding, term_id, prog, lookup_binding);
+            let BindingType::Base(source_type_id) = source_type else {
+                unreachable!("source of extract_struct should be a base type")
+            };
+            let struct_ty = &prog.tyenv.types[source_type_id.index()];
+            let struct_name = struct_ty.name(&prog.tyenv);
+            let fields = match struct_ty {
+                Type::Struct { fields, .. } => fields,
+                _ => unreachable!("source of extract_struct should be a struct"),
+            };
+            let field_name = field_name_by_index(fields, field.index(), &prog.tyenv);
+            format!(
+                "extract_struct({source}, {struct_name}, {field_name})",
+                source = source.index(),
             )
         }
         Binding::MakeSome { inner } => format!("some({inner})", inner = inner.index()),
@@ -293,7 +326,14 @@ pub fn constraint_string(constraint: &Constraint, tyenv: &TypeEnv) -> String {
                 Type::Builtin(b) => {
                     format!("variant({})", b.name())
                 }
+                Type::Struct { .. } => {
+                    unreachable!("variant constraint should not apply to a struct type")
+                }
             }
+        }
+        Constraint::Struct { ty, .. } => {
+            let ty = &tyenv.types[ty.index()];
+            format!("struct({})", ty.name(tyenv))
         }
         Constraint::ConstInt { val, .. } => format!("const_int({val})"),
         Constraint::ConstBool { val, .. } => format!("const_bool({val})"),

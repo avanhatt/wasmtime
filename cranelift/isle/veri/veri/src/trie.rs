@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::program::Program;
+use crate::types::field_type_by_index;
 use cranelift_isle::{
     error::{Errors, ErrorsBuilder},
     files::Files,
@@ -58,7 +59,8 @@ pub fn binding_type(
     match binding {
         Binding::ConstInt { ty, .. }
         | Binding::ConstBool { ty, .. }
-        | Binding::MakeVariant { ty, .. } => BindingType::Base(*ty),
+        | Binding::MakeVariant { ty, .. }
+        | Binding::MakeStruct { ty, .. } => BindingType::Base(*ty),
 
         Binding::ConstPrim { val } => BindingType::Base(prog.tyenv.const_types[val]),
 
@@ -121,8 +123,25 @@ pub fn binding_type(
             };
 
             // Lookup field type.
-            let field = &variant.fields[field.index()];
-            BindingType::Base(field.ty)
+            BindingType::Base(field_type_by_index(&variant.fields, field.index()))
+        }
+
+        Binding::ExtractStruct { source, field } => {
+            // Lookup type ID for the underlying struct.
+            let source_binding = lookup_binding(*source);
+            let source_ty = binding_type(&source_binding, term_id, prog, lookup_binding);
+            let source_type_id = match source_ty {
+                BindingType::Base(type_id) => type_id,
+                _ => unreachable!("source of extract_struct should be a base type"),
+            };
+
+            // Lookup field type.
+            let struct_ty = &prog.tyenv.types[source_type_id.index()];
+            let fields = match struct_ty {
+                Type::Struct { fields, .. } => fields,
+                _ => unreachable!("source of extract_struct should be a struct"),
+            };
+            BindingType::Base(field_type_by_index(fields, field.index()))
         }
 
         Binding::MatchTuple { source, field } => {

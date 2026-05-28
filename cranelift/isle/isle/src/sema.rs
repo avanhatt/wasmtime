@@ -301,7 +301,7 @@ impl Type {
     /// Get the ID of this `Type`.
     pub fn id(&self) -> TypeId {
         match self {
-            Self::Primitive(id, _, _) | Self::Enum { id, .. } => *id,
+            Self::Primitive(id, _, _) | Self::Enum { id, .. } | Self::Struct{ id, ..} => *id,
             Self::Builtin(b) => TypeId::builtin(*b),
         }
     }

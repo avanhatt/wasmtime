@@ -859,6 +859,16 @@ impl Reindex {
                 field: *field,
             },
 
+            Binding::MakeStruct { ty, fields } => Binding::MakeStruct {
+                ty: *ty,
+                fields: self.ids(fields),
+            },
+
+            Binding::ExtractStruct { source, field } => Binding::ExtractStruct {
+                source: self.id(*source),
+                field: *field,
+            },
+
             Binding::MakeSome { inner } => Binding::MakeSome {
                 inner: self.id(*inner),
             },

@@ -781,7 +781,9 @@ impl Runner {
 
             // Verify.
             if self.skip_solver {
-                println!("skip solver");
+                log::debug!(
+                        "Skipping solver"
+                );
                 continue;
             }
 

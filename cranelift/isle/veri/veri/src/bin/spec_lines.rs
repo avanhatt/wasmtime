@@ -48,7 +48,7 @@ fn main() -> Result<()> {
     // Read ISLE inputs.
     let inputs = opts.isle_input_files()?;
 
-    let files = match Files::from_paths(inputs) {
+    let files = match Files::from_paths(inputs, &[]) {
         Ok(files) => files,
         Err((path, err)) => {
             bail!(Errors::from_io(

@@ -126,11 +126,36 @@ pub struct Field {
 }
 
 impl Field {
-    fn from_isle(field: &sema::Field, tyenv: &TypeEnv) -> Self {
+    fn from_struct_field(field: &sema::StructField, tyenv: &TypeEnv) -> Self {
         let ty = &tyenv.types[field.ty.index()];
         Self {
             name: Ident(tyenv.syms[field.name.index()].clone(), Pos::default()),
             ty: Compound::named_from_isle(ty, tyenv),
+        }
+    }
+
+    fn from_tuple_field(index: usize, field: &sema::TupleField, tyenv: &TypeEnv) -> Self {
+        let ty = &tyenv.types[field.ty.index()];
+        Self {
+            name: Ident(index.to_string(), Pos::default()),
+            ty: Compound::named_from_isle(ty, tyenv),
+        }
+    }
+
+    pub fn from_isle_fields(fields: &sema::Fields, tyenv: &TypeEnv) -> Vec<Self> {
+        match fields {
+            sema::Fields::Unit => Vec::new(),
+            sema::Fields::Struct(s) => s
+                .fields
+                .iter()
+                .map(|f| Self::from_struct_field(f, tyenv))
+                .collect(),
+            sema::Fields::Tuple(t) => t
+                .fields
+                .iter()
+                .enumerate()
+                .map(|(i, f)| Self::from_tuple_field(i, f, tyenv))
+                .collect(),
         }
     }
 
@@ -146,6 +171,26 @@ impl Field {
     }
 }
 
+/// Look up the name of a field in an ISLE `Fields` by index. For tuple fields,
+/// the synthesized name matches the convention used elsewhere (the index as a
+/// decimal string).
+pub fn field_name_by_index(fields: &sema::Fields, index: usize, tyenv: &TypeEnv) -> String {
+    match fields {
+        sema::Fields::Unit => panic!("unit fields cannot be indexed"),
+        sema::Fields::Struct(s) => tyenv.syms[s.fields[index].name.index()].clone(),
+        sema::Fields::Tuple(_) => index.to_string(),
+    }
+}
+
+/// Look up the type of a field in an ISLE `Fields` by index.
+pub fn field_type_by_index(fields: &sema::Fields, index: usize) -> TypeId {
+    match fields {
+        sema::Fields::Unit => panic!("unit fields cannot be indexed"),
+        sema::Fields::Struct(s) => s.fields[index].ty,
+        sema::Fields::Tuple(t) => t.fields[index].ty,
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Variant {
     pub name: Ident,
@@ -158,11 +203,7 @@ impl Variant {
         Self {
             name: Ident(tyenv.syms[variant.name.index()].clone(), variant.pos),
             id: variant.id,
-            fields: variant
-                .fields
-                .iter()
-                .map(|f| Field::from_isle(f, tyenv))
-                .collect(),
+            fields: Field::from_isle_fields(&variant.fields, tyenv),
         }
     }
 
@@ -280,6 +321,9 @@ impl Compound {
             } if !variants.is_empty() => Some(Self::Enum(Enum::from_isle(
                 *name, *id, variants, *pos, tyenv,
             ))),
+            sema::Type::Struct { fields, .. } => {
+                Some(Self::Struct(Field::from_isle_fields(fields, tyenv)))
+            }
             _ => None,
         }
     }
