@@ -17,7 +17,7 @@ use crate::{
 use anyhow::Result;
 use cranelift_codegen::{
     Reg, Writable,
-    ir::{MemFlags, types::I8},
+    ir::{MemFlagsData, types::I8},
     isa::aarch64::inst::{
         ALUOp, ALUOp3, AMode, ASIMDFPModImm, ASIMDMovModImm, BitOp, Cond, ExtendOp,
         FPULeftShiftImm, FPUOp1, FPUOp2, FPUOpRI, FPUOpRIMod, FPURightShiftImm, FpuRoundMode,
@@ -384,12 +384,23 @@ fn define_alu_rrr_shift() -> Result<SpecConfig> {
     let sizes = [OperandSize::Size32, OperandSize::Size64];
 
     // ShiftOp
-    let shiftops = [
-        ShiftOp::LSL,
-        ShiftOp::LSR,
-        ShiftOp::ASR,
-        // ShiftOp::ROR is defined variant but actually not a valid opcode
-    ];
+    //
+    // For the genuinely shifted-register ops, LSL/LSR/ASR are all valid for
+    // both operand sizes. ShiftOp::ROR is a defined variant but not a valid
+    // opcode here, so it is omitted.
+    let default_shiftops = [ShiftOp::LSL, ShiftOp::LSR, ShiftOp::ASR];
+
+    // `Extr` reuses the `AluRRRShift` shape but is not actually a
+    // shifted-register instruction: the low bit of the shift-op field encodes
+    // the architectural `N` bit, which AArch64 requires to equal `sf` (the
+    // operand-size bit), otherwise the encoding is UNDEFINED. So `Extr` only
+    // assembles to a real instruction for the shift-ops whose encoding makes
+    // `N == sf`: LSL (0b00, N=0) for the 32-bit size and LSR (0b01, N=1) for
+    // the 64-bit size. This matches `a64_extr_imm`, the only producer of
+    // `AluRRRShift { Extr, .. }` in lowering. See `alu_rrr_shift_sizes` for the
+    // size restriction that pairs each of these shift-ops with its one valid
+    // operand size.
+    let extr_shiftops = [ShiftOp::LSL, ShiftOp::LSR];
 
     Ok(SpecConfig {
         term: "MInst.AluRRRShift".to_string(),
@@ -401,6 +412,11 @@ fn define_alu_rrr_shift() -> Result<SpecConfig> {
             arms: alu_ops
                 .iter()
                 .map(|alu_op| {
+                    let shiftops: &[ShiftOp] = if matches!(*alu_op, ALUOp::Extr) {
+                        &extr_shiftops
+                    } else {
+                        &default_shiftops
+                    };
                     Ok(Arm {
                         variant: format!("{alu_op:?}"),
                         args: Vec::new(),
@@ -424,12 +440,11 @@ fn define_alu_rrr_shift() -> Result<SpecConfig> {
                                         variant: format!("{alu_shift_op:?}"),
                                         args: Vec::new(),
                                         body: Cases::Cases(
-                                            sizes
-                                                .iter()
-                                                .rev()
+                                            alu_rrr_shift_sizes(*alu_op, *shiftop, &sizes)
+                                                .into_iter()
                                                 .map(|size| {
                                                     alu_rrr_shift_size_case(
-                                                        *alu_op, *size, *shiftop,
+                                                        *alu_op, size, *shiftop,
                                                     )
                                                 })
                                                 .collect::<Result<_>>()?,
@@ -548,6 +563,20 @@ fn alu_rrr_shift_size_case(alu_op: ALUOp, size: OperandSize, op: ShiftOp) -> Res
             mappings: mappings.clone(),
         }),
     })
+}
+
+/// Operand sizes for which the `(alu_op, op)` pairing assembles to a real
+/// instruction, in the order they should appear in the generated spec.
+fn alu_rrr_shift_sizes(alu_op: ALUOp, op: ShiftOp, sizes: &[OperandSize]) -> Vec<OperandSize> {
+    match (alu_op, op) {
+        // `Extr` requires the architectural `N` bit (the low bit of the
+        // shift-op encoding) to equal `sf`, so each shift-op is valid for
+        // exactly one operand size: LSL (N=0) -> 32-bit, LSR (N=1) -> 64-bit.
+        // Any other pairing emits an UNDEFINED encoding (`N != sf`).
+        (ALUOp::Extr, ShiftOp::LSL) => vec![OperandSize::Size32],
+        (ALUOp::Extr, ShiftOp::LSR) => vec![OperandSize::Size64],
+        _ => sizes.iter().rev().copied().collect(),
+    }
 }
 
 fn alu_op_from_shiftop(op: ShiftOp) -> ALUOp {
@@ -867,7 +896,7 @@ fn define_load<F>(
     inst: F,
 ) -> Result<SpecConfig>
 where
-    F: Fn(Writable<Reg>, AMode, MemFlags) -> Inst,
+    F: Fn(Writable<Reg>, AMode, MemFlagsData) -> Inst,
 {
     // Mappings.
     let mut mappings = Mappings::default();
@@ -974,7 +1003,7 @@ fn define_store<F>(
     inst: F,
 ) -> Result<SpecConfig>
 where
-    F: Fn(Reg, AMode, MemFlags) -> Inst,
+    F: Fn(Reg, AMode, MemFlagsData) -> Inst,
 {
     // Mappings.
     let mut mappings = Mappings::default();
@@ -1025,7 +1054,7 @@ where
 
 fn amode_cases<F>(mappings: &Mappings, inst: F) -> Result<Vec<Arm>>
 where
-    F: Fn(AMode, MemFlags) -> Inst,
+    F: Fn(AMode, MemFlagsData) -> Inst,
 {
     // RegReg
     let mut reg_reg_mappings = mappings.clone();
@@ -1047,7 +1076,7 @@ where
                     rn: xreg(5),
                     rm: xreg(6),
                 },
-                MemFlags::new(),
+                MemFlagsData::new(),
             )),
             scope: aarch64::state(),
             mappings: reg_reg_mappings,
@@ -1074,7 +1103,7 @@ where
                     rn: xreg(5),
                     rm: xreg(6),
                 },
-                MemFlags::new(),
+                MemFlagsData::new(),
             )),
             scope: aarch64::state(),
             mappings: reg_scaled_mappings,
@@ -1115,7 +1144,7 @@ where
                                 rm: xreg(6),
                                 extendop,
                             },
-                            MemFlags::new(),
+                            MemFlagsData::new(),
                         )),
                         scope: aarch64::state(),
                         mappings: reg_scaled_extended_mappings.clone(),
@@ -1153,7 +1182,7 @@ where
                                 rm: xreg(6),
                                 extendop,
                             },
-                            MemFlags::new(),
+                            MemFlagsData::new(),
                         )),
                         scope: aarch64::state(),
                         mappings: reg_extended_mappings.clone(),
@@ -1177,7 +1206,7 @@ where
         .reads
         .insert(simm9, Mapping::require(spec_var("simm9".to_string())));
 
-    let unscaled_template = amode_unscaled_template(xreg(5), |amode| inst(amode, MemFlags::new()))?;
+    let unscaled_template = amode_unscaled_template(xreg(5), |amode| inst(amode, MemFlagsData::new()))?;
 
     let unscaled = Arm {
         variant: "Unscaled".to_string(),
@@ -1204,7 +1233,7 @@ where
         .insert(uimm12, Mapping::require(spec_var("uimm12".to_string())));
 
     let unsigned_offset_template =
-        amode_unsigned_offset_template(xreg(5), |amode| inst(amode, MemFlags::new()))?;
+        amode_unsigned_offset_template(xreg(5), |amode| inst(amode, MemFlagsData::new()))?;
 
     let unsigned_offset = Arm {
         variant: "UnsignedOffset".to_string(),

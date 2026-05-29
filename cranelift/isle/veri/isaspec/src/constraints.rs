@@ -729,8 +729,87 @@ fn expect_binary_types(types: &[Expr]) -> Result<(usize, usize)> {
 }
 
 fn expect_lit_int_as_usize(expr: &Expr) -> Result<usize> {
-    Ok(expr
-        .as_lit_int()
-        .ok_or(format_err!("expected literal integer"))?
-        .parse()?)
+    let value = eval_int_const(expr)
+        .ok_or_else(|| format_err!("expected literal integer, got: {expr:?}"))?;
+    Ok(value.try_into()?)
+}
+
+/// Evaluate an integer-valued ASL expression to a constant, if it reduces to
+/// one.
+///
+/// ASLp sometimes expresses a statically-constant integer symbolically. For
+/// example, the width of the `EXTR` result slice is emitted as
+/// `(lsb + datasize - 1) - lsb + 1`, where `lsb` is a symbolic shift amount.
+/// The `lsb` terms cancel, leaving the constant `datasize`. To recover the
+/// constant we track a linear combination of opaque atoms (the sub-expressions
+/// we cannot evaluate, such as the symbolic `lsb`), so that cancelling terms
+/// collapse away. Returns `None` if any atom survives with a nonzero
+/// coefficient, i.e. the expression is not actually constant.
+fn eval_int_const(expr: &Expr) -> Option<i128> {
+    LinearInt::eval(expr).as_const()
+}
+
+/// A linear integer expression: a constant plus a sum of `coefficient * atom`
+/// terms, where each atom is an ASL sub-expression we cannot evaluate further.
+struct LinearInt {
+    constant: i128,
+    /// `(atom, coefficient)` pairs, all with nonzero coefficient.
+    terms: Vec<(Expr, i128)>,
+}
+
+impl LinearInt {
+    fn constant(c: i128) -> Self {
+        Self {
+            constant: c,
+            terms: Vec::new(),
+        }
+    }
+
+    fn atom(e: &Expr) -> Self {
+        Self {
+            constant: 0,
+            terms: vec![(e.clone(), 1)],
+        }
+    }
+
+    /// Add `sign * other` into `self`, combining like atoms and dropping any
+    /// whose coefficient cancels to zero.
+    fn add_scaled(&mut self, other: LinearInt, sign: i128) {
+        self.constant += sign * other.constant;
+        for (atom, coeff) in other.terms {
+            match self.terms.iter_mut().find(|(a, _)| *a == atom) {
+                Some(slot) => slot.1 += sign * coeff,
+                None => self.terms.push((atom, sign * coeff)),
+            }
+        }
+        self.terms.retain(|(_, coeff)| *coeff != 0);
+    }
+
+    fn eval(expr: &Expr) -> Self {
+        match expr {
+            Expr::LitInt(v) => match v.parse() {
+                Ok(n) => Self::constant(n),
+                Err(_) => Self::atom(expr),
+            },
+            Expr::Apply { func, args, .. } => match (func.name.as_str(), args.as_slice()) {
+                ("add_int", [a, b]) => {
+                    let mut lin = Self::eval(a);
+                    lin.add_scaled(Self::eval(b), 1);
+                    lin
+                }
+                ("sub_int", [a, b]) => {
+                    let mut lin = Self::eval(a);
+                    lin.add_scaled(Self::eval(b), -1);
+                    lin
+                }
+                _ => Self::atom(expr),
+            },
+            _ => Self::atom(expr),
+        }
+    }
+
+    /// The constant value, if no symbolic atoms remain.
+    fn as_const(&self) -> Option<i128> {
+        self.terms.is_empty().then_some(self.constant)
+    }
 }
