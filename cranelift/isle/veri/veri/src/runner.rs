@@ -412,7 +412,9 @@ pub struct Runner {
     prog: Program,
     term_rule_sets: HashMap<TermId, RuleSet>,
 
-    root_term: String,
+    /// Optional single root term to scope expansion to. If `None`, expansion is
+    /// seeded from every term that has rules (all paths from all roots).
+    root_term: Option<String>,
     filters: Vec<Filter>,
     default_solver_backend: SolverBackend,
     solver_rules: Vec<SolverRule>,
@@ -424,14 +426,14 @@ pub struct Runner {
 }
 
 impl Runner {
-    pub fn from_files(inputs: &Vec<PathBuf>, root_term: &str) -> Result<Self> {
+    pub fn from_files(inputs: &Vec<PathBuf>) -> Result<Self> {
         let expand_internal_extractors = false;
         let prog = Program::from_files(inputs, expand_internal_extractors)?;
         let term_rule_sets: HashMap<_, _> = prog.build_trie()?.into_iter().collect();
         Ok(Self {
             prog,
             term_rule_sets,
-            root_term: root_term.to_string(),
+            root_term: None,
             filters: Vec::new(),
             default_solver_backend: SolverBackend::CVC5,
             solver_rules: Vec::new(),
@@ -444,7 +446,7 @@ impl Runner {
     }
 
     pub fn set_root_term(&mut self, term: &str) {
-        self.root_term = term.to_string();
+        self.root_term = Some(term.to_string());
     }
 
     pub fn filter(&mut self, filter: Filter) {
@@ -525,7 +527,21 @@ impl Runner {
         let chaining = Chaining::new(&self.prog, &self.term_rule_sets)?;
         chaining.validate()?;
         let mut expander = Expander::new(&self.prog, &self.term_rule_sets, chaining);
-        expander.add_root_term_name(&self.root_term)?;
+        match &self.root_term {
+            // Scope expansion to a single explicitly configured root term.
+            Some(root_term) => expander.add_root_term_name(root_term)?,
+            // Default: seed an expansion at every term that has rules and a
+            // constructor, so that all paths from all roots are covered.
+            // Sub-terms reachable from another root are deduplicated by
+            // `add_root`.
+            None => {
+                for &term_id in self.term_rule_sets.keys() {
+                    if self.prog.term(term_id).has_constructor() {
+                        expander.add_root(term_id);
+                    }
+                }
+            }
+        }
         expander.set_prune_infeasible(true);
         expander.expand();
 
@@ -643,7 +659,10 @@ impl Runner {
         for filter in self.filters.iter() {
             verdict = self.eval_filter(filter, expansion)?.or(verdict);
         }
-        Ok(verdict.unwrap_or(false))
+        // Default to including an expansion unless an `exclude` filter matches
+        // it. Because the last matching filter wins, an `include` filter can
+        // still carve an exception back out of a broader `exclude`.
+        Ok(verdict.unwrap_or(true))
     }
 
     fn eval_filter(&self, filter: &Filter, expansion: &Expansion) -> Result<Option<bool>> {

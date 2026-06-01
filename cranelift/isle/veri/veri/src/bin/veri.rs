@@ -23,6 +23,10 @@ struct Opts {
     #[arg(long = "filter", value_name = "FILTER")]
     filters: Vec<Filter>,
 
+    /// Only expand from the given root term, instead of all terms with rules.
+    #[arg(long = "only-root", value_name = "TERM")]
+    only_root: Option<String>,
+
     /// Don't skip expansions tagged TODO.
     #[arg(long = "no-skip-todo", action = ArgAction::SetFalse)]
     skip_todo: bool,
@@ -93,19 +97,18 @@ fn main() -> Result<()> {
 
     // Read ISLE inputs.
     let inputs = opts.isle_input_files()?;
-    let root_term = if opts.name != "opt" {
-        "lower"
-    } else {
-        "simplify"
-    };
-    let mut runner = Runner::from_files(&inputs, root_term)?;
+    let mut runner = Runner::from_files(&inputs)?;
+
+    // Scope expansion to a single root term, if requested. Otherwise the
+    // default is to expand from every term that has rules.
+    if let Some(root) = &opts.only_root {
+        runner.set_root_term(root);
+    }
 
     // Configure runner.
-    if !opts.filters.is_empty() {
-        runner.filters(&opts.filters);
-    } else {
-        runner.include_first_rule_named();
-    }
+    // Default behaviour is to include every expansion (all paths from all
+    // roots); any provided filters only narrow that down via `exclude`.
+    runner.filters(&opts.filters);
     if opts.skip_todo {
         runner.skip_tag("TODO");
     }

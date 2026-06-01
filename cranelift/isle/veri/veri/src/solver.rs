@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, iter::zip};
+use std::{cmp::Ordering, collections::HashSet, iter::zip};
 
 use anyhow::{Context as _, Error, Result, bail, format_err};
 use easy_smt::{Context, Response, SExpr, SExprData};
@@ -82,6 +82,10 @@ pub struct Solver<'a> {
     conditions: &'a Conditions,
     assignment: &'a Assignment,
     tmp_idx: usize,
+
+    /// Widths for which the deterministic `fp.sqrt` uninterpreted function has
+    /// already been declared (see [`Solver::fp_sqrt`]).
+    sqrt_uf_widths: HashSet<usize>,
 }
 
 impl Drop for Solver<'_> {
@@ -105,6 +109,7 @@ impl<'a> Solver<'a> {
             conditions,
             assignment,
             tmp_idx: 0,
+            sqrt_uf_widths: HashSet::new(),
         };
         solver.prelude()?;
         Ok(solver)
@@ -438,9 +443,7 @@ impl<'a> Solver<'a> {
             Expr::FPFloor(x) => {
                 Ok(self.fp_rounding_unary("fp.roundToIntegral", ROUND_TOWARD_NEGATIVE, x)?)
             }
-            Expr::FPSqrt(x) => {
-                Ok(self.fp_rounding_unary("fp.sqrt", ROUND_NEAREST_TIES_TO_EVEN, x)?)
-            }
+            Expr::FPSqrt(x) => Ok(self.fp_sqrt(x)?),
             Expr::FPTrunc(x) => {
                 Ok(self.fp_rounding_unary("fp.roundToIntegral", ROUND_TOWARD_ZERO, x)?)
             }
@@ -750,6 +753,40 @@ impl<'a> Solver<'a> {
         self.smt.assert(self.smt.eq(result_as_fp, result_fp))?;
 
         Ok(result)
+    }
+
+    /// Floating point square root, modeled as a deterministic uninterpreted
+    /// function over the input bits rather than the bit-exact `fp.sqrt`.
+    ///
+    /// `fp.sqrt` is the one floating-point operation that current SMT solvers
+    /// (both Z3 and CVC5) cannot decide in a reasonable time in this encoding:
+    /// the bit-vector/`to_fp` round-trip around `fp.sqrt` makes even the
+    /// applicability precheck time out. The verification only relies on sqrt
+    /// being a *deterministic* function of its input -- both the instruction
+    /// spec and the lowering apply the same sqrt to the same value, and both
+    /// handle NaN/zero/infinity/negative inputs explicitly before ever
+    /// reaching `fp.sqrt`, so its bit-exact value is never relied upon. Modeling
+    /// it as an uninterpreted function is therefore sound for proving
+    /// lowering/spec equivalence (congruence forces equal inputs to equal
+    /// outputs, and unequal inputs remain free to differ) while keeping the
+    /// queries decidable. This mirrors the custom encodings used for other
+    /// solver-hostile operations (`cls`, `clz`, `popcnt`, `rev`).
+    fn fp_sqrt(&mut self, x: ExprId) -> Result<SExpr> {
+        let width = self
+            .assignment
+            .try_bit_vector_width(x)
+            .context("floating point expression must be a bit-vector of known width")?;
+
+        // Declare the per-width uninterpreted sqrt function once, then share the
+        // same symbol across every sqrt occurrence so that equal inputs are
+        // forced (by congruence) to produce equal outputs.
+        let func = format!("fp.sqrt_uf_{width}");
+        if self.sqrt_uf_widths.insert(width) {
+            let bv_sort = self.smt.bit_vec_sort(self.smt.numeral(width));
+            self.smt.declare_fun(&func, vec![bv_sort], bv_sort)?;
+        }
+
+        Ok(self.smt.list(vec![self.smt.atom(func), self.expr_atom(x)]))
     }
 
     /// Floating point unary predicate.
