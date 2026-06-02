@@ -5592,20 +5592,22 @@
       (provide (= n result))
 )
 
-(spec (fp_cond_code cc)
-      (provide
-            (= result
-                  (match cc
-                        ((Equal) (Cond.Eq))
-                        ((NotEqual) (Cond.Ne))
-                        ((GreaterThanOrEqual) (Cond.Ge))
-                        ((GreaterThan) (Cond.Gt))
-                        ((LessThanOrEqual) (Cond.Ls))
-                        ((LessThan) (Cond.Mi))
-                  )
-            )
-      )
-)
+(attr fp_cond_code (veri chain))
+
+;; (spec (fp_cond_code cc)
+;;       (provide
+;;             (= result
+;;                   (match cc
+;;                         ((Equal) (Cond.Eq))
+;;                         ((NotEqual) (Cond.Ne))
+;;                         ((GreaterThanOrEqual) (Cond.Ge))
+;;                         ((GreaterThan) (Cond.Gt))
+;;                         ((LessThanOrEqual) (Cond.Ls))
+;;                         ((LessThan) (Cond.Mi))
+;;                   )
+;;             )
+;;       )
+;; )
 
 (spec (cond_code cc)
       (provide
@@ -5761,6 +5763,8 @@
       )
 )
 
+(attr extract_vector (tag vector))
+
 ;; Other terms not yet handled in verification
 
 (attr fence (tag todo))
@@ -5914,8 +5918,7 @@
 (attr with_flags_reg (veri chain))
 (attr with_flags_side_effect (veri chain))
 
-;; Genuine leaves without specs (unspecified MInst variants, externs,
-;; cyclic/non-chainable helpers): excluded from verification via todo.
+;; Leaves currently without specs: excluded from verification via todo.
 (attr MInst.Udf (tag todo))
 (attr bitrev (tag todo))
 (attr call (tag todo))
@@ -5923,7 +5926,6 @@
 (attr consumes_flags_concat (tag todo))
 (attr debugtrap (tag todo))
 (attr dynamic_stack_addr (tag todo))
-(attr extract_vector (tag todo))
 (attr f128const (tag todo))
 (attr f16const (tag todo))
 (attr fcvt_to_uint_sat (tag todo))
@@ -5945,4 +5947,7 @@
 (attr usub_overflow (tag todo))
 (attr valid_atomic_transaction (tag todo))
 (attr vhigh_bits (tag todo))
+;; All `with_flags` arms error when verified as a `with_flags` root: the
+;; ProducesFlags/ConsumesFlags arguments are ungrounded enums there. No arm
+;; passes standalone, so the whole term stays todo rather than per-rule tags.
 (attr with_flags (tag todo))

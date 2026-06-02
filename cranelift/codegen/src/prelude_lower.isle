@@ -565,7 +565,8 @@
 ;; See `with_flags_reg` below for a variant that extracts out just the lower Reg.
 (decl with_flags (ProducesFlags ConsumesFlags) ValueRegs)
 
-(rule (with_flags (ProducesFlags.ProducesFlagsReturnsResultWithConsumer producer_inst producer_result)
+(rule with_flags_paired_results
+      (with_flags (ProducesFlags.ProducesFlagsReturnsResultWithConsumer producer_inst producer_result)
                   (ConsumesFlags.ConsumesFlagsReturnsResultWithProducer consumer_inst consumer_result))
       (let ((_x Unit (emit producer_inst))
             (_y Unit (emit consumer_inst)))
@@ -573,19 +574,22 @@
 
 ;; A flag-producer that also produces a result, paired with a consumer that has
 ;; no results.
-(rule (with_flags (ProducesFlags.ProducesFlagsReturnsResultWithConsumer producer_inst producer_result)
+(rule with_flags_producer_result_only
+      (with_flags (ProducesFlags.ProducesFlagsReturnsResultWithConsumer producer_inst producer_result)
                   (ConsumesFlags.ConsumesFlagsSideEffect consumer_inst))
       (let ((_ Unit (emit producer_inst))
             (_ Unit (emit consumer_inst)))
         (value_reg producer_result)))
 
-(rule (with_flags (ProducesFlags.ProducesFlagsSideEffect producer_inst)
+(rule with_flags_consumer_reg
+      (with_flags (ProducesFlags.ProducesFlagsSideEffect producer_inst)
                   (ConsumesFlags.ConsumesFlagsReturnsReg consumer_inst consumer_result))
       (let ((_x Unit (emit producer_inst))
             (_y Unit (emit consumer_inst)))
         (value_reg consumer_result)))
 
-(rule (with_flags (ProducesFlags.ProducesFlagsSideEffect producer_inst)
+(rule with_flags_consumer_twice
+      (with_flags (ProducesFlags.ProducesFlagsSideEffect producer_inst)
                   (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs consumer_inst_1
                                                                     consumer_inst_2
                                                                     consumer_result))
@@ -597,7 +601,8 @@
             (_z Unit (emit consumer_inst_2)))
         consumer_result))
 
-(rule (with_flags (ProducesFlags.ProducesFlagsSideEffect producer_inst)
+(rule with_flags_consumer_four
+      (with_flags (ProducesFlags.ProducesFlagsSideEffect producer_inst)
                   (ConsumesFlags.ConsumesFlagsFourTimesReturnsValueRegs consumer_inst_1
                                                                         consumer_inst_2
                                                                         consumer_inst_3
@@ -613,14 +618,16 @@
             (_v Unit (emit consumer_inst_4)))
         consumer_result))
 
-(rule (with_flags (ProducesFlags.ProducesFlagsTwiceSideEffect producer_inst1 producer_inst2)
+(rule with_flags_producer_twice_reg
+      (with_flags (ProducesFlags.ProducesFlagsTwiceSideEffect producer_inst1 producer_inst2)
                   (ConsumesFlags.ConsumesFlagsReturnsReg consumer_inst consumer_result))
       (let ((_ Unit (emit producer_inst1))
             (_ Unit (emit producer_inst2))
             (_ Unit (emit consumer_inst)))
         (value_reg consumer_result)))
 
-(rule (with_flags (ProducesFlags.ProducesFlagsTwiceSideEffect producer_inst1 producer_inst2)
+(rule with_flags_producer_twice_consumer_twice
+      (with_flags (ProducesFlags.ProducesFlagsTwiceSideEffect producer_inst1 producer_inst2)
                   (ConsumesFlags.ConsumesFlagsTwiceReturnsValueRegs consumer_inst_1
                                                                     consumer_inst_2
                                                                     consumer_result))
@@ -633,7 +640,8 @@
             (_ Unit (emit consumer_inst_2)))
         consumer_result))
 
-(rule (with_flags (ProducesFlags.ProducesFlagsTwiceSideEffect producer_inst1 producer_inst2)
+(rule with_flags_producer_twice_consumer_four
+      (with_flags (ProducesFlags.ProducesFlagsTwiceSideEffect producer_inst1 producer_inst2)
                   (ConsumesFlags.ConsumesFlagsFourTimesReturnsValueRegs consumer_inst_1
                                                                         consumer_inst_2
                                                                         consumer_inst_3
