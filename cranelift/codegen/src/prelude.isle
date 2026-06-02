@@ -652,6 +652,8 @@
 
 (model u64 (type (bv 64)))
 
+(model u128 (type (bv 128)))
+
 (model usize (type Int))
 
 (model i8 (type (bv 8)))

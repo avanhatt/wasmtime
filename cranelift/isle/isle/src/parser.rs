@@ -838,7 +838,7 @@ impl<'a> Parser<'a> {
             let val = self.parse_spec_expr()?;
             ModelValue::ConstValue(val)
         } else {
-            return Err(self.error(pos, "Model must be a type, enum or const".to_string()));
+            return Err(self.error(pos, "Model must be a type or const".to_string()));
         };
 
         self.expect_rparen()?; // end body

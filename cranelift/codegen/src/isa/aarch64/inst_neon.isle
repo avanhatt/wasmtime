@@ -6,3 +6,5 @@
             (_ Unit (emit (MInst.FpuMove128 dst src))))
         (writable_reg_to_reg dst)))
 
+
+(attr fpu_move_128 (tag i128))

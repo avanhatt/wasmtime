@@ -534,9 +534,11 @@ impl<'a> Expander<'a> {
         //
         // Any remaining constructor calls could not be chained. Therefore, in
         // order to consider rules that apply to these terms, we need to
-        // initiate expansion from them as root terms.
+        // initiate expansion from them as root terms. We only do so for terms
+        // that have an explicit specification: spec-less terms are assumed to
+        // be part of some real chain and are not verified standalone.
         for (_, term_id) in expansion.constructor_bindings() {
-            if self.chaining.is_expandable(term_id) {
+            if self.chaining.is_expandable(term_id) && self.prog.specenv.has_spec(term_id) {
                 self.add_root(term_id);
             }
         }

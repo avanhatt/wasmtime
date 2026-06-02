@@ -1187,6 +1187,8 @@
 
 (model Inst (type (bv)))
 
+(model Constant (type (bv)))
+
 (model ValueRegs
       (type
             (struct
@@ -1338,7 +1340,7 @@
       )
 )
 
-(attr produces_flags_concat (tag TODO))
+(attr produces_flags_concat (tag chain))
 
 (model ConsumesFlags
       (type

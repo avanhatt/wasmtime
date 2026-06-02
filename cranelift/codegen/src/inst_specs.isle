@@ -269,6 +269,9 @@
     ((args (named Type) (bv 64) (bv 64) (named TrapCode)) (ret (bv 64)))
 )
 
+(spec (trap trap_code)
+    (modifies clif_trap)
+    (provide clif_trap))
 
 (spec (iconst ty arg)
     (provide (= arg (zero_ext 64 result))))
@@ -358,6 +361,33 @@
     (provide (= result (popcnt x))))
 (instantiate popcnt bv_unary_8_to_64)
 
+;; Reverse the byte order of `x`. There is no byte-swap primitive, so we build
+;; the result by concatenating the bytes of `x` in reverse order (`concat`'s
+;; first argument is the high-order part). `bswap` is defined for i16/i32/i64/
+;; i128; we verify the 16/32/64-bit widths, matching the rest of this file.
+(spec (bswap ty x)
+    (provide
+        (= result
+            (switch (widthof x)
+                (16 (concat (extract  7 0 x) (extract 15  8 x)))
+                (32 (concat (extract  7 0 x)
+                    (concat (extract 15  8 x)
+                    (concat (extract 23 16 x)
+                            (extract 31 24 x)))))
+                (64 (concat (extract  7 0 x)
+                    (concat (extract 15  8 x)
+                    (concat (extract 23 16 x)
+                    (concat (extract 31 24 x)
+                    (concat (extract 39 32 x)
+                    (concat (extract 47 40 x)
+                    (concat (extract 55 48 x)
+                            (extract 63 56 x)))))))))))))
+(instantiate bswap
+    ((args (named Type) (bv 16)) (ret (bv 16)))
+    ((args (named Type) (bv 32)) (ret (bv 32)))
+    ((args (named Type) (bv 64)) (ret (bv 64)))
+)
+
 (spec (ireduce ty x)
     (provide (= result (conv_to (widthof result) x))))
 (instantiate ireduce
@@ -391,6 +421,16 @@
 (spec (sextend ty x)
     (provide (= result (sign_ext (widthof result) x))))
 (instantiate sextend extend)
+
+;; `maybe_uextend` "sees through" a `uextend`: given the outer value `result`,
+;; it yields the inner value `value`. When `result` is defined by a `uextend`,
+;; `value` is that uextend's argument; otherwise `value` is `result` itself. In
+;; both cases the inner value is the low bits of the outer value, i.e. the outer
+;; value is the zero-extension of the inner one to the outer width (in the
+;; fall-through case the two widths are equal, so this is the identity). The
+;; extractor is total (it always matches), so no `match` clause is needed.
+(spec (maybe_uextend value)
+    (provide (= result (zero_ext (widthof result) value))))
 
 (spec (smin ty x y)
     (provide (= result (if (bvsle x y) x y))))
@@ -1385,6 +1425,7 @@
 ;;;; CLIF Instruction Tags ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (attr select_spectre_guard (tag spectre))
+(attr fence (tag todo))
 
 ; Use Z3 solver for the following instructions.
 (attr fadd (tag solver_z3))

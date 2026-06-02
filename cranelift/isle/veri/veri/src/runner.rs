@@ -530,13 +530,17 @@ impl Runner {
         match &self.root_term {
             // Scope expansion to a single explicitly configured root term.
             Some(root_term) => expander.add_root_term_name(root_term)?,
-            // Default: seed an expansion at every term that has rules and a
-            // constructor, so that all paths from all roots are covered.
-            // Sub-terms reachable from another root are deduplicated by
-            // `add_root`.
+            // Default: seed an expansion at every term that has rules, a
+            // constructor, and an explicit specification. Terms without a spec
+            // are not verified standalone: they are assumed to be part of some
+            // real chain and are reached only by being chained (inlined) into a
+            // specified root's expansion. Sub-terms reachable from another root
+            // are deduplicated by `add_root`.
             None => {
                 for &term_id in self.term_rule_sets.keys() {
-                    if self.prog.term(term_id).has_constructor() {
+                    if self.prog.term(term_id).has_constructor()
+                        && self.prog.specenv.has_spec(term_id)
+                    {
                         expander.add_root(term_id);
                     }
                 }

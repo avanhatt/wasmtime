@@ -3199,11 +3199,17 @@
 
 (attr lower_fmla (tag vector))
 
+(attr fcvt_to_sint_sat (tag vector))
+
 (attr rule isub_i128 (tag i128))
 
 (attr rule imul_i128 (tag i128))
 
 (attr cmp_and_choose (veri chain))
+
+(attr aarch64_fpustore32 (veri chain))
+
+(attr aarch64_fpustore32 (veri chain))
 
 (attr rule cmp_and_choose_8_16 (veri priority))
 
@@ -3281,3 +3287,5 @@
 (attr fnmadd (tag vector))
 (attr fmsub (tag vector))
 (attr fnmsub (tag vector))
+
+(attr load_ext_name (tag todo))
