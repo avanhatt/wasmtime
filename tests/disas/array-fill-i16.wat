@@ -22,6 +22,7 @@
   )
 )
 ;; function u0:0(i64 vmctx, i64, i32, i32, i32, i32) tail {
+;;     region0 = 2147483648 "GcHeap"
 ;;     gv0 = vmctx
 ;;     gv1 = load.i64 notrap aligned readonly gv0+8
 ;;     gv2 = load.i64 notrap aligned gv1+24
@@ -39,7 +40,7 @@
 ;; @0031                               v8 = iadd v7, v6
 ;; @0031                               v9 = iconst.i64 16
 ;; @0031                               v10 = iadd v8, v9  ; v9 = 16
-;; @0031                               v11 = load.i32 user2 readonly v10
+;; @0031                               v11 = load.i32 user2 readonly region0 v10
 ;; @0031                               v13 = uextend.i64 v3
 ;; @0031                               v14 = uextend.i64 v5
 ;; @0031                               v16 = iadd v13, v14
@@ -58,17 +59,17 @@
 ;; @0031                               v31 = icmp ugt v30, v29
 ;; @0031                               trapnz v31, user2
 ;;                                     v51 = iconst.i64 0
-;; @0031                               v33 = icmp eq v14, v51  ; v51 = 0
+;; @0031                               v34 = icmp eq v14, v51  ; v51 = 0
 ;;                                     v44 = iconst.i64 2
 ;; @0031                               v32 = iadd v24, v58
-;; @0031                               brif v33, block3, block2(v24)
+;; @0031                               brif v34, block3, block2(v24)
 ;;
-;;                                 block2(v34: i64):
-;; @0031                               istore16.i32 user2 little v4, v34
+;;                                 block2(v35: i64):
+;; @0031                               istore16.i32 user2 little region0 v4, v35
 ;;                                     v61 = iconst.i64 2
-;;                                     v62 = iadd v34, v61  ; v61 = 2
-;; @0031                               v36 = icmp eq v62, v32
-;; @0031                               brif v36, block3, block2(v62)
+;;                                     v62 = iadd v35, v61  ; v61 = 2
+;; @0031                               v37 = icmp eq v62, v32
+;; @0031                               brif v37, block3, block2(v62)
 ;;
 ;;                                 block3:
 ;; @0034                               jump block1
@@ -78,6 +79,7 @@
 ;; }
 ;;
 ;; function u0:1(i64 vmctx, i64, i32, i32, i32) tail {
+;;     region0 = 2147483648 "GcHeap"
 ;;     gv0 = vmctx
 ;;     gv1 = load.i64 notrap aligned readonly gv0+8
 ;;     gv2 = load.i64 notrap aligned gv1+24
@@ -97,7 +99,7 @@
 ;; @003f                               v8 = iadd v7, v6
 ;; @003f                               v9 = iconst.i64 16
 ;; @003f                               v10 = iadd v8, v9  ; v9 = 16
-;; @003f                               v11 = load.i32 user2 readonly v10
+;; @003f                               v11 = load.i32 user2 readonly region0 v10
 ;; @003f                               v13 = uextend.i64 v3
 ;; @003f                               v14 = uextend.i64 v4
 ;; @003f                               v16 = iadd v13, v14
@@ -124,6 +126,7 @@
 ;; }
 ;;
 ;; function u0:2(i64 vmctx, i64, i32, i32, i32) tail {
+;;     region0 = 2147483648 "GcHeap"
 ;;     gv0 = vmctx
 ;;     gv1 = load.i64 notrap aligned readonly gv0+8
 ;;     gv2 = load.i64 notrap aligned gv1+24
@@ -143,7 +146,7 @@
 ;; @004d                               v8 = iadd v7, v6
 ;; @004d                               v9 = iconst.i64 16
 ;; @004d                               v10 = iadd v8, v9  ; v9 = 16
-;; @004d                               v11 = load.i32 user2 readonly v10
+;; @004d                               v11 = load.i32 user2 readonly region0 v10
 ;; @004d                               v13 = uextend.i64 v3
 ;; @004d                               v14 = uextend.i64 v4
 ;; @004d                               v16 = iadd v13, v14
@@ -170,6 +173,7 @@
 ;; }
 ;;
 ;; function u0:3(i64 vmctx, i64, i32, i32, i32) tail {
+;;     region0 = 2147483648 "GcHeap"
 ;;     gv0 = vmctx
 ;;     gv1 = load.i64 notrap aligned readonly gv0+8
 ;;     gv2 = load.i64 notrap aligned gv1+24
@@ -187,7 +191,7 @@
 ;; @005d                               v8 = iadd v7, v6
 ;; @005d                               v9 = iconst.i64 16
 ;; @005d                               v10 = iadd v8, v9  ; v9 = 16
-;; @005d                               v11 = load.i32 user2 readonly v10
+;; @005d                               v11 = load.i32 user2 readonly region0 v10
 ;; @005d                               v13 = uextend.i64 v3
 ;; @005d                               v14 = uextend.i64 v4
 ;; @005d                               v16 = iadd v13, v14
@@ -206,19 +210,19 @@
 ;; @005d                               v31 = icmp ugt v30, v29
 ;; @005d                               trapnz v31, user2
 ;;                                     v51 = iconst.i64 0
-;; @005d                               v33 = icmp eq v14, v51  ; v51 = 0
+;; @005d                               v34 = icmp eq v14, v51  ; v51 = 0
 ;; @0057                               v5 = iconst.i32 0xdead
 ;;                                     v44 = iconst.i64 2
 ;; @005d                               v32 = iadd v24, v58
-;; @005d                               brif v33, block3, block2(v24)
+;; @005d                               brif v34, block3, block2(v24)
 ;;
-;;                                 block2(v34: i64):
+;;                                 block2(v35: i64):
 ;;                                     v61 = iconst.i32 0xdead
-;; @005d                               istore16 user2 little v61, v34  ; v61 = 0xdead
+;; @005d                               istore16 user2 little region0 v61, v35  ; v61 = 0xdead
 ;;                                     v62 = iconst.i64 2
-;;                                     v63 = iadd v34, v62  ; v62 = 2
-;; @005d                               v36 = icmp eq v63, v32
-;; @005d                               brif v36, block3, block2(v63)
+;;                                     v63 = iadd v35, v62  ; v62 = 2
+;; @005d                               v37 = icmp eq v63, v32
+;; @005d                               brif v37, block3, block2(v63)
 ;;
 ;;                                 block3:
 ;; @0060                               jump block1

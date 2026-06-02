@@ -9,7 +9,8 @@
   )
 )
 ;; function u0:0(i64 vmctx, i64, i64, i64, i64) -> i32 tail {
-;;     region0 = 2 "vmctx"
+;;     region0 = 32 "VMContext+0x20"
+;;     region1 = 2147483648 "GcHeap"
 ;;     gv0 = vmctx
 ;;     gv1 = load.i64 notrap aligned readonly gv0+8
 ;;     gv2 = load.i64 notrap aligned gv1+24
@@ -36,11 +37,11 @@
 ;;                                     v260 = iconst.i32 48
 ;;                                     v168 = iadd.i32 v15, v260  ; v260 = 48
 ;; @0025                               store notrap aligned region0 v168, v14
-;;                                     v261 = iconst.i32 -1476395008
+;;                                     v261 = iconst.i32 -1476395002
 ;;                                     v262 = load.i64 notrap aligned readonly can_move v0+8
 ;;                                     v263 = load.i64 notrap aligned readonly can_move v262+32
 ;; @0025                               v39 = iadd v263, v22
-;; @0025                               store notrap aligned v261, v39  ; v261 = -1476395008
+;; @0025                               store notrap aligned v261, v39  ; v261 = -1476395002
 ;;                                     v264 = load.i64 notrap aligned readonly can_move v0+40
 ;;                                     v265 = load.i32 notrap aligned readonly can_move v264
 ;; @0025                               store notrap aligned v265, v39+4
@@ -49,12 +50,12 @@
 ;; @0025                               jump block4(v15, v39)
 ;;
 ;;                                 block3 cold:
-;; @0025                               v27 = iconst.i32 -1476395008
+;; @0025                               v27 = iconst.i32 -1476395002
 ;; @0025                               v29 = load.i64 notrap aligned readonly can_move v0+40
 ;; @0025                               v30 = load.i32 notrap aligned readonly can_move v29
 ;;                                     v153 = iconst.i32 48
 ;; @0025                               v31 = iconst.i32 16
-;; @0025                               v32 = call fn0(v0, v27, v30, v153, v31)  ; v27 = -1476395008, v153 = 48, v31 = 16
+;; @0025                               v32 = call fn0(v0, v27, v30, v153, v31)  ; v27 = -1476395002, v153 = 48, v31 = 16
 ;; @0025                               v138 = load.i64 notrap aligned readonly can_move v0+8
 ;; @0025                               v33 = load.i64 notrap aligned readonly can_move v138+32
 ;; @0025                               v34 = uextend.i64 v32
@@ -65,14 +66,14 @@
 ;; @0025                               v6 = iconst.i32 3
 ;;                                     v137 = iconst.i64 16
 ;; @0025                               v46 = iadd v45, v137  ; v137 = 16
-;; @0025                               store user2 v6, v46  ; v6 = 3
+;; @0025                               store user2 region1 v6, v46  ; v6 = 3
 ;; @0025                               trapz v44, user16
 ;;                                     v267 = load.i64 notrap aligned readonly can_move v0+8
 ;;                                     v268 = load.i64 notrap aligned readonly can_move v267+32
 ;; @0025                               v48 = uextend.i64 v44
 ;; @0025                               v50 = iadd v268, v48
 ;; @0025                               v52 = iadd v50, v137  ; v137 = 16
-;; @0025                               v53 = load.i32 user2 readonly v52
+;; @0025                               v53 = load.i32 user2 readonly region1 v52
 ;; @0025                               v47 = iconst.i32 0
 ;;                                     v171 = icmp ne v53, v47  ; v47 = 0
 ;; @0025                               trapz v171, user17
@@ -91,8 +92,8 @@
 ;; @0025                               v69 = isub v61, v7  ; v7 = 24
 ;; @0025                               v70 = uextend.i64 v69
 ;; @0025                               v71 = isub v68, v70
-;; @0025                               store.i64 user2 little v2, v71
-;; @0025                               v78 = load.i32 user2 readonly v52
+;; @0025                               store.i64 user2 little region1 v2, v71
+;; @0025                               v78 = load.i32 user2 readonly region1 v52
 ;; @0025                               v72 = iconst.i32 1
 ;;                                     v200 = icmp ugt v78, v72  ; v72 = 1
 ;; @0025                               trapz v200, user17
@@ -109,8 +110,8 @@
 ;; @0025                               v94 = isub v86, v222  ; v222 = 32
 ;; @0025                               v95 = uextend.i64 v94
 ;; @0025                               v96 = isub v93, v95
-;; @0025                               store.i64 user2 little v3, v96
-;; @0025                               v103 = load.i32 user2 readonly v52
+;; @0025                               store.i64 user2 little region1 v3, v96
+;; @0025                               v103 = load.i32 user2 readonly region1 v52
 ;; @0025                               v97 = iconst.i32 2
 ;;                                     v228 = icmp ugt v103, v97  ; v97 = 2
 ;; @0025                               trapz v228, user17
@@ -127,7 +128,7 @@
 ;; @0025                               v119 = isub v111, v254  ; v254 = 40
 ;; @0025                               v120 = uextend.i64 v119
 ;; @0025                               v121 = isub v118, v120
-;; @0025                               store.i64 user2 little v4, v121
+;; @0025                               store.i64 user2 little region1 v4, v121
 ;; @0029                               jump block1(v44)
 ;;
 ;;                                 block1(v5: i32):

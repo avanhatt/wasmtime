@@ -924,7 +924,6 @@ static OPCODE_SIGNATURES: LazyLock<Vec<OpcodeSignature>> = LazyLock::new(|| {
                 (Opcode::GetStackPointer),
                 (Opcode::GetReturnAddress),
                 (Opcode::Blendv),
-                (Opcode::IcmpImm),
                 (Opcode::X86Pmulhrsw),
                 (Opcode::IaddImm),
                 (Opcode::ImulImm),
@@ -1092,7 +1091,6 @@ fn inserter_for_format(fmt: InstructionFormat) -> OpcodeInserter {
         InstructionFormat::FuncAddr => todo!(),
         InstructionFormat::IntAddTrap => todo!(),
         InstructionFormat::IntCompare => insert_cmp,
-        InstructionFormat::IntCompareImm => todo!(),
         InstructionFormat::Load => insert_load_store,
         InstructionFormat::LoadNoOffset => insert_load_store,
         InstructionFormat::NullAry => insert_opcode,
@@ -1931,7 +1929,6 @@ where
 
         for (ty, value) in vars.into_iter() {
             let var = builder.declare_var(ty);
-            builder.def_var(var, value);
 
             // Randomly declare variables as needing a stack map.
             // We limit these to only types that have fewer than 16 bytes
@@ -1939,6 +1936,8 @@ where
             if ty.bytes() <= 16 && self.u.arbitrary()? {
                 builder.declare_var_needs_stack_map(var);
             }
+
+            builder.def_var(var, value);
 
             self.resources
                 .vars

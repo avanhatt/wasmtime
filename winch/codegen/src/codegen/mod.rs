@@ -1722,7 +1722,7 @@ where
         self.emit_bounds_check_and_compute_addr(&dst_heap, dst_raw_addr, dst.reg, len.reg)?;
         self.context.free_reg(dst);
 
-        let passive_data_index = match self.env.translation.passive_data_map[segment] {
+        let runtime_data_index = match self.env.translation.runtime_data_map[segment] {
             Some(i) => i,
 
             // Active data segments always have length zero, so this is only
@@ -1747,7 +1747,7 @@ where
         let data_segment_length_offset = self
             .env
             .vmoffsets
-            .vmctx_passive_data_length(passive_data_index);
+            .vmctx_runtime_data_length(runtime_data_index);
         let tmp1 = self.context.any_gpr(self.masm)?;
         let tmp2 = self.context.any_gpr(self.masm)?;
         self.masm.load(
@@ -1774,7 +1774,7 @@ where
         let data_segment_base_offset = self
             .env
             .vmoffsets
-            .vmctx_passive_data_base(passive_data_index);
+            .vmctx_runtime_data_base(runtime_data_index);
         self.masm.load(
             self.masm.address_at_vmctx(data_segment_base_offset)?,
             writable!(tmp1),
@@ -1804,7 +1804,7 @@ where
     }
 
     pub fn emit_data_drop(&mut self, data_index: DataIndex) -> Result<()> {
-        let passive_data_index = match self.env.translation.passive_data_map[data_index] {
+        let runtime_data_index = match self.env.translation.runtime_data_map[data_index] {
             Some(idx) => idx,
             // Active data segments do nothing when dropped, so this is a noop.
             None => return Ok(()),
@@ -1812,7 +1812,7 @@ where
         let data_segment_offset = self
             .env
             .vmoffsets
-            .vmctx_passive_data_length(passive_data_index);
+            .vmctx_runtime_data_length(runtime_data_index);
         let len_addr = self.masm.address_at_vmctx(data_segment_offset)?;
         self.masm.store(RegImm::i32(0), len_addr, OperandSize::S32)
     }
@@ -1916,7 +1916,7 @@ where
                 idx_size,
                 TRAP_TABLE_OUT_OF_BOUNDS,
             )?;
-            self.masm.cmp(tmp, segment_len.reg.into(), idx_size)?;
+            self.masm.cmp(tmp, table_size.reg.into(), idx_size)?;
             self.masm
                 .trapif(IntCmpKind::GtU, TRAP_TABLE_OUT_OF_BOUNDS)?;
             self.context.free_reg(table_size);
@@ -1942,7 +1942,7 @@ where
                 segment_off.reg.into(),
                 OperandSize::S64,
             )?;
-            self.context.free_reg(segment_base);
+            self.context.free_reg(segment_off);
         }
 
         // Now run `table.set` in a loop with the values read from the element
@@ -1962,10 +1962,10 @@ where
 
             // Read `*mut VMFuncRef` from `ValRaw`, and then increment the
             // `segment_base` pointer.
-            let tmp = self.context.any_gpr(self.masm)?;
+            let funcref = self.context.any_gpr(self.masm)?;
             self.masm.load_ptr(
                 self.masm.address_at_reg(segment_base.reg, 0)?,
-                writable!(tmp),
+                writable!(funcref),
             )?;
             self.masm.add(
                 writable!(segment_base.reg),
@@ -1979,19 +1979,19 @@ where
             // `table.set` and the other persists across the loop.
             self.context.stack.push(segment_base.into());
             self.context.stack.push(len.into());
-            let tmp = self.context.any_gpr(self.masm)?;
+            let table_off_copy = self.context.any_gpr(self.masm)?;
             self.masm.mov(
-                writable!(tmp),
+                writable!(table_off_copy),
                 table_off.reg.into(),
                 table_off.ty.try_into()?,
             )?;
             self.context.stack.push(table_off.into());
             self.context
                 .stack
-                .push(TypedReg::new(table_off.ty, tmp).into());
+                .push(TypedReg::new(table_off.ty, table_off_copy).into());
             self.context
                 .stack
-                .push(TypedReg::new(WasmValType::FUNCREF, tmp).into());
+                .push(TypedReg::new(WasmValType::FUNCREF, funcref).into());
             self.emit_table_set(table_index)?;
 
             // Pop loop variables into their original registers for the loop.
@@ -2005,6 +2005,15 @@ where
                 table_off.reg,
                 RegImm::i64(1),
                 table_off.ty.try_into()?,
+            )?;
+
+            // Decrement the number of remaining elements to copy, used as the
+            // loop's exit condition above.
+            self.masm.sub(
+                writable!(len.reg),
+                len.reg,
+                RegImm::i64(1),
+                OperandSize::S64,
             )?;
         }
         self.masm.jmp(header)?;
