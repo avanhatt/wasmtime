@@ -2,6 +2,7 @@
 
 (model Imm64 (type (bv 64)))
 
+(model Ieee16 (type (bv 16)))
 (model Ieee32 (type (bv 32)))
 (model Ieee64 (type (bv 64)))
 
@@ -60,6 +61,18 @@
 (state clif_trap
     (type Bool)
     (default (not clif_trap)))
+
+; Whether the value being rewritten is a nondeterministic arithmetic NaN,
+; which loosens the mid-end `simplify` soundness contract from exact bitwise
+; equality to `fp_equiv!` (see `opt.isle`). Relevant floating-point arithmetic
+; instructions (`fadd`/`fmul`/...) set to true exactly when they produce a NaN;
+; deterministic float bit-ops (`fneg`/`fabs`/`fcopysign`) leave it at the
+; default `false`. Modeled as execution state (like `clif_trap`) so the relaxation
+; is expressed declaratively in specs rather than special-cased in the verifier
+; (because `simplify` does not consume the value type).
+(state relax_nan
+    (type Bool)
+    (default (not relax_nan)))
 
 ;;;; Common Term Forms ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -367,16 +380,14 @@
     ((args (named Type) (bv 64)) (ret (bv 32))))
 
 (form extend
-    ((args (named Type) (bv  8)) (ret (bv  8)))
     ((args (named Type) (bv  8)) (ret (bv 16)))
     ((args (named Type) (bv  8)) (ret (bv 32)))
     ((args (named Type) (bv  8)) (ret (bv 64)))
-    ((args (named Type) (bv 16)) (ret (bv 16)))
     ((args (named Type) (bv 16)) (ret (bv 32)))
     ((args (named Type) (bv 16)) (ret (bv 64)))
-    ((args (named Type) (bv 32)) (ret (bv 32)))
     ((args (named Type) (bv 32)) (ret (bv 64))))
-    ;; Note: (bv 64) -> (bv 64) not accepted in clif
+    ;; Note: extends must strictly widen, so same-width instantiations
+    ;; (8->8, 16->16, 32->32, 64->64) are not accepted in clif.
 
 (spec (uextend ty x)
     (provide (= result (zero_ext (widthof result) x))
@@ -710,7 +721,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (fadd ty x y)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If either z1 or z2 is a NaN, then return an element of nans{z1,z2}.
@@ -751,7 +765,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (fsub ty x y)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If either z1 or z2 is a NaN, then return an element of nans{z1,z2}.
@@ -794,7 +811,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (fmul ty x y)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If either z1 or z2 is a NaN, then return an element of nans{z1,z2}.
@@ -837,7 +857,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (fdiv ty x y)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If either z1 or z2 is a NaN, then return an element of nans{z1,z2}.
@@ -884,7 +907,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (fmin ty x y)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If either z1 or z2 is a NaN, then return an element of nans{z1,z2}.
@@ -911,7 +937,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (fmax ty x y)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If either z1 or z2 is a NaN, then return an element of nans{z1,z2}.
@@ -967,14 +996,11 @@
 (spec (fneg ty x)
     (provide
         (= (:bits ty) (widthof result))
-        (= result
-            ; If z is a NaN, then return z with negated sign.
-            (if (fp.isNaN x)
-                (nan_neg! x)
-            ; Else if z is an infinity, then return that infinity negated.
-            ; Else if z is a zero, then return that zero negated.
-            ; Else return z negated.
-                (fp.neg x))))) ; Remaining cases of the spec handled by SMT fp.neg
+        ; IEEE-754 negation just toggles the sign bit for every input (normal,
+        ; +/-0, +/-inf, NaN), so model it directly in the bit-vector theory: this
+        ; is bit-exact and avoids an fp<->bv bridge that makes queries like
+        ; `fmul_fneg_fneg` intractable.
+        (= result (bvxor x (fp_sign_bit_set! (widthof x))))))
 (instantiate fneg
     ((args (named Type) (bv 32)) (ret (bv 32)))
     ((args (named Type) (bv 64)) (ret (bv 64))))
@@ -984,7 +1010,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (sqrt ty x)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If z is a NaN, then return an element of nans{z}.
@@ -1012,7 +1041,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (ceil ty x)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If z is a NaN, then return an element of nans{z}.
@@ -1037,7 +1069,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (floor ty x)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If z is a NaN, then return an element of nans{z}.
@@ -1062,7 +1097,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (trunc ty x)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If z is a NaN, then return an element of nans{z}.
@@ -1089,7 +1127,10 @@
 ;
 ; Specification derived from WebAssembly Specification prose (Floating Point Numerics, section 4.3.3).
 (spec (nearest ty x)
+    (modifies relax_nan produces_nan)
     (provide
+        (= produces_nan (fp.isNaN result))
+        (=> produces_nan relax_nan)
         (= (:bits ty) (widthof result))
         (= result
             ; If z is a NaN, then return an element of nans{z}.
