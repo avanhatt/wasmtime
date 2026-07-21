@@ -1127,7 +1127,7 @@ impl<'a> ConditionsBuilder<'a> {
                 term, parameters, ..
             } => self.constructor(id, *term, parameters, Invocation::Caller),
 
-            Binding::Iterator { .. } => unimplemented!("iterator bindings"),
+            Binding::Iterator { source } => self.iterator(id, *source),
 
             Binding::MakeVariant {
                 ty,
@@ -1630,6 +1630,16 @@ impl<'a> ConditionsBuilder<'a> {
         Ok(())
     }
 
+    fn iterator(&mut self, id: BindingId, source: BindingId) -> Result<()> {
+        // We model the multi-term as producing exactly one value, so the
+        // yielded element equals the source value.
+        let source = self.binding_value[&source].clone();
+        let v = self.binding_value[&id].clone();
+        let eq = self.values_equal(v, source)?;
+        self.conditions.assumptions.push(eq);
+        Ok(())
+    }
+
     fn constrain(&mut self, constrain: &Constrain) -> Result<ExprId> {
         match constrain {
             Constrain::Match(binding_id, constraint) => self.constraint(*binding_id, constraint),
@@ -1917,7 +1927,15 @@ impl<'a> ConditionsBuilder<'a> {
             })),
             Type::Int => Ok(self.constant(Const::Int(val))),
             Type::BitVector(Width::Bits(w)) => {
-                Ok(self.constant(Const::BitVector(*w, val.try_into()?)))
+                // Two's-complement bit pattern of the given width; masking
+                // handles negative literals (e.g. `-1`), unlike a `u64` cast.
+                let mask: u128 = if *w >= 128 {
+                    u128::MAX
+                } else {
+                    (1u128 << w) - 1
+                };
+                let bits = (val as u128) & mask;
+                Ok(self.constant(Const::BitVector(*w, bits.into())))
             }
             _ => bail!("cannot construct constant of type {ty}"),
         }

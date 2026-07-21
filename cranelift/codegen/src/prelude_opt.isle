@@ -627,3 +627,7 @@
         (isub $I64 numerator tt)))
 (rule (apply_div_const_magic_s64_finish (Opcode.Sdiv) _numerator _divisor qf)
       qf)
+
+(model Inst (type (bv)))
+(model ValueArray2 (type (bv)))
+(model ValueArray3 (type (bv)))
