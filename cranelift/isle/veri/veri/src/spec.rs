@@ -806,15 +806,12 @@ impl SpecEnv {
     fn collect_specs(&mut self, defs: &[Def], termenv: &TermEnv, tyenv: &TypeEnv) -> Result<()> {
         for def in defs {
             if let ast::Def::Spec(spec) = def {
-                // Shared spec files carry specs for terms declared only in
-                // other compilation units; skip those rather than erroring.
-                let Some(term_id) = termenv.get_term_by_name(tyenv, &spec.term) else {
-                    log::debug!(
-                        "skipping spec for term {name} not declared in this compilation",
+                let term_id = termenv
+                    .get_term_by_name(tyenv, &spec.term)
+                    .ok_or(format_err!(
+                        "spec for unknown term {name}",
                         name = spec.term.0
-                    );
-                    continue;
-                };
+                    ))?;
                 match self.term_spec.entry(term_id) {
                     Entry::Occupied(_) => {
                         bail!("duplicate spec for term {name}", name = spec.term.0)
@@ -833,15 +830,10 @@ impl SpecEnv {
             if let ast::Def::Attr(attr) = def {
                 match &attr.target {
                     AttrTarget::Term(name) => {
-                        // As with specs, skip attrs targeting terms not in this
-                        // compilation unit.
-                        let Some(term_id) = termenv.get_term_by_name(tyenv, name) else {
-                            log::debug!(
-                                "skipping attr for term {name} not declared in this compilation",
-                                name = name.0
-                            );
-                            continue;
-                        };
+                        let term_id = termenv.get_term_by_name(tyenv, name).ok_or(format_err!(
+                            "attr term '{name}' should exist",
+                            name = name.0
+                        ))?;
                         for kind in &attr.kinds {
                             match kind {
                                 AttrKind::Chain => {

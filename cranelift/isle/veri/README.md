@@ -225,6 +225,23 @@ Applicable:          2
 Verification passed: 2
 ```
 
+#### Caveat: relaxation assumes float-typed results
+
+`relax_nan` is a single execution-state flag, not a per-value property, and
+`fp_equiv!` interprets the bits of both values as floats. The relaxation is
+therefore only sound when the rewritten value really is float-typed. It matches
+Wasm semantics for the current rules, which all compose float operations into a
+float result.
+
+It could become unsound for a future rule that computes on floats but discards
+the float result in favor of returning e.g. an integer. A NaN-producing arithmetic
+op anywhere in the expansion sets `relax_nan`, so `simplify` would check the
+integer-typed result with `fp_equiv!` and wrongly accept two integers whose bit
+patterns merely both happen to look like arithmetic NaNs, even though the integer
+values differ. In practice, such a rule would also be incorrect on other integer
+bitpatterns that do not look like an arithmetic NaN, so the rule would fail on those
+counterexamples.
+
 ### Running the whole mid-end suite
 
 To sweep every mid-end rewrite in one run, seed from `simplify` and apply the

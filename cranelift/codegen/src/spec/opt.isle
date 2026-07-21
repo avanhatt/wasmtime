@@ -1,11 +1,21 @@
 ;;;; Specs for mid-end (`opt`) helper terms declared in `prelude_opt.isle`,
 ;;;; rather than in the shared `inst_specs.isle`.
 
-;; Soundness contract for the top-level rewrite term: a rewrite preserves value.
-;; A rewrite whose original value is a nondeterministic arithmetic NaN (the
-;; `relax_nan` execution state, set by float-arithmetic ops when they produce a
-;; NaN, see `inst_specs.isle`) only needs CLIF-level float equivalence; all other
-;; rewrites need exact bitwise equality.
+;; Soundness contract for the top-level rewrite term: by default a rewrite must
+;; preserve the value exactly (bitwise equality). This holds for all non-floating
+;; point rules and for most float values, including deterministic float bit-ops
+;; (`fneg`/`fabs`/`fcopysign`) and float arithmetic that does not produce a NaN.
+;;
+;; The one exception is float arithmetic that produces a NaN: because Wasm
+;; arithmetic NaN payloads are nondeterministic, exact bit-equality is too
+;; strong. When the value being rewritten was produced by a float-arithmetic op
+;; that returned a NaN (tracked by the `relax_nan` execution state, set in
+;; `inst_specs.isle`), the contract relaxes to CLIF-level float equivalence
+;; (`fp_equiv!`: bitwise-equal or both arithmetic NaNs). This matches Wasm
+;; semantics for existing rules that compose operations on floats, but could be
+;; unsound on future rules that compute on floats yet discard the float result
+;; in favor of returning e.g. an integer result (where `fp_equiv!` on an
+;; integer-typed result would wrongly treat NaN-patterned bits as equivalent).
 (spec (simplify arg)
     (provide
         (if relax_nan
@@ -674,4 +684,4 @@
 ;; Slow/unknown
 (attr u64_div (tag slow))
 (attr u64_rem (tag slow))
-(attr imul_ineg_const (tag slow))
+(attr rule imul_ineg_const (tag slow))
