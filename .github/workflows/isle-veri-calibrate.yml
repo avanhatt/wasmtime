@@ -1,0 +1,81 @@
+# TEMPORARY: measurement harness for choosing the ISLE verifier's per-query
+# SMT timeout on GitHub runners. Not intended to be merged.
+#
+# Runs the verifier with *no* cache so that every query is actually solved,
+# and uploads the resulting report.json (which carries per-query
+# `applicable_time` / `verify_time`) as a run artifact. Comparing that report
+# against a local run of the same config gives the local -> runner slowdown
+# factor for exactly the queries that set the timeout floor.
+name: ISLE veri calibration
+
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: "Config name under cranelift/isle/veri/configs (without .args)"
+        required: true
+        default: "aarch64-fast"
+      timeout:
+        description: "Per-query SMT timeout, in seconds"
+        required: true
+        default: "300"
+      job_timeout_minutes:
+        description: "Job timeout, in minutes"
+        required: true
+        default: "60"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  calibrate:
+    name: Calibrate (${{ inputs.config }} @ ${{ inputs.timeout }}s)
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJSON(inputs.job_timeout_minutes) }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true
+    - uses: ./.github/actions/install-rust
+    - uses: ./.github/actions/apt-get-install
+      with:
+        packages: wget unzip
+    - name: Describe the runner
+      run: |
+        echo "nproc: $(nproc)"
+        grep -m1 'model name' /proc/cpuinfo || true
+        grep -m1 'cpu MHz' /proc/cpuinfo || true
+        free -g || true
+    - name: Install SMT solvers (cvc5, z3)
+      run: |
+        solver_dir="$HOME/.cache/smt-solvers"
+        mkdir -p "${solver_dir}/bin"
+        ./cranelift/isle/veri/setup/install-cvc5.sh -i "${solver_dir}"
+        ./cranelift/isle/veri/setup/install-z3.sh -b "${solver_dir}/bin"
+        echo "$HOME/.cache/smt-solvers/bin" >> "${GITHUB_PATH}"
+    - name: Solver versions
+      run: |
+        z3 --version
+        cvc5 --version | head -1
+    - name: Build the verifier
+      run: cargo build -p cranelift-isle-veri --release --bin veri
+    # No --cache-* flags: caching is off, so every query hits a solver and the
+    # recorded times are real solve times.
+    - name: Verify (uncached)
+      run: |
+        ./target/release/veri \
+          --config "cranelift/isle/veri/configs/${{ inputs.config }}.args" \
+          --timeout "${{ inputs.timeout }}" \
+          --log-dir veri-report
+    - name: Upload report
+      if: always()
+      run: |
+        # report.json for the full config is large; ship it compressed.
+        gzip -9 -c veri-report/report.json > report.json.gz
+        ls -la report.json.gz
+    - uses: actions/upload-artifact@v6
+      if: always()
+      with:
+        name: isle-veri-report-${{ inputs.config }}-${{ inputs.timeout }}s
+        path: report.json.gz
