@@ -42,10 +42,22 @@ If you use this method, ensure that `<install_path>/bin` is on your `$PATH`.
 
 To keep local runs fast, CI maintains a shared copy of the verifier's SMT
 query cache in the GitHub Actions cache under keys of the form
-`isle-veri-cache-v1-<hash>`, where `<hash>` is derived from the ISLE sources
+`isle-veri-cache-v2-<hash>`, where `<hash>` is derived from the ISLE sources
 and toolchain. Runs in the merge queue save entries in the default branch's
 cache scope, so every subsequent PR restores the most recent entry and
 verifies incrementally on top of it.
+
+CI verifies AArch64 with the full [`aarch64.args`](configs/aarch64.args)
+config, `slow` expansions included, but with a per-query timeout well below
+the verifier's 300s default (`ISLE_VERI_TIMEOUT` in the job). The queries that
+fall foul of that are `slow`-tagged `udiv`/`urem`/`srem` expansions that do not
+converge at any timeout; they report `unknown`, which is not a CI failure.
+
+One consequence is worth knowing about before you reuse a CI cache: the
+per-query timeout is not part of the cache key, so a cached `unknown` is
+served back even to a local run configured with a longer timeout. If you want
+those queries re-solved at your own timeout, verify without the cache
+(`--log-dir` and no `--cache-*` flags) rather than on top of a downloaded one.
 
 The current cache is also published as the `isle-veri-cache.tar.gz` asset on
 the rolling

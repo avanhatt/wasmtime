@@ -127,7 +127,14 @@ impl Cache {
         // This allows us to invalidate the whole cache (in CI and
         // locally for users) if we change something material about the
         // settings, like the timeout or a solver version.
-        static CACHE_VERSION: &[u8] = b"1\n";
+        //
+        // Note in particular that the per-query timeout is *not* part of the
+        // key, so an `unknown` produced by a timeout is cached and served
+        // back even to a run configured with a longer one. Bump this whenever
+        // the timeout CI runs with changes, so those entries are re-solved
+        // rather than inherited. Bumped to `2` when CI moved to the full
+        // `aarch64` config at a reduced timeout.
+        static CACHE_VERSION: &[u8] = b"2\n";
 
         let mut hash = sha2::Sha256::new();
         hash.update(solver.as_bytes());
